@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart, Settings,
-  BarChart3, Loader2, ShieldAlert
+  BarChart3, Loader2, ShieldAlert, ClipboardCheck
 } from 'lucide-react'
 
 const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
@@ -54,6 +54,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <LayoutDashboard className="h-5 w-5 mr-3" />
               Dashboard
+            </Link>
+            <Link
+              href="/admin/approvals"
+              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <ClipboardCheck className="h-5 w-5 mr-3" />
+              Approvals
             </Link>
             <Link
               href="/admin/profiles"

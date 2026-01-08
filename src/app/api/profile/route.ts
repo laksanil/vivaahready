@@ -70,19 +70,9 @@ export async function POST(request: Request) {
         prefQualification: body.preferredEducation || body.prefQualification,
         prefIncome: body.prefIncome,
         idealPartnerDesc: body.partnerPreferences || body.idealPartnerDesc,
+        approvalStatus: 'pending', // All new profiles start as pending
       },
     })
-
-    // If paymentId is provided, mark the subscription as paid
-    if (body.paymentId) {
-      await prisma.subscription.update({
-        where: { userId: session.user.id },
-        data: {
-          profilePaid: true,
-          profilePaymentId: body.paymentId,
-        },
-      })
-    }
 
     return NextResponse.json({ message: 'Profile created successfully', profileId: profile.id }, { status: 201 })
   } catch (error) {

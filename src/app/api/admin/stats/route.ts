@@ -15,12 +15,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const [totalProfiles, brides, grooms, totalMatches, pendingMatches, recentProfiles] = await Promise.all([
+    const [totalProfiles, brides, grooms, totalMatches, pendingMatches, pendingApprovals, recentProfiles] = await Promise.all([
       prisma.profile.count(),
       prisma.profile.count({ where: { gender: 'female' } }),
       prisma.profile.count({ where: { gender: 'male' } }),
       prisma.match.count(),
       prisma.match.count({ where: { status: 'pending' } }),
+      prisma.profile.count({ where: { approvalStatus: 'pending' } }),
       prisma.profile.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -38,6 +39,7 @@ export async function GET() {
       grooms,
       totalMatches,
       pendingMatches,
+      pendingApprovals,
       recentProfiles
     })
   } catch (error) {

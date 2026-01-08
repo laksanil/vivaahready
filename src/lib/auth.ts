@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           hasProfile: !!user.profile,
+          approvalStatus: user.profile?.approvalStatus || null,
           subscriptionPlan: user.subscription?.plan || 'free',
         }
       },
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.hasProfile = (user as any).hasProfile
+        token.approvalStatus = (user as any).approvalStatus
         token.subscriptionPlan = (user as any).subscriptionPlan
       }
       return token
@@ -62,6 +64,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id as string
         (session.user as any).hasProfile = token.hasProfile as boolean
+        (session.user as any).approvalStatus = token.approvalStatus as string | null
         (session.user as any).subscriptionPlan = token.subscriptionPlan as string
       }
       return session

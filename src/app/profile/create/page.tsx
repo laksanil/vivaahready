@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Loader2, ChevronRight, ChevronLeft, CheckCircle, CreditCard, Shield, Heart } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Loader2, ChevronRight, ChevronLeft, CheckCircle, Clock } from 'lucide-react'
 import { Suspense } from 'react'
 
 const STEPS = [
@@ -13,24 +13,15 @@ const STEPS = [
   'Family',
   'Lifestyle',
   'Partner Preferences',
-  'Payment',
 ]
 
 function CreateProfileForm() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Check for payment cancellation
-  useEffect(() => {
-    if (searchParams.get('payment') === 'cancelled') {
-      setError('Payment was cancelled. Please try again when ready.')
-      setCurrentStep(6) // Go to payment step
-    }
-  }, [searchParams])
 
   const [formData, setFormData] = useState({
     // Basic Info
@@ -101,30 +92,26 @@ function CreateProfileForm() {
     }
   }
 
-  const handlePayment = async () => {
+  const handleSubmit = async () => {
     setLoading(true)
     setError('')
 
     try {
-      // Store form data in localStorage before redirecting
-      localStorage.setItem('profileFormData', JSON.stringify(formData))
-
-      // Create Stripe checkout session
-      const response = await fetch('/api/stripe/profile-payment', {
+      const response = await fetch('/api/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileData: formData }),
+        body: JSON.stringify(formData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to initiate payment')
+        setError(data.error || 'Failed to create profile')
         return
       }
 
-      // Redirect to Stripe Checkout
-      window.location.href = data.url
+      // Redirect to dashboard with pending status
+      router.push('/dashboard?status=pending')
     } catch (err) {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -671,78 +658,6 @@ function CreateProfileForm() {
             </div>
           )}
 
-          {/* Step 7: Payment */}
-          {currentStep === 6 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
-                  <Heart className="h-8 w-8 text-primary-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile</h2>
-                <p className="text-gray-600">One-time payment to activate your profile and start connecting</p>
-              </div>
-
-              {/* Payment summary */}
-              <div className="bg-gray-50 rounded-xl p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Profile Creation Fee</span>
-                  <span className="text-2xl font-bold text-gray-900">$10.00</span>
-                </div>
-                <hr />
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Lifetime profile access</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>View and connect with all profiles</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Get matched with compatible profiles</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Send unlimited interest requests</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile summary */}
-              <div className="bg-white border rounded-xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Your Profile Summary</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">Gender:</span>
-                    <span className="ml-2 text-gray-900 capitalize">{formData.gender || 'Not specified'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Location:</span>
-                    <span className="ml-2 text-gray-900">{formData.city && formData.state ? `${formData.city}, ${formData.state}` : 'Not specified'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Education:</span>
-                    <span className="ml-2 text-gray-900 capitalize">{formData.education?.replace('_', ' ') || 'Not specified'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Occupation:</span>
-                    <span className="ml-2 text-gray-900 capitalize">{formData.occupation?.replace('_', ' ') || 'Not specified'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Security note */}
-              <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                <Shield className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-blue-900">Secure Payment</p>
-                  <p className="text-blue-700">Your payment is processed securely through Stripe. We never store your card details.</p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8 pt-6 border-t">
             <button
@@ -757,25 +672,25 @@ function CreateProfileForm() {
 
             {currentStep < STEPS.length - 1 ? (
               <button type="button" onClick={handleNext} className="btn-primary flex items-center">
-                {currentStep === 5 ? 'Review & Pay' : 'Next'}
+                Next
                 <ChevronRight className="h-5 w-5 ml-1" />
               </button>
             ) : (
               <button
                 type="button"
-                onClick={handlePayment}
+                onClick={handleSubmit}
                 disabled={loading}
                 className="btn-primary flex items-center"
               >
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                    Processing...
+                    Submitting...
                   </>
                 ) : (
                   <>
-                    <CreditCard className="h-5 w-5 mr-2" />
-                    Pay $10 & Create Profile
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Submit Profile
                   </>
                 )}
               </button>

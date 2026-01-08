@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -85,6 +91,9 @@ model Profile {
   isImported        Boolean  @default(false)
 
   // Status
+  approvalStatus    ApprovalStatus @default(pending)
+  approvalDate      DateTime?
+  rejectionReason   String?
   isVerified        Boolean  @default(false)
   isActive          Boolean  @default(true)
   profileScore      Int      @default(0)

@@ -5,18 +5,18 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
   Search,
-  Filter,
   MapPin,
   Briefcase,
   GraduationCap,
   Heart,
   User,
-  ChevronDown,
   Loader2,
   Lock,
+  Clock,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react'
 import ProfilePhoto from '@/components/ProfilePhoto'
-import { BlurBadge } from '@/components/BlurredOverlay'
 
 interface Profile {
   id: string
@@ -33,6 +33,13 @@ interface Profile {
   profileImageUrl: string | null
   user: {
     name: string
+    email?: string
+    phone?: string
+  }
+  interestStatus?: {
+    sentByMe: boolean
+    receivedFromThem: boolean
+    mutual: boolean
   }
 }
 
@@ -40,32 +47,54 @@ export default function SearchPage() {
   const { data: session, status: sessionStatus } = useSession()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
-  const [showFilters, setShowFilters] = useState(false)
+  const [matchStatus, setMatchStatus] = useState<string | null>(null)
+  const [matchMessage, setMatchMessage] = useState<string>('')
 
-  // Check if user has a completed profile
-  const hasProfile = session?.user?.hasProfile || false
-
-  const [filters, setFilters] = useState({
-    gender: '',
-    caste: '',
-    qualification: '',
-    diet: '',
-    location: '',
-  })
+  // Get user state
+  const hasProfile = (session?.user as any)?.hasProfile || false
+  const approvalStatus = (session?.user as any)?.approvalStatus || null
 
   useEffect(() => {
-    fetchProfiles()
-  }, [])
+    if (sessionStatus === 'loading') return
 
-  const fetchProfiles = async () => {
+    if (session && hasProfile && approvalStatus === 'approved') {
+      // Fetch matched profiles for approved users
+      fetchMatchedProfiles()
+    } else if (!session || !hasProfile) {
+      // Fetch public profiles (blurred) for non-logged-in or users without profiles
+      fetchPublicProfiles()
+    } else {
+      // User has profile but not approved - show appropriate message
+      setLoading(false)
+      setMatchStatus(approvalStatus)
+    }
+  }, [session, sessionStatus, hasProfile, approvalStatus])
+
+  const fetchMatchedProfiles = async () => {
     setLoading(true)
     try {
-      const queryParams = new URLSearchParams()
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value)
-      })
+      const response = await fetch('/api/matches/auto')
+      const data = await response.json()
 
-      const response = await fetch(`/api/profiles?${queryParams}`)
+      if (data.status) {
+        setMatchStatus(data.status)
+        setMatchMessage(data.message || '')
+        setProfiles([])
+      } else {
+        setProfiles(data.matches || [])
+        setMatchStatus('approved')
+      }
+    } catch (error) {
+      console.error('Error fetching matches:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchPublicProfiles = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/profiles')
       const data = await response.json()
       setProfiles(data.profiles || [])
     } catch (error) {
@@ -75,32 +104,24 @@ export default function SearchPage() {
     }
   }
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value })
-  }
-
-  const applyFilters = () => {
-    fetchProfiles()
-    setShowFilters(false)
-  }
-
-  const clearFilters = () => {
-    setFilters({
-      gender: '',
-      caste: '',
-      qualification: '',
-      diet: '',
-      location: '',
-    })
-  }
-
   const calculateAge = (dob: string | null): string => {
     if (!dob) return ''
+    // Handle ISO date format (YYYY-MM-DD)
+    if (dob.includes('-')) {
+      const date = new Date(dob)
+      const today = new Date()
+      let age = today.getFullYear() - date.getFullYear()
+      const monthDiff = today.getMonth() - date.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+        age--
+      }
+      return `${age} yrs`
+    }
     // Handle MM/YYYY format
     const parts = dob.split('/')
     if (parts.length >= 2) {
       const year = parseInt(parts[parts.length - 1])
-      if (year > 1900 && year < 2010) {
+      if (year > 1900 && year < 2020) {
         const age = new Date().getFullYear() - year
         return `${age} yrs`
       }
@@ -108,165 +129,100 @@ export default function SearchPage() {
     return ''
   }
 
+  // Determine what to show based on user state
+  const isApproved = session && hasProfile && approvalStatus === 'approved'
+  const isPending = session && hasProfile && approvalStatus === 'pending'
+  const isRejected = session && hasProfile && approvalStatus === 'rejected'
+  const needsProfile = session && !hasProfile
+  const isGuest = !session
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Search Profiles</h1>
-            <p className="text-gray-600 mt-1">Find your perfect match from {profiles.length} profiles</p>
-          </div>
-
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="mt-4 md:mt-0 flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            <Filter className="h-5 w-5 mr-2 text-gray-500" />
-            Filters
-            <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-          </button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isApproved ? 'Your Matches' : 'Browse Profiles'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {isApproved
+              ? `${profiles.length} profiles match your preferences`
+              : 'Find your perfect match'
+            }
+          </p>
         </div>
 
-        {/* Profile Completion Banner */}
-        {session && !hasProfile && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
-            <div className="flex items-center gap-4">
+        {/* Pending Approval Status */}
+        {isPending && (
+          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
+              <Clock className="h-8 w-8 text-yellow-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profile Pending Approval</h3>
+            <p className="text-gray-600 max-w-md mx-auto">
+              Your profile is being reviewed by our team. You'll be able to see your matches once approved.
+              This usually takes 24-48 hours.
+            </p>
+          </div>
+        )}
+
+        {/* Rejected Status */}
+        {isRejected && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profile Not Approved</h3>
+            <p className="text-gray-600 max-w-md mx-auto mb-4">
+              Unfortunately, your profile was not approved. Please contact support for more information.
+            </p>
+            <Link href="/profile/edit" className="btn-primary">
+              Update Profile
+            </Link>
+          </div>
+        )}
+
+        {/* Needs Profile Banner */}
+        {needsProfile && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-shrink-0">
-                <Lock className="h-8 w-8 text-primary-600" />
+                <Lock className="h-10 w-10 text-primary-600" />
               </div>
               <div className="flex-grow">
-                <h3 className="font-semibold text-gray-900">Complete Your Profile</h3>
-                <p className="text-sm text-gray-600">
-                  Create your profile to see full details and connect with matches
+                <h3 className="text-lg font-semibold text-gray-900">Complete Your Profile</h3>
+                <p className="text-gray-600">
+                  Create your profile to see your personalized matches and start connecting with compatible profiles.
                 </p>
               </div>
-              <Link
-                href="/profile/create"
-                className="flex-shrink-0 btn-primary text-sm"
-              >
-                Complete Profile
+              <Link href="/profile/create" className="flex-shrink-0 btn-primary">
+                Create Profile
               </Link>
             </div>
           </div>
         )}
 
-        {/* Not Logged In Banner */}
-        {!session && sessionStatus !== 'loading' && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
-            <div className="flex items-center gap-4">
+        {/* Guest Banner */}
+        {isGuest && sessionStatus !== 'loading' && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex-shrink-0">
-                <Lock className="h-8 w-8 text-primary-600" />
+                <Lock className="h-10 w-10 text-primary-600" />
               </div>
               <div className="flex-grow">
-                <h3 className="font-semibold text-gray-900">Sign In to View Full Profiles</h3>
-                <p className="text-sm text-gray-600">
-                  Create an account to see complete profile details and start connecting
+                <h3 className="text-lg font-semibold text-gray-900">Sign Up to See Full Profiles</h3>
+                <p className="text-gray-600">
+                  Create a free account to see complete profile details and start your journey to finding love.
                 </p>
               </div>
               <div className="flex-shrink-0 flex gap-2">
-                <Link href="/login" className="btn-outline text-sm">
+                <Link href="/login" className="btn-outline">
                   Sign In
                 </Link>
-                <Link href="/register" className="btn-primary text-sm">
-                  Get Started
+                <Link href="/register" className="btn-primary">
+                  Get Started Free
                 </Link>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Filter Profiles</h2>
-              <button onClick={clearFilters} className="text-sm text-primary-600 hover:text-primary-700">
-                Clear all
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Looking for</label>
-                <select
-                  name="gender"
-                  value={filters.gender}
-                  onChange={handleFilterChange}
-                  className="input-field text-sm py-2"
-                >
-                  <option value="">All</option>
-                  <option value="male">Groom</option>
-                  <option value="female">Bride</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Caste</label>
-                <select
-                  name="caste"
-                  value={filters.caste}
-                  onChange={handleFilterChange}
-                  className="input-field text-sm py-2"
-                >
-                  <option value="">Any</option>
-                  <option value="Brahmin">Brahmin</option>
-                  <option value="Madhwa">Madhwa</option>
-                  <option value="Smartha">Smartha</option>
-                  <option value="Iyengar">Iyengar</option>
-                  <option value="Nair">Nair</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Education</label>
-                <select
-                  name="qualification"
-                  value={filters.qualification}
-                  onChange={handleFilterChange}
-                  className="input-field text-sm py-2"
-                >
-                  <option value="">Any</option>
-                  <option value="Bachelors">Bachelors</option>
-                  <option value="Masters">Masters</option>
-                  <option value="Doctor">Doctor/MD</option>
-                  <option value="Ph.D">Ph.D</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Diet</label>
-                <select
-                  name="diet"
-                  value={filters.diet}
-                  onChange={handleFilterChange}
-                  className="input-field text-sm py-2"
-                >
-                  <option value="">Any</option>
-                  <option value="Vegetarian">Vegetarian</option>
-                  <option value="Non Vegetarian">Non Vegetarian</option>
-                  <option value="Eggetarian">Eggetarian</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={filters.location}
-                  onChange={handleFilterChange}
-                  className="input-field text-sm py-2"
-                  placeholder="e.g., California"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-end">
-              <button onClick={applyFilters} className="btn-primary text-sm py-2">
-                Apply Filters
-              </button>
             </div>
           </div>
         )}
@@ -276,11 +232,18 @@ export default function SearchPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
           </div>
-        ) : profiles.length === 0 ? (
+        ) : isPending || isRejected ? null : profiles.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Search className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No profiles found</h3>
-            <p className="text-gray-600">Try adjusting your filters</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {isApproved ? 'No matches found yet' : 'No profiles available'}
+            </h3>
+            <p className="text-gray-600">
+              {isApproved
+                ? 'Check back later as new profiles are added regularly'
+                : 'New profiles are being added regularly'
+              }
+            </p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -289,8 +252,9 @@ export default function SearchPage() {
                 key={profile.id}
                 profile={profile}
                 calculateAge={calculateAge}
-                hasAccess={hasProfile}
+                hasAccess={isApproved}
                 isLoggedIn={!!session}
+                interestStatus={profile.interestStatus}
               />
             ))}
           </div>
@@ -305,12 +269,20 @@ function ProfileCard({
   calculateAge,
   hasAccess,
   isLoggedIn,
+  interestStatus,
 }: {
   profile: Profile
   calculateAge: (dob: string | null) => string
   hasAccess: boolean
   isLoggedIn: boolean
+  interestStatus?: {
+    sentByMe: boolean
+    receivedFromThem: boolean
+    mutual: boolean
+  }
 }) {
+  const [expressing, setExpressing] = useState(false)
+  const [localInterestStatus, setLocalInterestStatus] = useState(interestStatus)
   const age = calculateAge(profile.dateOfBirth)
 
   // Mask name if no access
@@ -325,8 +297,51 @@ function ProfileCard({
       ? profile.currentLocation.split(',').pop()?.trim() + ' area'
       : null
 
+  const handleExpressInterest = async () => {
+    if (localInterestStatus?.sentByMe) return
+
+    setExpressing(true)
+    try {
+      const response = await fetch('/api/interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profileId: profile.id }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setLocalInterestStatus({
+          sentByMe: true,
+          receivedFromThem: localInterestStatus?.receivedFromThem || data.mutual,
+          mutual: data.mutual,
+        })
+      }
+    } catch (error) {
+      console.error('Error expressing interest:', error)
+    } finally {
+      setExpressing(false)
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow relative">
+      {/* Mutual Interest Badge */}
+      {localInterestStatus?.mutual && (
+        <div className="absolute top-3 left-3 z-10 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <CheckCircle className="h-3 w-3" />
+          Mutual Match
+        </div>
+      )}
+
+      {/* Interest Received Badge */}
+      {localInterestStatus?.receivedFromThem && !localInterestStatus?.mutual && (
+        <div className="absolute top-3 left-3 z-10 bg-pink-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <Heart className="h-3 w-3" />
+          Interested in you
+        </div>
+      )}
+
       {/* Photo */}
       <div className={`h-48 bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center relative ${!hasAccess ? 'overflow-hidden' : ''}`}>
         <ProfilePhoto
@@ -403,9 +418,27 @@ function ProfileCard({
               >
                 View Profile
               </Link>
-              <button className="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
-                <Heart className="h-4 w-4" />
-              </button>
+              {localInterestStatus?.mutual ? (
+                <div className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg text-sm">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+              ) : localInterestStatus?.sentByMe ? (
+                <div className="flex items-center justify-center px-4 py-2 bg-gray-400 text-white rounded-lg text-sm">
+                  <Heart className="h-4 w-4 fill-current" />
+                </div>
+              ) : (
+                <button
+                  onClick={handleExpressInterest}
+                  disabled={expressing}
+                  className="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {expressing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Heart className="h-4 w-4" />
+                  )}
+                </button>
+              )}
             </>
           ) : (
             <Link

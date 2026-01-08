@@ -1,7 +1,32 @@
 import Link from 'next/link'
-import { Heart, Shield, Users, CheckCircle, Star, ArrowRight } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, ArrowRight, Lock, Sparkles } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import ProfilePhoto from '@/components/ProfilePhoto'
 
-export default function HomePage() {
+async function getPreviewProfiles() {
+  try {
+    const profiles = await prisma.profile.findMany({
+      where: {
+        approvalStatus: 'approved',
+        isActive: true,
+      },
+      take: 6,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { name: true }
+        }
+      }
+    })
+    return profiles
+  } catch {
+    return []
+  }
+}
+
+export default async function HomePage() {
+  const previewProfiles = await getPreviewProfiles()
+
   return (
     <div>
       {/* Hero Section */}
@@ -16,15 +41,15 @@ export default function HomePage() {
               <p className="mt-6 text-lg text-gray-600 leading-relaxed">
                 Stop choosing between outdated tradition and superficial swiping.
                 VivaahReady bridges the gap — connecting Indian singles in the US
-                through human-curated profiles, not algorithms.
+                through preference-based matching and verified profiles.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link href="/register" className="btn-primary text-center flex items-center justify-center">
-                  Start Your Journey
+                  Start Your Journey Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
-                <Link href="/about" className="btn-secondary text-center">
-                  Learn More
+                <Link href="/search" className="btn-secondary text-center">
+                  Browse Profiles
                 </Link>
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-500">
@@ -34,7 +59,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  $10 One-Time Fee
+                  100% Free
                 </div>
               </div>
             </div>
@@ -45,8 +70,8 @@ export default function HomePage() {
                     <Heart className="h-8 w-8 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Curated Matches</h3>
-                    <p className="text-sm text-gray-500">3-4 matches every few days</p>
+                    <h3 className="font-semibold text-gray-900">Smart Matching</h3>
+                    <p className="text-sm text-gray-500">Based on your preferences</p>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -60,7 +85,7 @@ export default function HomePage() {
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Users className="h-5 w-5 text-blue-500 mr-2" />
-                    <span>Human-curated profiles</span>
+                    <span>Verified profiles only</span>
                   </div>
                 </div>
               </div>
@@ -75,19 +100,19 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="section-title">How VivaahReady Works</h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              We believe meaningful connections require a personal touch, not endless swiping.
+              We believe meaningful connections require quality profiles and mutual interest.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center p-6">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-primary-600">1</span>
               </div>
               <h3 className="text-xl font-semibold mb-3">Create Your Profile</h3>
               <p className="text-gray-600">
-                Complete a detailed form about yourself, your values, goals, and what you're
-                looking for in a life partner.
+                Complete a detailed form about yourself, your values, and what you're
+                looking for in a partner.
               </p>
             </div>
 
@@ -95,10 +120,10 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-primary-600">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">We Curate Matches</h3>
+              <h3 className="text-xl font-semibold mb-3">Profile Review</h3>
               <p className="text-gray-600">
-                Our team manually reviews profiles and hand-selects 3-4 compatible matches
-                based on values, goals, and cultural alignment.
+                Our team reviews your profile to ensure quality and authenticity
+                before you start matching.
               </p>
             </div>
 
@@ -106,18 +131,92 @@ export default function HomePage() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-primary-600">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Connect at Your Pace</h3>
+              <h3 className="text-xl font-semibold mb-3">View Matches</h3>
               <p className="text-gray-600">
-                Express interest when you're ready. Contact details are shared only when
-                both parties want to connect.
+                See profiles that match your preferences — age, location, caste,
+                education, and more.
+              </p>
+            </div>
+
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-primary-600">4</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Connect</h3>
+              <p className="text-gray-600">
+                Express interest. When mutual, contact details are revealed
+                so you can take it from there!
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Blurred Profiles Preview */}
+      {previewProfiles.length > 0 && (
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="section-title">Real Profiles Waiting for You</h2>
+              <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                Join now to see complete profiles and start connecting with compatible matches.
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {previewProfiles.map((profile) => (
+                  <div key={profile.id} className="relative group">
+                    <div className="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl overflow-hidden">
+                      <div className="relative h-full w-full">
+                        <ProfilePhoto
+                          profile={profile}
+                          name={profile.user.name}
+                          size="xl"
+                          blurred={true}
+                          className="filter blur-md scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      <p className="font-medium text-sm blur-[3px]">
+                        {profile.user.name.charAt(0)}****
+                      </p>
+                      <p className="text-xs text-white/80 blur-[2px]">
+                        {profile.currentLocation?.split(',').pop()?.trim() || 'Location'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Overlay CTA */}
+              <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px] rounded-xl">
+                <div className="text-center bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md mx-4">
+                  <Lock className="h-12 w-12 text-primary-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    Create Your Free Profile
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Sign up to see complete profiles, photos, and start connecting with your matches.
+                  </p>
+                  <Link
+                    href="/register"
+                    className="btn-primary inline-flex items-center"
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Features */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
@@ -130,8 +229,8 @@ export default function HomePage() {
                   <div>
                     <h3 className="text-lg font-semibold mb-1">Verified & Secure</h3>
                     <p className="text-gray-600">
-                      Multi-step ID verification ensures authentic profiles. Your privacy
-                      is protected with limited information sharing.
+                      All profiles are manually reviewed before approval. Your privacy
+                      is protected with limited information sharing until mutual interest.
                     </p>
                   </div>
                 </div>
@@ -141,10 +240,10 @@ export default function HomePage() {
                     <Users className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-1">Human Touch</h3>
+                    <h3 className="text-lg font-semibold mb-1">Preference Matching</h3>
                     <p className="text-gray-600">
-                      No algorithms deciding your future. Our team personally reviews
-                      and matches profiles based on compatibility.
+                      See only profiles that match YOUR preferences — age, location,
+                      caste, diet, education, and more. No irrelevant matches.
                     </p>
                   </div>
                 </div>
@@ -154,42 +253,48 @@ export default function HomePage() {
                     <Heart className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold mb-1">Cultural Understanding</h3>
+                    <h3 className="text-lg font-semibold mb-1">Mutual Interest Required</h3>
                     <p className="text-gray-600">
-                      We understand the nuances of Indian culture and match based on
-                      values, family structure, and traditions.
+                      Contact details are shared only when BOTH parties express interest.
+                      No spam, no unwanted contacts.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-semibold mb-6">Ready to Find Your Match?</h3>
-              <div className="text-center mb-6">
-                <span className="text-4xl font-bold text-primary-600">$10</span>
-                <span className="text-gray-500 ml-2">one-time fee</span>
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-xl p-8 text-white">
+              <div className="flex items-center gap-3 mb-6">
+                <Sparkles className="h-8 w-8" />
+                <h3 className="text-2xl font-semibold">Completely Free</h3>
               </div>
+              <p className="text-primary-100 mb-6">
+                No hidden fees. No premium tiers. Create your profile and start matching today.
+              </p>
               <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  Lifetime profile access
+                <li className="flex items-center text-primary-100">
+                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                  Unlimited profile access
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  View all profiles & photos
+                <li className="flex items-center text-primary-100">
+                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                  View all matched profiles & photos
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  Send unlimited interests
+                <li className="flex items-center text-primary-100">
+                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                  Express unlimited interest
                 </li>
-                <li className="flex items-center text-gray-600">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  Personalized matches
+                <li className="flex items-center text-primary-100">
+                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                  Full contact info on mutual match
                 </li>
               </ul>
-              <Link href="/register" className="btn-primary w-full text-center block">
-                Get Started
+              <Link
+                href="/register"
+                className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center"
+              >
+                Create Free Profile
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -203,14 +308,14 @@ export default function HomePage() {
             Your Story Begins Here
           </h2>
           <p className="text-xl text-primary-100 mb-8">
-            Join thousands of Indian singles in the US who trust VivaahReady
+            Join Indian singles in the US who trust VivaahReady
             to find their perfect life partner.
           </p>
           <Link
             href="/register"
             className="inline-flex items-center bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
           >
-            Create Your Profile
+            Create Your Free Profile
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
