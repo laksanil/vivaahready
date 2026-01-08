@@ -1,0 +1,15 @@
+{
+  "name": "gdrive-tool",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "auth": "node auth.js",
+    "list": "node list.js",
+    "export": "node export.js",
+    "sheet": "node read-sheet.js"
+  },
+  "dependencies": {
+    "googleapis": "^134.0.0",
+    "open": "^10.1.0"
+  }
+}

@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  name          String
+  phone         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile      Profile?
+  subscription Subscription?
+  sentMatches     Match[] @relation("SentMatches")
+  receivedMatches Match[] @relation("ReceivedMatches")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  odNumber  String?  @unique // Unique reference number
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic Info (from Google Form)
+  gender            String   // male, female
+  dateOfBirth       String?  // MM/YYYY format from form
+  placeOfBirth      String?
+  height            String?
+  dietaryPreference String?  // Vegetarian, Non Vegetarian, Eggetarian, Vegan
+  languagesKnown    String?
+  maritalStatus     String?  // Single, Never Married, Divorced
+
+  // Contact & Social
+  linkedinProfile   String?
+  facebookInstagram String?
+  photoUrls         String?  // Comma-separated URLs from Google Drive
+
+  // Family Details
+  fatherName        String?
+  motherName        String?
+  siblings          String?
+  familyLocation    String?
+
+  // Education & Career
+  qualification     String?  // Bachelors, Masters, Doctor, Ph.D
+  university        String?
+  occupation        String?
+  annualIncome      String?  // Range like "100-150K", ">100k"
+  currentLocation   String?  // City, State
+
+  // Background
+  caste             String?
+  gotra             String?
+
+  // About
+  aboutMe           String?
+
+  // Partner Preferences
+  prefHeight        String?
+  prefAgeDiff       String?  // "< 3 years", "between 3 to 5 years", etc.
+  prefLocation      String?
+  prefDiet          String?
+  prefCaste         String?
+  prefGotra         String?  // "Different Gothra", "Doesn't Matter"
+  prefQualification String?
+  prefIncome        String?
+  prefLanguage      String?
+  prefCountry       String?
+  idealPartnerDesc  String?  // Free text description
+
+  // Metadata
+  citizenship       String?
+  promoCode         String?
+  referralSource    String?
+  isImported        Boolean  @default(false)
+
+  // Status
+  isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  profileScore      Int      @default(0)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  sender      User     @relation("SentMatches", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("ReceivedMatches", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  status      String   @default("pending") // pending, accepted, rejected
+  message     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan            String   @default("free") // free, premium
+  status          String   @default("active")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
