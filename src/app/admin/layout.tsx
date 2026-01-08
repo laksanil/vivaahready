@@ -1,36 +1,83 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart, Settings,
-  BarChart3, Loader2, ShieldAlert, ClipboardCheck
+  BarChart3, Loader2, ShieldAlert, ClipboardCheck, LogOut
 } from 'lucide-react'
 
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  if (status === 'loading') {
+  // Skip auth check for login page
+  const isLoginPage = pathname === '/admin/login'
+
+  useEffect(() => {
+    if (isLoginPage) {
+      setIsAuthenticated(true) // Allow login page to render
+      return
+    }
+
+    checkAuth()
+  }, [pathname, isLoginPage])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/admin/check')
+      if (response.ok) {
+        setIsAuthenticated(true)
+      } else {
+        setIsAuthenticated(false)
+        router.push('/admin/login')
+      }
+    } catch {
+      setIsAuthenticated(false)
+      router.push('/admin/login')
+    }
+  }
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+      router.push('/admin/login')
+      router.refresh()
+    } catch {
+      console.error('Logout failed')
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  // Show loading state while checking auth
+  if (isAuthenticated === null && !isLoginPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
       </div>
     )
   }
 
-  if (!session || !ADMIN_EMAILS.includes(session.user?.email || '')) {
+  // For login page, just render children without layout
+  if (isLoginPage) {
+    return <>{children}</>
+  }
+
+  // Not authenticated
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <ShieldAlert className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-4">You don't have permission to access this area.</p>
-          <Link href="/" className="btn-primary">
-            Go Home
+          <p className="text-gray-600 mb-4">Please log in to access the admin panel.</p>
+          <Link href="/admin/login" className="btn-primary">
+            Go to Login
           </Link>
         </div>
       </div>
@@ -50,42 +97,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="mt-6">
             <Link
               href="/admin"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <LayoutDashboard className="h-5 w-5 mr-3" />
               Dashboard
             </Link>
             <Link
               href="/admin/approvals"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/approvals' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <ClipboardCheck className="h-5 w-5 mr-3" />
               Approvals
             </Link>
             <Link
               href="/admin/profiles"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/profiles' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <Users className="h-5 w-5 mr-3" />
               Profiles
             </Link>
             <Link
               href="/admin/matches"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/matches' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <Heart className="h-5 w-5 mr-3" />
               Matches
             </Link>
             <Link
               href="/admin/analytics"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/analytics' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <BarChart3 className="h-5 w-5 mr-3" />
               Analytics
             </Link>
             <Link
               href="/admin/settings"
-              className="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/settings' ? 'bg-gray-800 text-white' : ''
+              }`}
             >
               <Settings className="h-5 w-5 mr-3" />
               Settings
@@ -93,10 +152,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
 
           <div className="absolute bottom-0 left-0 right-0 p-6">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <p className="text-gray-400 text-sm">Logged in as</p>
-              <p className="text-white text-sm font-medium truncate">{session.user?.email}</p>
-            </div>
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-colors"
+            >
+              {isLoggingOut ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <LogOut className="h-5 w-5" />
+                  Logout
+                </>
+              )}
+            </button>
           </div>
         </aside>
 
