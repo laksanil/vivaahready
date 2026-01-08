@@ -22,40 +22,67 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Profile already exists' }, { status: 400 })
     }
 
+    // Build location string from city and state
+    let currentLocation = null
+    if (body.city && body.state) {
+      currentLocation = `${body.city}, ${body.state}`
+    } else if (body.city) {
+      currentLocation = body.city
+    } else if (body.state) {
+      currentLocation = body.state
+    } else if (body.currentLocation) {
+      currentLocation = body.currentLocation
+    }
+
     // Create profile
     const profile = await prisma.profile.create({
       data: {
         userId: session.user.id,
         gender: body.gender,
         dateOfBirth: body.dateOfBirth,
-        placeOfBirth: body.placeOfBirth,
+        placeOfBirth: body.nativePlace || body.placeOfBirth,
         height: body.height,
         maritalStatus: body.maritalStatus,
-        dietaryPreference: body.dietaryPreference,
-        languagesKnown: body.languagesKnown,
-        currentLocation: body.currentLocation,
+        dietaryPreference: body.diet || body.dietaryPreference,
+        languagesKnown: body.motherTongue || body.languagesKnown,
+        currentLocation: currentLocation,
         caste: body.caste,
-        gotra: body.gotra,
-        qualification: body.qualification,
-        university: body.university,
+        gotra: body.gothra || body.gotra,
+        qualification: body.education || body.qualification,
+        university: body.educationDetail || body.university,
         occupation: body.occupation,
-        annualIncome: body.annualIncome,
-        fatherName: body.fatherName,
-        motherName: body.motherName,
+        annualIncome: body.income || body.annualIncome,
+        fatherName: body.fatherOccupation || body.fatherName,
+        motherName: body.motherOccupation || body.motherName,
         siblings: body.siblings,
         familyLocation: body.familyLocation,
         aboutMe: body.aboutMe,
-        prefHeight: body.prefHeight,
-        prefAgeDiff: body.prefAgeDiff,
-        prefLocation: body.prefLocation,
+        prefHeight: body.preferredHeightMin && body.preferredHeightMax
+          ? `${body.preferredHeightMin}-${body.preferredHeightMax}cm`
+          : body.prefHeight,
+        prefAgeDiff: body.preferredAgeMin && body.preferredAgeMax
+          ? `${body.preferredAgeMin}-${body.preferredAgeMax} years`
+          : body.prefAgeDiff,
+        prefLocation: body.preferredLocation || body.prefLocation,
         prefDiet: body.prefDiet,
-        prefCaste: body.prefCaste,
+        prefCaste: body.preferredCaste || body.prefCaste,
         prefGotra: body.prefGotra,
-        prefQualification: body.prefQualification,
+        prefQualification: body.preferredEducation || body.prefQualification,
         prefIncome: body.prefIncome,
-        idealPartnerDesc: body.idealPartnerDesc,
+        idealPartnerDesc: body.partnerPreferences || body.idealPartnerDesc,
       },
     })
+
+    // If paymentId is provided, mark the subscription as paid
+    if (body.paymentId) {
+      await prisma.subscription.update({
+        where: { userId: session.user.id },
+        data: {
+          profilePaid: true,
+          profilePaymentId: body.paymentId,
+        },
+      })
+    }
 
     return NextResponse.json({ message: 'Profile created successfully', profileId: profile.id }, { status: 201 })
   } catch (error) {

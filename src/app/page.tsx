@@ -34,7 +34,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  2 Months Free
+                  $10 One-Time Fee
                 </div>
               </div>
             </div>
@@ -166,18 +166,22 @@ export default function HomePage() {
 
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <h3 className="text-2xl font-semibold mb-6">Ready to Find Your Match?</h3>
+              <div className="text-center mb-6">
+                <span className="text-4xl font-bold text-primary-600">$10</span>
+                <span className="text-gray-500 ml-2">one-time fee</span>
+              </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  2-month free trial
+                  Lifetime profile access
                 </li>
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  Only $40/month after trial
+                  View all profiles & photos
                 </li>
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                  Cancel anytime
+                  Send unlimited interests
                 </li>
                 <li className="flex items-center text-gray-600">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
@@ -185,7 +189,7 @@ export default function HomePage() {
                 </li>
               </ul>
               <Link href="/register" className="btn-primary w-full text-center block">
-                Start Free Trial
+                Get Started
               </Link>
             </div>
           </div>

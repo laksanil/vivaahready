@@ -13,9 +13,10 @@ import {
   User,
   ChevronDown,
   Loader2,
-  Utensils,
-  Calendar,
+  Lock,
 } from 'lucide-react'
+import ProfilePhoto from '@/components/ProfilePhoto'
+import { BlurBadge } from '@/components/BlurredOverlay'
 
 interface Profile {
   id: string
@@ -29,16 +30,20 @@ interface Profile {
   dietaryPreference: string | null
   aboutMe: string | null
   photoUrls: string | null
+  profileImageUrl: string | null
   user: {
     name: string
   }
 }
 
 export default function SearchPage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
+
+  // Check if user has a completed profile
+  const hasProfile = session?.user?.hasProfile || false
 
   const [filters, setFilters] = useState({
     gender: '',
@@ -122,6 +127,54 @@ export default function SearchPage() {
             <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </button>
         </div>
+
+        {/* Profile Completion Banner */}
+        {session && !hasProfile && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0">
+                <Lock className="h-8 w-8 text-primary-600" />
+              </div>
+              <div className="flex-grow">
+                <h3 className="font-semibold text-gray-900">Complete Your Profile</h3>
+                <p className="text-sm text-gray-600">
+                  Create your profile to see full details and connect with matches
+                </p>
+              </div>
+              <Link
+                href="/profile/create"
+                className="flex-shrink-0 btn-primary text-sm"
+              >
+                Complete Profile
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Not Logged In Banner */}
+        {!session && sessionStatus !== 'loading' && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0">
+                <Lock className="h-8 w-8 text-primary-600" />
+              </div>
+              <div className="flex-grow">
+                <h3 className="font-semibold text-gray-900">Sign In to View Full Profiles</h3>
+                <p className="text-sm text-gray-600">
+                  Create an account to see complete profile details and start connecting
+                </p>
+              </div>
+              <div className="flex-shrink-0 flex gap-2">
+                <Link href="/login" className="btn-outline text-sm">
+                  Sign In
+                </Link>
+                <Link href="/register" className="btn-primary text-sm">
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filters Panel */}
         {showFilters && (
@@ -232,7 +285,13 @@ export default function SearchPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {profiles.map((profile) => (
-              <ProfileCard key={profile.id} profile={profile} calculateAge={calculateAge} />
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                calculateAge={calculateAge}
+                hasAccess={hasProfile}
+                isLoggedIn={!!session}
+              />
             ))}
           </div>
         )}
@@ -241,29 +300,54 @@ export default function SearchPage() {
   )
 }
 
-function ProfileCard({ profile, calculateAge }: { profile: Profile; calculateAge: (dob: string | null) => string }) {
+function ProfileCard({
+  profile,
+  calculateAge,
+  hasAccess,
+  isLoggedIn,
+}: {
+  profile: Profile
+  calculateAge: (dob: string | null) => string
+  hasAccess: boolean
+  isLoggedIn: boolean
+}) {
   const age = calculateAge(profile.dateOfBirth)
-  const initials = profile.user.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+
+  // Mask name if no access
+  const displayName = hasAccess
+    ? profile.user.name
+    : profile.user.name.split(' ')[0].charAt(0) + '****'
+
+  // Mask location if no access
+  const displayLocation = hasAccess
+    ? profile.currentLocation
+    : profile.currentLocation
+      ? profile.currentLocation.split(',').pop()?.trim() + ' area'
+      : null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow relative">
       {/* Photo */}
-      <div className="h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-        <div className="h-24 w-24 rounded-full bg-white flex items-center justify-center">
-          <span className="text-3xl font-semibold text-primary-600">{initials}</span>
-        </div>
+      <div className={`h-48 bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center relative ${!hasAccess ? 'overflow-hidden' : ''}`}>
+        <ProfilePhoto
+          profile={profile}
+          name={profile.user.name}
+          size="xl"
+          blurred={!hasAccess}
+          className={!hasAccess ? 'filter blur-sm scale-110' : ''}
+        />
+        {!hasAccess && (
+          <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px]" />
+        )}
       </div>
 
       {/* Info */}
-      <div className="p-5">
+      <div className={`p-5 ${!hasAccess ? 'relative' : ''}`}>
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{profile.user.name}</h3>
+            <h3 className={`text-lg font-semibold text-gray-900 ${!hasAccess ? 'blur-[3px] select-none' : ''}`}>
+              {hasAccess ? profile.user.name : displayName}
+            </h3>
             <p className="text-gray-600">
               {age}{age && profile.height ? ', ' : ''}{profile.height || ''}
             </p>
@@ -276,10 +360,12 @@ function ProfileCard({ profile, calculateAge }: { profile: Profile; calculateAge
         </div>
 
         <div className="space-y-2 text-sm text-gray-600">
-          {profile.currentLocation && (
+          {(profile.currentLocation || !hasAccess) && (
             <div className="flex items-center">
               <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-              {profile.currentLocation}
+              <span className={!hasAccess ? 'blur-[2px] select-none' : ''}>
+                {displayLocation || 'Location hidden'}
+              </span>
             </div>
           )}
           {profile.occupation && (
@@ -303,19 +389,33 @@ function ProfileCard({ profile, calculateAge }: { profile: Profile; calculateAge
         </div>
 
         {profile.aboutMe && (
-          <p className="mt-3 text-sm text-gray-600 line-clamp-2">{profile.aboutMe}</p>
+          <p className={`mt-3 text-sm text-gray-600 line-clamp-2 ${!hasAccess ? 'blur-[2px] select-none' : ''}`}>
+            {hasAccess ? profile.aboutMe : profile.aboutMe.substring(0, 50) + '...'}
+          </p>
         )}
 
         <div className="mt-4 flex gap-3">
-          <Link
-            href={`/profile/${profile.id}`}
-            className="flex-1 text-center py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
-          >
-            View Profile
-          </Link>
-          <button className="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
-            <Heart className="h-4 w-4" />
-          </button>
+          {hasAccess ? (
+            <>
+              <Link
+                href={`/profile/${profile.id}`}
+                className="flex-1 text-center py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm font-medium"
+              >
+                View Profile
+              </Link>
+              <button className="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                <Heart className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <Link
+              href={isLoggedIn ? '/profile/create' : '/register'}
+              className="flex-1 text-center py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium flex items-center justify-center gap-2"
+            >
+              <Lock className="h-4 w-4" />
+              {isLoggedIn ? 'Complete Profile to View' : 'Sign Up to View'}
+            </Link>
+          )}
         </div>
       </div>
     </div>

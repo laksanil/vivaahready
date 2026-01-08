@@ -42,6 +42,8 @@ model Profile {
   linkedinProfile   String?
   facebookInstagram String?
   photoUrls         String?  // Comma-separated URLs from Google Drive
+  profileImageUrl   String?  // Primary display photo (extracted from photoUrls or uploaded)
+  drivePhotosLink   String?  // Link to Google Drive folder for additional photos
 
   // Family Details
   fatherName        String?
@@ -114,6 +116,10 @@ model Subscription {
 
   plan            String   @default("free") // free, premium
   status          String   @default("active")
+
+  // Profile payment tracking ($10 one-time fee)
+  profilePaid     Boolean  @default(false)
+  profilePaymentId String?  // Stripe payment intent ID
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
