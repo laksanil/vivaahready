@@ -101,15 +101,28 @@ async function importProfiles() {
 
   const auth = await getAuthClient();
 
-  // Import Brides
-  console.log('📊 Fetching Bride profiles...');
-  const brideData = await fetchSheetData(auth, BRIDE_SHEET_ID, 'Form Responses 1');
+  // Import Brides from Form Responses 1
+  console.log('📊 Fetching Bride profiles (Form Responses 1)...');
+  const brideData1 = await fetchSheetData(auth, BRIDE_SHEET_ID, 'Form Responses 1');
 
-  if (brideData.length > 1) {
-    const headers = brideData[0];
-    const rows = brideData.slice(1);
+  // Import Brides from Form Responses 2
+  console.log('📊 Fetching Bride profiles (Form Responses 2)...');
+  const brideData2 = await fetchSheetData(auth, BRIDE_SHEET_ID, 'Form Responses 2');
 
-    console.log(`   Found ${rows.length} bride profiles`);
+  // Combine both sheets
+  const allBrideData = [];
+  if (brideData1.length > 1) {
+    allBrideData.push({ headers: brideData1[0], rows: brideData1.slice(1) });
+  }
+  if (brideData2.length > 1) {
+    allBrideData.push({ headers: brideData2[0], rows: brideData2.slice(1) });
+  }
+
+  for (const sheet of allBrideData) {
+    const headers = sheet.headers;
+    const rows = sheet.rows;
+
+    console.log(`   Found ${rows.length} bride profiles in this sheet`);
 
     for (const row of rows) {
       const profile = parseRow(row, headers, 'female');

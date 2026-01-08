@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -13,28 +15,26 @@ export async function GET(request: Request) {
     const location = searchParams.get('location')
 
     // Build where clause
-    const where: any = {
-      isActive: true,
-    }
+    const where: any = {}
 
     if (gender) {
       where.gender = gender
     }
 
     if (caste) {
-      where.caste = { contains: caste }
+      where.caste = { contains: caste, mode: 'insensitive' }
     }
 
     if (qualification) {
-      where.qualification = { contains: qualification }
+      where.qualification = { contains: qualification, mode: 'insensitive' }
     }
 
     if (diet) {
-      where.dietaryPreference = { contains: diet }
+      where.dietaryPreference = { contains: diet, mode: 'insensitive' }
     }
 
     if (location) {
-      where.currentLocation = { contains: location }
+      where.currentLocation = { contains: location, mode: 'insensitive' }
     }
 
     const profiles = await prisma.profile.findMany({
