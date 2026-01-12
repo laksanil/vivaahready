@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { compare } from 'bcryptjs'
 import { prisma } from './prisma'
 
@@ -13,6 +14,10 @@ export const authOptions: NextAuthOptions = {
     error: '/login',
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -39,6 +44,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid password')
         }
 
+        // Update lastLogin timestamp
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLogin: new Date() },
+        })
+
         return {
           id: user.id,
           email: user.email,
@@ -51,8 +62,63 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async signIn({ user, account }) {
+      // Handle Google sign-in
+      if (account?.provider === 'google') {
+        try {
+          const email = user.email
+          if (!email) return false
+
+          // Check if user exists
+          let existingUser = await prisma.user.findUnique({
+            where: { email },
+            include: { profile: true, subscription: true },
+          })
+
+          // If user doesn't exist, create one
+          if (!existingUser) {
+            existingUser = await prisma.user.create({
+              data: {
+                email,
+                name: user.name || 'User',
+                emailVerified: new Date(), // Google emails are verified
+                lastLogin: new Date(),
+              },
+              include: { profile: true, subscription: true },
+            })
+          } else {
+            // Update lastLogin and email verification status
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                lastLogin: new Date(),
+                ...(!existingUser.emailVerified && { emailVerified: new Date() }),
+              },
+            })
+          }
+
+          return true
+        } catch (error) {
+          console.error('Error during Google sign-in:', error)
+          return false
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
+      // On initial sign-in, fetch user from database
+      if (account?.provider === 'google' && user?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          include: { profile: true, subscription: true },
+        })
+        if (dbUser) {
+          token.id = dbUser.id
+          token.hasProfile = !!dbUser.profile
+          token.approvalStatus = dbUser.profile?.approvalStatus || null
+          token.subscriptionPlan = dbUser.subscription?.plan || 'free'
+        }
+      } else if (user) {
         token.id = user.id
         token.hasProfile = (user as any).hasProfile
         token.approvalStatus = (user as any).approvalStatus

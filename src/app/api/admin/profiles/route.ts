@@ -1,17 +1,35 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
+const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+
+// Helper to check admin authentication (either via cookie or NextAuth session)
+async function isAdminAuthenticated(): Promise<boolean> {
+  // Check admin cookie first
+  const adminSession = cookies().get('admin_session')
+  if (adminSession?.value === ADMIN_TOKEN) {
+    return true
+  }
+
+  // Check NextAuth session
+  const session = await getServerSession(authOptions)
+  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
+    return true
+  }
+
+  return false
+}
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -20,8 +38,30 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const gender = searchParams.get('gender')
     const search = searchParams.get('search')
+    const filter = searchParams.get('filter') // pending, verified, unverified, suspended
 
     const where: any = {}
+
+    // Apply filter based on tab
+    if (filter === 'pending') {
+      where.approvalStatus = 'pending'
+    } else if (filter === 'approved') {
+      where.approvalStatus = 'approved'
+      where.isSuspended = false
+    } else if (filter === 'verified') {
+      where.isVerified = true
+    } else if (filter === 'unverified') {
+      where.isVerified = false
+    } else if (filter === 'suspended') {
+      where.isSuspended = true
+    } else if (filter === 'no_photos') {
+      // Profiles with no photos at all
+      where.AND = [
+        { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+        { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+        { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+      ]
+    }
 
     if (gender) {
       where.gender = gender
@@ -29,6 +69,7 @@ export async function GET(request: Request) {
 
     if (search) {
       where.OR = [
+        { odNumber: { contains: search, mode: 'insensitive' } },
         { user: { name: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
         { currentLocation: { contains: search, mode: 'insensitive' } },
@@ -42,17 +83,86 @@ export async function GET(request: Request) {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          odNumber: true,
+          gender: true,
+          dateOfBirth: true,
+          height: true,
+          currentLocation: true,
+          occupation: true,
+          qualification: true,
+          caste: true,
+          isVerified: true,
+          isSuspended: true,
+          suspendedReason: true,
+          approvalStatus: true,
+          createdAt: true,
+          updatedAt: true,
+          photoUrls: true,
+          profileImageUrl: true,
+          drivePhotosLink: true,
           user: {
-            select: { name: true, email: true }
+            select: { id: true, name: true, email: true, phone: true, lastLogin: true }
           }
         }
       }),
       prisma.profile.count({ where })
     ])
 
+    // Get interest stats for each profile
+    const profilesWithStats = await Promise.all(
+      profiles.map(async (profile) => {
+        const [interestsReceived, interestsSent] = await Promise.all([
+          // Interests received by this profile's user
+          prisma.match.groupBy({
+            by: ['status'],
+            where: { receiverId: profile.user.id },
+            _count: { status: true }
+          }),
+          // Interests sent by this profile's user
+          prisma.match.groupBy({
+            by: ['status'],
+            where: { senderId: profile.user.id },
+            _count: { status: true }
+          })
+        ])
+
+        // Transform to counts
+        const receivedStats = {
+          total: 0,
+          pending: 0,
+          accepted: 0,
+          rejected: 0,
+        }
+        interestsReceived.forEach((item) => {
+          receivedStats[item.status as keyof typeof receivedStats] = item._count.status
+          receivedStats.total += item._count.status
+        })
+
+        const sentStats = {
+          total: 0,
+          pending: 0,
+          accepted: 0,
+          rejected: 0,
+        }
+        interestsSent.forEach((item) => {
+          sentStats[item.status as keyof typeof sentStats] = item._count.status
+          sentStats.total += item._count.status
+        })
+
+        return {
+          ...profile,
+          interestStats: {
+            received: receivedStats,
+            sent: sentStats,
+          }
+        }
+      })
+    )
+
     return NextResponse.json({
-      profiles,
+      profiles: profilesWithStats,
       total,
       page,
       totalPages: Math.ceil(total / limit)

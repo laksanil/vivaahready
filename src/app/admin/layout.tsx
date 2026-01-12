@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
-  LayoutDashboard, Users, Heart, Settings,
-  BarChart3, Loader2, ShieldAlert, ClipboardCheck, LogOut
+  LayoutDashboard, Users, Heart,
+  Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle
 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -132,22 +132,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Matches
             </Link>
             <Link
-              href="/admin/analytics"
+              href="/admin/reports"
               className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/analytics' ? 'bg-gray-800 text-white' : ''
+                pathname === '/admin/reports' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <BarChart3 className="h-5 w-5 mr-3" />
-              Analytics
-            </Link>
-            <Link
-              href="/admin/settings"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/settings' ? 'bg-gray-800 text-white' : ''
-              }`}
-            >
-              <Settings className="h-5 w-5 mr-3" />
-              Settings
+              <AlertTriangle className="h-5 w-5 mr-3" />
+              Reports
             </Link>
           </nav>
 

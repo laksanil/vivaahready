@@ -7,11 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ApprovalStatus {
-  pending
-  approved
-  rejected
-}
+// ApprovalStatus: "pending" | "approved" | "rejected"
 
 model User {
   id            String    @id @default(cuid())
@@ -20,6 +16,8 @@ model User {
   name          String
   phone         String?
   emailVerified DateTime?
+  phoneVerified DateTime?
+  lastLogin     DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -27,6 +25,10 @@ model User {
   subscription Subscription?
   sentMatches     Match[] @relation("SentMatches")
   receivedMatches Match[] @relation("ReceivedMatches")
+  sentMessages    Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsReceived Report[] @relation("ReportsReceived")
 }
 
 model Profile {
@@ -37,24 +39,40 @@ model Profile {
 
   // Basic Info (from Google Form)
   gender            String   // male, female
-  dateOfBirth       String?  // MM/YYYY format from form
+  dateOfBirth       String?  // MM/DD/YYYY format
+  age               String?  // Age in years (alternative to DOB)
   placeOfBirth      String?
   height            String?
+  weight            String?  // Weight in kg or lbs
   dietaryPreference String?  // Vegetarian, Non Vegetarian, Eggetarian, Vegan
+  motherTongue      String?  // Primary language
+  healthInfo        String?  // Health conditions
+  anyDisability     String?  // none, physical
+  disabilityDetails String?  // Details if physical disability
+  bloodGroup        String?  // A+, A-, B+, B-, AB+, AB-, O+, O-
   languagesKnown    String?
   maritalStatus     String?  // Single, Never Married, Divorced
 
   // Contact & Social
   linkedinProfile   String?
-  facebookInstagram String?
+  facebookInstagram String?  // Legacy field - kept for backwards compatibility
+  facebook          String?
+  instagram         String?
   photoUrls         String?  // Comma-separated URLs from Google Drive
   profileImageUrl   String?  // Primary display photo (extracted from photoUrls or uploaded)
   drivePhotosLink   String?  // Link to Google Drive folder for additional photos
+  photoVisibility   String?  @default("verified_only") // verified_only, matching_preferences, mutual_interest
 
   // Family Details
   fatherName        String?
   motherName        String?
-  siblings          String?
+  fatherOccupation  String?
+  motherOccupation  String?
+  numberOfBrothers  String?
+  numberOfSisters   String?
+  siblingDetails    String?
+  familyType        String?  // nuclear, joint
+  familyValues      String?  // traditional, moderate, liberal
   familyLocation    String?
 
   // Education & Career
@@ -63,10 +81,38 @@ model Profile {
   occupation        String?
   annualIncome      String?  // Range like "100-150K", ">100k"
   currentLocation   String?  // City, State
+  zipCode           String?  // US zip code for distance calculations
 
   // Background
+  religion          String?  // Hindu, Muslim, Christian, etc.
   caste             String?
   gotra             String?
+
+  // Additional Career Details
+  employerName      String?  // Company name
+  workingAs         String?  // Job title/role
+
+  // Living Situation
+  livesWithFamily   String?  // yes, no
+  createdBy         String?  // self, parent, sibling, relative, friend
+
+  // Astro Details
+  placeOfBirthCountry String?
+  placeOfBirthState   String?
+  placeOfBirthCity    String?
+  timeOfBirth         String?
+  manglik             String?  // yes, no, dont_know
+  raasi               String?  // Moon sign
+  nakshatra           String?  // Birth star
+  doshas              String?  // Doshas if any
+
+  // Lifestyle
+  smoking           String?  // no, occasionally, yes
+  drinking          String?  // no, social, yes
+  hobbies           String?  // Comma-separated hobbies
+  interests         String?  // Comma-separated interests
+  pets              String?  // have_love, no_but_love, no_but_open, prefer_not, allergic
+  allergiesOrMedical String? // Allergies or medical conditions
 
   // About
   aboutMe           String?
@@ -86,16 +132,22 @@ model Profile {
 
   // Metadata
   citizenship       String?
+  residencyStatus   String?
+  grewUpIn          String?
+  country           String?
   promoCode         String?
   referralSource    String?
   isImported        Boolean  @default(false)
 
   // Status
-  approvalStatus    ApprovalStatus @default(pending)
+  approvalStatus    String @default("pending")
   approvalDate      DateTime?
   rejectionReason   String?
   isVerified        Boolean  @default(false)
   isActive          Boolean  @default(true)
+  isSuspended       Boolean  @default(false)
+  suspendedAt       DateTime?
+  suspendedReason   String?
   profileScore      Int      @default(0)
 
   createdAt         DateTime @default(now())
@@ -132,4 +184,58 @@ model Subscription {
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  receiverId  String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  content     String
+  read        Boolean  @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([senderId, receiverId])
+}
+
+model Report {
+  id              String   @id @default(cuid())
+  reporterId      String   // User who filed the report
+  reportedUserId  String   // User being reported
+  reporter        User     @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser    User     @relation("ReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  reason          String   // Text description of the problem
+  status          String   @default("pending") // pending, reviewed, resolved, dismissed
+  adminNotes      String?  // Notes from admin after review
+  actionTaken     String?  // What action was taken (e.g., "suspended", "warned", "dismissed")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  reviewedAt      DateTime?
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([status])
+}
+
+// Tracks profiles that a user has declined (not interested in)
+// These profiles won't show in matching results but can be reconsidered
+model DeclinedProfile {
+  id              String   @id @default(cuid())
+  userId          String   // User who declined
+  declinedUserId  String   // User whose profile was declined
+
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, declinedUserId])
+  @@index([userId])
+  @@index([declinedUserId])
 }

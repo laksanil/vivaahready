@@ -64,14 +64,24 @@ export async function GET(request: Request) {
 
     // Get list of interests
     if (type === 'received') {
-      const interests = await prisma.match.findMany({
-        where: { receiverId: session.user.id },
+      // Get all interests received (pending only by default)
+      const statusFilter = searchParams.get('status') // 'pending', 'rejected', 'accepted', or 'all'
+
+      const whereClause: any = { receiverId: session.user.id }
+      if (statusFilter && statusFilter !== 'all') {
+        whereClause.status = statusFilter
+      }
+
+      const allReceivedInterests = await prisma.match.findMany({
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: {
           sender: {
             select: {
               id: true,
               name: true,
+              email: true,
+              phone: true,
               profile: {
                 select: {
                   id: true,
@@ -80,6 +90,8 @@ export async function GET(request: Request) {
                   occupation: true,
                   profileImageUrl: true,
                   photoUrls: true,
+                  linkedinProfile: true,
+                  facebookInstagram: true,
                 }
               }
             }
@@ -87,11 +99,36 @@ export async function GET(request: Request) {
         }
       })
 
+      // For pending interests, filter out those where I already sent interest (would be mutual)
+      // For rejected/accepted, show all
+      const interests = []
+      for (const interest of allReceivedInterests) {
+        if (interest.status === 'pending') {
+          // Check if I also sent interest to this person
+          const mySentInterest = await prisma.match.findUnique({
+            where: {
+              senderId_receiverId: {
+                senderId: session.user.id,
+                receiverId: interest.senderId,
+              }
+            }
+          })
+          // Only include if NOT mutual
+          if (!mySentInterest) {
+            interests.push(interest)
+          }
+        } else {
+          // For rejected/accepted, always include
+          interests.push(interest)
+        }
+      }
+
       return NextResponse.json({ interests })
     }
 
     if (type === 'sent') {
-      const interests = await prisma.match.findMany({
+      // Get all interests sent
+      const allSentInterests = await prisma.match.findMany({
         where: { senderId: session.user.id },
         orderBy: { createdAt: 'desc' },
         include: {
@@ -113,6 +150,25 @@ export async function GET(request: Request) {
           }
         }
       })
+
+      // Filter out mutual matches - only show non-mutual sent interests
+      const interests = []
+      for (const interest of allSentInterests) {
+        // Check if they also sent interest to me (making it mutual)
+        const theirSentInterest = await prisma.match.findUnique({
+          where: {
+            senderId_receiverId: {
+              senderId: interest.receiverId,
+              receiverId: session.user.id,
+            }
+          }
+        })
+
+        // Only include if NOT mutual (they haven't sent interest back)
+        if (!theirSentInterest) {
+          interests.push(interest)
+        }
+      }
 
       return NextResponse.json({ interests })
     }
@@ -241,5 +297,164 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Interest POST error:', error)
     return NextResponse.json({ error: 'Failed to express interest' }, { status: 500 })
+  }
+}
+
+// PATCH - Accept, Reject, or Reconsider an interest
+export async function PATCH(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { interestId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
+
+    if (!interestId || !action) {
+      return NextResponse.json({ error: 'Interest ID and action are required' }, { status: 400 })
+    }
+
+    if (!['accept', 'reject', 'reconsider', 'withdraw'].includes(action)) {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    // Get the interest
+    const interest = await prisma.match.findUnique({
+      where: { id: interestId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            profile: {
+              select: {
+                linkedinProfile: true,
+                facebookInstagram: true,
+              }
+            }
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            profile: {
+              select: {
+                linkedinProfile: true,
+                facebookInstagram: true,
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (!interest) {
+      return NextResponse.json({ error: 'Interest not found' }, { status: 404 })
+    }
+
+    // Validate user can perform this action
+    const isReceiver = interest.receiverId === session.user.id
+    const isSender = interest.senderId === session.user.id
+
+    if (action === 'accept' || action === 'reject' || action === 'reconsider') {
+      // Only receiver can accept/reject/reconsider
+      if (!isReceiver) {
+        return NextResponse.json({ error: 'Only the recipient can perform this action' }, { status: 403 })
+      }
+    }
+
+    if (action === 'withdraw') {
+      // Only sender can withdraw their interest
+      if (!isSender) {
+        return NextResponse.json({ error: 'Only the sender can withdraw interest' }, { status: 403 })
+      }
+    }
+
+    let newStatus: string
+    let responseMessage: string
+    let contactInfo = null
+
+    switch (action) {
+      case 'accept':
+        if (interest.status !== 'pending' && interest.status !== 'rejected') {
+          return NextResponse.json({ error: 'Can only accept pending or rejected interests' }, { status: 400 })
+        }
+        newStatus = 'accepted'
+        responseMessage = 'Interest accepted! You can now view their contact details.'
+        // Return sender's contact info
+        contactInfo = {
+          name: interest.sender.name,
+          email: interest.sender.email,
+          phone: interest.sender.phone,
+          linkedinProfile: interest.sender.profile?.linkedinProfile,
+          facebookInstagram: interest.sender.profile?.facebookInstagram,
+        }
+        break
+
+      case 'reject':
+        if (interest.status !== 'pending') {
+          return NextResponse.json({ error: 'Can only reject pending interests' }, { status: 400 })
+        }
+        newStatus = 'rejected'
+        responseMessage = 'Interest declined. You can reconsider later if you change your mind.'
+        break
+
+      case 'reconsider':
+        if (interest.status !== 'rejected') {
+          return NextResponse.json({ error: 'Can only reconsider rejected interests' }, { status: 400 })
+        }
+        newStatus = 'accepted'
+        responseMessage = 'Interest reconsidered and accepted! You can now view their contact details.'
+        contactInfo = {
+          name: interest.sender.name,
+          email: interest.sender.email,
+          phone: interest.sender.phone,
+          linkedinProfile: interest.sender.profile?.linkedinProfile,
+          facebookInstagram: interest.sender.profile?.facebookInstagram,
+        }
+        break
+
+      case 'withdraw':
+        if (interest.status === 'accepted') {
+          // Can withdraw even accepted interest (but receiver keeps their accepted status)
+          newStatus = 'withdrawn'
+          responseMessage = 'Interest withdrawn.'
+        } else {
+          // Delete the interest entirely if it was pending/rejected
+          await prisma.match.delete({
+            where: { id: interestId }
+          })
+          return NextResponse.json({
+            message: 'Interest withdrawn and removed.',
+            deleted: true,
+          })
+        }
+        break
+
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    // Update the interest status
+    const updatedInterest = await prisma.match.update({
+      where: { id: interestId },
+      data: { status: newStatus }
+    })
+
+    return NextResponse.json({
+      message: responseMessage,
+      interest: updatedInterest,
+      contactInfo,
+    })
+  } catch (error) {
+    console.error('Interest PATCH error:', error)
+    return NextResponse.json({ error: 'Failed to update interest' }, { status: 500 })
   }
 }

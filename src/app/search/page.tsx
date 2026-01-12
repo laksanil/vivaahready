@@ -17,6 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import ProfilePhoto from '@/components/ProfilePhoto'
+import { formatHeight } from '@/lib/utils'
 
 interface Profile {
   id: string
@@ -127,6 +128,30 @@ export default function SearchPage() {
       }
     }
     return ''
+  }
+
+  const formatHeight = (height: string | null): string => {
+    if (!height) return ''
+
+    // Check if already in ft'in" format
+    const ftInMatch = height.match(/^(\d)'(\d{1,2})"?$/)
+    if (ftInMatch) {
+      const feet = parseInt(ftInMatch[1])
+      const inches = parseInt(ftInMatch[2])
+      const totalInches = feet * 12 + inches
+      const cm = Math.round(totalInches * 2.54)
+      return `${feet}'${inches}" (${cm} cm)`
+    }
+
+    // Legacy: if stored as cm number, convert to ft'in"
+    const h = parseInt(height)
+    if (!isNaN(h)) {
+      const feet = Math.floor(h / 30.48)
+      const inches = Math.round((h % 30.48) / 2.54)
+      return `${feet}'${inches}" (${h} cm)`
+    }
+
+    return height
   }
 
   // Determine what to show based on user state
@@ -364,7 +389,7 @@ function ProfileCard({
               {hasAccess ? profile.user.name : displayName}
             </h3>
             <p className="text-gray-600">
-              {age}{age && profile.height ? ', ' : ''}{profile.height || ''}
+              {age}{age && profile.height ? ', ' : ''}{formatHeight(profile.height)}
             </p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

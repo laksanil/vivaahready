@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { User } from 'lucide-react'
-import { getProfileImageUrl, getInitials } from '@/lib/googleDrive'
+import { getInitials } from '@/lib/utils'
 
 interface ProfilePhotoProps {
   profile: {
@@ -43,7 +43,7 @@ export default function ProfilePhoto({
   const [imageError, setImageError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const imageUrl = getProfileImageUrl(profile, imageSizeMap[size])
+  const imageUrl = profile.profileImageUrl || null
   const initials = getInitials(name)
   const sizeClass = sizeClasses[size]
 

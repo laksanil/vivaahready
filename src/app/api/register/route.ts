@@ -8,12 +8,16 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
+  // Additional fields from Find Your Match modal
+  profileFor: z.string().optional(),
+  gender: z.string().optional(),
+  dateOfBirth: z.string().optional(),
 })
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password, phone } = registerSchema.parse(body)
+    const { name, email, password, phone, profileFor, gender, dateOfBirth } = registerSchema.parse(body)
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -48,7 +52,12 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(
-      { message: 'Account created successfully', userId: user.id },
+      {
+        message: 'Account created successfully',
+        userId: user.id,
+        // Return profile data for profile creation flow
+        profileData: profileFor ? { profileFor, gender, dateOfBirth } : null
+      },
       { status: 201 }
     )
   } catch (error) {

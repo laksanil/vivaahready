@@ -1,18 +1,36 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
+const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+
+// Helper to check admin authentication (either via cookie or NextAuth session)
+async function isAdminAuthenticated(): Promise<boolean> {
+  // Check admin cookie first
+  const adminSession = cookies().get('admin_session')
+  if (adminSession?.value === ADMIN_TOKEN) {
+    return true
+  }
+
+  // Check NextAuth session
+  const session = await getServerSession(authOptions)
+  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
+    return true
+  }
+
+  return false
+}
 
 export const dynamic = 'force-dynamic'
 
 // GET - List pending profiles for approval
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -24,7 +42,22 @@ export async function GET(request: Request) {
         approvalStatus: status as 'pending' | 'approved' | 'rejected',
       },
       orderBy: { createdAt: 'desc' },
-      include: {
+      select: {
+        id: true,
+        gender: true,
+        currentLocation: true,
+        occupation: true,
+        qualification: true,
+        caste: true,
+        aboutMe: true,
+        createdAt: true,
+        rejectionReason: true,
+        linkedinProfile: true,
+        facebookInstagram: true,
+        photoUrls: true,
+        profileImageUrl: true,
+        drivePhotosLink: true,
+        referralSource: true,
         user: {
           select: { name: true, email: true, phone: true }
         }
@@ -41,9 +74,8 @@ export async function GET(request: Request) {
 // POST - Approve or reject a profile
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

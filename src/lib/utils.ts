@@ -26,17 +26,68 @@ export function calculateAge(dateOfBirth: Date | string): number {
   return age
 }
 
-export function formatHeight(cm: number): string {
-  const feet = Math.floor(cm / 30.48)
-  const inches = Math.round((cm % 30.48) / 2.54)
-  return `${feet}'${inches}"`
+export function formatHeight(height: number | string | null | undefined): string {
+  if (!height) return ''
+
+  // If it's a number, assume centimeters and convert
+  if (typeof height === 'number') {
+    const feet = Math.floor(height / 30.48)
+    const inches = Math.round((height % 30.48) / 2.54)
+    return `${feet}'${inches}"`
+  }
+
+  // If it's a string, try to clean it up
+  const heightStr = String(height).trim()
+
+  // Extract just the height part (e.g., "5'10" from "5'10 or above")
+  const match = heightStr.match(/(\d+)[''′]?\s*(\d+)?[""″]?/)
+  if (match) {
+    const feet = match[1]
+    const inches = match[2] || '0'
+    return `${feet}'${inches}"`
+  }
+
+  // If we can't parse it, return cleaned version without "or above" etc.
+  return heightStr
+    .replace(/\s*(or above|or below|and above|and below|\+)\s*/gi, '')
+    .trim()
 }
 
-export function getInitials(name: string): string {
+export function getInitials(name: string | null | undefined): string {
+  if (!name) return '?'
   return name
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
+}
+
+/**
+ * Extract photo URLs from comma-separated photoUrls field
+ * Only returns valid Cloudinary URLs (excludes Google Drive URLs)
+ */
+export function extractPhotoUrls(photoUrls: string | null | undefined): string[] {
+  if (!photoUrls) return []
+
+  return photoUrls
+    .split(',')
+    .map(url => url.trim())
+    .filter(url => {
+      if (url.length === 0) return false
+      // Only accept Cloudinary URLs or other non-Google-Drive http URLs
+      if (url.includes('drive.google.com')) return false
+      if (url.includes('googleusercontent.com')) return false
+      return url.startsWith('http')
+    })
+}
+
+/**
+ * Check if a URL is a valid displayable image URL (not Google Drive)
+ */
+export function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  if (url.includes('drive.google.com')) return false
+  if (url.includes('googleusercontent.com')) return false
+  return url.startsWith('http')
 }

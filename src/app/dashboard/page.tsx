@@ -7,7 +7,7 @@ import Link from 'next/link'
 import {
   User,
   Heart,
-  Search,
+  Users,
   Bell,
   Eye,
   CheckCircle,
@@ -17,7 +17,12 @@ import {
   Clock,
   XCircle,
   Sparkles,
+  Shield,
 } from 'lucide-react'
+import FindMatchModal from '@/components/FindMatchModal'
+
+// Admin emails - keep in sync with API routes
+const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
 
 interface DashboardStats {
   interestsReceived: number
@@ -37,6 +42,7 @@ function DashboardContent() {
     matchesCount: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [showCreateProfileModal, setShowCreateProfileModal] = useState(false)
 
   const hasProfile = (session?.user as any)?.hasProfile || false
   const approvalStatus = (session?.user as any)?.approvalStatus || null
@@ -44,15 +50,28 @@ function DashboardContent() {
   const isPending = hasProfile && approvalStatus === 'pending'
   const isRejected = hasProfile && approvalStatus === 'rejected'
   const needsProfile = !hasProfile
+  const isAdmin = session?.user?.email && ADMIN_EMAILS.includes(session.user.email)
 
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
+  const shouldCreateProfile = searchParams.get('createProfile') === 'true'
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login')
     }
   }, [status, router])
+
+  // Auto-show create profile modal if user needs to create profile
+  useEffect(() => {
+    if (status === 'authenticated' && needsProfile && (shouldCreateProfile || !showCreateProfileModal)) {
+      // Small delay to ensure page is ready
+      const timer = setTimeout(() => {
+        setShowCreateProfileModal(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [status, needsProfile, shouldCreateProfile])
 
   useEffect(() => {
     if (isApproved) {
@@ -121,6 +140,26 @@ function DashboardContent() {
               ? 'Your profile is being reviewed'
               : "Let's get your profile set up"}
           </p>
+          <div className="flex items-center gap-4 mt-2">
+            {hasProfile && (
+              <Link
+                href="/profile"
+                className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium text-sm"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View My Profile
+              </Link>
+            )}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium text-sm bg-gray-100 px-3 py-1 rounded-full"
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Admin Panel
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Profile Status Alerts */}
@@ -136,13 +175,13 @@ function DashboardContent() {
                   Create your profile to start seeing curated matches based on your preferences.
                   It only takes a few minutes!
                 </p>
-                <Link
-                  href="/profile/create"
+                <button
+                  onClick={() => setShowCreateProfileModal(true)}
                   className="inline-flex items-center mt-4 bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-colors"
                 >
                   Create Profile
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -203,7 +242,7 @@ function DashboardContent() {
                       Your profile has been approved. You can now view your matches and start connecting!
                     </p>
                     <Link
-                      href="/search"
+                      href="/matches"
                       className="inline-flex items-center mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
                     >
                       View Your Matches
@@ -225,7 +264,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Search className="h-6 w-6 text-blue-600" />
+                    <Users className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
               </div>
@@ -291,10 +330,10 @@ function DashboardContent() {
                     </div>
                   </div>
                   <Link
-                    href="/search"
+                    href="/matches"
                     className="btn-primary text-sm"
                   >
-                    View Matches
+                    My Matches
                   </Link>
                 </div>
               </div>
@@ -310,39 +349,51 @@ function DashboardContent() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Link
-                  href="/search"
+                  href="/matches"
                   className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!isApproved ? 'opacity-60 pointer-events-none' : ''}`}
                 >
                   <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
-                    <Search className="h-5 w-5 text-primary-600" />
+                    <Users className="h-5 w-5 text-primary-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">View Matches</p>
+                    <p className="font-medium text-gray-900">My Matches</p>
                     <p className="text-sm text-gray-500">See profiles matched for you</p>
                   </div>
                 </Link>
 
-                <Link
-                  href={hasProfile ? '/profile/edit' : '/profile/create'}
-                  className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                    <User className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {hasProfile ? 'Edit Profile' : 'Create Profile'}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {hasProfile ? 'Update your information' : 'Get started now'}
-                    </p>
-                  </div>
-                </Link>
+                {hasProfile ? (
+                  <Link
+                    href="/profile/edit"
+                    className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Edit Profile</p>
+                      <p className="text-sm text-gray-500">Update your information</p>
+                    </div>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setShowCreateProfileModal(true)}
+                    className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
+                  >
+                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Create Profile</p>
+                      <p className="text-sm text-gray-500">Get started now</p>
+                    </div>
+                  </button>
+                )}
 
                 {isApproved && (
                   <>
-                    <div
-                      className="flex items-center p-4 bg-gray-50 rounded-lg"
+                    <Link
+                      href="/matches"
+                      className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center mr-4">
                         <Heart className="h-5 w-5 text-pink-600" />
@@ -351,10 +402,11 @@ function DashboardContent() {
                         <p className="font-medium text-gray-900">Express Interest</p>
                         <p className="text-sm text-gray-500">Visit a profile to express interest</p>
                       </div>
-                    </div>
+                    </Link>
 
-                    <div
-                      className="flex items-center p-4 bg-gray-50 rounded-lg"
+                    <Link
+                      href="/matches?tab=mutual"
+                      className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
                         <CheckCircle className="h-5 w-5 text-green-600" />
@@ -363,7 +415,7 @@ function DashboardContent() {
                         <p className="font-medium text-gray-900">Mutual Matches</p>
                         <p className="text-sm text-gray-500">Contact info unlocked on mutual match</p>
                       </div>
-                    </div>
+                    </Link>
                   </>
                 )}
               </div>
@@ -442,12 +494,12 @@ function DashboardContent() {
                 )}
               </div>
               {!hasProfile && (
-                <Link
-                  href="/profile/create"
+                <button
+                  onClick={() => setShowCreateProfileModal(true)}
                   className="btn-primary w-full text-center text-sm py-2"
                 >
                   Create Profile
-                </Link>
+                </button>
               )}
               {hasProfile && !isApproved && (
                 <Link
@@ -484,6 +536,12 @@ function DashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Create Profile Modal */}
+      <FindMatchModal
+        isOpen={showCreateProfileModal}
+        onClose={() => setShowCreateProfileModal(false)}
+      />
     </div>
   )
 }

@@ -1,7 +1,11 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
 import { Heart, Shield, Users, CheckCircle, Star, ArrowRight, Lock, Sparkles } from 'lucide-react'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
+import FindMatchButton from '@/components/FindMatchButton'
 
 async function getPreviewProfiles() {
   try {
@@ -25,6 +29,12 @@ async function getPreviewProfiles() {
 }
 
 export default async function HomePage() {
+  // Redirect logged-in users to dashboard
+  const session = await getServerSession(authOptions)
+  if (session) {
+    redirect('/dashboard')
+  }
+
   const previewProfiles = await getPreviewProfiles()
 
   return (
@@ -43,14 +53,10 @@ export default async function HomePage() {
                 VivaahReady bridges the gap — connecting Indian singles in the US
                 through preference-based matching and verified profiles.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Link href="/register" className="btn-primary text-center flex items-center justify-center">
-                  Start Your Journey Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-                <Link href="/search" className="btn-secondary text-center">
-                  Browse Profiles
-                </Link>
+              <div className="mt-8">
+                <FindMatchButton className="bg-gradient-to-r from-teal-400 to-teal-500 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
+                  Find Your Match
+                </FindMatchButton>
               </div>
               <div className="mt-8 flex items-center space-x-6 text-sm text-gray-500">
                 <div className="flex items-center">
@@ -201,13 +207,10 @@ export default async function HomePage() {
                   <p className="text-gray-600 mb-6">
                     Sign up to see complete profiles, photos, and start connecting with your matches.
                   </p>
-                  <Link
-                    href="/register"
-                    className="btn-primary inline-flex items-center"
-                  >
-                    Get Started Free
+                  <FindMatchButton className="btn-primary inline-flex items-center">
+                    Find Your Match
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  </FindMatchButton>
                 </div>
               </div>
             </div>
@@ -289,13 +292,10 @@ export default async function HomePage() {
                   Full contact info on mutual match
                 </li>
               </ul>
-              <Link
-                href="/register"
-                className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center"
-              >
-                Create Free Profile
+              <FindMatchButton className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center">
+                Find Your Match
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              </FindMatchButton>
             </div>
           </div>
         </div>
@@ -311,13 +311,10 @@ export default async function HomePage() {
             Join Indian singles in the US who trust VivaahReady
             to find their perfect life partner.
           </p>
-          <Link
-            href="/register"
-            className="inline-flex items-center bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
-          >
-            Create Your Free Profile
+          <FindMatchButton className="inline-flex items-center bg-white text-primary-600 px-8 py-4 rounded-full font-semibold hover:bg-primary-50 transition-colors shadow-lg">
+            Find Your Match
             <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+          </FindMatchButton>
         </div>
       </section>
     </div>

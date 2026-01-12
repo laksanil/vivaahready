@@ -2,13 +2,41 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { useState } from 'react'
-import { Menu, X, User, LogOut, Heart, Search, Settings } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye } from 'lucide-react'
 
 export function Navbar() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const viewAsUser = searchParams.get('viewAsUser')
+  const [viewedUserName, setViewedUserName] = useState<string | null>(null)
+
+  // Fetch viewed user's name when in admin view mode
+  useEffect(() => {
+    if (viewAsUser) {
+      fetch(`/api/user/${viewAsUser}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.name) {
+            setViewedUserName(data.name)
+          }
+        })
+        .catch(() => {})
+    } else {
+      setViewedUserName(null)
+    }
+  }, [viewAsUser])
+
+  // Don't show navbar on admin pages
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
+  const isAdminViewMode = !!viewAsUser
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -16,7 +44,7 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href={session ? "/dashboard" : "/"} className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-primary-600" />
               <span className="font-display text-2xl font-semibold text-gray-900">
                 Vivaah<span className="text-primary-600">Ready</span>
@@ -26,14 +54,14 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/search" className="text-gray-600 hover:text-primary-600 transition-colors">
-              Search Profiles
+            <Link href="/matches" className="text-gray-600 hover:text-primary-600 transition-colors">
+              My Matches
+            </Link>
+            <Link href="/messages" className="text-gray-600 hover:text-primary-600 transition-colors">
+              Messages
             </Link>
             <Link href="/about" className="text-gray-600 hover:text-primary-600 transition-colors">
               About Us
-            </Link>
-            <Link href="/pricing" className="text-gray-600 hover:text-primary-600 transition-colors">
-              Pricing
             </Link>
 
             {status === 'loading' ? (
@@ -42,12 +70,24 @@ export function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-primary-600"
+                  className={`flex items-center space-x-2 ${isAdminViewMode ? 'text-purple-700' : 'text-gray-700'} hover:text-primary-600`}
                 >
-                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary-600" />
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${isAdminViewMode ? 'bg-purple-100' : 'bg-primary-100'}`}>
+                    {isAdminViewMode ? (
+                      <Eye className="h-5 w-5 text-purple-600" />
+                    ) : (
+                      <User className="h-5 w-5 text-primary-600" />
+                    )}
                   </div>
-                  <span className="font-medium">{session.user.name?.split(' ')[0]}</span>
+                  <span className="font-medium">
+                    {isAdminViewMode
+                      ? (viewedUserName?.split(' ')[0] || 'Loading...')
+                      : session.user.name?.split(' ')[0]
+                    }
+                  </span>
+                  {isAdminViewMode && (
+                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Admin View</span>
+                  )}
                 </button>
 
                 {isProfileMenuOpen && (
@@ -76,6 +116,14 @@ export function Navbar() {
                       <Heart className="h-4 w-4 mr-2" />
                       My Matches
                     </Link>
+                    <Link
+                      href="/messages"
+                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Messages
+                    </Link>
                     <hr className="my-2" />
                     <button
                       onClick={() => signOut({ callbackUrl: '/' })}
@@ -88,14 +136,9 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link href="/login" className="text-gray-600 hover:text-primary-600 font-medium">
-                  Sign In
-                </Link>
-                <Link href="/register" className="btn-primary text-sm py-2">
-                  Get Started
-                </Link>
-              </div>
+              <Link href="/login" className="bg-red-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors">
+                Sign In
+              </Link>
             )}
           </div>
 
@@ -116,11 +159,18 @@ export function Navbar() {
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-4 space-y-4">
             <Link
-              href="/search"
+              href="/matches"
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
-              Search Profiles
+              My Matches
+            </Link>
+            <Link
+              href="/messages"
+              className="block text-gray-600 hover:text-primary-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Messages
             </Link>
             <Link
               href="/about"
@@ -128,13 +178,6 @@ export function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               About Us
-            </Link>
-            <Link
-              href="/pricing"
-              className="block text-gray-600 hover:text-primary-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Pricing
             </Link>
 
             {session ? (
@@ -166,17 +209,10 @@ export function Navbar() {
                 <hr />
                 <Link
                   href="/login"
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block bg-red-500 text-white text-center py-2 rounded-lg hover:bg-red-600"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="block btn-primary text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Get Started
                 </Link>
               </>
             )}

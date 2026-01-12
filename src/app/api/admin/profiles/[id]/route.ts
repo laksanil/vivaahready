@@ -1,9 +1,24 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
+const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+
+// Helper to check admin authentication (either via cookie or NextAuth session)
+async function isAdminAuthenticated(): Promise<boolean> {
+  const adminSession = cookies().get('admin_session')
+  if (adminSession?.value === ADMIN_TOKEN) {
+    return true
+  }
+  const session = await getServerSession(authOptions)
+  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
+    return true
+  }
+  return false
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -12,9 +27,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -22,7 +36,22 @@ export async function GET(
       where: { id: params.id },
       include: {
         user: {
-          select: { name: true, email: true, phone: true }
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+            subscription: {
+              select: {
+                plan: true,
+                status: true,
+                profilePaid: true,
+                profilePaymentId: true,
+                createdAt: true,
+                updatedAt: true,
+              }
+            }
+          }
         }
       }
     })
@@ -43,17 +72,50 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
 
+    // Get the profile to find the userId
+    const existingProfile = await prisma.profile.findUnique({
+      where: { id: params.id },
+      select: { userId: true }
+    })
+
+    if (!existingProfile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // Extract user-related fields that need to be updated separately
+    const { firstName, lastName, user, userId, id, createdAt, updatedAt, ...profileData } = body
+
+    // Update user name if firstName/lastName provided
+    if (firstName || lastName) {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: existingProfile.userId },
+        select: { name: true }
+      })
+
+      const nameParts = currentUser?.name?.split(' ') || ['', '']
+      const newFirstName = firstName || nameParts[0] || ''
+      const newLastName = lastName || nameParts.slice(1).join(' ') || ''
+      const newName = `${newFirstName} ${newLastName}`.trim()
+
+      if (newName) {
+        await prisma.user.update({
+          where: { id: existingProfile.userId },
+          data: { name: newName }
+        })
+      }
+    }
+
+    // Update profile with only valid profile fields
     const profile = await prisma.profile.update({
       where: { id: params.id },
-      data: body
+      data: profileData
     })
 
     return NextResponse.json({ message: 'Profile updated', profile })
@@ -68,9 +130,8 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
