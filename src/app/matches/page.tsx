@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 // Using regular img tags for external URLs (Google Drive) due to CORS issues
@@ -160,7 +160,7 @@ interface InterestProfile extends MatchProfile {
   matchStatus: 'pending' | 'accepted' | 'rejected'
 }
 
-export default function MatchesPage() {
+function MatchesPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -896,6 +896,18 @@ export default function MatchesPage() {
         reportedUserName={reportModal.reportedUserName}
       />
     </div>
+  )
+}
+
+export default function MatchesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    }>
+      <MatchesPageContent />
+    </Suspense>
   )
 }
 

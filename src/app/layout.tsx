@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 import { Providers } from './providers'
 import { Navbar } from '@/components/Navbar'
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans min-h-screen flex flex-col">
         <Providers>
-          <Navbar />
+          <Suspense fallback={<div className="h-16 bg-white shadow-sm" />}>
+            <Navbar />
+          </Suspense>
           <main className="flex-grow">{children}</main>
           <Footer />
         </Providers>
