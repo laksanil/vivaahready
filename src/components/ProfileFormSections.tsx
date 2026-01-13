@@ -47,16 +47,26 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
 
   return (
     <div className="space-y-5">
-      <div>
-        <label className="form-label">Profile Created By <span className="text-red-500">*</span></label>
-        <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field">
-          <option value="">Choose who is creating this profile</option>
-          <option value="self">Self</option>
-          <option value="parent">Parent</option>
-          <option value="sibling">Sibling</option>
-          <option value="relative">Relative</option>
-          <option value="friend">Friend</option>
-        </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Profile Created By <span className="text-red-500">*</span></label>
+          <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Choose who is creating this profile</option>
+            <option value="self">Self</option>
+            <option value="parent">Parent</option>
+            <option value="sibling">Sibling</option>
+            <option value="relative">Relative</option>
+            <option value="friend">Friend</option>
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Gender <span className="text-red-500">*</span></label>
+          <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -70,15 +80,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Gender <span className="text-red-500">*</span></label>
-          <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="form-label">Date of Birth <span className="text-red-500">*</span></label>
           <input
@@ -90,10 +92,22 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
             placeholder="MM/DD/YYYY"
             maxLength={10}
           />
+          <p className="text-xs text-gray-500 mt-1">Or enter age below</p>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Age (if DOB unknown)</label>
+          <input
+            type="number"
+            name="age"
+            value={formData.age as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="e.g., 28"
+            min={18}
+            max={99}
+          />
+          <p className="text-xs text-gray-500 mt-1">Optional if DOB provided</p>
+        </div>
         <div>
           <label className="form-label">Height <span className="text-red-500">*</span></label>
           <select
@@ -109,17 +123,6 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="form-label">Weight (lbs)</label>
-          <input
-            type="number"
-            name="weight"
-            value={formData.weight as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="Enter weight"
-          />
         </div>
       </div>
 
@@ -151,8 +154,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="form-label">Health Information</label>
-          <select name="healthInfo" value={formData.healthInfo as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
+          <select name="healthInfo" value={formData.healthInfo as string || 'no_health_issues'} onChange={handleChange} className="input-field">
             <option value="no_health_issues">No Health Issues</option>
             <option value="diabetes">Diabetes</option>
             <option value="heart_condition">Heart Condition</option>
@@ -182,6 +184,8 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
 }
 
 export function LocationSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [zipLookupLoading, setZipLookupLoading] = useState(false)
+
   const handleLanguageCheckbox = (language: string, checked: boolean) => {
     const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
     if (checked) {
@@ -201,22 +205,67 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
     }
   }
 
+  // Lookup city and state from zipcode
+  const handleZipCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const zipCode = e.target.value.replace(/\D/g, '').slice(0, 5)
+    setFormData(prev => ({ ...prev, zipCode }))
+
+    // Only lookup if we have a 5-digit zipcode and country is USA
+    if (zipCode.length === 5 && (formData.country as string || 'USA') === 'USA') {
+      setZipLookupLoading(true)
+      try {
+        const response = await fetch(`https://api.zippopotam.us/us/${zipCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.places && data.places.length > 0) {
+            const place = data.places[0]
+            const city = place['place name']
+            const state = place['state']
+            setFormData(prev => ({
+              ...prev,
+              currentLocation: `${city}, ${state}`,
+              country: 'USA'
+            }))
+          }
+        }
+      } catch (error) {
+        // Silently fail - user can still manually enter
+        console.error('Zip lookup failed:', error)
+      } finally {
+        setZipLookupLoading(false)
+      }
+    }
+  }
+
   return (
     <>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div>
-          <label className="form-label">Country <span className="text-red-500">*</span></label>
-          <select name="country" value={formData.country as string || 'USA'} onChange={handleCountryChange} className="input-field">
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Australia">Australia</option>
-            <option value="Other">Other</option>
-          </select>
-          {(formData.country as string) === 'Other' && (
-            <input type="text" name="countryOther" value={formData.countryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
-          )}
+          <label className="form-label">Zip Code <span className="text-red-500">*</span></label>
+          <div className="relative">
+            <input
+              type="text"
+              name="zipCode"
+              value={formData.zipCode as string || ''}
+              onChange={handleZipCodeChange}
+              className="input-field"
+              placeholder="e.g., 94102"
+              maxLength={5}
+            />
+            {zipLookupLoading && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Enter zip to auto-fill city & state</p>
+        </div>
+        <div>
+          <label className="form-label">City</label>
+          <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
+            const state = (formData.currentLocation as string || '').split(', ')[1] || ''
+            setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
+          }} className="input-field" />
         </div>
         <div>
           <label className="form-label">State</label>
@@ -236,26 +285,18 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           )}
         </div>
         <div>
-          <label className="form-label">City</label>
-          <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
-            const state = (formData.currentLocation as string || '').split(', ')[1] || ''
-            setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
-          }} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">Zip Code <span className="text-red-500">*</span></label>
-          <input
-            type="text"
-            name="zipCode"
-            value={formData.zipCode as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="e.g., 94102"
-            maxLength={5}
-            pattern="\d{5}"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">US zip code for distance matching</p>
+          <label className="form-label">Country <span className="text-red-500">*</span></label>
+          <select name="country" value={formData.country as string || 'USA'} onChange={handleCountryChange} className="input-field">
+            <option value="USA">USA</option>
+            <option value="India">India</option>
+            <option value="UK">UK</option>
+            <option value="Canada">Canada</option>
+            <option value="Australia">Australia</option>
+            <option value="Other">Other</option>
+          </select>
+          {(formData.country as string) === 'Other' && (
+            <input type="text" name="countryOther" value={formData.countryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          )}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">

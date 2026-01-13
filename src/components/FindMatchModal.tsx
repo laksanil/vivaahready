@@ -98,12 +98,16 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   }
 
   const handleBasicsContinue = () => {
-    if (formData.createdBy && formData.firstName && formData.lastName && formData.gender && formData.dateOfBirth && formData.height && formData.maritalStatus) {
+    // Either dateOfBirth or age is required
+    const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
+    if (formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus) {
       setStep(2)
     }
   }
 
-  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && formData.dateOfBirth && formData.height && formData.maritalStatus)
+  // Either dateOfBirth or age is required
+  const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
+  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus)
 
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
@@ -381,6 +385,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             {error}
           </div>
         )}
+
+        {/* Falsification Warning */}
+        <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-amber-800 text-xs">
+            <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension. Such conduct may also constitute fraud and could be subject to legal action.
+          </p>
+        </div>
 
         {/* Content */}
         <div className="p-6 pb-8">

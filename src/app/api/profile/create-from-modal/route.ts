@@ -12,6 +12,7 @@ const profileSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   dateOfBirth: z.string().optional(),
+  age: z.string().optional(),
   height: z.string().optional(),
   weight: z.string().optional(),
   maritalStatus: z.string().optional(),
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
 
         // Basic Info
         dateOfBirth: data.dateOfBirth,
+        age: data.age,
         height: data.height,
         weight: data.weight,
         maritalStatus: data.maritalStatus,

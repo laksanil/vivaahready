@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
       const fieldMappings: Record<string, string> = {
         gender: 'gender',
         dateOfBirth: 'dateOfBirth',
+        age: 'age',
         height: 'height',
         weight: 'weight',
         maritalStatus: 'maritalStatus',
