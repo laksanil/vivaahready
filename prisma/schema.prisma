@@ -110,6 +110,7 @@ model Profile {
   smoking           String?  // no, occasionally, yes
   drinking          String?  // no, social, yes
   hobbies           String?  // Comma-separated hobbies
+  fitness           String?  // Comma-separated fitness activities
   interests         String?  // Comma-separated interests
   pets              String?  // have_love, no_but_love, no_but_open, prefer_not, allergic
   allergiesOrMedical String? // Allergies or medical conditions
@@ -128,6 +129,12 @@ model Profile {
   prefIncome        String?
   prefLanguage      String?
   prefCountry       String?
+  prefHobbies       String?  // doesnt_matter, same_as_mine, specific
+  prefSpecificHobbies String? // Comma-separated specific hobbies if prefHobbies = specific
+  prefFitness       String?  // doesnt_matter, same_as_mine, specific
+  prefSpecificFitness String? // Comma-separated specific fitness if prefFitness = specific
+  prefInterests     String?  // doesnt_matter, same_as_mine, specific
+  prefSpecificInterests String? // Comma-separated specific interests if prefInterests = specific
   idealPartnerDesc  String?  // Free text description
 
   // Metadata

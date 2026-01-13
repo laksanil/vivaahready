@@ -39,6 +39,9 @@ export interface ProfileData {
   familyLocation: string | null
   languagesKnown: string | null
   religion: string | null
+  hobbies: string | null
+  fitness: string | null
+  interests: string | null
   theyLikedMeFirst?: boolean
   user: {
     id: string
@@ -238,6 +241,27 @@ export function ProfileCard({
               <p className="text-gray-500 text-xs line-clamp-2 mt-2 leading-relaxed">
                 {profile.aboutMe}
               </p>
+            )}
+
+            {/* Hobbies, Fitness & Interests Pills */}
+            {(profile.hobbies || profile.fitness || profile.interests) && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {profile.hobbies?.split(', ').slice(0, 2).map((hobby, idx) => (
+                  <span key={`hobby-${idx}`} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">
+                    {hobby}
+                  </span>
+                ))}
+                {profile.fitness?.split(', ').slice(0, 1).map((fit, idx) => (
+                  <span key={`fitness-${idx}`} className="text-xs px-2 py-0.5 bg-green-50 text-green-600 rounded-full">
+                    {fit}
+                  </span>
+                ))}
+                {profile.interests?.split(', ').slice(0, 1).map((interest, idx) => (
+                  <span key={`interest-${idx}`} className="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full">
+                    {interest}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 

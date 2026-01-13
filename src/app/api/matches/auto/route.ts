@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { isMutualMatch, calculateMatchScore } from '@/lib/matching'
+import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,9 +88,35 @@ export async function GET(request: Request) {
     })
 
     // Filter to profiles where BOTH parties' preferences match (mutual matching)
-    const matchingProfiles = candidates.filter(candidate =>
-      isMutualMatch(myProfile, candidate)
-    )
+    console.log(`[MATCH DEBUG] User ${targetUserId} (${myProfile.gender}) checking ${candidates.length} candidates`)
+    console.log(`[MATCH DEBUG] My profile prefs: location=${myProfile.prefLocation}, qual=${myProfile.prefQualification}, caste=${myProfile.prefCaste}, diet=${myProfile.prefDiet}`)
+
+    const matchingProfiles = candidates.filter(candidate => {
+      const isMatch = isMutualMatch(myProfile, candidate)
+      if (!isMatch) {
+        // Log why the match failed
+        const myMatchesTheirPrefs = matchesSeekerPreferences(candidate, myProfile)
+        const theyMatchMyPrefs = matchesSeekerPreferences(myProfile, candidate)
+        console.log(`[MATCH DEBUG] ${candidate.user?.name || candidate.userId}: myMatchesTheir=${myMatchesTheirPrefs}, theyMatchMine=${theyMatchMyPrefs}`)
+        if (!theyMatchMyPrefs) {
+          console.log(`[MATCH DEBUG]   - Their profile doesn't match my prefs`)
+          console.log(`[MATCH DEBUG]     Their location: ${candidate.currentLocation}, My pref: ${myProfile.prefLocation}`)
+          console.log(`[MATCH DEBUG]     Their qual: ${candidate.qualification}, My pref: ${myProfile.prefQualification}`)
+          console.log(`[MATCH DEBUG]     Their caste: ${candidate.caste}, My pref: ${myProfile.prefCaste}`)
+          console.log(`[MATCH DEBUG]     Their diet: ${candidate.dietaryPreference}, My pref: ${myProfile.prefDiet}`)
+        }
+        if (!myMatchesTheirPrefs) {
+          console.log(`[MATCH DEBUG]   - My profile doesn't match their prefs`)
+          console.log(`[MATCH DEBUG]     My location: ${myProfile.currentLocation}, Their pref: ${candidate.prefLocation}`)
+          console.log(`[MATCH DEBUG]     My qual: ${myProfile.qualification}, Their pref: ${candidate.prefQualification}`)
+          console.log(`[MATCH DEBUG]     My caste: ${myProfile.caste}, Their pref: ${candidate.prefCaste}`)
+          console.log(`[MATCH DEBUG]     My diet: ${myProfile.dietaryPreference}, Their pref: ${candidate.prefDiet}`)
+        }
+      }
+      return isMatch
+    })
+
+    console.log(`[MATCH DEBUG] Found ${matchingProfiles.length} matching profiles after filtering`)
 
     // Get all profiles this user has declined
     const myDeclinedProfiles = await prisma.declinedProfile.findMany({
@@ -121,15 +147,25 @@ export async function GET(request: Request) {
       myInterestsReceived.filter(m => m.status === 'accepted').map(m => m.senderId)
     )
 
-    // Filter out profiles that have any interest relationship or have been declined
-    // These should appear in their respective tabs: Mutual, Interest Sent, Interest Received, or Declined
-    const freshProfiles = matchingProfiles.filter(match =>
-      !sentToUserIds.has(match.userId) &&
-      !receivedFromUserIds.has(match.userId) &&
-      !declinedUserIds.has(match.userId)
+    // Track pending received interests (they liked me, I haven't responded)
+    const pendingReceivedUserIds = new Set(
+      myInterestsReceived.filter(m => m.status === 'pending').map(m => m.senderId)
     )
 
-    // Get interest status for each match (for fresh profiles, all will be false)
+    // Filter profiles for the Feed:
+    // - Include profiles with NO relationship (fresh)
+    // - Include profiles that liked me (pending received) - they go to top of feed
+    // - Exclude profiles I've already liked/acted on (sent interests)
+    // - Exclude declined profiles
+    // - Exclude mutual matches (accepted interests)
+    const freshProfiles = matchingProfiles.filter(match =>
+      !sentToUserIds.has(match.userId) &&
+      !declinedUserIds.has(match.userId) &&
+      !acceptedSentUserIds.has(match.userId) &&
+      !acceptedReceivedUserIds.has(match.userId)
+    )
+
+    // Get interest status for each match and mark if they liked user first
     const matchesWithInterest = await Promise.all(
       freshProfiles.map(async (match) => {
         // Calculate BOTH match scores:
@@ -138,14 +174,18 @@ export async function GET(request: Request) {
         // 2. How well YOU match THEIR preferences (theirMatchScore)
         const theirMatchScore = calculateMatchScore(match, myProfile)
 
-        console.log(`Match ${match.user.name}: matchScore=${matchScore?.totalScore}/${matchScore?.maxScore}, theirMatchScore=${theirMatchScore?.totalScore}/${theirMatchScore?.maxScore}`)
+        // Check if this profile has already liked the user
+        const theyLikedMeFirst = pendingReceivedUserIds.has(match.userId)
+
+        console.log(`Match ${match.user.name}: matchScore=${matchScore?.totalScore}/${matchScore?.maxScore}, theyLikedMeFirst=${theyLikedMeFirst}`)
         return {
           ...match,
           matchScore,      // How well they match your preferences
           theirMatchScore, // How well you match their preferences
+          theyLikedMeFirst, // True if they already liked the user (show at top)
           interestStatus: {
             sentByMe: false,
-            receivedFromThem: false,
+            receivedFromThem: theyLikedMeFirst,
             mutual: false,
           },
           // Fresh profiles don't show contact info
@@ -189,10 +229,16 @@ export async function GET(request: Request) {
         })
     )
 
-    // Sort fresh profiles by match score (highest first)
-    const sortedFreshMatches = matchesWithInterest.sort((a, b) =>
-      (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
-    )
+    // Sort fresh profiles: prioritize those who liked user first, then by match score
+    const sortedFreshMatches = matchesWithInterest.sort((a, b) => {
+      // Priority 1: Profiles that liked me first appear at top
+      const aLikedMe = a.theyLikedMeFirst ? 1 : 0
+      const bLikedMe = b.theyLikedMeFirst ? 1 : 0
+      if (bLikedMe !== aLikedMe) return bLikedMe - aLikedMe
+
+      // Priority 2: Match score (highest first)
+      return (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
+    })
 
     // Sort mutual matches by match score (highest first)
     const sortedMutualMatches = mutualMatches.sort((a, b) =>
@@ -240,6 +286,7 @@ export async function GET(request: Request) {
       stats: {
         potentialMatches: sortedFreshMatches.length,
         mutualMatches: sortedMutualMatches.length,
+        likedYouCount: sortedFreshMatches.filter(m => m.theyLikedMeFirst).length,
         interestsSent: interestsSentStats,
         interestsReceived: interestsReceivedStats,
         declined: declinedUserIds.size,

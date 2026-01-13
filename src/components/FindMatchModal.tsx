@@ -12,6 +12,7 @@ import {
   EducationSection,
   FamilySection,
   LifestyleSection,
+  AboutMeSection,
   ReligionSection,
   PreferencesSection,
   ReferralSection
@@ -40,13 +41,14 @@ const SECTION_TITLES: Record<string, string> = {
   religion: 'Religion & Astro',
   family: 'Family Details',
   lifestyle: 'Lifestyle',
+  aboutme: 'About Me',
   preferences: 'Partner Preferences',
   referral: 'How Did You Find Us?',
   photos: 'Add Your Photos',
 }
 
-// Steps: 1=basics, 2=account, 3=location, 4=education, 5=religion, 6=family, 7=lifestyle, 8=preferences, 9=referral, 10=photos
-const SECTION_ORDER = ['basics', 'account', 'location', 'education', 'religion', 'family', 'lifestyle', 'preferences', 'referral', 'photos']
+// Steps: 1=basics, 2=location, 3=education, 4=religion, 5=family, 6=lifestyle, 7=aboutme, 8=preferences, 9=account, 10=referral, 11=photos
+const SECTION_ORDER = ['basics', 'location', 'education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'referral', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps) {
   const router = useRouter()
@@ -124,7 +126,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
 
       sessionStorage.setItem('newUserId', data.userId)
       sessionStorage.setItem('newUserEmail', email)
-      setStep(3)
+      setStep(step + 1) // Move to next section after account creation
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -492,7 +494,15 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
             </div>
           )}
 
-          {/* Step 8: Preferences */}
+          {/* Step 8: About Me */}
+          {currentSection === 'aboutme' && (
+            <div className="space-y-4">
+              <AboutMeSection {...sectionProps} />
+              {renderContinueButton(handleSectionContinue)}
+            </div>
+          )}
+
+          {/* Step 9: Preferences */}
           {currentSection === 'preferences' && (
             <div className="space-y-4">
               <PreferencesSection {...sectionProps} />

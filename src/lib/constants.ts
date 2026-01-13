@@ -137,6 +137,82 @@ export const PREF_EDUCATION_OPTIONS = [
   { value: "doctorate", label: "Doctorate (PhD/DM/MCh)", type: "category", categories: ["phd", "dm_mch"] },
 ]
 
+// Hobbies options (Shaadi.com style)
+export const HOBBIES_OPTIONS = [
+  'Art & Crafts',
+  'Blogging',
+  'Board Games',
+  'Cooking',
+  'Dancing',
+  'DIY Projects',
+  'Gardening',
+  'Gaming',
+  'Listening to Music',
+  'Movies & TV Shows',
+  'Musical Instruments',
+  'Painting',
+  'Photography',
+  'Playing Cards',
+  'Podcasts',
+  'Poetry',
+  'Reading',
+  'Singing',
+  'Social Media',
+  'Travelling',
+  'Video Making',
+  'Volunteering',
+  'Writing',
+]
+
+// Fitness & Sports options
+export const FITNESS_OPTIONS = [
+  'Badminton',
+  'Basketball',
+  'Biking / Cycling',
+  'Cricket',
+  'Football / Soccer',
+  'Golf',
+  'Gym / Weight Training',
+  'Hiking / Trekking',
+  'Martial Arts',
+  'Meditation',
+  'Pilates',
+  'Running / Jogging',
+  'Swimming',
+  'Table Tennis',
+  'Tennis',
+  'Walking',
+  'Yoga',
+  'Zumba / Aerobics',
+]
+
+// Interests options
+export const INTERESTS_OPTIONS = [
+  'Astronomy',
+  'Automobiles',
+  'Business & Investing',
+  'Cars & Bikes',
+  'Current Affairs',
+  'Environment & Sustainability',
+  'Fashion & Style',
+  'Finance & Stocks',
+  'Food & Cuisine',
+  'Health & Wellness',
+  'History',
+  'Home Decor',
+  'Languages',
+  'Nature & Wildlife',
+  'News & Politics',
+  'Personal Development',
+  'Pets & Animals',
+  'Psychology',
+  'Science & Technology',
+  'Spirituality',
+  'Sports',
+  'Startups',
+  'Travel & Adventure',
+]
+
 // Occupation options for profile
 export const OCCUPATION_OPTIONS = [
   { value: "software_engineer", label: "Software Engineer / Developer" },

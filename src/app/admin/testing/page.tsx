@@ -27,114 +27,108 @@ import {
   Search,
   Home,
   ExternalLink,
+  ChevronRight,
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Camera,
+  Lock,
+  Unlock,
+  CheckCircle2,
+  Send,
+  Inbox,
+  X,
 } from 'lucide-react'
+import {
+  BasicsSection,
+  LocationSection,
+  EducationSection,
+  FamilySection,
+  LifestyleSection,
+  ReligionSection,
+  PreferencesSection,
+} from '@/components/ProfileFormSections'
 
-// Test scenarios configuration
-const TEST_SCENARIOS = {
-  visitor: {
-    id: 'visitor',
-    name: 'Visitor (Logged Out)',
-    description: 'View the site as a non-authenticated visitor',
-    icon: LogOut,
-    color: 'bg-gray-500',
-    pages: [
-      { name: 'Homepage', path: '/', description: 'Landing page with blurred profiles' },
-      { name: 'Login', path: '/login', description: 'Login page' },
-      { name: 'Register', path: '/register', description: 'Registration page' },
-      { name: 'Pricing', path: '/pricing', description: 'Pricing information' },
-      { name: 'About', path: '/about', description: 'About us page' },
-    ]
-  },
-  newUser: {
-    id: 'newUser',
-    name: 'New User (No Profile)',
-    description: 'Logged in user who hasn\'t created a profile yet',
-    icon: UserPlus,
-    color: 'bg-blue-500',
-    pages: [
-      { name: 'Dashboard', path: '/dashboard', description: 'Shows profile creation prompt' },
-      { name: 'Create Profile', path: '/profile/create', description: 'Profile creation wizard' },
-    ]
-  },
-  pendingUser: {
-    id: 'pendingUser',
-    name: 'Pending Approval',
-    description: 'User with profile awaiting admin approval',
-    icon: Clock,
-    color: 'bg-yellow-500',
-    pages: [
-      { name: 'Dashboard', path: '/dashboard', description: 'Shows pending status message' },
-      { name: 'My Profile', path: '/profile', description: 'View own profile (limited)' },
-    ]
-  },
-  approvedUser: {
-    id: 'approvedUser',
-    name: 'Approved User',
-    description: 'Fully approved user with active profile',
-    icon: CheckCircle,
-    color: 'bg-green-500',
-    pages: [
-      { name: 'Dashboard', path: '/dashboard', description: 'Full dashboard with stats' },
-      { name: 'My Profile', path: '/profile', description: 'Complete profile view' },
-      { name: 'Matches', path: '/matches', description: 'View potential matches' },
-      { name: 'Messages', path: '/messages', description: 'Messaging inbox' },
-      { name: 'Search', path: '/search', description: 'Browse profiles' },
-    ]
-  },
-  rejectedUser: {
-    id: 'rejectedUser',
-    name: 'Rejected Profile',
-    description: 'User whose profile was rejected',
-    icon: XCircle,
-    color: 'bg-red-500',
-    pages: [
-      { name: 'Dashboard', path: '/dashboard', description: 'Shows rejection notice' },
-      { name: 'Edit Profile', path: '/profile/edit', description: 'Edit and resubmit' },
-    ]
-  },
+// Real users from the database for "View as User" testing
+interface RealUser {
+  id: string
+  odNumber: string | null
+  gender: string
+  name: string
+  email: string
+  approvalStatus: string
+  currentLocation: string | null
 }
 
-// Mock user profiles for testing
-const MOCK_USERS = {
-  testBride: {
-    id: 'test-bride-001',
-    name: 'Priya Sharma',
-    email: 'usdesivivah@gmail.com',
-    gender: 'female',
-    age: 28,
-    location: 'San Francisco, CA',
-    occupation: 'Software Engineer',
-    qualification: 'Masters in Computer Science',
-    approvalStatus: 'approved',
-  },
-  testGroom: {
-    id: 'test-groom-001',
-    name: 'Rahul Patel',
-    email: 'test.groom@vivaahready.com',
-    gender: 'male',
-    age: 30,
-    location: 'New York, NY',
-    occupation: 'Product Manager',
-    qualification: 'MBA',
-    approvalStatus: 'approved',
-  },
-}
-
-interface TestSession {
-  scenario: string
-  mockUser: typeof MOCK_USERS.testBride | null
-  startedAt: Date
+// Mock profile data for form testing
+const MOCK_PROFILE_DATA = {
+  createdBy: 'self',
+  firstName: 'Test',
+  lastName: 'User',
+  gender: 'female',
+  dateOfBirth: '03/15/1996',
+  height: '5\'4"',
+  weight: '130',
+  maritalStatus: 'never_married',
+  bloodGroup: 'B+',
+  healthInfo: 'no_health_issues',
+  anyDisability: 'none',
+  motherTongue: 'Telugu',
+  languagesKnown: 'English, Hindi, Telugu',
+  currentLocation: 'San Francisco, CA',
+  zipCode: '94105',
+  citizenship: 'us_citizen',
+  grewUpIn: 'India',
+  qualification: 'masters_cs',
+  university: 'Stanford University',
+  occupation: 'Software Engineer',
+  employerName: 'Google',
+  annualIncome: '150000_200000',
+  religion: 'Hindu',
+  caste: 'Brahmin - Smartha',
+  gotra: 'Bharadwaj',
+  fatherName: 'Ramesh Kumar',
+  motherName: 'Lakshmi Devi',
+  fatherOccupation: 'Business',
+  motherOccupation: 'Homemaker',
+  numberOfBrothers: '1',
+  numberOfSisters: '0',
+  familyType: 'nuclear',
+  familyValues: 'moderate',
+  dietaryPreference: 'vegetarian',
+  smoking: 'no',
+  drinking: 'occasionally',
+  aboutMe: 'I am a software engineer passionate about technology and innovation. I enjoy reading, traveling, and exploring new cuisines. Looking for someone who shares similar values and interests.',
+  prefHeight: 'any',
+  prefAgeDiff: 'between_3_to_5_years_elder',
+  prefLocation: 'bay_area',
+  prefQualification: 'masters_any',
+  prefIncome: 'above_100k',
+  prefDiet: 'vegetarian',
+  prefCaste: 'same_caste',
+  idealPartnerDesc: 'Looking for someone who is educated, family-oriented, and has a good sense of humor.',
 }
 
 export default function AdminTestingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [activeScenario, setActiveScenario] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop')
-  const [testSession, setTestSession] = useState<TestSession | null>(null)
-  const [selectedMockUser, setSelectedMockUser] = useState<'testBride' | 'testGroom'>('testBride')
+  const [activeTab, setActiveTab] = useState<'view-as-user' | 'form-preview' | 'ui-states' | 'flow-test'>('view-as-user')
+
+  // View as User state
+  const [realUsers, setRealUsers] = useState<RealUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [userFilter, setUserFilter] = useState<'all' | 'male' | 'female'>('all')
+
+  // Form Preview state
+  const [formSection, setFormSection] = useState<'basics' | 'location' | 'education' | 'religion' | 'family' | 'lifestyle' | 'preferences'>('basics')
+  const [formData, setFormData] = useState<Record<string, unknown>>(MOCK_PROFILE_DATA)
+
+  // UI States Preview
+  const [uiStatePreview, setUiStatePreview] = useState<'dashboard-pending' | 'dashboard-approved' | 'dashboard-rejected' | 'matches-empty' | 'matches-with-data' | 'interest-received'>('dashboard-pending')
 
   useEffect(() => {
     checkAdminAuth()
@@ -145,6 +139,7 @@ export default function AdminTestingPage() {
       const response = await fetch('/api/admin/check')
       if (response.ok) {
         setIsAdmin(true)
+        fetchRealUsers()
       } else {
         router.push('/admin/login')
       }
@@ -155,39 +150,38 @@ export default function AdminTestingPage() {
     }
   }
 
-  const startTestSession = (scenarioId: string) => {
-    const session: TestSession = {
-      scenario: scenarioId,
-      mockUser: scenarioId !== 'visitor' ? MOCK_USERS[selectedMockUser] : null,
-      startedAt: new Date(),
+  const fetchRealUsers = async () => {
+    setLoadingUsers(true)
+    try {
+      const response = await fetch('/api/admin/profiles?limit=100')
+      const data = await response.json()
+      if (data.profiles) {
+        setRealUsers(data.profiles.map((p: any) => ({
+          id: p.user.id,
+          odNumber: p.odNumber,
+          gender: p.gender,
+          name: p.user.name,
+          email: p.user.email,
+          approvalStatus: p.approvalStatus,
+          currentLocation: p.currentLocation,
+        })))
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error)
+    } finally {
+      setLoadingUsers(false)
     }
-    setTestSession(session)
-    setActiveScenario(scenarioId)
-
-    // Store test session in sessionStorage for the app to detect
-    sessionStorage.setItem('adminTestMode', JSON.stringify({
-      active: true,
-      scenario: scenarioId,
-      mockUser: session.mockUser,
-    }))
   }
 
-  const endTestSession = () => {
-    setTestSession(null)
-    setActiveScenario(null)
-    setPreviewUrl(null)
-    sessionStorage.removeItem('adminTestMode')
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const openPreview = (path: string) => {
-    setPreviewUrl(path)
-  }
-
-  const openInNewTab = (path: string) => {
-    // Add test mode query param
-    const testParam = activeScenario ? `?testMode=${activeScenario}` : ''
-    window.open(path + testParam, '_blank')
-  }
+  const filteredUsers = realUsers.filter(u => {
+    if (userFilter === 'all') return true
+    return u.gender === userFilter
+  })
 
   if (loading) {
     return (
@@ -197,303 +191,548 @@ export default function AdminTestingPage() {
     )
   }
 
-  if (!isAdmin) {
-    return null
-  }
+  if (!isAdmin) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center gap-4">
-              <Link href="/admin" className="text-gray-500 hover:text-gray-700">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <Monitor className="h-5 w-5 text-purple-600" />
-                  Testing Sandbox
-                </h1>
-                <p className="text-sm text-gray-500">Test user experience without affecting real data</p>
-              </div>
-            </div>
-
-            {testSession && (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                  <Play className="h-4 w-4" />
-                  Testing: {TEST_SCENARIOS[testSession.scenario as keyof typeof TEST_SCENARIOS]?.name}
-                </div>
-                <button
-                  onClick={endTestSession}
-                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium"
-                >
-                  End Session
-                </button>
-              </div>
-            )}
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <Monitor className="h-7 w-7 text-purple-600" />
+            Testing Sandbox
+          </h1>
+          <p className="text-gray-500 mt-1">Test user experience and preview UI components</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Test Mode Warning */}
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-amber-800">Testing Mode</h3>
-            <p className="text-sm text-amber-700 mt-1">
-              This sandbox allows you to preview the user interface at different stages.
-              Test data is not saved to the database. Use the mock account <strong>usdesivivah@gmail.com</strong> for testing.
-            </p>
-          </div>
+      {/* Warning Banner */}
+      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+        <div>
+          <h3 className="font-semibold text-amber-800">Testing Mode</h3>
+          <p className="text-sm text-amber-700 mt-1">
+            Use this sandbox to test the user interface. &quot;View as User&quot; shows real user data.
+            Form previews use mock data and don&apos;t save to the database.
+          </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Panel - Scenarios */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Settings className="h-5 w-5 text-gray-500" />
-                Test Configuration
-              </h2>
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 inline-flex">
+        {[
+          { id: 'view-as-user', label: 'View as User', icon: Eye },
+          { id: 'form-preview', label: 'Form Preview', icon: Settings },
+          { id: 'ui-states', label: 'UI States', icon: Monitor },
+          { id: 'flow-test', label: 'User Flows', icon: Play },
+        ].map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-purple-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
 
-              {/* Mock User Selection */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mock User Profile</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setSelectedMockUser('testBride')}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
-                      selectedMockUser === 'testBride'
-                        ? 'border-pink-500 bg-pink-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">Priya Sharma</div>
-                    <div className="text-xs text-gray-500">Female, 28</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedMockUser('testGroom')}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
-                      selectedMockUser === 'testGroom'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">Rahul Patel</div>
-                    <div className="text-xs text-gray-500">Male, 30</div>
-                  </button>
-                </div>
+      {/* Tab Content */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        {/* VIEW AS USER TAB */}
+        {activeTab === 'view-as-user' && (
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">View as User</h2>
+                <p className="text-sm text-gray-500">Select a user to view their matches dashboard exactly as they see it</p>
               </div>
-
-              <div className="border-t border-gray-100 pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Test Scenario</label>
+              <div className="flex items-center gap-2">
+                <select
+                  value={userFilter}
+                  onChange={(e) => setUserFilter(e.target.value as any)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                >
+                  <option value="all">All Users</option>
+                  <option value="female">Brides Only</option>
+                  <option value="male">Grooms Only</option>
+                </select>
+                <button
+                  onClick={fetchRealUsers}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  title="Refresh"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loadingUsers ? 'animate-spin' : ''}`} />
+                </button>
               </div>
             </div>
 
-            {/* Scenario Cards */}
-            {Object.values(TEST_SCENARIOS).map((scenario) => {
-              const Icon = scenario.icon
-              const isActive = activeScenario === scenario.id
+            {loadingUsers ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className={`p-4 border-2 rounded-xl transition-all cursor-pointer ${
+                      selectedUserId === user.id
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedUserId(user.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                          user.gender === 'female' ? 'bg-pink-500' : 'bg-blue-500'
+                        }`}>
+                          {user.name?.charAt(0) || '?'}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{user.name}</div>
+                          <div className="text-xs text-gray-500">{user.odNumber || 'No VR ID'}</div>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${
+                        user.approvalStatus === 'approved'
+                          ? 'bg-green-100 text-green-700'
+                          : user.approvalStatus === 'pending'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {user.approvalStatus}
+                      </span>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {user.currentLocation || 'Location not set'}
+                    </div>
+                    {selectedUserId === user.id && (
+                      <div className="mt-4 pt-4 border-t border-purple-200 flex gap-2">
+                        <Link
+                          href={`/matches?viewAsUser=${user.id}`}
+                          target="_blank"
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700"
+                        >
+                          <Heart className="h-4 w-4" />
+                          View Matches
+                        </Link>
+                        <Link
+                          href={`/dashboard?viewAsUser=${user.id}`}
+                          target="_blank"
+                          className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200"
+                        >
+                          <Home className="h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-              return (
-                <div
-                  key={scenario.id}
-                  className={`bg-white rounded-xl shadow-sm border-2 transition-all ${
-                    isActive ? 'border-purple-500 ring-2 ring-purple-200' : 'border-gray-200 hover:border-gray-300'
+            {filteredUsers.length === 0 && !loadingUsers && (
+              <div className="text-center py-12 text-gray-500">
+                <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <p>No users found</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* FORM PREVIEW TAB */}
+        {activeTab === 'form-preview' && (
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Profile Form Preview</h2>
+                <p className="text-sm text-gray-500">Preview how the profile creation form looks with sample data</p>
+              </div>
+              <button
+                onClick={() => setFormData(MOCK_PROFILE_DATA)}
+                className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                Reset to Mock Data
+              </button>
+            </div>
+
+            {/* Section Tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {[
+                { id: 'basics', label: 'Basic Info' },
+                { id: 'location', label: 'Location' },
+                { id: 'education', label: 'Education' },
+                { id: 'religion', label: 'Religion' },
+                { id: 'family', label: 'Family' },
+                { id: 'lifestyle', label: 'Lifestyle' },
+                { id: 'preferences', label: 'Preferences' },
+              ].map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setFormSection(section.id as any)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    formSection === section.id
+                      ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
+                      : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:bg-gray-200'
                   }`}
                 >
-                  <button
-                    onClick={() => startTestSession(scenario.id)}
-                    className="w-full p-4 text-left"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${scenario.color} text-white`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{scenario.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{scenario.description}</p>
-                      </div>
-                      {isActive && (
-                        <CheckCircle className="h-5 w-5 text-purple-600" />
-                      )}
-                    </div>
-                  </button>
+                  {section.label}
+                </button>
+              ))}
+            </div>
 
-                  {isActive && (
-                    <div className="px-4 pb-4 border-t border-gray-100 pt-3 mt-2">
-                      <div className="text-xs font-medium text-gray-500 mb-2">Available Pages</div>
-                      <div className="space-y-1">
-                        {scenario.pages.map((page) => (
-                          <button
-                            key={page.path}
-                            onClick={() => openPreview(page.path)}
-                            className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-all ${
-                              previewUrl === page.path
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'hover:bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            <span>{page.name}</span>
-                            <Eye className="h-4 w-4" />
-                          </button>
+            {/* Form Section Preview */}
+            <div className="max-w-2xl mx-auto bg-gray-50 rounded-xl p-6 border border-gray-200">
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                {formSection === 'basics' && (
+                  <BasicsSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'location' && (
+                  <LocationSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'education' && (
+                  <EducationSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'religion' && (
+                  <ReligionSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'family' && (
+                  <FamilySection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'lifestyle' && (
+                  <LifestyleSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+                {formSection === 'preferences' && (
+                  <PreferencesSection formData={formData} handleChange={handleFormChange} setFormData={setFormData} />
+                )}
+              </div>
+              <p className="text-center text-xs text-gray-400 mt-4">
+                This is a preview only - changes are not saved
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* UI STATES TAB */}
+        {activeTab === 'ui-states' && (
+          <div className="p-6">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">UI State Previews</h2>
+              <p className="text-sm text-gray-500">See how different UI states look to users</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* State Selector */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-gray-700 text-sm">Select State</h3>
+                {[
+                  { id: 'dashboard-pending', label: 'Dashboard - Pending Approval', icon: Clock, color: 'yellow' },
+                  { id: 'dashboard-approved', label: 'Dashboard - Approved', icon: CheckCircle, color: 'green' },
+                  { id: 'dashboard-rejected', label: 'Dashboard - Rejected', icon: XCircle, color: 'red' },
+                  { id: 'matches-empty', label: 'Matches - No Matches', icon: Heart, color: 'gray' },
+                  { id: 'matches-with-data', label: 'Matches - With Data', icon: Heart, color: 'pink' },
+                  { id: 'interest-received', label: 'Interest Received', icon: Inbox, color: 'blue' },
+                ].map((state) => {
+                  const Icon = state.icon
+                  return (
+                    <button
+                      key={state.id}
+                      onClick={() => setUiStatePreview(state.id as any)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
+                        uiStatePreview === state.id
+                          ? 'bg-purple-100 border-2 border-purple-400'
+                          : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className={`p-2 rounded-lg bg-${state.color}-100`}>
+                        <Icon className={`h-4 w-4 text-${state.color}-600`} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">{state.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Preview Panel */}
+              <div className="lg:col-span-2 bg-gray-100 rounded-xl p-4 min-h-[500px]">
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full">
+                  {/* Dashboard Pending */}
+                  {uiStatePreview === 'dashboard-pending' && (
+                    <div className="p-6">
+                      <div className="max-w-md mx-auto text-center py-8">
+                        <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Clock className="h-10 w-10 text-yellow-600" />
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Under Review</h2>
+                        <p className="text-gray-600 mb-6">
+                          Your profile is being reviewed by our team. This usually takes 24-48 hours.
+                          We&apos;ll notify you once it&apos;s approved.
+                        </p>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <p className="text-sm text-yellow-800">
+                            <strong>What happens next?</strong><br />
+                            Once approved, you&apos;ll be able to view matches and express interest.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dashboard Approved */}
+                  {uiStatePreview === 'dashboard-approved' && (
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-6 w-6 text-green-600" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-semibold text-gray-900">Welcome back, Priya!</h2>
+                          <p className="text-sm text-green-600">Your profile is active</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-pink-50 rounded-xl p-4">
+                          <div className="text-2xl font-bold text-pink-600">12</div>
+                          <div className="text-sm text-gray-600">Potential Matches</div>
+                        </div>
+                        <div className="bg-purple-50 rounded-xl p-4">
+                          <div className="text-2xl font-bold text-purple-600">3</div>
+                          <div className="text-sm text-gray-600">Interests Received</div>
+                        </div>
+                        <div className="bg-blue-50 rounded-xl p-4">
+                          <div className="text-2xl font-bold text-blue-600">2</div>
+                          <div className="text-sm text-gray-600">Mutual Matches</div>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-4">
+                          <div className="text-2xl font-bold text-green-600">5</div>
+                          <div className="text-sm text-gray-600">Interests Sent</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dashboard Rejected */}
+                  {uiStatePreview === 'dashboard-rejected' && (
+                    <div className="p-6">
+                      <div className="max-w-md mx-auto text-center py-8">
+                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <XCircle className="h-10 w-10 text-red-600" />
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Needs Updates</h2>
+                        <p className="text-gray-600 mb-4">
+                          Your profile was not approved. Please review the feedback and make necessary changes.
+                        </p>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-left mb-6">
+                          <p className="text-sm font-medium text-red-800 mb-2">Reason:</p>
+                          <p className="text-sm text-red-700">
+                            Profile photo does not meet our guidelines. Please upload a clear, recent photo of yourself.
+                          </p>
+                        </div>
+                        <button className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                          Edit Profile
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matches Empty */}
+                  {uiStatePreview === 'matches-empty' && (
+                    <div className="p-6">
+                      <div className="max-w-md mx-auto text-center py-12">
+                        <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">No Matches Yet</h2>
+                        <p className="text-gray-600 mb-6">
+                          We&apos;re looking for profiles that match your preferences.
+                          Check back soon or try adjusting your partner preferences.
+                        </p>
+                        <button className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                          Update Preferences
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matches With Data */}
+                  {uiStatePreview === 'matches-with-data' && (
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Your Matches</h2>
+                        <span className="text-sm text-gray-500">12 profiles found</span>
+                      </div>
+                      <div className="space-y-4">
+                        {[
+                          { name: 'Rahul P.', age: 30, location: 'San Francisco', match: '92%' },
+                          { name: 'Vikram S.', age: 28, location: 'New York', match: '87%' },
+                          { name: 'Arjun M.', age: 31, location: 'Seattle', match: '85%' },
+                        ].map((profile, idx) => (
+                          <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                            <div className="w-14 h-14 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                              {profile.name.charAt(0)}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{profile.name}</div>
+                              <div className="text-sm text-gray-500">{profile.age} yrs • {profile.location}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-semibold text-green-600">{profile.match}</div>
+                              <div className="text-xs text-gray-500">match</div>
+                            </div>
+                            <button className="p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200">
+                              <Heart className="h-5 w-5" />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
-                </div>
-              )
-            })}
-          </div>
 
-          {/* Right Panel - Preview */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              {/* Preview Header */}
-              <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1 bg-gray-200 rounded-lg p-1">
-                    <button
-                      onClick={() => setDeviceMode('desktop')}
-                      className={`p-1.5 rounded ${deviceMode === 'desktop' ? 'bg-white shadow-sm' : ''}`}
-                    >
-                      <Monitor className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setDeviceMode('mobile')}
-                      className={`p-1.5 rounded ${deviceMode === 'mobile' ? 'bg-white shadow-sm' : ''}`}
-                    >
-                      <Smartphone className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {previewUrl && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="px-2 py-1 bg-gray-100 rounded font-mono text-xs">
-                        {previewUrl}
-                      </span>
+                  {/* Interest Received */}
+                  {uiStatePreview === 'interest-received' && (
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Interests Received</h2>
+                        <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded-full">3 new</span>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="p-4 bg-pink-50 border-2 border-pink-200 rounded-xl">
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="w-14 h-14 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                              R
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">Rahul Sharma</div>
+                              <div className="text-sm text-gray-500">30 yrs • Software Engineer • Bay Area</div>
+                            </div>
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">Pending</span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-4 italic">
+                            &quot;Hi! I came across your profile and found it very interesting. Would love to connect!&quot;
+                          </p>
+                          <div className="flex gap-2">
+                            <button className="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
+                              <CheckCircle2 className="h-4 w-4" />
+                              Accept
+                            </button>
+                            <button className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2">
+                              <X className="h-4 w-4" />
+                              Decline
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {previewUrl && (
-                    <>
-                      <button
-                        onClick={() => openPreview(previewUrl)}
-                        className="p-2 hover:bg-gray-200 rounded-lg"
-                        title="Refresh"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => openInNewTab(previewUrl)}
-                        className="p-2 hover:bg-gray-200 rounded-lg"
-                        title="Open in new tab"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Preview Content */}
-              <div
-                className={`bg-gray-100 flex items-center justify-center ${
-                  deviceMode === 'mobile' ? 'p-8' : 'p-4'
-                }`}
-                style={{ minHeight: '600px' }}
-              >
-                {previewUrl ? (
-                  <div
-                    className={`bg-white shadow-xl rounded-lg overflow-hidden ${
-                      deviceMode === 'mobile' ? 'w-[375px]' : 'w-full'
-                    }`}
-                    style={{ height: deviceMode === 'mobile' ? '667px' : '100%', minHeight: '550px' }}
-                  >
-                    <iframe
-                      src={`${previewUrl}${previewUrl.includes('?') ? '&' : '?'}testMode=${activeScenario || 'preview'}`}
-                      className="w-full h-full border-0"
-                      title="Preview"
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-500">
-                    <Monitor className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <h3 className="font-medium text-gray-700">No Preview Selected</h3>
-                    <p className="text-sm mt-1">Select a scenario and click on a page to preview</p>
-                  </div>
-                )}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Quick Actions */}
-            {activeScenario && (
-              <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">Quick Actions</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <button
-                    onClick={() => openInNewTab('/')}
-                    className="flex items-center gap-2 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700"
+        {/* USER FLOWS TAB */}
+        {activeTab === 'flow-test' && (
+          <div className="p-6">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">User Flow Testing</h2>
+              <p className="text-sm text-gray-500">Test complete user journeys through the application</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Flow Cards */}
+              {[
+                {
+                  title: 'New User Registration',
+                  description: 'Test the complete signup flow from homepage to profile creation',
+                  steps: ['Visit homepage', 'Click "Get Started"', 'Fill registration form', 'Create profile', 'Upload photos', 'Submit for approval'],
+                  link: '/',
+                  color: 'blue',
+                },
+                {
+                  title: 'Profile Creation',
+                  description: 'Test the multi-step profile creation wizard',
+                  steps: ['Basic info', 'Location details', 'Education & career', 'Family info', 'Preferences', 'Photo upload'],
+                  link: '/profile/create',
+                  color: 'green',
+                },
+                {
+                  title: 'Match Discovery',
+                  description: 'Test viewing and interacting with matches',
+                  steps: ['View matches list', 'Check match percentage', 'View full profile', 'Express interest', 'Send message'],
+                  link: '/matches',
+                  color: 'pink',
+                },
+                {
+                  title: 'Interest Flow',
+                  description: 'Test sending and receiving interests',
+                  steps: ['Receive interest notification', 'View sender profile', 'Accept/Decline interest', 'Start conversation'],
+                  link: '/matches?tab=received',
+                  color: 'purple',
+                },
+              ].map((flow, idx) => (
+                <div key={idx} className={`bg-${flow.color}-50 border border-${flow.color}-200 rounded-xl p-6`}>
+                  <h3 className={`font-semibold text-${flow.color}-900 mb-2`}>{flow.title}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{flow.description}</p>
+                  <div className="space-y-2 mb-4">
+                    {flow.steps.map((step, stepIdx) => (
+                      <div key={stepIdx} className="flex items-center gap-2 text-sm">
+                        <span className={`w-5 h-5 rounded-full bg-${flow.color}-200 text-${flow.color}-700 flex items-center justify-center text-xs font-medium`}>
+                          {stepIdx + 1}
+                        </span>
+                        <span className="text-gray-700">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link
+                    href={flow.link}
+                    target="_blank"
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-${flow.color}-600 text-white rounded-lg hover:bg-${flow.color}-700 text-sm font-medium`}
                   >
-                    <Home className="h-4 w-4" />
-                    Homepage
-                  </button>
-                  <button
-                    onClick={() => openInNewTab('/dashboard')}
-                    className="flex items-center gap-2 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700"
-                  >
-                    <User className="h-4 w-4" />
-                    Dashboard
-                  </button>
-                  <button
-                    onClick={() => openInNewTab('/matches')}
-                    className="flex items-center gap-2 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700"
-                  >
-                    <Heart className="h-4 w-4" />
-                    Matches
-                  </button>
-                  <button
-                    onClick={() => openInNewTab('/search')}
-                    className="flex items-center gap-2 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700"
-                  >
-                    <Search className="h-4 w-4" />
-                    Search
-                  </button>
+                    Start Test
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
 
-            {/* Test Checklist */}
-            <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Testing Checklist</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            {/* Testing Checklist */}
+            <div className="mt-8 bg-gray-50 rounded-xl p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">QA Checklist</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
-                  'Homepage loads correctly for visitors',
-                  'Login/Register pages work',
-                  'Profile creation wizard flows correctly',
-                  'Dashboard shows correct status',
-                  'Matches page shows filtered results',
-                  'Photo visibility rules work',
-                  'Interest express/accept/reject works',
-                  'Messaging between matched users works',
-                  'Search filters work correctly',
-                  'Mobile responsive design works',
+                  'Homepage loads correctly',
+                  'Google OAuth works',
+                  'Email/password login works',
+                  'Profile creation saves all fields',
+                  'Photo upload works',
+                  'Matches display correctly',
+                  'Match percentage calculates properly',
+                  'Interest express works',
+                  'Interest accept/decline works',
+                  'Messaging works between matched users',
+                  'Profile visibility rules work',
+                  'Admin approval flow works',
+                  'Mobile responsive design',
+                  'Error states display properly',
+                  'Loading states show correctly',
                 ].map((item, idx) => (
-                  <label key={idx} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                    <input type="checkbox" className="rounded text-purple-600 focus:ring-purple-500" />
-                    <span className="text-gray-700">{item}</span>
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-200">
+                    <input type="checkbox" className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500" />
+                    <span className="text-sm text-gray-700">{item}</span>
                   </label>
                 ))}
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

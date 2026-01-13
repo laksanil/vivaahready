@@ -8,6 +8,7 @@ import {
   EducationSection,
   FamilySection,
   LifestyleSection,
+  AboutMeSection,
   ReligionSection,
   PreferencesSection
 } from './ProfileFormSections'
@@ -81,6 +82,7 @@ export default function ProfileEditModal({
     education: 'Education & Career',
     family: 'Family',
     lifestyle: 'Lifestyle',
+    aboutme: 'About Me',
     religion: 'Religion & Astro',
     preferences: 'Partner Preferences',
   }
@@ -107,6 +109,7 @@ export default function ProfileEditModal({
           {section === 'education' && <EducationSection {...sectionProps} />}
           {section === 'family' && <FamilySection {...sectionProps} />}
           {section === 'lifestyle' && <LifestyleSection {...sectionProps} />}
+          {section === 'aboutme' && <AboutMeSection {...sectionProps} />}
           {section === 'religion' && <ReligionSection {...sectionProps} />}
           {section === 'preferences' && <PreferencesSection {...sectionProps} />}
 

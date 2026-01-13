@@ -84,6 +84,7 @@ interface ProfileData {
   smoking: string | null
   drinking: string | null
   hobbies: string | null
+  fitness: string | null
   interests: string | null
   pets: string | null
   allergiesOrMedical: string | null
@@ -990,7 +991,7 @@ function ProfileCard({
                 </div>
 
                 {/* Lifestyle Section */}
-                {(profile.smoking || profile.drinking || profile.hobbies || profile.interests || profile.pets) && (
+                {(profile.smoking || profile.drinking || profile.hobbies || profile.fitness || profile.interests || profile.pets) && (
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
@@ -1001,34 +1002,67 @@ function ProfileCard({
                     </div>
                     <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
                       <h3 className="text-lg font-semibold text-primary-600 mb-3">Lifestyle</h3>
-                      <div className="space-y-2 text-sm">
-                        {profile.smoking && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Smoking</span>
-                            <span className="text-gray-800">{profile.smoking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                      <div className="space-y-4 text-sm">
+                        {/* Smoking & Drinking Row */}
+                        {(profile.smoking || profile.drinking) && (
+                          <div className="flex flex-wrap gap-4">
+                            {profile.smoking && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-500">Smoking:</span>
+                                <span className="text-gray-800">{profile.smoking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                              </div>
+                            )}
+                            {profile.drinking && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-500">Drinking:</span>
+                                <span className="text-gray-800">{profile.drinking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                              </div>
+                            )}
                           </div>
                         )}
-                        {profile.drinking && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Drinking</span>
-                            <span className="text-gray-800">{profile.drinking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                          </div>
-                        )}
+                        {/* Hobbies as pills */}
                         {profile.hobbies && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Hobbies</span>
-                            <span className="text-gray-800">{profile.hobbies}</span>
+                          <div>
+                            <span className="text-gray-500 block mb-2">Hobbies</span>
+                            <div className="flex flex-wrap gap-2">
+                              {profile.hobbies.split(', ').map((hobby, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                                  {hobby}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
+                        {/* Fitness as pills */}
+                        {profile.fitness && (
+                          <div>
+                            <span className="text-gray-500 block mb-2">Fitness & Sports</span>
+                            <div className="flex flex-wrap gap-2">
+                              {profile.fitness.split(', ').map((fit, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
+                                  {fit}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {/* Interests as pills */}
                         {profile.interests && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Interests</span>
-                            <span className="text-gray-800">{profile.interests}</span>
+                          <div>
+                            <span className="text-gray-500 block mb-2">Interests</span>
+                            <div className="flex flex-wrap gap-2">
+                              {profile.interests.split(', ').map((interest, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">
+                                  {interest}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
+                        {/* Pets */}
                         {profile.pets && (
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Pets</span>
+                            <span className="text-gray-500">Pets:</span>
                             <span className="text-gray-800">{profile.pets.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                           </div>
                         )}

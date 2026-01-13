@@ -1,6 +1,7 @@
 'use client'
 
-import { HEIGHT_OPTIONS, PREF_AGE_OPTIONS, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS } from '@/lib/constants'
+import { useState } from 'react'
+import { HEIGHT_OPTIONS, PREF_AGE_OPTIONS, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS } from '@/lib/constants'
 
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
@@ -453,7 +454,20 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
   )
 }
 
-export function LifestyleSection({ formData, handleChange }: SectionProps) {
+export function LifestyleSection({ formData, handleChange, setFormData }: SectionProps) {
+  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
+    const current = (formData[field] as string || '').split(', ').filter(v => v)
+    if (checked) {
+      setFormData(prev => ({ ...prev, [field]: [...current, value].join(', ') }))
+    } else {
+      setFormData(prev => ({ ...prev, [field]: current.filter(v => v !== value).join(', ') }))
+    }
+  }
+
+  const isChecked = (field: string, value: string) => {
+    return (formData[field] as string || '').split(', ').includes(value)
+  }
+
   return (
     <>
       <div className="grid grid-cols-3 gap-4">
@@ -488,14 +502,67 @@ export function LifestyleSection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
       </div>
+
+      {/* Hobbies Section */}
       <div>
         <label className="form-label">Hobbies</label>
-        <input type="text" name="hobbies" value={formData.hobbies as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Reading, Traveling, Cooking" />
+        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {HOBBIES_OPTIONS.map(hobby => (
+              <label key={hobby} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isChecked('hobbies', hobby)}
+                  onChange={(e) => handleCheckboxChange('hobbies', hobby, e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-gray-700">{hobby}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Fitness & Sports Section */}
+      <div>
+        <label className="form-label">Fitness & Sports</label>
+        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {FITNESS_OPTIONS.map(fitness => (
+              <label key={fitness} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isChecked('fitness', fitness)}
+                  onChange={(e) => handleCheckboxChange('fitness', fitness, e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-gray-700">{fitness}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Interests Section */}
       <div>
         <label className="form-label">Interests</label>
-        <input type="text" name="interests" value={formData.interests as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Music, Sports, Technology" />
+        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {INTERESTS_OPTIONS.map(interest => (
+              <label key={interest} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                <input
+                  type="checkbox"
+                  checked={isChecked('interests', interest)}
+                  onChange={(e) => handleCheckboxChange('interests', interest, e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-gray-700">{interest}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
+
       <div>
         <label className="form-label">Pets</label>
         <select name="pets" value={formData.pets as string || ''} onChange={handleChange} className="input-field">
@@ -511,11 +578,142 @@ export function LifestyleSection({ formData, handleChange }: SectionProps) {
         <label className="form-label">Allergies or Medical Conditions</label>
         <textarea name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field min-h-[60px]" placeholder="e.g., None, Peanut allergy" />
       </div>
-      <div>
-        <label className="form-label">About Me</label>
-        <textarea name="aboutMe" value={formData.aboutMe as string || ''} onChange={handleChange} className="input-field min-h-[100px]" placeholder="Tell us about yourself..." />
-      </div>
     </>
+  )
+}
+
+// Helper function to generate About Me content from religion, family, hobbies, fitness, interests
+function generateAboutMe(formData: Record<string, unknown>): string {
+  const parts: string[] = []
+
+  // Religion and caste
+  const religion = formData.religion as string || ''
+  const caste = formData.caste as string || ''
+  if (religion || caste) {
+    if (religion && caste) {
+      parts.push(`I come from a ${religion} ${caste} family.`)
+    } else if (religion) {
+      parts.push(`I come from a ${religion} family.`)
+    }
+  }
+
+  // Family type and values
+  const familyType = formData.familyType as string || ''
+  const familyValues = formData.familyValues as string || ''
+  if (familyType || familyValues) {
+    const typeMap: Record<string, string> = { nuclear: 'nuclear', joint: 'joint', extended: 'extended' }
+    const valuesMap: Record<string, string> = { traditional: 'traditional', moderate: 'moderate', liberal: 'liberal' }
+    const typeStr = typeMap[familyType] || ''
+    const valuesStr = valuesMap[familyValues] || ''
+    if (typeStr && valuesStr) {
+      parts.push(`We are a ${valuesStr} ${typeStr} family.`)
+    } else if (typeStr) {
+      parts.push(`We are a ${typeStr} family.`)
+    } else if (valuesStr) {
+      parts.push(`We have ${valuesStr} family values.`)
+    }
+  }
+
+  // Hobbies
+  const hobbies = [...(formData.hobbies as string || '').split(', ').filter(h => h)]
+  if (hobbies.length > 0) {
+    if (hobbies.length === 1) {
+      parts.push(`I enjoy ${hobbies[0].toLowerCase()}.`)
+    } else if (hobbies.length === 2) {
+      parts.push(`I enjoy ${hobbies[0].toLowerCase()} and ${hobbies[1].toLowerCase()}.`)
+    } else {
+      const lastHobby = hobbies.pop()
+      parts.push(`I enjoy ${hobbies.map(h => h.toLowerCase()).join(', ')}, and ${lastHobby?.toLowerCase()}.`)
+    }
+  }
+
+  // Fitness
+  const fitness = [...(formData.fitness as string || '').split(', ').filter(f => f)]
+  if (fitness.length > 0) {
+    if (fitness.length === 1) {
+      parts.push(`I stay active with ${fitness[0].toLowerCase()}.`)
+    } else if (fitness.length === 2) {
+      parts.push(`I stay active with ${fitness[0].toLowerCase()} and ${fitness[1].toLowerCase()}.`)
+    } else {
+      const lastFit = fitness.pop()
+      parts.push(`I stay active with ${fitness.map(f => f.toLowerCase()).join(', ')}, and ${lastFit?.toLowerCase()}.`)
+    }
+  }
+
+  // Interests
+  const interests = [...(formData.interests as string || '').split(', ').filter(i => i)]
+  if (interests.length > 0) {
+    if (interests.length === 1) {
+      parts.push(`I'm passionate about ${interests[0].toLowerCase()}.`)
+    } else if (interests.length === 2) {
+      parts.push(`I'm passionate about ${interests[0].toLowerCase()} and ${interests[1].toLowerCase()}.`)
+    } else {
+      const lastInterest = interests.pop()
+      parts.push(`I'm passionate about ${interests.map(i => i.toLowerCase()).join(', ')}, and ${lastInterest?.toLowerCase()}.`)
+    }
+  }
+
+  return parts.join(' ')
+}
+
+export function AboutMeSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [showGenerated, setShowGenerated] = useState(false)
+  const generatedContent = generateAboutMe(formData)
+  const hasInfoToGenerate = (formData.religion as string || '').trim() ||
+    (formData.familyType as string || '').trim() ||
+    (formData.familyValues as string || '').trim() ||
+    (formData.hobbies as string || '').trim() ||
+    (formData.fitness as string || '').trim() ||
+    (formData.interests as string || '').trim()
+
+  const handleUseGenerated = () => {
+    const current = formData.aboutMe as string || ''
+    const newContent = current ? `${current} ${generatedContent}` : generatedContent
+    setFormData(prev => ({ ...prev, aboutMe: newContent }))
+    setShowGenerated(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="form-label mb-0">About Me</label>
+          {hasInfoToGenerate && (
+            <button
+              type="button"
+              onClick={() => setShowGenerated(!showGenerated)}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              {showGenerated ? 'Hide Suggestion' : '✨ Generate for Me'}
+            </button>
+          )}
+        </div>
+
+        {showGenerated && generatedContent && (
+          <div className="mb-3 p-3 bg-primary-50 border border-primary-200 rounded-xl">
+            <p className="text-sm text-gray-700 mb-2">{generatedContent}</p>
+            <button
+              type="button"
+              onClick={handleUseGenerated}
+              className="text-sm bg-primary-600 text-white px-3 py-1 rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Use This
+            </button>
+          </div>
+        )}
+
+        <textarea
+          name="aboutMe"
+          value={formData.aboutMe as string || ''}
+          onChange={handleChange}
+          className="input-field min-h-[120px]"
+          placeholder="Tell us about yourself, your values, interests, and what you're looking for in a partner..."
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Tip: Fill in religion, family details, hobbies, fitness, and interests to get a personalized suggestion
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -605,7 +803,20 @@ export function ReligionSection({ formData, handleChange }: SectionProps) {
   )
 }
 
-export function PreferencesSection({ formData, handleChange }: SectionProps) {
+export function PreferencesSection({ formData, handleChange, setFormData }: SectionProps) {
+  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
+    const current = (formData[field] as string || '').split(', ').filter(v => v)
+    if (checked) {
+      setFormData(prev => ({ ...prev, [field]: [...current, value].join(', ') }))
+    } else {
+      setFormData(prev => ({ ...prev, [field]: current.filter(v => v !== value).join(', ') }))
+    }
+  }
+
+  const isChecked = (field: string, value: string) => {
+    return (formData[field] as string || '').split(', ').includes(value)
+  }
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -713,6 +924,108 @@ export function PreferencesSection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
       </div>
+
+      {/* Hobbies, Fitness & Interests Preferences */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <h4 className="font-semibold text-gray-900 mb-4">Lifestyle Preferences</h4>
+
+        {/* Hobbies Preference */}
+        <div className="mb-4">
+          <label className="form-label">Partner's Hobbies</label>
+          <select
+            name="prefHobbies"
+            value={formData.prefHobbies as string || 'doesnt_matter'}
+            onChange={handleChange}
+            className="input-field"
+          >
+            <option value="doesnt_matter">Doesn't Matter</option>
+            <option value="same_as_mine">Same as Mine</option>
+            <option value="specific">Specific Hobbies</option>
+          </select>
+          {(formData.prefHobbies as string) === 'specific' && (
+            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {HOBBIES_OPTIONS.map(hobby => (
+                  <label key={hobby} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={isChecked('prefHobbiesList', hobby)}
+                      onChange={(e) => handleCheckboxChange('prefHobbiesList', hobby, e.target.checked)}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-gray-700">{hobby}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Fitness Preference */}
+        <div className="mb-4">
+          <label className="form-label">Partner's Fitness & Sports</label>
+          <select
+            name="prefFitness"
+            value={formData.prefFitness as string || 'doesnt_matter'}
+            onChange={handleChange}
+            className="input-field"
+          >
+            <option value="doesnt_matter">Doesn't Matter</option>
+            <option value="same_as_mine">Same as Mine</option>
+            <option value="specific">Specific Activities</option>
+          </select>
+          {(formData.prefFitness as string) === 'specific' && (
+            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {FITNESS_OPTIONS.map(fitness => (
+                  <label key={fitness} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={isChecked('prefFitnessList', fitness)}
+                      onChange={(e) => handleCheckboxChange('prefFitnessList', fitness, e.target.checked)}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-gray-700">{fitness}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Interests Preference */}
+        <div className="mb-4">
+          <label className="form-label">Partner's Interests</label>
+          <select
+            name="prefInterests"
+            value={formData.prefInterests as string || 'doesnt_matter'}
+            onChange={handleChange}
+            className="input-field"
+          >
+            <option value="doesnt_matter">Doesn't Matter</option>
+            <option value="same_as_mine">Same as Mine</option>
+            <option value="specific">Specific Interests</option>
+          </select>
+          {(formData.prefInterests as string) === 'specific' && (
+            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {INTERESTS_OPTIONS.map(interest => (
+                  <label key={interest} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={isChecked('prefInterestsList', interest)}
+                      onChange={(e) => handleCheckboxChange('prefInterestsList', interest, e.target.checked)}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-gray-700">{interest}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div>
         <label className="form-label">Ideal Partner Description</label>
         <textarea name="idealPartnerDesc" value={formData.idealPartnerDesc as string || ''} onChange={handleChange} className="input-field min-h-[100px]" placeholder="Describe your ideal partner..." />
