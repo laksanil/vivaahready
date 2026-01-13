@@ -57,7 +57,7 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/feed" className="text-gray-600 hover:text-primary-600 transition-colors">
-              Feed
+              My Matches
             </Link>
             <Link href="/connections" className="text-gray-600 hover:text-primary-600 transition-colors">
               Connections
@@ -119,7 +119,7 @@ export function Navbar() {
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
                       <Heart className="h-4 w-4 mr-2" />
-                      Feed
+                      My Matches
                     </Link>
                     <Link
                       href="/connections"
@@ -186,7 +186,7 @@ export function Navbar() {
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
-              Feed
+              My Matches
             </Link>
             <Link
               href="/connections"
