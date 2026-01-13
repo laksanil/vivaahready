@@ -247,10 +247,10 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`mt-6 w-full py-3.5 rounded-full font-semibold text-lg shadow-lg transition-all ${
+      className={`mt-8 w-full py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
         !disabled && !loading
-          ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white hover:shadow-xl'
-          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg active:scale-[0.98]'
+          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
       }`}
     >
       {loading ? (
@@ -268,25 +268,28 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-gradient-to-b from-gray-50 to-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         {/* Progress Bar */}
-        <div className="h-1.5 bg-gray-200">
+        <div className="h-1 bg-gray-100">
           <div
-            className="h-full bg-gradient-to-r from-teal-400 to-teal-500 transition-all duration-300"
+            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
-          <button onClick={handleBack} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <ArrowLeft className="h-6 w-6" />
+        <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
+          <button onClick={handleBack} className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <h2 className="text-lg font-semibold text-gray-900">
-            {SECTION_TITLES[currentSection]}
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-6 h-6" />
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {SECTION_TITLES[currentSection]}
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">Step {step} of {totalSteps}</p>
+          </div>
+          <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -298,7 +301,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
         )}
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 pb-8">
           {/* Step 1: Basic Info */}
           {currentSection === 'basics' && (
             <div className="space-y-4">
@@ -352,7 +355,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <label className="form-label">Email *</label>
                   <input
                     type="email"
                     value={email}
@@ -363,7 +366,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <label className="form-label">Phone *</label>
                   <div className="flex gap-2">
                     <select
                       value={countryCode}
@@ -390,7 +393,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <label className="form-label">Password *</label>
                     <input
                       type="text"
                       value={password}
@@ -400,7 +403,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                    <label className="form-label">Confirm Password *</label>
                     <input
                       type="text"
                       value={confirmPassword}
