@@ -389,7 +389,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         {/* Falsification Warning */}
         <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <p className="text-amber-800 text-xs">
-            <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension. Such conduct may also constitute fraud and could be subject to legal action.
+            <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
           </p>
         </div>
 

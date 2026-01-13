@@ -87,54 +87,62 @@ export const PREF_LOCATION_OPTIONS = [
   { value: "open_to_relocation", label: "Open to relocation" },
 ]
 
-// Education/Qualification options for profile
-// Level: 1=High School, 2=Undergrad, 3=Masters, 4=Doctorate
-// Medical: MBBS=Undergrad, MD/MS=Masters, DM/MCh=Doctorate
+// Education/Qualification options for profile (US-based degrees)
+// Level: 1=High School, 2=Undergrad, 3=Masters/Professional, 4=Doctorate
 export const QUALIFICATION_OPTIONS = [
-  { value: "high_school", label: "High School / 12th", level: 1 },
-  { value: "diploma", label: "Diploma / Associate's", level: 1 },
+  { value: "high_school", label: "High School Diploma", level: 1 },
+  { value: "associates", label: "Associate's Degree (AA, AS)", level: 1 },
   // Undergrad (Bachelor's)
-  { value: "undergrad", label: "Undergrad (BA, BSc, BCom, BBA)", level: 2 },
-  { value: "undergrad_eng", label: "Engineering - Undergrad (BE, BTech)", level: 2 },
-  { value: "undergrad_cs", label: "Computer Science - Undergrad (BSc CS, BCA, BTech CS)", level: 2 },
-  { value: "mbbs", label: "Medical - MBBS", level: 2 },
-  { value: "bds", label: "Dental - BDS", level: 2 },
-  { value: "llb", label: "Law - LLB / JD", level: 2 },
+  { value: "bachelors_arts", label: "Bachelor of Arts (BA)", level: 2 },
+  { value: "bachelors_science", label: "Bachelor of Science (BS)", level: 2 },
+  { value: "bachelors_eng", label: "Bachelor of Engineering (BE, BSE)", level: 2 },
+  { value: "bachelors_cs", label: "Bachelor of Science - Computer Science (BS CS)", level: 2 },
+  { value: "bba", label: "Bachelor of Business Administration (BBA)", level: 2 },
+  { value: "bfa", label: "Bachelor of Fine Arts (BFA)", level: 2 },
+  { value: "bsn", label: "Bachelor of Science in Nursing (BSN)", level: 2 },
   // Masters
-  { value: "masters", label: "Masters (MA, MSc, MCom)", level: 3 },
-  { value: "masters_eng", label: "Engineering - Masters (ME, MTech)", level: 3 },
-  { value: "masters_cs", label: "Computer Science - Masters (MSc CS, MCA, MTech CS)", level: 3 },
-  { value: "mba", label: "MBA", level: 3 },
-  { value: "md", label: "Medical - MD / MS", level: 3 },
-  { value: "ca_cpa", label: "CA / CPA (Chartered Accountant)", level: 3 },
-  { value: "cs", label: "CS (Company Secretary)", level: 3 },
-  { value: "llm", label: "Law - LLM", level: 3 },
+  { value: "masters_arts", label: "Master of Arts (MA)", level: 3 },
+  { value: "masters_science", label: "Master of Science (MS)", level: 3 },
+  { value: "masters_eng", label: "Master of Engineering (MEng)", level: 3 },
+  { value: "masters_cs", label: "Master of Science - Computer Science (MS CS)", level: 3 },
+  { value: "mba", label: "Master of Business Administration (MBA)", level: 3 },
+  { value: "mfa", label: "Master of Fine Arts (MFA)", level: 3 },
+  { value: "mph", label: "Master of Public Health (MPH)", level: 3 },
+  { value: "msw", label: "Master of Social Work (MSW)", level: 3 },
+  // Professional Degrees
+  { value: "md", label: "Doctor of Medicine (MD)", level: 4 },
+  { value: "do", label: "Doctor of Osteopathic Medicine (DO)", level: 4 },
+  { value: "dds", label: "Doctor of Dental Surgery (DDS, DMD)", level: 4 },
+  { value: "pharmd", label: "Doctor of Pharmacy (PharmD)", level: 4 },
+  { value: "jd", label: "Juris Doctor (JD) - Law", level: 4 },
+  { value: "cpa", label: "Certified Public Accountant (CPA)", level: 3 },
   // Doctorate
-  { value: "phd", label: "PhD / Doctorate", level: 4 },
-  { value: "dm_mch", label: "Medical - DM / MCh (Super Specialty)", level: 4 },
+  { value: "phd", label: "Doctor of Philosophy (PhD)", level: 4 },
+  { value: "edd", label: "Doctor of Education (EdD)", level: 4 },
+  { value: "psyd", label: "Doctor of Psychology (PsyD)", level: 4 },
   { value: "other", label: "Other", level: 2 },
 ]
 
-// Preferred Education options for partner preferences
+// Preferred Education options for partner preferences (US-based)
 // type: 'level' = matches this level or higher, 'category' = specific category only
 export const PREF_EDUCATION_OPTIONS = [
   { value: "doesnt_matter", label: "Doesn't matter", type: "any" },
-  { value: "undergrad", label: "Undergrad or higher", type: "level", minLevel: 2 },
-  { value: "masters", label: "Masters or higher", type: "level", minLevel: 3 },
+  { value: "bachelors", label: "Bachelor's or higher", type: "level", minLevel: 2 },
+  { value: "masters", label: "Master's or higher", type: "level", minLevel: 3 },
   // Engineering
-  { value: "eng_undergrad", label: "Engineering - Undergrad (BE/BTech)", type: "category", categories: ["undergrad_eng", "bachelors_eng"] },
-  { value: "eng_masters", label: "Engineering - Masters (ME/MTech)", type: "category", categories: ["masters_eng"] },
+  { value: "eng_bachelors", label: "Engineering - Bachelor's (BE, BSE)", type: "category", categories: ["bachelors_eng"] },
+  { value: "eng_masters", label: "Engineering - Master's (MEng, MS)", type: "category", categories: ["masters_eng"] },
   // Computer Science
-  { value: "cs_undergrad", label: "Computer Science - Undergrad", type: "category", categories: ["undergrad_cs", "bachelors_cs"] },
-  { value: "cs_masters", label: "Computer Science - Masters", type: "category", categories: ["masters_cs"] },
-  // Medical
-  { value: "medical_undergrad", label: "Medical - MBBS/BDS", type: "category", categories: ["mbbs", "bds"] },
-  { value: "medical_masters", label: "Medical - MD/MS", type: "category", categories: ["md", "ms_medical"] },
-  // Other Professional
+  { value: "cs_bachelors", label: "Computer Science - Bachelor's (BS CS)", type: "category", categories: ["bachelors_cs"] },
+  { value: "cs_masters", label: "Computer Science - Master's (MS CS)", type: "category", categories: ["masters_cs"] },
+  // Medical / Healthcare
+  { value: "medical", label: "Medical (MD, DO)", type: "category", categories: ["md", "do"] },
+  { value: "healthcare", label: "Healthcare (BSN, PharmD, DDS)", type: "category", categories: ["bsn", "pharmd", "dds"] },
+  // Business / Professional
   { value: "mba", label: "MBA", type: "category", categories: ["mba"] },
-  { value: "ca_professional", label: "CA / CPA / CS", type: "category", categories: ["ca_cpa", "cs"] },
-  { value: "law", label: "Law (LLB/LLM)", type: "category", categories: ["llb", "llm"] },
-  { value: "doctorate", label: "Doctorate (PhD/DM/MCh)", type: "category", categories: ["phd", "dm_mch"] },
+  { value: "cpa", label: "CPA (Certified Public Accountant)", type: "category", categories: ["cpa"] },
+  { value: "law", label: "Law (JD)", type: "category", categories: ["jd"] },
+  { value: "doctorate", label: "Doctorate (PhD, EdD, PsyD)", type: "category", categories: ["phd", "edd", "psyd"] },
 ]
 
 // Hobbies options (Shaadi.com style)

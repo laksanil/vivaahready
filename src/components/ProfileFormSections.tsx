@@ -237,53 +237,11 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
     }
   }
 
+  const isUSA = (formData.country as string || 'USA') === 'USA'
+
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div>
-          <label className="form-label">Zip Code <span className="text-red-500">*</span></label>
-          <div className="relative">
-            <input
-              type="text"
-              name="zipCode"
-              value={formData.zipCode as string || ''}
-              onChange={handleZipCodeChange}
-              className="input-field"
-              placeholder="e.g., 94102"
-              maxLength={5}
-            />
-            {zipLookupLoading && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Enter zip to auto-fill city & state</p>
-        </div>
-        <div>
-          <label className="form-label">City</label>
-          <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
-            const state = (formData.currentLocation as string || '').split(', ')[1] || ''
-            setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
-          }} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">State</label>
-          {(formData.country as string) === 'USA' ? (
-            <select name="state" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
-              const city = (formData.currentLocation as string || '').split(', ')[0] || ''
-              setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
-            }} className="input-field">
-              <option value="">Select State</option>
-              {US_STATES.map(state => <option key={state} value={state}>{state}</option>)}
-            </select>
-          ) : (
-            <input type="text" placeholder="State/Province" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
-              const city = (formData.currentLocation as string || '').split(', ')[0] || ''
-              setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
-            }} className="input-field" />
-          )}
-        </div>
         <div>
           <label className="form-label">Country <span className="text-red-500">*</span></label>
           <select name="country" value={formData.country as string || 'USA'} onChange={handleCountryChange} className="input-field">
@@ -296,6 +254,52 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           </select>
           {(formData.country as string) === 'Other' && (
             <input type="text" name="countryOther" value={formData.countryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          )}
+        </div>
+        {isUSA && (
+          <div>
+            <label className="form-label">Zip Code <span className="text-red-500">*</span></label>
+            <div className="relative">
+              <input
+                type="text"
+                name="zipCode"
+                value={formData.zipCode as string || ''}
+                onChange={handleZipCodeChange}
+                className="input-field"
+                placeholder="e.g., 94102"
+                maxLength={5}
+              />
+              {zipLookupLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Auto-fills city & state</p>
+          </div>
+        )}
+        <div>
+          <label className="form-label">City</label>
+          <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
+            const state = (formData.currentLocation as string || '').split(', ')[1] || ''
+            setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
+          }} className="input-field" />
+        </div>
+        <div>
+          <label className="form-label">State</label>
+          {isUSA ? (
+            <select name="state" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
+              const city = (formData.currentLocation as string || '').split(', ')[0] || ''
+              setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
+            }} className="input-field">
+              <option value="">Select State</option>
+              {US_STATES.map(state => <option key={state} value={state}>{state}</option>)}
+            </select>
+          ) : (
+            <input type="text" placeholder="State/Province" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
+              const city = (formData.currentLocation as string || '').split(', ')[0] || ''
+              setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
+            }} className="input-field" />
           )}
         </div>
       </div>
@@ -378,8 +382,8 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="form-label">LinkedIn</label>
-          <input type="url" name="linkedinProfile" value={formData.linkedinProfile as string || ''} onChange={handleChange} className="input-field" placeholder="linkedin.com/in/..." />
+          <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
+          <input type="url" name="linkedinProfile" value={formData.linkedinProfile as string || ''} onChange={handleChange} className="input-field" placeholder="linkedin.com/in/..." required />
         </div>
         <div>
           <label className="form-label">Instagram</label>
