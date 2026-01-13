@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
@@ -41,7 +43,7 @@ const tabs: { id: TabType; label: string }[] = [
   { id: 'no_photos', label: 'No Photos' },
 ]
 
-export default function AdminProfilesPage() {
+function AdminProfilesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialTab = (searchParams.get('tab') as TabType) || 'all'
@@ -524,5 +526,17 @@ export default function AdminProfilesPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AdminProfilesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      </div>
+    }>
+      <AdminProfilesContent />
+    </Suspense>
   )
 }

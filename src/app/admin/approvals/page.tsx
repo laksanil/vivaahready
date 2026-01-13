@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react'
