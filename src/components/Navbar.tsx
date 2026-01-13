@@ -54,8 +54,11 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/matches" className="text-gray-600 hover:text-primary-600 transition-colors">
-              My Matches
+            <Link href="/feed" className="text-gray-600 hover:text-primary-600 transition-colors">
+              Feed
+            </Link>
+            <Link href="/connections" className="text-gray-600 hover:text-primary-600 transition-colors">
+              Connections
             </Link>
             <Link href="/messages" className="text-gray-600 hover:text-primary-600 transition-colors">
               Messages
@@ -109,12 +112,20 @@ export function Navbar() {
                       My Profile
                     </Link>
                     <Link
-                      href="/matches"
+                      href="/feed"
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
                       <Heart className="h-4 w-4 mr-2" />
-                      My Matches
+                      Feed
+                    </Link>
+                    <Link
+                      href="/connections"
+                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Connections
                     </Link>
                     <Link
                       href="/messages"
@@ -136,7 +147,7 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="bg-red-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors">
+              <Link href="/login" className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
                 Sign In
               </Link>
             )}
@@ -159,11 +170,18 @@ export function Navbar() {
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-4 space-y-4">
             <Link
-              href="/matches"
+              href="/feed"
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
-              My Matches
+              Feed
+            </Link>
+            <Link
+              href="/connections"
+              className="block text-gray-600 hover:text-primary-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Connections
             </Link>
             <Link
               href="/messages"
@@ -209,7 +227,7 @@ export function Navbar() {
                 <hr />
                 <Link
                   href="/login"
-                  className="block bg-red-500 text-white text-center py-2 rounded-lg hover:bg-red-600"
+                  className="block bg-primary-600 text-white text-center py-2 rounded-lg hover:bg-primary-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In

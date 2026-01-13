@@ -110,7 +110,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </select>
         </div>
         <div>
-          <label className="form-label">Weight (lbs) <span className="text-red-500">*</span></label>
+          <label className="form-label">Weight (lbs)</label>
           <input
             type="number"
             name="weight"
@@ -133,7 +133,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </select>
         </div>
         <div>
-          <label className="form-label">Blood Group <span className="text-red-500">*</span></label>
+          <label className="form-label">Blood Group</label>
           <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select blood group</option>
             <option value="A+">A+</option>
@@ -149,7 +149,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Health Information <span className="text-red-500">*</span></label>
+          <label className="form-label">Health Information</label>
           <select name="healthInfo" value={formData.healthInfo as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select</option>
             <option value="no_health_issues">No Health Issues</option>
@@ -162,7 +162,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           )}
         </div>
         <div>
-          <label className="form-label">Any Disability *</label>
+          <label className="form-label">Any Disability</label>
           <select name="anyDisability" value={formData.anyDisability as string || 'none'} onChange={handleChange} className="input-field">
             <option value="none">None</option>
             <option value="physical">Physically Challenged</option>

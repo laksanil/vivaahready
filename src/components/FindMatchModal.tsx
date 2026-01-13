@@ -61,8 +61,11 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
-  // Profile form data
-  const [formData, setFormData] = useState<Record<string, unknown>>({})
+  // Profile form data - initialize with defaults for fields that have default UI values
+  const [formData, setFormData] = useState<Record<string, unknown>>({
+    maritalStatus: 'never_married',
+    anyDisability: 'none',
+  })
 
   // Photo upload state
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([])
@@ -87,10 +90,12 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
   }
 
   const handleBasicsContinue = () => {
-    if (formData.createdBy && formData.firstName && formData.lastName && formData.gender) {
+    if (formData.createdBy && formData.firstName && formData.lastName && formData.gender && formData.dateOfBirth && formData.height && formData.maritalStatus) {
       setStep(2)
     }
   }
+
+  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && formData.dateOfBirth && formData.height && formData.maritalStatus)
 
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
@@ -308,7 +313,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
               <BasicsSection {...sectionProps} />
               {renderContinueButton(
                 handleBasicsContinue,
-                !formData.createdBy || !formData.firstName || !formData.lastName || !formData.gender
+                !isBasicsComplete
               )}
             </div>
           )}
@@ -424,7 +429,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                 disabled={!email || !phone || !password || password.length < 8 || password !== confirmPassword || loading}
                 className={`mt-6 w-full py-3.5 rounded-full font-semibold text-lg shadow-lg transition-all ${
                   email && phone && password && password.length >= 8 && password === confirmPassword && !loading
-                    ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white hover:shadow-xl'
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
@@ -440,9 +445,9 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
 
               <p className="mt-4 text-center text-sm text-gray-500">
                 By creating account, you agree to our{' '}
-                <Link href="/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>
+                <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
                 {' '}and{' '}
-                <Link href="/terms" className="text-teal-600 hover:underline">T&C</Link>.
+                <Link href="/terms" className="text-primary-600 hover:underline">T&C</Link>.
               </p>
             </div>
           )}
@@ -507,8 +512,8 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
           {currentSection === 'photos' && (
             <div>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Camera className="h-10 w-10 text-teal-500" />
+                <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Camera className="h-10 w-10 text-primary-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   Upload Your Photo
@@ -522,7 +527,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {/* Uploaded Photos */}
                 {photos.map((photo, index) => (
-                  <div key={index} className="relative aspect-square rounded-xl overflow-hidden border-2 border-teal-500 bg-gray-100">
+                  <div key={index} className="relative aspect-square rounded-xl overflow-hidden border-2 border-primary-500 bg-gray-100">
                     <Image
                       src={photo.preview}
                       alt={`Photo ${index + 1}`}
@@ -536,7 +541,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                       <Trash2 className="h-4 w-4" />
                     </button>
                     {index === 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-teal-500 text-white text-xs py-1 text-center">
+                      <div className="absolute bottom-0 left-0 right-0 bg-primary-500 text-white text-xs py-1 text-center">
                         Primary Photo
                       </div>
                     )}
@@ -550,12 +555,12 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                     onClick={() => fileInputRef.current?.click()}
                     className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-colors ${
                       photos.length === 0 && index === 0
-                        ? 'border-teal-400 bg-teal-50 hover:bg-teal-100'
-                        : 'border-gray-300 bg-gray-50 hover:border-teal-400 hover:bg-teal-50'
+                        ? 'border-primary-400 bg-primary-50 hover:bg-primary-100'
+                        : 'border-gray-300 bg-gray-50 hover:border-primary-400 hover:bg-primary-50'
                     }`}
                   >
-                    <Upload className={`h-6 w-6 mb-1 ${photos.length === 0 && index === 0 ? 'text-teal-500' : 'text-gray-400'}`} />
-                    <span className={`text-xs ${photos.length === 0 && index === 0 ? 'text-teal-600 font-medium' : 'text-gray-500'}`}>
+                    <Upload className={`h-6 w-6 mb-1 ${photos.length === 0 && index === 0 ? 'text-primary-500' : 'text-gray-400'}`} />
+                    <span className={`text-xs ${photos.length === 0 && index === 0 ? 'text-primary-600 font-medium' : 'text-gray-500'}`}>
                       {photos.length === 0 && index === 0 ? 'Add Photo *' : 'Add Photo'}
                     </span>
                   </button>
@@ -574,7 +579,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
               {/* Upload Button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-3 border-2 border-teal-500 text-teal-600 rounded-full font-semibold hover:bg-teal-50 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 border-2 border-primary-500 text-primary-600 rounded-full font-semibold hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
               >
                 <Upload className="h-5 w-5" />
                 Upload from Device
@@ -592,7 +597,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                       value="verified_only"
                       checked={photoVisibility === 'verified_only'}
                       onChange={(e) => setPhotoVisibility(e.target.value)}
-                      className="mt-1 h-4 w-4 text-teal-500 focus:ring-teal-500"
+                      className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
                     <div>
                       <span className="font-medium text-gray-900">Verified Members Only</span>
@@ -606,7 +611,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                       value="matching_preferences"
                       checked={photoVisibility === 'matching_preferences'}
                       onChange={(e) => setPhotoVisibility(e.target.value)}
-                      className="mt-1 h-4 w-4 text-teal-500 focus:ring-teal-500"
+                      className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
                     <div>
                       <span className="font-medium text-gray-900">Matching Profiles Only</span>
@@ -620,7 +625,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                       value="mutual_interest"
                       checked={photoVisibility === 'mutual_interest'}
                       onChange={(e) => setPhotoVisibility(e.target.value)}
-                      className="mt-1 h-4 w-4 text-teal-500 focus:ring-teal-500"
+                      className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
                     <div>
                       <span className="font-medium text-gray-900">After Mutual Interest</span>
@@ -656,7 +661,7 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
                   disabled={loading || photos.length === 0}
                   className={`w-full py-3.5 rounded-full font-semibold text-lg shadow-lg transition-all ${
                     !loading && photos.length > 0
-                      ? 'bg-gradient-to-r from-teal-400 to-teal-500 text-white hover:shadow-xl'
+                      ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >

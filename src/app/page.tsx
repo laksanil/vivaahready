@@ -54,7 +54,7 @@ export default async function HomePage() {
                 through preference-based matching and verified profiles.
               </p>
               <div className="mt-8">
-                <FindMatchButton className="bg-gradient-to-r from-teal-400 to-teal-500 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center">
+                <FindMatchButton className="bg-primary-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center">
                   Find Your Match
                 </FindMatchButton>
               </div>

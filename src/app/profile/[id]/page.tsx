@@ -577,7 +577,7 @@ function ProfileCard({
                     <div className="w-14 h-14 rounded-full bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors">
                       <Lock className="h-7 w-7 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1 text-center leading-tight">Get Verified<br/>to Express Interest</span>
+                    <span className="text-xs text-gray-600 mt-1 text-center leading-tight">Get Verified<br/>to Like</span>
                   </Link>
                 ) : (
                   <button
@@ -585,14 +585,14 @@ function ProfileCard({
                     disabled={isSending}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-14 h-14 rounded-full bg-[#E91E63] hover:bg-[#C2185B] flex items-center justify-center transition-colors">
+                    <div className="w-14 h-14 rounded-full bg-pink-500 hover:bg-pink-600 flex items-center justify-center transition-colors">
                       {isSending ? (
                         <Loader2 className="h-7 w-7 text-white animate-spin" />
                       ) : (
                         <Heart className="h-7 w-7 text-white" />
                       )}
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Express Interest</span>
+                    <span className="text-xs text-gray-600 mt-1">Like</span>
                   </button>
                 )}
 
@@ -614,7 +614,7 @@ function ProfileCard({
               onClick={() => setActiveTab('details')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'details'
-                  ? 'text-[#E8847C] border-[#E8847C]'
+                  ? 'text-primary-600 border-primary-600'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
@@ -624,7 +624,7 @@ function ProfileCard({
               onClick={() => setActiveTab('preferences')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'preferences'
-                  ? 'text-[#E8847C] border-[#E8847C]'
+                  ? 'text-primary-600 border-primary-600'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
@@ -648,7 +648,7 @@ function ProfileCard({
                       </div>
                     </div>
                     <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                      <h3 className="text-lg font-semibold text-[#E8847C] mb-2">About {profile.user.name}</h3>
+                      <h3 className="text-lg font-semibold text-primary-600 mb-2">About {profile.user.name}</h3>
                       <p className="text-gray-700 leading-relaxed">{profile.aboutMe}</p>
                     </div>
                   </div>
@@ -662,7 +662,7 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Personal Details</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Personal Details</h3>
                     <div className="space-y-2 text-sm">
                       {profile.dateOfBirth && (
                         <div className="flex items-center gap-2">
@@ -739,7 +739,7 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Religion & Astro</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Religion & Astro</h3>
                     <div className="space-y-2 text-sm">
                       {profile.religion && (
                         <div className="flex items-center gap-2">
@@ -819,7 +819,7 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Education & Career</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Education & Career</h3>
                     <div className="space-y-2 text-sm">
                       {profile.qualification && (
                         <div className="flex items-center gap-2">
@@ -869,7 +869,7 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Family Details</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Family Details</h3>
                     <div className="space-y-2 text-sm">
                       {profile.fatherName && (
                         <div className="flex items-center gap-2">
@@ -941,11 +941,11 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Location & Background</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Location & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.currentLocation && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-teal-500" />
+                          <MapPin className="w-4 h-4 text-primary-500" />
                           <span className="text-gray-800">{profile.currentLocation}{profile.country ? `, ${profile.country}` : ''}</span>
                         </div>
                       )}
@@ -982,7 +982,7 @@ function ProfileCard({
                       {profile.linkedinProfile && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">LinkedIn</span>
-                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">View Profile</a>
+                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">View Profile</a>
                         </div>
                       )}
                     </div>
@@ -1000,7 +1000,7 @@ function ProfileCard({
                       </div>
                     </div>
                     <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                      <h3 className="text-lg font-semibold text-[#E8847C] mb-3">Lifestyle</h3>
+                      <h3 className="text-lg font-semibold text-primary-600 mb-3">Lifestyle</h3>
                       <div className="space-y-2 text-sm">
                         {profile.smoking && (
                           <div className="flex items-center gap-2">
@@ -1071,8 +1071,8 @@ function ProfileCard({
               <div className="space-y-8">
                 {/* Section 1: What THEY are looking for (how well YOU match THEIR preferences) */}
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-[#E8847C]/10 to-[#E8847C]/5 px-4 py-3 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-[#E8847C]">What {pronoun} Is Looking For</h3>
+                  <div className="bg-gradient-to-r from-primary-600/10 to-primary-600/5 px-4 py-3 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-primary-600">What {pronoun} Is Looking For</h3>
                   </div>
 
                   <div className="p-4">
@@ -1082,7 +1082,7 @@ function ProfileCard({
                         <div className="flex items-center justify-between mb-4">
                           {/* Their Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#E8847C]">
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-600">
                               {matchProfiles.theirProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.theirProfile.profileImageUrl}
@@ -1140,7 +1140,7 @@ function ProfileCard({
                         theirMatchScore.criteria.map((criterion, index) => (
                           <div key={index} className="flex justify-between items-center py-3">
                             <div className="flex-1">
-                              <div className="text-[#E8847C] text-sm font-medium">{criterion.name}</div>
+                              <div className="text-primary-600 text-sm font-medium">{criterion.name}</div>
                               <div className="text-gray-800 text-sm mt-0.5">{criterion.seekerPref}</div>
                             </div>
                             <div className="flex-shrink-0 ml-4">
@@ -1161,7 +1161,7 @@ function ProfileCard({
                           {profile.prefAgeDiff && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Age</div>
+                                <div className="text-primary-600 text-sm">Age</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefAgeDiff}</div>
                               </div>
                             </div>
@@ -1169,7 +1169,7 @@ function ProfileCard({
                           {profile.prefHeight && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Height</div>
+                                <div className="text-primary-600 text-sm">Height</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefHeight}</div>
                               </div>
                             </div>
@@ -1177,7 +1177,7 @@ function ProfileCard({
                           {profile.prefLocation && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Location</div>
+                                <div className="text-primary-600 text-sm">Location</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefLocation}</div>
                               </div>
                             </div>
@@ -1185,7 +1185,7 @@ function ProfileCard({
                           {profile.prefCaste && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Caste</div>
+                                <div className="text-primary-600 text-sm">Caste</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefCaste}</div>
                               </div>
                             </div>
@@ -1193,7 +1193,7 @@ function ProfileCard({
                           {profile.prefGotra && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Gotra</div>
+                                <div className="text-primary-600 text-sm">Gotra</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefGotra}</div>
                               </div>
                             </div>
@@ -1201,7 +1201,7 @@ function ProfileCard({
                           {profile.prefDiet && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Diet</div>
+                                <div className="text-primary-600 text-sm">Diet</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefDiet}</div>
                               </div>
                             </div>
@@ -1209,7 +1209,7 @@ function ProfileCard({
                           {profile.prefQualification && (
                             <div className="flex justify-between items-center py-3">
                               <div>
-                                <div className="text-[#E8847C] text-sm">Education</div>
+                                <div className="text-primary-600 text-sm">Education</div>
                                 <div className="text-gray-800 text-sm mt-0.5">{profile.prefQualification}</div>
                               </div>
                             </div>
@@ -1260,7 +1260,7 @@ function ProfileCard({
 
                           {/* Their Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#E8847C]">
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-600">
                               {matchProfiles.theirProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.theirProfile.profileImageUrl}
@@ -1313,7 +1313,7 @@ function ProfileCard({
                 {/* Ideal Partner Description */}
                 {profile.idealPartnerDesc && (
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-[#E8847C] text-sm font-medium mb-2">{possessivePronoun} Ideal Partner Description</div>
+                    <div className="text-primary-600 text-sm font-medium mb-2">{possessivePronoun} Ideal Partner Description</div>
                     <p className="text-gray-800 text-sm">{profile.idealPartnerDesc}</p>
                   </div>
                 )}
@@ -1327,14 +1327,14 @@ function ProfileCard({
                   <button
                     onClick={onSendInterest}
                     disabled={isSending}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-[#E91E63] hover:bg-[#C2185B] text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
                   >
                     {isSending ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <Heart className="h-5 w-5" />
                     )}
-                    {interestReceived ? 'Accept Interest' : 'Express Interest'}
+                    {interestReceived ? 'Like Back' : 'Like'}
                   </button>
                 ) : (
                   <Link
@@ -1342,7 +1342,7 @@ function ProfileCard({
                     className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
                   >
                     <Lock className="h-5 w-5" />
-                    Get Verified to Express Interest
+                    Get Verified to Like
                   </Link>
                 )}
               </div>
