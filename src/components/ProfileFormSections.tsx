@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HEIGHT_OPTIONS, PREF_AGE_OPTIONS, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS } from '@/lib/constants'
+import { HEIGHT_OPTIONS, PREF_AGE_OPTIONS, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES } from '@/lib/constants'
 
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
@@ -410,7 +410,28 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
   )
 }
 
-export function EducationSection({ formData, handleChange }: SectionProps) {
+export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [universitySearch, setUniversitySearch] = useState('')
+  const [showUniversityDropdown, setShowUniversityDropdown] = useState(false)
+
+  // Filter universities based on search
+  const filteredUniversities = US_UNIVERSITIES.filter(uni =>
+    uni.toLowerCase().includes(universitySearch.toLowerCase())
+  )
+
+  const handleUniversitySelect = (university: string) => {
+    if (university === "Other (specify below)") {
+      setFormData(prev => ({ ...prev, university: 'other' }))
+    } else {
+      setFormData(prev => ({ ...prev, university }))
+    }
+    setUniversitySearch('')
+    setShowUniversityDropdown(false)
+  }
+
+  const isOtherUniversity = (formData.university as string) === 'other' ||
+    ((formData.university as string) && !US_UNIVERSITIES.includes(formData.university as string) && (formData.university as string) !== '')
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -426,11 +447,67 @@ export function EducationSection({ formData, handleChange }: SectionProps) {
             <input type="text" name="qualificationOther" value={formData.qualificationOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify qualification" />
           )}
         </div>
-        <div>
+        <div className="relative">
           <label className="form-label">College/University</label>
-          <input type="text" name="university" value={formData.university as string || ''} onChange={handleChange} className="input-field" placeholder="University name" />
+          <input
+            type="text"
+            value={universitySearch || (formData.university as string === 'other' ? '' : formData.university as string) || ''}
+            onChange={(e) => {
+              setUniversitySearch(e.target.value)
+              setShowUniversityDropdown(true)
+            }}
+            onFocus={() => setShowUniversityDropdown(true)}
+            className="input-field"
+            placeholder="Type to search universities..."
+          />
+          {showUniversityDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredUniversities.length > 0 ? (
+                filteredUniversities.map((uni) => (
+                  <button
+                    key={uni}
+                    type="button"
+                    onClick={() => handleUniversitySelect(uni)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      uni === "Other (specify below)" ? 'font-medium text-primary-600 border-b border-gray-200' : ''
+                    }`}
+                  >
+                    {uni}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No matches found. Select &quot;Other&quot; to enter manually.
+                </div>
+              )}
+            </div>
+          )}
+          {/* Click outside to close */}
+          {showUniversityDropdown && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setShowUniversityDropdown(false)}
+            />
+          )}
+          {isOtherUniversity && (formData.university as string) !== 'other' && (
+            <p className="text-xs text-gray-500 mt-1">Custom entry: {formData.university as string}</p>
+          )}
         </div>
       </div>
+      {/* Other university text input */}
+      {(formData.university as string) === 'other' && (
+        <div>
+          <label className="form-label">Specify University/College</label>
+          <input
+            type="text"
+            name="universityOther"
+            value={formData.universityOther as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="Enter your university or college name"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="form-label">Occupation *</label>
@@ -599,8 +676,27 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{hobby}</span>
               </label>
             ))}
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <input
+                type="checkbox"
+                checked={isChecked('hobbies', 'Other')}
+                onChange={(e) => handleCheckboxChange('hobbies', 'Other', e.target.checked)}
+                className="rounded text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-gray-700 font-medium">Other</span>
+            </label>
           </div>
         </div>
+        {isChecked('hobbies', 'Other') && (
+          <input
+            type="text"
+            name="hobbiesOther"
+            value={formData.hobbiesOther as string || ''}
+            onChange={handleChange}
+            className="input-field mt-2"
+            placeholder="Enter your other hobbies (comma separated)"
+          />
+        )}
       </div>
 
       {/* Fitness & Sports Section */}
@@ -619,8 +715,27 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{fitness}</span>
               </label>
             ))}
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <input
+                type="checkbox"
+                checked={isChecked('fitness', 'Other')}
+                onChange={(e) => handleCheckboxChange('fitness', 'Other', e.target.checked)}
+                className="rounded text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-gray-700 font-medium">Other</span>
+            </label>
           </div>
         </div>
+        {isChecked('fitness', 'Other') && (
+          <input
+            type="text"
+            name="fitnessOther"
+            value={formData.fitnessOther as string || ''}
+            onChange={handleChange}
+            className="input-field mt-2"
+            placeholder="Enter your other fitness activities (comma separated)"
+          />
+        )}
       </div>
 
       {/* Interests Section */}
@@ -639,8 +754,27 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{interest}</span>
               </label>
             ))}
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <input
+                type="checkbox"
+                checked={isChecked('interests', 'Other')}
+                onChange={(e) => handleCheckboxChange('interests', 'Other', e.target.checked)}
+                className="rounded text-primary-600 focus:ring-primary-500"
+              />
+              <span className="text-gray-700 font-medium">Other</span>
+            </label>
           </div>
         </div>
+        {isChecked('interests', 'Other') && (
+          <input
+            type="text"
+            name="interestsOther"
+            value={formData.interestsOther as string || ''}
+            onChange={handleChange}
+            className="input-field mt-2"
+            placeholder="Enter your other interests (comma separated)"
+          />
+        )}
       </div>
 
       <div>
