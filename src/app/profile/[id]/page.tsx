@@ -535,10 +535,10 @@ function ProfileCard({
                   <div>{profile.maritalStatus || 'Never Married'}</div>
                   <div>{profile.languagesKnown || 'English'}</div>
                   <div>{profile.currentLocation}</div>
-                  <div>{profile.caste ? `Hindu, ${profile.caste}` : 'Hindu'}</div>
+                  <div>{profile.caste ? `${profile.religion || 'Hindu'}, ${profile.caste}` : (profile.religion || 'Hindu')}</div>
                   <div>{profile.occupation?.replace(/_/g, ' ')}</div>
-                  <div>{profile.qualification}</div>
-                  <div>{profile.familyLocation || profile.citizenship}</div>
+                  <div>{profile.grewUpIn ? `Grew up in ${profile.grewUpIn}` : ''}</div>
+                  <div>{profile.citizenship ? `${profile.citizenship} Citizen` : ''}</div>
                 </div>
               </div>
 
@@ -950,10 +950,16 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.currentLocation}{profile.country ? `, ${profile.country}` : ''}</span>
                         </div>
                       )}
-                      {(profile.citizenship || profile.grewUpIn) && (
+                      {profile.grewUpIn && (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Citizenship / Grew Up</span>
-                          <span className="text-gray-800">{profile.citizenship || 'Not specified'}{profile.grewUpIn ? ` / ${profile.grewUpIn}` : ''}</span>
+                          <span className="text-gray-500 w-32">Grew Up In</span>
+                          <span className="text-gray-800">{profile.grewUpIn}</span>
+                        </div>
+                      )}
+                      {profile.citizenship && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Citizenship</span>
+                          <span className="text-gray-800">{profile.citizenship}</span>
                         </div>
                       )}
                       {profile.residencyStatus && (

@@ -21,6 +21,8 @@ import {
 interface FindMatchModalProps {
   isOpen: boolean
   onClose: () => void
+  isAdminMode?: boolean
+  onAdminSuccess?: (profileId: string, tempPassword: string, email: string) => void
 }
 
 const COUNTRY_CODES = [
@@ -36,6 +38,7 @@ const COUNTRY_CODES = [
 const SECTION_TITLES: Record<string, string> = {
   basics: 'Basic Info',
   account: 'Create Account',
+  admin_account: 'Account Details',
   location: 'Location & Background',
   education: 'Education & Career',
   religion: 'Religion & Astro',
@@ -47,10 +50,13 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Steps: 1=basics, 2=location, 3=education, 4=religion, 5=family, 6=lifestyle, 7=aboutme, 8=preferences, 9=account, 10=referral, 11=photos
+// Steps for user: 1=basics, 2=location, 3=education, 4=religion, 5=family, 6=lifestyle, 7=aboutme, 8=preferences, 9=account, 10=referral, 11=photos
 const SECTION_ORDER = ['basics', 'location', 'education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'referral', 'photos']
 
-export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps) {
+// Admin mode skips account creation (handled separately) and referral
+const ADMIN_SECTION_ORDER = ['basics', 'location', 'education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
+
+export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -135,8 +141,63 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
   }
 
   const handleSectionContinue = () => {
-    if (step < SECTION_ORDER.length) {
+    const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
+    if (step < sectionOrder.length) {
       setStep(step + 1)
+    }
+  }
+
+  // Generate a random temporary password
+  const generateTempPassword = () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
+    let password = ''
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }
+
+  // Admin creates account and profile in one step
+  const handleAdminCreateAccount = async () => {
+    if (!email) {
+      setError('Email is required')
+      return
+    }
+    setError('')
+    setLoading(true)
+
+    const tempPassword = generateTempPassword()
+
+    try {
+      const response = await fetch('/api/admin/create-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          email,
+          phone: phone ? `${countryCode}${phone}` : null,
+          tempPassword,
+          profileData: formData,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to create profile')
+        setLoading(false)
+        return
+      }
+
+      setCreatedProfileId(data.profileId)
+      // Store temp password for display
+      sessionStorage.setItem('adminTempPassword', tempPassword)
+      sessionStorage.setItem('adminCreatedEmail', email)
+      setStep(step + 1) // Move to photos step
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -234,8 +295,21 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
         }),
       })
 
-      router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
-      onClose()
+      if (isAdminMode) {
+        // Get stored temp password and email for callback
+        const tempPassword = sessionStorage.getItem('adminTempPassword') || ''
+        const createdEmail = sessionStorage.getItem('adminCreatedEmail') || email
+        sessionStorage.removeItem('adminTempPassword')
+        sessionStorage.removeItem('adminCreatedEmail')
+
+        if (onAdminSuccess) {
+          onAdminSuccess(createdProfileId, tempPassword, createdEmail)
+        }
+        onClose()
+      } else {
+        router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
+        onClose()
+      }
     } catch {
       setError('Failed to upload photos. Please try again.')
     } finally {
@@ -244,8 +318,9 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
     }
   }
 
-  const currentSection = SECTION_ORDER[step - 1]
-  const totalSteps = SECTION_ORDER.length
+  const activeSectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
+  const currentSection = activeSectionOrder[step - 1]
+  const totalSteps = activeSectionOrder.length
   const progress = (step / totalSteps) * 100
 
   const sectionProps = { formData, handleChange, setFormData }
@@ -510,7 +585,83 @@ export default function FindMatchModal({ isOpen, onClose }: FindMatchModalProps)
             </div>
           )}
 
-          {/* Step 9: Referral */}
+          {/* Admin Account Section - only shown in admin mode */}
+          {currentSection === 'admin_account' && (
+            <div>
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-10 w-10 text-blue-500" />
+              </div>
+
+              <p className="text-center text-gray-600 mb-6">
+                Enter the user's email to create their account. A temporary password will be generated.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="form-label">Email Address <span className="text-red-500">*</span></label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Phone Number (Optional)</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      className="input-field w-24"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.code}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      placeholder="1234567890"
+                      className="input-field flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note:</strong> A temporary password will be generated and displayed after profile creation.
+                    The user will need to change this password on their first login.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleAdminCreateAccount}
+                disabled={!email || loading}
+                className={`mt-8 w-full py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+                  email && !loading
+                    ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg active:scale-[0.98]'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                    Creating Account...
+                  </span>
+                ) : (
+                  'Create Account & Continue'
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Step 10: Referral */}
           {currentSection === 'referral' && (
             <div className="space-y-4">
               <ReferralSection {...sectionProps} />

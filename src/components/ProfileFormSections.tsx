@@ -191,12 +191,22 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
     }
   }
 
+  // Auto-set grewUpIn to country if not already set
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCountry = e.target.value
+    handleChange(e)
+    // If grewUpIn is not set or was same as old country, update it
+    if (!formData.grewUpIn || formData.grewUpIn === formData.country) {
+      setFormData(prev => ({ ...prev, grewUpIn: newCountry }))
+    }
+  }
+
   return (
     <>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="form-label">Country</label>
-          <select name="country" value={formData.country as string || 'USA'} onChange={handleChange} className="input-field">
+          <label className="form-label">Country <span className="text-red-500">*</span></label>
+          <select name="country" value={formData.country as string || 'USA'} onChange={handleCountryChange} className="input-field">
             <option value="USA">USA</option>
             <option value="India">India</option>
             <option value="UK">UK</option>
@@ -252,6 +262,7 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
         <div>
           <label className="form-label">Citizenship</label>
           <select name="citizenship" value={formData.citizenship as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select</option>
             <option value="USA">USA</option>
             <option value="India">India</option>
             <option value="UK">UK</option>
@@ -264,8 +275,17 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           )}
         </div>
         <div>
-          <label className="form-label">Grew Up In</label>
-          <select name="grewUpIn" value={formData.grewUpIn as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Lives with Family?</label>
+          <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Grew Up In <span className="text-red-500">*</span></label>
+          <select name="grewUpIn" value={formData.grewUpIn as string || formData.country as string || 'USA'} onChange={handleChange} className="input-field">
             <option value="USA">USA</option>
             <option value="India">India</option>
             <option value="UK">UK</option>
@@ -274,17 +294,8 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
             <option value="Other">Other</option>
           </select>
           {(formData.grewUpIn as string) === 'Other' && (
-            <input type="text" name="grewUpInOther" value={formData.grewUpInOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify location" />
+            <input type="text" name="grewUpInOther" value={formData.grewUpInOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
           )}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Lives with Family?</label>
-          <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
         </div>
         <div>
           <label className="form-label">Family Location</label>
@@ -880,6 +891,18 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Partner Grew Up In</label>
+          <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+            <option value="doesnt_matter">Doesn&apos;t Matter</option>
+            <option value="same_as_mine">Same as Mine ({formData.grewUpIn as string || 'USA'})</option>
+            <option value="USA">USA</option>
+            <option value="India">India</option>
+            <option value="UK">UK</option>
+            <option value="Canada">Canada</option>
+            <option value="Australia">Australia</option>
+          </select>
+        </div>
         <div>
           <label className="form-label">Preferred Income (Minimum)</label>
           <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">

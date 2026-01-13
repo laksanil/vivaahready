@@ -29,6 +29,8 @@ interface DeclinedProfile {
   aboutMe: string | null
   photoUrls: string | null
   profileImageUrl: string | null
+  grewUpIn: string | null
+  citizenship: string | null
   declinedAt?: string
   user: {
     id: string
@@ -224,6 +226,13 @@ function ReconsiderCard({ profile, onReconsider, isReconsidering }: ReconsiderCa
           {age ? `${age} yrs` : ''}{profile.height ? `, ${formatHeight(profile.height)}` : ''}
         </p>
         <p className="text-sm text-gray-500">{profile.currentLocation}</p>
+        {(profile.grewUpIn || profile.citizenship) && (
+          <p className="text-xs text-gray-400 mt-1">
+            {profile.grewUpIn && `Grew up in ${profile.grewUpIn}`}
+            {profile.grewUpIn && profile.citizenship && ' • '}
+            {profile.citizenship && `${profile.citizenship}`}
+          </p>
+        )}
 
         {declinedDate && (
           <p className="text-xs text-gray-400 mt-2">

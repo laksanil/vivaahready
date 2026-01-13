@@ -16,6 +16,8 @@ import {
   Lock,
   Sparkles,
   ZoomIn,
+  Globe,
+  Flag,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 
@@ -42,6 +44,8 @@ export interface ProfileData {
   hobbies: string | null
   fitness: string | null
   interests: string | null
+  grewUpIn: string | null
+  citizenship: string | null
   theyLikedMeFirst?: boolean
   user: {
     id: string
@@ -193,6 +197,24 @@ export function ProfileCard({
               <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
                 <span className="truncate">{profile.currentLocation}</span>
+              </div>
+            )}
+
+            {/* Grew Up In & Citizenship Row */}
+            {(profile.grewUpIn || profile.citizenship) && (
+              <div className="flex items-center gap-4 text-gray-600">
+                {profile.grewUpIn && (
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="h-4 w-4 text-gray-400" />
+                    <span className="text-xs">Grew up in {profile.grewUpIn}</span>
+                  </div>
+                )}
+                {profile.citizenship && (
+                  <div className="flex items-center gap-1.5">
+                    <Flag className="h-4 w-4 text-gray-400" />
+                    <span className="text-xs">{profile.citizenship}</span>
+                  </div>
+                )}
               </div>
             )}
 

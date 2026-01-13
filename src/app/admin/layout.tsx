@@ -5,7 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
-  Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle, Monitor
+  Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle, Monitor,
+  UserPlus, Trash2
 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -140,10 +141,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <AlertTriangle className="h-5 w-5 mr-3" />
               Reports
             </Link>
+            <Link
+              href="/admin/deletions"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/deletions' ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <Trash2 className="h-5 w-5 mr-3" />
+              Deletion Requests
+            </Link>
 
             <div className="mt-4 mx-4 border-t border-gray-700 pt-4">
               <p className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tools</p>
             </div>
+            <Link
+              href="/admin/profiles/create"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/profiles/create' ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <UserPlus className="h-5 w-5 mr-3" />
+              Create Profile
+            </Link>
             <Link
               href="/admin/testing"
               className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${

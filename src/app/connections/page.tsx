@@ -39,6 +39,7 @@ interface ConnectionProfile {
   profileImageUrl: string | null
   languagesKnown: string | null
   citizenship: string | null
+  grewUpIn: string | null
   religion: string | null
   approvalStatus?: string
   createdAt?: string
@@ -344,6 +345,13 @@ function ConnectionCard({ profile, onMessage, isNew }: ConnectionCardProps) {
                 {age ? `${age} yrs` : ''}{profile.height ? `, ${formatHeight(profile.height)}` : ''}
               </p>
               <p className="text-sm text-gray-500">{profile.currentLocation}</p>
+              {(profile.grewUpIn || profile.citizenship) && (
+                <p className="text-xs text-gray-400 mt-1">
+                  {profile.grewUpIn && `Grew up in ${profile.grewUpIn}`}
+                  {profile.grewUpIn && profile.citizenship && ' • '}
+                  {profile.citizenship && `${profile.citizenship}`}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <Check className="h-4 w-4 text-green-500" />

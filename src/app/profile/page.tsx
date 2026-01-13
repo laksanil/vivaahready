@@ -923,9 +923,14 @@ function ViewProfilePageContent() {
                     <span className="text-gray-800">{profile.currentLocation || 'Not specified'}{profile.country ? `, ${profile.country}` : ''}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Citizenship / Grew Up</span>
+                    <span className="text-gray-500 w-36">Grew Up In</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.citizenship || 'Not specified'}{profile.grewUpIn ? ` / ${profile.grewUpIn}` : ''}</span>
+                    <span className="text-gray-800">{profile.grewUpIn || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Citizenship</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.citizenship || 'Not specified'}</span>
                   </div>
                   {profile.residencyStatus && (
                     <div className="flex">

@@ -4,12 +4,14 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye } from 'lucide-react'
+import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2 } from 'lucide-react'
+import DeleteProfileModal from './DeleteProfileModal'
 
 export function Navbar() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const viewAsUser = searchParams.get('viewAsUser')
@@ -137,6 +139,16 @@ export function Navbar() {
                     </Link>
                     <hr className="my-2" />
                     <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false)
+                        setIsDeleteModalOpen(true)
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Profile
+                    </button>
+                    <button
                       onClick={() => signOut({ callbackUrl: '/' })}
                       className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
                     >
@@ -216,6 +228,15 @@ export function Navbar() {
                   My Profile
                 </Link>
                 <button
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    setIsDeleteModalOpen(true)
+                  }}
+                  className="block text-red-600"
+                >
+                  Delete Profile
+                </button>
+                <button
                   onClick={() => signOut({ callbackUrl: '/' })}
                   className="block text-red-600"
                 >
@@ -237,6 +258,15 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Delete Profile Modal */}
+      <DeleteProfileModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onSuccess={() => {
+          // Optionally sign out after successful deletion request
+        }}
+      />
     </nav>
   )
 }
