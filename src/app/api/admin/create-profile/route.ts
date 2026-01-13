@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         occupation: 'occupation',
         employerName: 'employerName',
         annualIncome: 'annualIncome',
+        educationCareerDetails: 'educationCareerDetails',
         fatherName: 'fatherName',
         motherName: 'motherName',
         fatherOccupation: 'fatherOccupation',

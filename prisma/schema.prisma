@@ -92,6 +92,7 @@ model Profile {
   // Additional Career Details
   employerName      String?  // Company name
   workingAs         String?  // Job title/role
+  educationCareerDetails String?  // Additional education/career info
 
   // Living Situation
   livesWithFamily   String?  // yes, no

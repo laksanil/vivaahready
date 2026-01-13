@@ -46,138 +46,150 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
 
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Profile Created By <span className="text-red-500">*</span></label>
-          <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Choose who is creating this profile</option>
-            <option value="self">Self</option>
-            <option value="parent">Parent</option>
-            <option value="sibling">Sibling</option>
-            <option value="relative">Relative</option>
-            <option value="friend">Friend</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Gender <span className="text-red-500">*</span></label>
-          <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">First Name <span className="text-red-500">*</span></label>
-          <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="Enter first name" />
-        </div>
-        <div>
-          <label className="form-label">Last Name <span className="text-red-500">*</span></label>
-          <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Enter last name" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="form-label">Date of Birth <span className="text-red-500">*</span></label>
-          <input
-            type="text"
-            name="dateOfBirth"
-            value={formData.dateOfBirth as string || ''}
-            onChange={handleDateOfBirthChange}
-            className="input-field"
-            placeholder="MM/DD/YYYY"
-            maxLength={10}
-          />
-          <p className="text-xs text-gray-500 mt-1">Or enter age below</p>
-        </div>
-        <div>
-          <label className="form-label">Age (if DOB unknown)</label>
-          <input
-            type="number"
-            name="age"
-            value={formData.age as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="e.g., 28"
-            min={18}
-            max={99}
-          />
-          <p className="text-xs text-gray-500 mt-1">Optional if DOB provided</p>
-        </div>
-        <div>
-          <label className="form-label">Height <span className="text-red-500">*</span></label>
-          <select
-            name="height"
-            value={formData.height as string || ''}
-            onChange={handleChange}
-            className="input-field"
-          >
-            <option value="">Select height</option>
-            {HEIGHT_OPTIONS.map((h) => (
-              <option key={h.value} value={h.value}>
-                {h.label}
-              </option>
-            ))}
-          </select>
+    <div className="space-y-6">
+      {/* Profile & Personal Identity */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Personal Identity</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label className="form-label">Created By <span className="text-red-500">*</span></label>
+            <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="self">Self</option>
+              <option value="parent">Parent</option>
+              <option value="sibling">Sibling</option>
+              <option value="relative">Relative</option>
+              <option value="friend">Friend</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Gender <span className="text-red-500">*</span></label>
+            <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">First Name <span className="text-red-500">*</span></label>
+            <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="First name" />
+          </div>
+          <div>
+            <label className="form-label">Last Name <span className="text-red-500">*</span></label>
+            <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Marital Status <span className="text-red-500">*</span></label>
-          <select name="maritalStatus" value={formData.maritalStatus as string || 'never_married'} onChange={handleChange} className="input-field">
-            <option value="never_married">Never Married</option>
-            <option value="divorced">Divorced</option>
-            <option value="widowed">Widowed</option>
-            <option value="awaiting_divorce">Awaiting Divorce</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Blood Group</label>
-          <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select blood group</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
+      {/* Age & Physical Attributes */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Age & Physical Details</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label className="form-label">Date of Birth <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              name="dateOfBirth"
+              value={formData.dateOfBirth as string || ''}
+              onChange={handleDateOfBirthChange}
+              className="input-field"
+              placeholder="MM/DD/YYYY"
+              maxLength={10}
+            />
+          </div>
+          <div>
+            <label className="form-label">Age (optional)</label>
+            <input
+              type="number"
+              name="age"
+              value={formData.age as string || ''}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Or enter age"
+              min={18}
+              max={99}
+            />
+          </div>
+          <div>
+            <label className="form-label">Height <span className="text-red-500">*</span></label>
+            <select name="height" value={formData.height as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              {HEIGHT_OPTIONS.map((h) => (
+                <option key={h.value} value={h.value}>{h.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Blood Group</label>
+            <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Health Information</label>
-          <select name="healthInfo" value={formData.healthInfo as string || 'no_health_issues'} onChange={handleChange} className="input-field">
-            <option value="no_health_issues">No Health Issues</option>
-            <option value="diabetes">Diabetes</option>
-            <option value="heart_condition">Heart Condition</option>
-            <option value="other">Other</option>
-          </select>
-          {(formData.healthInfo as string) === 'other' && (
-            <input type="text" name="healthInfoOther" value={formData.healthInfoOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Please specify health condition" />
-          )}
+
+      {/* Marital & Health Status */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Status & Health</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label className="form-label">Marital Status <span className="text-red-500">*</span></label>
+            <select name="maritalStatus" value={formData.maritalStatus as string || 'never_married'} onChange={handleChange} className="input-field">
+              <option value="never_married">Never Married</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widowed</option>
+              <option value="awaiting_divorce">Awaiting Divorce</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Health Info</label>
+            <select name="healthInfo" value={formData.healthInfo as string || 'no_health_issues'} onChange={handleChange} className="input-field">
+              <option value="no_health_issues">No Issues</option>
+              <option value="diabetes">Diabetes</option>
+              <option value="heart_condition">Heart Condition</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Any Disability</label>
+            <select name="anyDisability" value={formData.anyDisability as string || 'none'} onChange={handleChange} className="input-field">
+              <option value="none">None</option>
+              <option value="physical">Physical</option>
+              <option value="visually_impaired">Visual</option>
+              <option value="hearing_impaired">Hearing</option>
+              <option value="speech_impaired">Speech</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            {/* Spacer for alignment or future field */}
+          </div>
         </div>
-        <div>
-          <label className="form-label">Any Disability</label>
-          <select name="anyDisability" value={formData.anyDisability as string || 'none'} onChange={handleChange} className="input-field">
-            <option value="none">None</option>
-            <option value="physical">Physically Challenged</option>
-            <option value="visually_impaired">Visually Impaired</option>
-            <option value="hearing_impaired">Hearing Impaired</option>
-            <option value="speech_impaired">Speech Impaired</option>
-            <option value="other">Other</option>
-          </select>
-          {(formData.anyDisability as string) && (formData.anyDisability as string) !== 'none' && (
-            <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Please specify details" />
-          )}
-        </div>
+        {/* Conditional inputs for health/disability details */}
+        {((formData.healthInfo as string) === 'other' || ((formData.anyDisability as string) && (formData.anyDisability as string) !== 'none')) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {(formData.healthInfo as string) === 'other' && (
+              <div>
+                <label className="form-label">Health Condition Details</label>
+                <input type="text" name="healthInfoOther" value={formData.healthInfoOther as string || ''} onChange={handleChange} className="input-field" placeholder="Please specify health condition" />
+              </div>
+            )}
+            {(formData.anyDisability as string) && (formData.anyDisability as string) !== 'none' && (
+              <div>
+                <label className="form-label">Disability Details</label>
+                <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Please specify details" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -448,6 +460,18 @@ export function EducationSection({ formData, handleChange }: SectionProps) {
           <option value="150k-200k">$150k - $200k</option>
           <option value=">200k">More than $200k</option>
         </select>
+      </div>
+      <div>
+        <label className="form-label">Education & Career Details</label>
+        <textarea
+          name="educationCareerDetails"
+          value={formData.educationCareerDetails as string || ''}
+          onChange={handleChange}
+          className="input-field"
+          rows={3}
+          placeholder="Add any additional details about your education, certifications, work experience, or career achievements..."
+        />
+        <p className="text-xs text-gray-500 mt-1">Optional: Share more about your educational background or career journey</p>
       </div>
     </>
   )

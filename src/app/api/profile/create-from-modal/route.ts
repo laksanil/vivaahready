@@ -39,6 +39,7 @@ const profileSchema = z.object({
   occupation: z.string().optional(),
   employerName: z.string().optional(),
   annualIncome: z.string().optional(),
+  educationCareerDetails: z.string().optional(),
 
   // Religion & Astro
   religion: z.string().optional(),
@@ -152,6 +153,7 @@ export async function POST(request: Request) {
         occupation: data.occupation,
         employerName: data.employerName,
         annualIncome: data.annualIncome,
+        educationCareerDetails: data.educationCareerDetails,
 
         // Religion & Astro
         religion: data.religion,
