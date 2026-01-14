@@ -114,16 +114,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   // Location section validation
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
-  const linkedinUrl = formData.linkedinProfile as string || ''
-  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-  const hasValidLinkedIn = linkedinUrl === 'no_linkedin' || linkedinRegex.test(linkedinUrl)
   const isLocationComplete = !!(
     formData.country &&
     formData.grewUpIn &&
     formData.citizenship &&
-    formData.motherTongue &&
-    hasValidLinkedIn &&
-    !formData.linkedinError &&
     (!isUSALocation || formData.zipCode) // zipCode only required for USA
   )
 
@@ -131,6 +125,19 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const isEducationComplete = !!(
     formData.qualification &&
     formData.occupation
+  )
+
+  // Family section validation (motherTongue is required)
+  const isFamilyComplete = !!(formData.motherTongue)
+
+  // About Me section validation (LinkedIn is required)
+  const linkedinUrl = formData.linkedinProfile as string || ''
+  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+  const hasValidLinkedIn = linkedinUrl === 'no_linkedin' || linkedinRegex.test(linkedinUrl)
+  const isAboutMeComplete = !!(
+    formData.aboutMe &&
+    hasValidLinkedIn &&
+    !formData.linkedinError
   )
 
   const handleCreateAccount = async () => {
@@ -357,7 +364,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`mt-8 w-full py-3.5 rounded-md font-semibold text-base transition-all duration-200 ${
+      className={`mt-8 w-full py-3.5 font-semibold text-base transition-all duration-200 ${
         !disabled && !loading
           ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md active:scale-[0.99]'
           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -378,7 +385,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
+      <div className="relative bg-white shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Progress Bar */}
         <div className="h-1 bg-gray-100">
           <div
@@ -389,7 +396,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
         {/* Header */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
-          <button onClick={handleBack} className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+          <button onClick={handleBack} className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="text-center">
@@ -398,21 +405,21 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">Step {step} of {totalSteps}</p>
           </div>
-          <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all">
+          <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {/* Falsification Warning */}
-        <div className="mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded">
-          <p className="text-purple-800 text-xs">
+        <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
+          <p className="text-primary-800 text-xs">
             <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
           </p>
         </div>
@@ -433,7 +440,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {/* Step 2: Account Creation */}
           {currentSection === 'account' && (
             <div>
-              <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-yellow-100 flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-10 w-10 text-yellow-500" />
               </div>
 
@@ -449,7 +456,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   sessionStorage.setItem('signupFormData', JSON.stringify(formData))
                   signIn('google', { callbackUrl: '/dashboard?createProfile=true' })
                 }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -539,7 +546,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               <button
                 onClick={handleCreateAccount}
                 disabled={!email || !phone || !password || password.length < 8 || password !== confirmPassword || loading}
-                className={`mt-6 w-full py-3.5 rounded-full font-semibold text-lg shadow-lg transition-all ${
+                className={`mt-6 w-full py-3.5 font-semibold text-lg shadow-lg transition-all ${
                   email && phone && password && password.length >= 8 && password === confirmPassword && !loading
                     ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -592,7 +599,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'family' && (
             <div className="space-y-4">
               <FamilySection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isFamilyComplete)}
             </div>
           )}
 
@@ -608,7 +615,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'aboutme' && (
             <div className="space-y-4">
               <AboutMeSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isAboutMeComplete)}
             </div>
           )}
 
@@ -623,7 +630,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {/* Admin Account Section - only shown in admin mode */}
           {currentSection === 'admin_account' && (
             <div>
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-blue-100 flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-10 w-10 text-blue-500" />
               </div>
 
@@ -667,7 +674,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   </div>
                 </div>
 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="bg-yellow-50 border border-yellow-200 p-4">
                   <p className="text-sm text-yellow-800">
                     <strong>Note:</strong> A temporary password will be generated and displayed after profile creation.
                     The user will need to change this password on their first login.
@@ -678,7 +685,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               <button
                 onClick={handleAdminCreateAccount}
                 disabled={!email || loading}
-                className={`mt-8 w-full py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+                className={`mt-8 w-full py-4 font-semibold text-base transition-all duration-200 ${
                   email && !loading
                     ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg active:scale-[0.98]'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -708,7 +715,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'photos' && (
             <div>
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-primary-100 flex items-center justify-center mx-auto mb-4">
                   <Camera className="h-10 w-10 text-primary-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -723,7 +730,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {/* Uploaded Photos */}
                 {photos.map((photo, index) => (
-                  <div key={index} className="relative aspect-square rounded-xl overflow-hidden border-2 border-primary-500 bg-gray-100">
+                  <div key={index} className="relative aspect-square overflow-hidden border-2 border-primary-500 bg-gray-100">
                     <Image
                       src={photo.preview}
                       alt={`Photo ${index + 1}`}
@@ -732,7 +739,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                     />
                     <button
                       onClick={() => handleRemovePhoto(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors"
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1.5 shadow-lg hover:bg-red-600 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -749,7 +756,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   <button
                     key={`empty-${index}`}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-colors ${
+                    className={`aspect-square border-2 border-dashed flex flex-col items-center justify-center transition-colors ${
                       photos.length === 0 && index === 0
                         ? 'border-primary-400 bg-primary-50 hover:bg-primary-100'
                         : 'border-gray-300 bg-gray-50 hover:border-primary-400 hover:bg-primary-50'
@@ -775,14 +782,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               {/* Upload Button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-3 border-2 border-primary-500 text-primary-600 rounded-full font-semibold hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 border-2 border-primary-500 text-primary-600 font-semibold hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
               >
                 <Upload className="h-5 w-5" />
                 Upload from Device
               </button>
 
               {/* Photo Visibility Options */}
-              <div className="mt-6 bg-gray-50 rounded-xl p-4">
+              <div className="mt-6 bg-gray-50 p-4">
                 <h4 className="font-medium text-gray-900 mb-3">Photo Privacy Settings</h4>
                 <p className="text-sm text-gray-500 mb-4">Choose who can view your photos:</p>
                 <div className="space-y-3">
@@ -832,7 +839,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               </div>
 
               {/* Photo Guidelines */}
-              <div className="mt-4 bg-blue-50 rounded-xl p-4">
+              <div className="mt-4 bg-blue-50 p-4">
                 <h4 className="font-medium text-gray-900 mb-2">Photo Guidelines</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li className="flex items-start gap-2">
@@ -855,7 +862,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 <button
                   onClick={handlePhotoSubmit}
                   disabled={loading || photos.length === 0}
-                  className={`w-full py-3.5 rounded-full font-semibold text-lg shadow-lg transition-all ${
+                  className={`w-full py-3.5 font-semibold text-lg shadow-lg transition-all ${
                     !loading && photos.length > 0
                       ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'

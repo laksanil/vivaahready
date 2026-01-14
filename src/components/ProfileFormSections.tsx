@@ -305,7 +305,7 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
             placeholder="Type to search..."
           />
           {showCountryDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
               {filteredCountries.map((country) => (
                 <button
                   key={country}
@@ -339,7 +339,7 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
               />
               {zipLookupLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent  animate-spin" />
                 </div>
               )}
             </div>
@@ -398,7 +398,7 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
             placeholder="Type to search..."
           />
           {showCitizenshipDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
               {filteredCitizenship.map((country) => (
                 <button
                   key={country}
@@ -417,12 +417,42 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
             <div className="fixed inset-0 z-40" onClick={() => setShowCitizenshipDropdown(false)} />
           )}
         </div>
-        <div>
-          <label className="form-label">Lives with Family?</label>
-          <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
+        {/* Grew Up In - Searchable Dropdown */}
+        <div className="relative">
+          <label className="form-label">Grew Up In <span className="text-red-500">*</span></label>
+          <input
+            type="text"
+            value={grewUpInSearch || (formData.grewUpIn as string) || (formData.country as string) || 'USA'}
+            onChange={(e) => {
+              setGrewUpInSearch(e.target.value)
+              setShowGrewUpInDropdown(true)
+            }}
+            onFocus={() => {
+              setGrewUpInSearch('')
+              setShowGrewUpInDropdown(true)
+            }}
+            className="input-field"
+            placeholder="Type to search..."
+          />
+          {showGrewUpInDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+              {filteredGrewUpIn.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleGrewUpInSelect(country)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                    country === (formData.grewUpIn as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                  }`}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
+          {showGrewUpInDropdown && (
+            <div className="fixed inset-0 z-40" onClick={() => setShowGrewUpInDropdown(false)} />
+          )}
         </div>
       </div>
 
@@ -447,177 +477,6 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        {/* Grew Up In - Searchable Dropdown */}
-        <div className="relative">
-          <label className="form-label">Grew Up In <span className="text-red-500">*</span></label>
-          <input
-            type="text"
-            value={grewUpInSearch || (formData.grewUpIn as string) || (formData.country as string) || 'USA'}
-            onChange={(e) => {
-              setGrewUpInSearch(e.target.value)
-              setShowGrewUpInDropdown(true)
-            }}
-            onFocus={() => {
-              setGrewUpInSearch('')
-              setShowGrewUpInDropdown(true)
-            }}
-            className="input-field"
-            placeholder="Type to search..."
-          />
-          {showGrewUpInDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              {filteredGrewUpIn.map((country) => (
-                <button
-                  key={country}
-                  type="button"
-                  onClick={() => handleGrewUpInSelect(country)}
-                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
-                    country === (formData.grewUpIn as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
-                  }`}
-                >
-                  {country}
-                </button>
-              ))}
-            </div>
-          )}
-          {showGrewUpInDropdown && (
-            <div className="fixed inset-0 z-40" onClick={() => setShowGrewUpInDropdown(false)} />
-          )}
-        </div>
-        <div>
-          <label className="form-label">Family Location</label>
-          <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
-          <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-            <option value="Other">Other</option>
-          </select>
-          {(formData.motherTongue as string) === 'Other' && (
-            <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
-          )}
-        </div>
-        <div>
-          <label className="form-label">Languages Known</label>
-          <div className="p-2 border rounded-lg bg-gray-50 max-h-32 overflow-y-auto">
-            <div className="grid grid-cols-3 gap-1">
-              {LANGUAGES.map(lang => (
-                <label key={lang} className="flex items-center text-sm">
-                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
-                  {lang}
-                </label>
-              ))}
-              <label className="flex items-center text-sm">
-                <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
-                Other
-              </label>
-            </div>
-          </div>
-          {(formData.languagesKnown as string || '').includes('Other') && (
-            <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
-          )}
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
-          <select
-            value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
-            onChange={(e) => {
-              if (e.target.value === 'no_linkedin') {
-                setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
-              } else {
-                setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
-              }
-            }}
-            className="input-field mb-2"
-          >
-            <option value="has_linkedin">I have LinkedIn</option>
-            <option value="no_linkedin">I don&apos;t have LinkedIn</option>
-          </select>
-          {(formData.linkedinProfile !== 'no_linkedin') && (
-            <>
-              <div className="relative">
-                <input
-                  type="url"
-                  name="linkedinProfile"
-                  value={formData.linkedinProfile as string || ''}
-                  onChange={(e) => {
-                    handleChange(e)
-                    // Clear error when user starts typing
-                    if (formData.linkedinError) {
-                      setFormData(prev => ({ ...prev, linkedinError: '' }))
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const url = e.target.value.trim()
-                    if (!url) {
-                      setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
-                      return
-                    }
-
-                    // Validate LinkedIn URL format
-                    // Accept formats: linkedin.com/in/username, www.linkedin.com/in/username, https://linkedin.com/in/username
-                    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-
-                    // Also accept if user just types the path
-                    const isValidFormat = linkedinRegex.test(url) ||
-                      /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
-                      /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
-                      /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
-
-                    if (!isValidFormat) {
-                      // Check common mistakes
-                      if (url.includes('linkedin.com') && !url.includes('/in/')) {
-                        setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
-                      } else if (!url.includes('linkedin')) {
-                        setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
-                      } else {
-                        setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe or https://www.linkedin.com/in/johndoe' }))
-                      }
-                      return
-                    }
-
-                    // Normalize the URL
-                    let normalizedUrl = url
-                    if (!url.startsWith('http')) {
-                      if (url.startsWith('linkedin.com')) {
-                        normalizedUrl = 'https://www.' + url
-                      } else if (url.startsWith('www.')) {
-                        normalizedUrl = 'https://' + url
-                      } else if (url.startsWith('/in/') || url.startsWith('in/')) {
-                        normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
-                      }
-                    }
-
-                    // Update with normalized URL and clear error
-                    setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
-                  }}
-                  className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
-                  placeholder="https://linkedin.com/in/username"
-                />
-              </div>
-              {formData.linkedinError && (
-                <p className="text-red-500 text-xs mt-1">{formData.linkedinError as string}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
-            </>
-          )}
-        </div>
-        <div>
-          <label className="form-label">Instagram</label>
-          <input type="text" name="instagram" value={formData.instagram as string || ''} onChange={handleChange} className="input-field" placeholder="@username" />
-        </div>
-        <div>
-          <label className="form-label">Facebook</label>
-          <input type="url" name="facebook" value={formData.facebook as string || ''} onChange={handleChange} className="input-field" placeholder="facebook.com/..." />
-        </div>
-      </div>
     </>
   )
 }
@@ -673,7 +532,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
             placeholder="Type to search universities..."
           />
           {showUniversityDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
               {filteredUniversities.length > 0 ? (
                 filteredUniversities.map((uni) => (
                   <button
@@ -766,70 +625,149 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
   )
 }
 
-export function FamilySection({ formData, handleChange }: SectionProps) {
+export function FamilySection({ formData, handleChange, setFormData }: SectionProps) {
+  const handleLanguageCheckbox = (language: string, checked: boolean) => {
+    const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
+    if (checked) {
+      setFormData(prev => ({ ...prev, languagesKnown: [...current, language].join(', ') }))
+    } else {
+      setFormData(prev => ({ ...prev, languagesKnown: current.filter(l => l !== language).join(', ') }))
+    }
+  }
+
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Father&apos;s Name</label>
-          <input type="text" name="fatherName" value={formData.fatherName as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">Father&apos;s Occupation</label>
-          <input type="text" name="fatherOccupation" value={formData.fatherOccupation as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Mother&apos;s Name</label>
-          <input type="text" name="motherName" value={formData.motherName as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">Mother&apos;s Occupation</label>
-          <input type="text" name="motherOccupation" value={formData.motherOccupation as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Number of Brothers</label>
-          <input type="number" name="numberOfBrothers" value={formData.numberOfBrothers as string || ''} onChange={handleChange} className="input-field" min="0" />
-        </div>
-        <div>
-          <label className="form-label">Number of Sisters</label>
-          <input type="number" name="numberOfSisters" value={formData.numberOfSisters as string || ''} onChange={handleChange} className="input-field" min="0" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Family Type</label>
-          <select name="familyType" value={formData.familyType as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="nuclear">Nuclear</option>
-            <option value="joint">Joint</option>
-            <option value="extended">Extended</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Family Values</label>
-          <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="traditional">Traditional</option>
-            <option value="moderate">Moderate</option>
-            <option value="liberal">Liberal</option>
-          </select>
+      {/* Language & Background */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language & Background</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
+            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              <option value="Other">Other</option>
+            </select>
+            {(formData.motherTongue as string) === 'Other' && (
+              <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
+            )}
+          </div>
+          <div>
+            <label className="form-label">Languages Known</label>
+            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-1">
+                {LANGUAGES.map(lang => (
+                  <label key={lang} className="flex items-center text-sm">
+                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
+                    {lang}
+                  </label>
+                ))}
+                <label className="flex items-center text-sm">
+                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
+                  Other
+                </label>
+              </div>
+            </div>
+            {(formData.languagesKnown as string || '').includes('Other') && (
+              <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
+            )}
+          </div>
         </div>
       </div>
-      <div>
-        <label className="form-label">Family Details</label>
-        <textarea
-          name="familyDetails"
-          value={formData.familyDetails as string || ''}
-          onChange={handleChange}
-          className="input-field"
-          rows={3}
-          placeholder="Share more about your family background, siblings, family business, or any other relevant details..."
-        />
-        <p className="text-xs text-gray-500 mt-1">Optional: Provide additional information about your family</p>
+
+      {/* Family Location */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Family Location</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Lives with Family?</label>
+            <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Family Location</label>
+            <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" />
+          </div>
+        </div>
+      </div>
+
+      {/* Parents */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Parents</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Father&apos;s Name</label>
+            <input type="text" name="fatherName" value={formData.fatherName as string || ''} onChange={handleChange} className="input-field" />
+          </div>
+          <div>
+            <label className="form-label">Father&apos;s Occupation</label>
+            <input type="text" name="fatherOccupation" value={formData.fatherOccupation as string || ''} onChange={handleChange} className="input-field" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Mother&apos;s Name</label>
+            <input type="text" name="motherName" value={formData.motherName as string || ''} onChange={handleChange} className="input-field" />
+          </div>
+          <div>
+            <label className="form-label">Mother&apos;s Occupation</label>
+            <input type="text" name="motherOccupation" value={formData.motherOccupation as string || ''} onChange={handleChange} className="input-field" />
+          </div>
+        </div>
+      </div>
+
+      {/* Siblings */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Siblings</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Number of Brothers</label>
+            <input type="number" name="numberOfBrothers" value={formData.numberOfBrothers as string || ''} onChange={handleChange} className="input-field" min="0" />
+          </div>
+          <div>
+            <label className="form-label">Number of Sisters</label>
+            <input type="number" name="numberOfSisters" value={formData.numberOfSisters as string || ''} onChange={handleChange} className="input-field" min="0" />
+          </div>
+        </div>
+      </div>
+
+      {/* Family Type & Values */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Family Type & Values</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Family Type</label>
+            <select name="familyType" value={formData.familyType as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="nuclear">Nuclear</option>
+              <option value="joint">Joint</option>
+              <option value="extended">Extended</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Family Values</label>
+            <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="traditional">Traditional</option>
+              <option value="moderate">Moderate</option>
+              <option value="liberal">Liberal</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="form-label">Family Details</label>
+          <textarea
+            name="familyDetails"
+            value={formData.familyDetails as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            rows={3}
+            placeholder="Share more about your family background, siblings, family business, or any other relevant details..."
+          />
+          <p className="text-xs text-gray-500 mt-1">Optional: Provide additional information about your family</p>
+        </div>
       </div>
     </>
   )
@@ -887,10 +825,10 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
       {/* Hobbies Section */}
       <div>
         <label className="form-label">Hobbies</label>
-        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+        <div className="p-3 border  bg-gray-50 max-h-40 overflow-y-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {HOBBIES_OPTIONS.map(hobby => (
-              <label key={hobby} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <label key={hobby} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
                 <input
                   type="checkbox"
                   checked={isChecked('hobbies', hobby)}
@@ -900,7 +838,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{hobby}</span>
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
               <input
                 type="checkbox"
                 checked={isChecked('hobbies', 'Other')}
@@ -926,10 +864,10 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
       {/* Fitness & Sports Section */}
       <div>
         <label className="form-label">Fitness & Sports</label>
-        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+        <div className="p-3 border  bg-gray-50 max-h-40 overflow-y-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {FITNESS_OPTIONS.map(fitness => (
-              <label key={fitness} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <label key={fitness} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
                 <input
                   type="checkbox"
                   checked={isChecked('fitness', fitness)}
@@ -939,7 +877,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{fitness}</span>
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
               <input
                 type="checkbox"
                 checked={isChecked('fitness', 'Other')}
@@ -965,10 +903,10 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
       {/* Interests Section */}
       <div>
         <label className="form-label">Interests</label>
-        <div className="p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
+        <div className="p-3 border  bg-gray-50 max-h-40 overflow-y-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {INTERESTS_OPTIONS.map(interest => (
-              <label key={interest} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+              <label key={interest} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
                 <input
                   type="checkbox"
                   checked={isChecked('interests', interest)}
@@ -978,7 +916,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
                 <span className="text-gray-700">{interest}</span>
               </label>
             ))}
-            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
+            <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5  transition-colors">
               <input
                 type="checkbox"
                 checked={isChecked('interests', 'Other')}
@@ -1131,12 +1069,12 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         </div>
 
         {showGenerated && generatedContent && (
-          <div className="mb-3 p-3 bg-primary-50 border border-primary-200 rounded-xl">
+          <div className="mb-3 p-3 bg-primary-50 border border-primary-200 rounded-none">
             <p className="text-sm text-gray-700 mb-2">{generatedContent}</p>
             <button
               type="button"
               onClick={handleUseGenerated}
-              className="text-sm bg-primary-600 text-white px-3 py-1 rounded-lg hover:bg-primary-700 transition-colors"
+              className="text-sm bg-primary-600 text-white px-3 py-1 rounded-none hover:bg-primary-700 transition-colors"
             >
               Use This
             </button>
@@ -1154,6 +1092,98 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         <p className="text-xs text-gray-500 mt-1">
           Tip: Fill in religion, family details, hobbies, fitness, and interests to get a personalized suggestion
         </p>
+      </div>
+
+      {/* Social Media Profiles */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Social Profiles</h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
+            <select
+              value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+              onChange={(e) => {
+                if (e.target.value === 'no_linkedin') {
+                  setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
+                } else {
+                  setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
+                }
+              }}
+              className="input-field mb-2"
+            >
+              <option value="has_linkedin">I have LinkedIn</option>
+              <option value="no_linkedin">I don&apos;t have LinkedIn</option>
+            </select>
+            {(formData.linkedinProfile !== 'no_linkedin') && (
+              <>
+                <div className="relative">
+                  <input
+                    type="url"
+                    name="linkedinProfile"
+                    value={formData.linkedinProfile as string || ''}
+                    onChange={(e) => {
+                      handleChange(e)
+                      if (formData.linkedinError) {
+                        setFormData(prev => ({ ...prev, linkedinError: '' }))
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const url = e.target.value.trim()
+                      if (!url) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
+                        return
+                      }
+
+                      const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+                      const isValidFormat = linkedinRegex.test(url) ||
+                        /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                        /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                        /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
+
+                      if (!isValidFormat) {
+                        if (url.includes('linkedin.com') && !url.includes('/in/')) {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
+                        } else if (!url.includes('linkedin')) {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
+                        } else {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe' }))
+                        }
+                        return
+                      }
+
+                      let normalizedUrl = url
+                      if (!url.startsWith('http')) {
+                        if (url.startsWith('linkedin.com')) {
+                          normalizedUrl = 'https://www.' + url
+                        } else if (url.startsWith('www.')) {
+                          normalizedUrl = 'https://' + url
+                        } else if (url.startsWith('/in/') || url.startsWith('in/')) {
+                          normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
+                        }
+                      }
+
+                      setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
+                    }}
+                    className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
+                    placeholder="https://linkedin.com/in/username"
+                  />
+                </div>
+                {formData.linkedinError && (
+                  <p className="text-red-500 text-xs mt-1">{formData.linkedinError as string}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
+              </>
+            )}
+          </div>
+          <div>
+            <label className="form-label">Instagram</label>
+            <input type="text" name="instagram" value={formData.instagram as string || ''} onChange={handleChange} className="input-field" placeholder="@username" />
+          </div>
+          <div>
+            <label className="form-label">Facebook</label>
+            <input type="url" name="facebook" value={formData.facebook as string || ''} onChange={handleChange} className="input-field" placeholder="facebook.com/..." />
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -1414,7 +1444,7 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
             placeholder="Type to search..."
           />
           {showBirthCountryDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
               {filteredBirthCountries.map((country) => (
                 <button
                   key={country}
@@ -1624,7 +1654,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
               placeholder="Any or type to search..."
             />
             {showPrefCitizenshipDropdown && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -1799,7 +1829,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
 
         {/* Show community multi-select when "specific" is selected */}
         {(formData.prefCommunity as string) === 'specific' && (
-          <div className="p-3 border rounded-xl bg-gray-50">
+          <div className="p-3 border  bg-gray-50">
             <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred communities:</label>
             <div className="max-h-48 overflow-y-auto">
               {/* Group by religion */}
@@ -1888,7 +1918,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
 
         {/* Expandable sections for specific selections */}
         {(formData.prefHobbies as string) === 'specific' && (
-          <div className="p-3 border rounded-xl bg-gray-50">
+          <div className="p-3 border  bg-gray-50">
             <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred hobbies:</label>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
               {HOBBIES_OPTIONS.map(hobby => (
@@ -1907,7 +1937,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
         )}
 
         {(formData.prefFitness as string) === 'specific' && (
-          <div className="p-3 border rounded-xl bg-gray-50">
+          <div className="p-3 border  bg-gray-50">
             <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred activities:</label>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
               {FITNESS_OPTIONS.map(fitness => (
@@ -1926,7 +1956,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
         )}
 
         {(formData.prefInterests as string) === 'specific' && (
-          <div className="p-3 border rounded-xl bg-gray-50">
+          <div className="p-3 border  bg-gray-50">
             <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred interests:</label>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
               {INTERESTS_OPTIONS.map(interest => (
