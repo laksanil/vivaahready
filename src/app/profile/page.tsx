@@ -90,7 +90,6 @@ interface Profile {
   placeOfBirthCountry: string
   placeOfBirthState: string
   placeOfBirthCity: string
-  timeOfBirth: string
   manglik: string
   raasi: string
   nakshatra: string
@@ -852,18 +851,6 @@ function ViewProfilePageContent() {
                     <span className="text-gray-800">{age || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Date of Birth</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.dateOfBirth ? (() => {
-                      const dob = profile.dateOfBirth
-                      if (dob.match(/^\d{4}[-/]\d{2}[-/]\d{2}$/)) {
-                        const parts = dob.split(/[-/]/)
-                        return `${parts[1]}/${parts[2]}/${parts[0]}`
-                      }
-                      return dob
-                    })() : 'Not specified'}</span>
-                  </div>
-                  <div className="flex">
                     <span className="text-gray-500 w-36">Height</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatHeight(profile.height)}</span>
@@ -1068,15 +1055,6 @@ function ViewProfilePageContent() {
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.placeOfBirthCity ? (
                       <span className="text-gray-800">{profile.placeOfBirthCity}</span>
-                    ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
-                    )}
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24">Time of Birth</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    {profile.timeOfBirth ? (
-                      <span className="text-gray-800">{profile.timeOfBirth}</span>
                     ) : (
                       <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
                     )}

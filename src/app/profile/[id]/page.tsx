@@ -74,7 +74,6 @@ interface ProfileData {
   placeOfBirthState: string | null
   placeOfBirthCity: string | null
   // Hindu-specific
-  timeOfBirth: string | null
   manglik: string | null
   raasi: string | null
   nakshatra: string | null
@@ -704,19 +703,6 @@ function ProfileCard({
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
                     <h3 className="text-lg font-semibold text-primary-600 mb-3">Personal Details</h3>
                     <div className="space-y-2 text-sm">
-                      {profile.dateOfBirth && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Date of Birth</span>
-                          <span className="text-gray-800">{(() => {
-                            const dob = profile.dateOfBirth
-                            if (dob && dob.match(/^\d{4}[-/]\d{2}[-/]\d{2}$/)) {
-                              const parts = dob.split(/[-/]/)
-                              return `${parts[1]}/${parts[2]}/${parts[0]}`
-                            }
-                            return dob
-                          })()}</span>
-                        </div>
-                      )}
                       {profile.height && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">Height</span>
@@ -891,12 +877,6 @@ function ProfileCard({
                       {/* Hindu-specific astrology fields */}
                       {profile.religion === 'Hindu' && (
                         <>
-                          {profile.timeOfBirth && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Time of Birth</span>
-                              <span className="text-gray-800">{profile.timeOfBirth}</span>
-                            </div>
-                          )}
                           {profile.manglik && (
                             <div className="flex items-center gap-2">
                               <span className="text-gray-500 w-32">Manglik</span>

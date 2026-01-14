@@ -1648,10 +1648,6 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
               </select>
             </div>
             <div>
-              <label className="form-label">Time of Birth</label>
-              <input type="text" name="timeOfBirth" value={formData.timeOfBirth as string || ''} onChange={handleChange} className="input-field" placeholder="HH:MM AM/PM" />
-            </div>
-            <div>
               <label className="form-label">Manglik</label>
               <select name="manglik" value={formData.manglik as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Select</option>
