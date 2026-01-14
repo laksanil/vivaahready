@@ -1804,12 +1804,13 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
         {/* Marital Status Preference */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="form-label">Partner&apos;s Marital Status</label>
+            <label className="form-label">Partner&apos;s Marital Status <span className="text-red-500">*</span></label>
             <select
               name="prefMaritalStatus"
               value={formData.prefMaritalStatus as string || 'never_married'}
               onChange={handleChange}
               className="input-field"
+              required
             >
               {PREF_MARITAL_STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1834,13 +1835,14 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
         {/* Age Range - Min/Max with gender-based defaults */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="form-label">Age Range {userAge && <span className="text-xs text-gray-500">(Your age: {userAge})</span>}</label>
+            <label className="form-label">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-xs text-gray-500">(Your age: {userAge})</span>}</label>
             <div className="grid grid-cols-2 gap-2">
               <select
                 name="prefAgeMin"
                 value={getDefaultAgeMin()}
                 onChange={handleChange}
                 className="input-field text-sm"
+                required
               >
                 <option value="">Min Age</option>
                 {PREF_AGE_MIN_MAX.map((opt) => (
@@ -1852,6 +1854,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
                 value={getDefaultAgeMax()}
                 onChange={handleChange}
                 className="input-field text-sm"
+                required
               >
                 <option value="">Max Age</option>
                 {PREF_AGE_MIN_MAX.map((opt) => (
@@ -1868,13 +1871,14 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
             )}
           </div>
           <div>
-            <label className="form-label">Height Range</label>
+            <label className="form-label">Height Range <span className="text-red-500">*</span></label>
             <div className="grid grid-cols-2 gap-2">
               <select
                 name="prefHeightMin"
                 value={formData.prefHeightMin as string || ''}
                 onChange={handleChange}
                 className="input-field text-sm"
+                required
               >
                 <option value="">Min</option>
                 {HEIGHT_OPTIONS.map((h) => (
@@ -1886,6 +1890,7 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
                 value={formData.prefHeightMax as string || ''}
                 onChange={handleChange}
                 className="input-field text-sm"
+                required
               >
                 <option value="">Max</option>
                 {HEIGHT_OPTIONS.map((h) => (
