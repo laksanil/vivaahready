@@ -131,7 +131,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <label className="form-label">Created By <span className="text-red-500">*</span></label>
-            <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field">
+            <select name="createdBy" value={formData.createdBy as string || ''} onChange={handleChange} className="input-field" required>
               <option value="">Select</option>
               <option value="self">Self</option>
               <option value="parent">Parent</option>
@@ -142,7 +142,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </div>
           <div>
             <label className="form-label">Gender <span className="text-red-500">*</span></label>
-            <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field">
+            <select name="gender" value={formData.gender as string || ''} onChange={handleChange} className="input-field" required>
               <option value="">Select</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
@@ -150,11 +150,11 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </div>
           <div>
             <label className="form-label">First Name <span className="text-red-500">*</span></label>
-            <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="First name" />
+            <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="First name" required />
           </div>
           <div>
             <label className="form-label">Last Name <span className="text-red-500">*</span></label>
-            <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" />
+            <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" required />
           </div>
         </div>
       </div>
@@ -173,6 +173,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               className="input-field"
               placeholder="MM/DD/YYYY"
               maxLength={10}
+              required
             />
           </div>
           <div>
@@ -190,7 +191,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </div>
           <div>
             <label className="form-label">Height <span className="text-red-500">*</span></label>
-            <select name="height" value={formData.height as string || ''} onChange={handleChange} className="input-field">
+            <select name="height" value={formData.height as string || ''} onChange={handleChange} className="input-field" required>
               <option value="">Select</option>
               {HEIGHT_OPTIONS.map((h) => (
                 <option key={h.value} value={h.value}>{h.label}</option>
@@ -840,7 +841,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
-            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
+            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field" required>
               <option value="">Select</option>
               {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
               <option value="Other">Other</option>
