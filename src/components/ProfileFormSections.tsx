@@ -372,9 +372,9 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        {/* Citizenship - Searchable Dropdown */}
+        {/* Citizenship - Searchable Dropdown (Required, only accepts values from list) */}
         <div className="relative">
-          <label className="form-label">Citizenship</label>
+          <label className="form-label">Citizenship <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={citizenshipSearch || (formData.citizenship as string) || ''}
@@ -385,6 +385,14 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
             onFocus={() => {
               setCitizenshipSearch('')
               setShowCitizenshipDropdown(true)
+            }}
+            onBlur={() => {
+              // If user typed something not in the list, revert to previous valid value or clear
+              setTimeout(() => {
+                if (citizenshipSearch && !COUNTRIES_LIST.includes(citizenshipSearch)) {
+                  setCitizenshipSearch('')
+                }
+              }, 200)
             }}
             className="input-field"
             placeholder="Type to search..."
@@ -484,7 +492,7 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Mother Tongue</label>
+          <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
           <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select</option>
             {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
@@ -518,7 +526,88 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
-          <input type="url" name="linkedinProfile" value={formData.linkedinProfile as string || ''} onChange={handleChange} className="input-field" placeholder="linkedin.com/in/..." required />
+          <select
+            value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+            onChange={(e) => {
+              if (e.target.value === 'no_linkedin') {
+                setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
+              } else {
+                setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
+              }
+            }}
+            className="input-field mb-2"
+          >
+            <option value="has_linkedin">I have LinkedIn</option>
+            <option value="no_linkedin">I don&apos;t have LinkedIn</option>
+          </select>
+          {(formData.linkedinProfile !== 'no_linkedin') && (
+            <>
+              <div className="relative">
+                <input
+                  type="url"
+                  name="linkedinProfile"
+                  value={formData.linkedinProfile as string || ''}
+                  onChange={(e) => {
+                    handleChange(e)
+                    // Clear error when user starts typing
+                    if (formData.linkedinError) {
+                      setFormData(prev => ({ ...prev, linkedinError: '' }))
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const url = e.target.value.trim()
+                    if (!url) {
+                      setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
+                      return
+                    }
+
+                    // Validate LinkedIn URL format
+                    // Accept formats: linkedin.com/in/username, www.linkedin.com/in/username, https://linkedin.com/in/username
+                    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+
+                    // Also accept if user just types the path
+                    const isValidFormat = linkedinRegex.test(url) ||
+                      /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                      /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                      /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
+
+                    if (!isValidFormat) {
+                      // Check common mistakes
+                      if (url.includes('linkedin.com') && !url.includes('/in/')) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
+                      } else if (!url.includes('linkedin')) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
+                      } else {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe or https://www.linkedin.com/in/johndoe' }))
+                      }
+                      return
+                    }
+
+                    // Normalize the URL
+                    let normalizedUrl = url
+                    if (!url.startsWith('http')) {
+                      if (url.startsWith('linkedin.com')) {
+                        normalizedUrl = 'https://www.' + url
+                      } else if (url.startsWith('www.')) {
+                        normalizedUrl = 'https://' + url
+                      } else if (url.startsWith('/in/') || url.startsWith('in/')) {
+                        normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
+                      }
+                    }
+
+                    // Update with normalized URL and clear error
+                    setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
+                  }}
+                  className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
+                  placeholder="https://linkedin.com/in/username"
+                />
+              </div>
+              {formData.linkedinError && (
+                <p className="text-red-500 text-xs mt-1">{formData.linkedinError as string}</p>
+              )}
+              <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
+            </>
+          )}
         </div>
         <div>
           <label className="form-label">Instagram</label>

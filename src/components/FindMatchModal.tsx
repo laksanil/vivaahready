@@ -73,6 +73,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [formData, setFormData] = useState<Record<string, unknown>>({
     maritalStatus: 'never_married',
     anyDisability: 'none',
+    country: 'USA',
+    grewUpIn: 'USA',
+    citizenship: 'USA',
   })
 
   // Photo upload state
@@ -108,6 +111,27 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   // Either dateOfBirth or age is required
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
   const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus)
+
+  // Location section validation
+  const isUSALocation = (formData.country as string || 'USA') === 'USA'
+  const linkedinUrl = formData.linkedinProfile as string || ''
+  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+  const hasValidLinkedIn = linkedinUrl === 'no_linkedin' || linkedinRegex.test(linkedinUrl)
+  const isLocationComplete = !!(
+    formData.country &&
+    formData.grewUpIn &&
+    formData.citizenship &&
+    formData.motherTongue &&
+    hasValidLinkedIn &&
+    !formData.linkedinError &&
+    (!isUSALocation || formData.zipCode) // zipCode only required for USA
+  )
+
+  // Education section validation
+  const isEducationComplete = !!(
+    formData.qualification &&
+    formData.occupation
+  )
 
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
@@ -544,7 +568,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'location' && (
             <div className="space-y-4">
               <LocationSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isLocationComplete)}
             </div>
           )}
 
@@ -552,7 +576,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'education' && (
             <div className="space-y-4">
               <EducationSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isEducationComplete)}
             </div>
           )}
 
