@@ -357,9 +357,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`mt-8 w-full py-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+      className={`mt-8 w-full py-3.5 rounded-md font-semibold text-base transition-all duration-200 ${
         !disabled && !loading
-          ? 'bg-primary-600 text-white hover:bg-primary-700 hover:shadow-lg active:scale-[0.98]'
+          ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md active:scale-[0.99]'
           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
       }`}
     >
@@ -378,7 +378,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-gradient-to-b from-gray-50 to-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Progress Bar */}
         <div className="h-1 bg-gray-100">
           <div
@@ -405,14 +405,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
         {/* Error Message */}
         {error && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {/* Falsification Warning */}
-        <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-amber-800 text-xs">
+        <div className="mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded">
+          <p className="text-purple-800 text-xs">
             <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
           </p>
         </div>
