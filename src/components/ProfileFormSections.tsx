@@ -1851,9 +1851,87 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
 }
 
 // =============================================
-// MUST-HAVES SECTION (Deal-breakers)
+// UNIFIED PREFERENCES SECTION WITH DEAL-BREAKER TOGGLES
 // =============================================
+
+// Deal-breaker toggle component
+function DealBreakerToggle({
+  field,
+  formData,
+  setFormData,
+  label
+}: {
+  field: string
+  formData: Record<string, unknown>
+  setFormData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
+  label?: string
+}) {
+  const fieldName = `${field}IsDealbreaker`
+  const isChecked = formData[fieldName] === true || formData[fieldName] === 'true'
+
+  return (
+    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onChange={(e) => setFormData(prev => ({ ...prev, [fieldName]: e.target.checked }))}
+        className="rounded border-red-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5"
+      />
+      <span className={`text-xs ${isChecked ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+        {label || 'Deal-breaker'}
+      </span>
+    </label>
+  )
+}
+
+// Section header with deal-breaker toggle
+function PreferenceHeader({
+  title,
+  field,
+  formData,
+  setFormData,
+  required = false
+}: {
+  title: string
+  field: string
+  formData: Record<string, unknown>
+  setFormData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
+  required?: boolean
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <h4 className="text-sm font-semibold text-gray-800">
+        {title} {required && <span className="text-red-500">*</span>}
+      </h4>
+      <DealBreakerToggle field={field} formData={formData} setFormData={setFormData} />
+    </div>
+  )
+}
+
 export function PreferencesMustHavesSection({ formData, handleChange, setFormData }: SectionProps) {
+  // This is now just a wrapper that redirects to the unified section
+  return <PreferencesUnifiedSection formData={formData} handleChange={handleChange} setFormData={setFormData} showOnlyRequired />
+}
+
+export function PreferencesNiceToHavesSection({ formData, handleChange, setFormData }: SectionProps) {
+  // This is now just a wrapper that redirects to the unified section
+  return <PreferencesUnifiedSection formData={formData} handleChange={handleChange} setFormData={setFormData} showOnlyOptional />
+}
+
+export function PreferencesUnifiedSection({ formData, handleChange, setFormData, showOnlyRequired, showOnlyOptional }: SectionProps & { showOnlyRequired?: boolean, showOnlyOptional?: boolean }) {
+  const [prefCitizenshipSearch, setPrefCitizenshipSearch] = useState('')
+  const [showPrefCitizenshipDropdown, setShowPrefCitizenshipDropdown] = useState(false)
+
+  const filteredPrefCitizenship = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(prefCitizenshipSearch.toLowerCase())
+  )
+
+  const handlePrefCitizenshipSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, prefCitizenship: country }))
+    setPrefCitizenshipSearch('')
+    setShowPrefCitizenshipDropdown(false)
+  }
+
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
     const current = (formData[field] as string || '').split(', ').filter(v => v)
     if (checked) {
@@ -1884,7 +1962,6 @@ export function PreferencesMustHavesSection({ formData, handleChange, setFormDat
     return ''
   }
 
-  // Get default religion (user's religion)
   const getDefaultReligion = () => {
     if (formData.prefReligion) return formData.prefReligion as string
     return userReligion || ''
@@ -1892,313 +1969,316 @@ export function PreferencesMustHavesSection({ formData, handleChange, setFormDat
 
   const prefReligion = getDefaultReligion()
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
-
-  // Get communities for selected religion
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
+  // Count deal-breakers
+  const dealBreakerCount = [
+    'prefAge', 'prefHeight', 'prefMaritalStatus', 'prefReligion',
+    'prefDiet', 'prefSmoking', 'prefDrinking', 'prefLocation',
+    'prefEducation', 'prefIncome', 'prefMotherTongue'
+  ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
+
   return (
     <div className="space-y-5">
-      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded border">
-        These are your <strong>deal-breakers</strong>. Profiles that don&apos;t match will NOT be shown to you.
-      </p>
+      {/* Info Banner */}
+      <div className="bg-gradient-to-r from-red-50 to-blue-50 p-3 rounded-lg border border-gray-200">
+        <p className="text-sm text-gray-700">
+          <strong>How it works:</strong> Check <span className="text-red-600 font-medium">&quot;Deal-breaker&quot;</span> next to preferences that are <strong>must-haves</strong>.
+          Profiles that don&apos;t match your deal-breakers won&apos;t be shown. Other preferences help rank your matches.
+        </p>
+        {dealBreakerCount > 0 && (
+          <p className="text-xs text-red-600 mt-1.5">
+            🚫 You have {dealBreakerCount} deal-breaker{dealBreakerCount > 1 ? 's' : ''} set
+          </p>
+        )}
+      </div>
 
-      {/* Age & Height - Always required */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Age & Height</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-gray-400 text-xs">(You: {userAge})</span>}</label>
-            <div className="grid grid-cols-2 gap-2">
-              <select name="prefAgeMin" value={getDefaultAgeMin()} onChange={handleChange} className="input-field" required>
-                <option value="">Min Age</option>
-                {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
-              <select name="prefAgeMax" value={getDefaultAgeMax()} onChange={handleChange} className="input-field" required>
-                <option value="">Max Age</option>
-                {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
+      {/* Age & Height */}
+      {!showOnlyOptional && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <PreferenceHeader title="Age & Height" field="prefAge" formData={formData} setFormData={setFormData} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-gray-400 text-xs">(You: {userAge})</span>}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <select name="prefAgeMin" value={getDefaultAgeMin()} onChange={handleChange} className="input-field" required>
+                  <option value="">Min Age</option>
+                  {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                </select>
+                <select name="prefAgeMax" value={getDefaultAgeMax()} onChange={handleChange} className="input-field" required>
+                  <option value="">Max Age</option>
+                  {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                </select>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="form-label">Height Range <span className="text-red-500">*</span></label>
-            <div className="grid grid-cols-2 gap-2">
-              <select name="prefHeightMin" value={formData.prefHeightMin as string || ''} onChange={handleChange} className="input-field" required>
-                <option value="">Min Height</option>
-                {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
-              </select>
-              <select name="prefHeightMax" value={formData.prefHeightMax as string || ''} onChange={handleChange} className="input-field" required>
-                <option value="">Max Height</option>
-                {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
-              </select>
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="form-label">Height Range <span className="text-red-500">*</span></label>
+                <DealBreakerToggle field="prefHeight" formData={formData} setFormData={setFormData} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select name="prefHeightMin" value={formData.prefHeightMin as string || ''} onChange={handleChange} className="input-field" required>
+                  <option value="">Min Height</option>
+                  {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
+                </select>
+                <select name="prefHeightMax" value={formData.prefHeightMax as string || ''} onChange={handleChange} className="input-field" required>
+                  <option value="">Max Height</option>
+                  {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Marital Status */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Marital Status <span className="text-red-500">*</span></h4>
-        <div className="flex flex-wrap gap-3 p-3 border rounded bg-gray-50">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={isChecked('prefMaritalStatus', 'never_married')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'never_married', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-            <span className="text-sm">Never Married</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={isChecked('prefMaritalStatus', 'divorced')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'divorced', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-            <span className="text-sm">Divorced</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={isChecked('prefMaritalStatus', 'separated')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'separated', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-            <span className="text-sm">Separated</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={isChecked('prefMaritalStatus', 'widowed')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'widowed', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-            <span className="text-sm">Widowed</span>
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer border-l pl-3">
-            <input type="checkbox" checked={isChecked('prefMaritalStatus', 'doesnt_matter')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'doesnt_matter', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-            <span className="text-sm font-medium">Any</span>
-          </label>
+      {!showOnlyOptional && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <PreferenceHeader title="Marital Status" field="prefMaritalStatus" formData={formData} setFormData={setFormData} required />
+          <div className="flex flex-wrap gap-3 p-3 border rounded bg-gray-50">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isChecked('prefMaritalStatus', 'never_married')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'never_married', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+              <span className="text-sm">Never Married</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isChecked('prefMaritalStatus', 'divorced')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'divorced', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+              <span className="text-sm">Divorced</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isChecked('prefMaritalStatus', 'separated')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'separated', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+              <span className="text-sm">Separated</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isChecked('prefMaritalStatus', 'widowed')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'widowed', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+              <span className="text-sm">Widowed</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer border-l pl-3">
+              <input type="checkbox" checked={isChecked('prefMaritalStatus', 'doesnt_matter')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'doesnt_matter', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+              <span className="text-sm font-medium">Any</span>
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Religion & Community */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Religion & Community</h4>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="form-label">Religion <span className="text-red-500">*</span></label>
-            <select
-              name="prefReligion"
-              value={prefReligion}
-              onChange={handleChange}
-              className="input-field"
-              required
-            >
-              <option value="">Select Religion</option>
-              <option value="doesnt_matter">Doesn&apos;t Matter</option>
-              {RELIGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
-            </select>
-          </div>
-          {prefReligion && prefReligion !== 'doesnt_matter' && (
+      {!showOnlyOptional && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <PreferenceHeader title="Religion & Community" field="prefReligion" formData={formData} setFormData={setFormData} required />
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="form-label">Community</label>
-              <select name="prefCommunity" value={formData.prefCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <label className="form-label">Religion <span className="text-red-500">*</span></label>
+              <select name="prefReligion" value={prefReligion} onChange={handleChange} className="input-field" required>
+                <option value="">Select Religion</option>
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
-                <option value="same_as_mine">Same as Mine</option>
-                {communitiesForReligion.map((c) => (<option key={c} value={c}>{c}</option>))}
+                {RELIGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
               </select>
             </div>
-          )}
-          {showGotra && (
-            <div>
-              <label className="form-label">Gothra</label>
-              <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handleChange} className="input-field">
-                <option value="">Doesn&apos;t Matter</option>
-                <option value="different">Different Gothra Only</option>
-              </select>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Lifestyle - Diet, Smoking, Drinking */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Lifestyle</h4>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="form-label">Diet <span className="text-red-500">*</span></label>
-            <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handleChange} className="input-field" required>
-              <option value="">Select</option>
-              <option value="doesnt_matter">Doesn&apos;t Matter</option>
-              <option value="veg">Vegetarian Only</option>
-              <option value="veg_eggetarian">Veg / Eggetarian</option>
-              <option value="non_veg_ok">Non-Veg OK</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Smoking <span className="text-red-500">*</span></label>
-            <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handleChange} className="input-field" required>
-              <option value="">Select</option>
-              {PREF_SMOKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Drinking <span className="text-red-500">*</span></label>
-            <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handleChange} className="input-field" required>
-              <option value="">Select</option>
-              {PREF_DRINKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// =============================================
-// NICE-TO-HAVES SECTION (Optional preferences)
-// =============================================
-export function PreferencesNiceToHavesSection({ formData, handleChange, setFormData }: SectionProps) {
-  const [prefCitizenshipSearch, setPrefCitizenshipSearch] = useState('')
-  const [showPrefCitizenshipDropdown, setShowPrefCitizenshipDropdown] = useState(false)
-
-  const filteredPrefCitizenship = COUNTRIES_LIST.filter(country =>
-    country.toLowerCase().includes(prefCitizenshipSearch.toLowerCase())
-  )
-
-  const handlePrefCitizenshipSelect = (country: string) => {
-    setFormData(prev => ({ ...prev, prefCitizenship: country }))
-    setPrefCitizenshipSearch('')
-    setShowPrefCitizenshipDropdown(false)
-  }
-
-  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
-    const current = (formData[field] as string || '').split(', ').filter(v => v)
-    if (checked) {
-      setFormData(prev => ({ ...prev, [field]: [...current, value].join(', ') }))
-    } else {
-      setFormData(prev => ({ ...prev, [field]: current.filter(v => v !== value).join(', ') }))
-    }
-  }
-
-  const isChecked = (field: string, value: string) => {
-    return (formData[field] as string || '').split(', ').includes(value)
-  }
-
-  return (
-    <div className="space-y-5">
-      <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-200">
-        These preferences help <strong>rank</strong> your matches. They won&apos;t filter anyone out.
-      </p>
-
-      {/* Location Preferences */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Location</h4>
-        <div>
-          <label className="form-label text-sm">Preferred Locations (select all that apply)</label>
-          <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
-            <div className="grid grid-cols-3 gap-2">
-              {PREF_LOCATION_OPTIONS.map((opt) => (
-                <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
-                  <input type="checkbox" checked={isChecked('prefLocationList', opt.value)} onChange={(e) => handleCheckboxChange('prefLocationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-                  <span className="truncate">{opt.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">{(formData.prefLocationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any location)</p>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="relative">
-            <label className="form-label">Citizenship</label>
-            <input type="text" value={prefCitizenshipSearch || (formData.prefCitizenship as string) || ''} onChange={(e) => { setPrefCitizenshipSearch(e.target.value); setShowPrefCitizenshipDropdown(true) }} onFocus={() => { setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(true) }} className="input-field" placeholder="Any citizenship" />
-            {showPrefCitizenshipDropdown && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
-                <button type="button" onClick={() => { setFormData(prev => ({ ...prev, prefCitizenship: '' })); setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(false) }} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600">Any</button>
-                {filteredPrefCitizenship.map((country) => (<button key={country} type="button" onClick={() => handlePrefCitizenshipSelect(country)} className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${country === (formData.prefCitizenship as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''}`}>{country}</button>))}
+            {prefReligion && prefReligion !== 'doesnt_matter' && (
+              <div>
+                <label className="form-label">Community</label>
+                <select name="prefCommunity" value={formData.prefCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                  <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                  <option value="same_as_mine">Same as Mine</option>
+                  {communitiesForReligion.map((c) => (<option key={c} value={c}>{c}</option>))}
+                </select>
               </div>
             )}
-            {showPrefCitizenshipDropdown && (<div className="fixed inset-0 z-40" onClick={() => setShowPrefCitizenshipDropdown(false)} />)}
-          </div>
-          <div>
-            <label className="form-label">Grew Up In</label>
-            <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-              <option value="doesnt_matter">Doesn&apos;t Matter</option>
-              <option value="same_as_mine">Same as Mine</option>
-              <option value="USA">USA</option>
-              <option value="India">India</option>
-              <option value="UK">UK</option>
-              <option value="Canada">Canada</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Relocation</label>
-            <select name="prefRelocation" value={formData.prefRelocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-              {PREF_RELOCATION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
+            {showGotra && (
+              <div>
+                <label className="form-label">Gothra</label>
+                <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handleChange} className="input-field">
+                  <option value="">Doesn&apos;t Matter</option>
+                  <option value="different">Different Gothra Only</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Education & Career */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="form-label">Minimum Education</label>
-            <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Doesn&apos;t Matter</option>
-              {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Industry</label>
-            <select name="prefWorkArea" value={formData.prefWorkArea as string || ''} onChange={handleChange} className="input-field">
-              {PREF_WORK_AREA_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Minimum Income</label>
-            <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Doesn&apos;t Matter</option>
-              {PREF_INCOME_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="form-label text-sm">Preferred Occupations (select all that apply)</label>
-          <div className="p-3 border rounded bg-gray-50 max-h-32 overflow-y-auto">
-            <div className="grid grid-cols-3 gap-2">
-              {OCCUPATION_OPTIONS.map((opt) => (
-                <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
-                  <input type="checkbox" checked={isChecked('prefOccupationList', opt.value)} onChange={(e) => handleCheckboxChange('prefOccupationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-                  <span className="truncate">{opt.label}</span>
-                </label>
-              ))}
+      {/* Lifestyle - Diet, Smoking, Drinking */}
+      {!showOnlyOptional && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <h4 className="text-sm font-semibold text-gray-800">Lifestyle <span className="text-red-500">*</span></h4>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Diet <span className="text-red-500">*</span></label>
+                <DealBreakerToggle field="prefDiet" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                <option value="veg">Vegetarian Only</option>
+                <option value="veg_eggetarian">Veg / Eggetarian</option>
+                <option value="non_veg_ok">Non-Veg OK</option>
+              </select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Smoking <span className="text-red-500">*</span></label>
+                <DealBreakerToggle field="prefSmoking" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                {PREF_SMOKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Drinking <span className="text-red-500">*</span></label>
+                <DealBreakerToggle field="prefDrinking" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                {PREF_DRINKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-1">{(formData.prefOccupationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
         </div>
-      </div>
+      )}
+
+      {/* Location Preferences */}
+      {!showOnlyRequired && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <PreferenceHeader title="Location" field="prefLocation" formData={formData} setFormData={setFormData} />
+          <div>
+            <label className="form-label text-sm">Preferred Locations (select all that apply)</label>
+            <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2">
+                {PREF_LOCATION_OPTIONS.map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
+                    <input type="checkbox" checked={isChecked('prefLocationList', opt.value)} onChange={(e) => handleCheckboxChange('prefLocationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                    <span className="truncate">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{(formData.prefLocationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any location)</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="relative">
+              <label className="form-label">Citizenship</label>
+              <input type="text" value={prefCitizenshipSearch || (formData.prefCitizenship as string) || ''} onChange={(e) => { setPrefCitizenshipSearch(e.target.value); setShowPrefCitizenshipDropdown(true) }} onFocus={() => { setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(true) }} className="input-field" placeholder="Any citizenship" />
+              {showPrefCitizenshipDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
+                  <button type="button" onClick={() => { setFormData(prev => ({ ...prev, prefCitizenship: '' })); setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(false) }} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600">Any</button>
+                  {filteredPrefCitizenship.map((country) => (<button key={country} type="button" onClick={() => handlePrefCitizenshipSelect(country)} className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${country === (formData.prefCitizenship as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''}`}>{country}</button>))}
+                </div>
+              )}
+              {showPrefCitizenshipDropdown && (<div className="fixed inset-0 z-40" onClick={() => setShowPrefCitizenshipDropdown(false)} />)}
+            </div>
+            <div>
+              <label className="form-label">Grew Up In</label>
+              <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                <option value="same_as_mine">Same as Mine</option>
+                <option value="USA">USA</option>
+                <option value="India">India</option>
+                <option value="UK">UK</option>
+                <option value="Canada">Canada</option>
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Relocation</label>
+              <select name="prefRelocation" value={formData.prefRelocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                {PREF_RELOCATION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Education & Career */}
+      {!showOnlyRequired && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <PreferenceHeader title="Education & Career" field="prefEducation" formData={formData} setFormData={setFormData} />
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="form-label">Minimum Education</label>
+              <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Doesn&apos;t Matter</option>
+                {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Industry</label>
+              <select name="prefWorkArea" value={formData.prefWorkArea as string || ''} onChange={handleChange} className="input-field">
+                {PREF_WORK_AREA_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Minimum Income</label>
+                <DealBreakerToggle field="prefIncome" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Doesn&apos;t Matter</option>
+                {PREF_INCOME_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="form-label text-sm">Preferred Occupations (select all that apply)</label>
+            <div className="p-3 border rounded bg-gray-50 max-h-32 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-2">
+                {OCCUPATION_OPTIONS.map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
+                    <input type="checkbox" checked={isChecked('prefOccupationList', opt.value)} onChange={(e) => handleCheckboxChange('prefOccupationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                    <span className="truncate">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{(formData.prefOccupationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
+          </div>
+        </div>
+      )}
 
       {/* Other Preferences */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="form-label">Mother Tongue</label>
-            <select name="prefMotherTongue" value={formData.prefMotherTongue as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-              {PREF_MOTHER_TONGUE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Sub-Community</label>
-            <select name="prefSubCommunity" value={formData.prefSubCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-              <option value="doesnt_matter">Doesn&apos;t Matter</option>
-              <option value="same_as_mine">Same as Mine</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Pets</label>
-            <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-              {PREF_PETS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-            </select>
+      {!showOnlyRequired && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Mother Tongue</label>
+                <DealBreakerToggle field="prefMotherTongue" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefMotherTongue" value={formData.prefMotherTongue as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                {PREF_MOTHER_TONGUE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Sub-Community</label>
+              <select name="prefSubCommunity" value={formData.prefSubCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                <option value="same_as_mine">Same as Mine</option>
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Pets</label>
+              <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                {PREF_PETS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              </select>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Additional Notes */}
-      <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-gray-800">Additional Notes (Optional)</h4>
-        <textarea
-          name="idealPartnerDesc"
-          value={formData.idealPartnerDesc as string || ''}
-          onChange={handleChange}
-          className="input-field min-h-[80px]"
-          placeholder="Any other preferences or qualities you're looking for in a partner..."
-        />
-      </div>
+      {!showOnlyRequired && (
+        <div className="space-y-2 p-3 rounded-lg border bg-white">
+          <h4 className="text-sm font-semibold text-gray-800">Additional Notes (Optional)</h4>
+          <textarea
+            name="idealPartnerDesc"
+            value={formData.idealPartnerDesc as string || ''}
+            onChange={handleChange}
+            className="input-field min-h-[80px]"
+            placeholder="Any other preferences or qualities you're looking for in a partner..."
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -14,8 +14,7 @@ import {
   LifestyleSection,
   AboutMeSection,
   ReligionSection,
-  PreferencesMustHavesSection,
-  PreferencesNiceToHavesSection,
+  PreferencesUnifiedSection,
 } from './ProfileFormSections'
 
 interface FindMatchModalProps {
@@ -44,17 +43,16 @@ const SECTION_TITLES: Record<string, string> = {
   family: 'Family Details',
   lifestyle: 'Lifestyle',
   aboutme: 'About Me',
-  preferences_must_haves: 'Must-Haves',
-  preferences_nice_to_haves: 'Nice-to-Haves',
+  preferences: 'Partner Preferences',
   referral: 'How Did You Find Us?',
   photos: 'Add Your Photos',
 }
 
-// Steps for user: basics → location → religion → family → lifestyle → aboutme → must-haves → nice-to-haves → account → photos
-const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_must_haves', 'preferences_nice_to_haves', 'account', 'photos']
+// Steps for user: basics → location → religion → family → lifestyle → aboutme → preferences → account → photos
+const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_must_haves', 'preferences_nice_to_haves', 'admin_account', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -126,6 +124,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   // Family section validation - no required fields now
   const isFamilyComplete = true
+
+  // Lifestyle section validation - Diet, Smoking, Drinking are required
+  const isLifestyleComplete = !!(
+    formData.dietaryPreference &&
+    formData.smoking &&
+    formData.drinking
+  )
 
   // About Me section validation (LinkedIn is required)
   const linkedinUrl = formData.linkedinProfile as string || ''
@@ -621,7 +626,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'lifestyle' && (
             <div className="space-y-4">
               <LifestyleSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isLifestyleComplete)}
             </div>
           )}
 
@@ -633,30 +638,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 7: Must-Haves (Deal-breakers) */}
-          {currentSection === 'preferences_must_haves' && (
+          {/* Step 7: Partner Preferences (with deal-breaker toggles) */}
+          {currentSection === 'preferences' && (
             <div className="space-y-4">
-              {/* Sticky warning banner */}
-              <div className="sticky top-0 z-10 -mx-6 px-6 py-2 bg-red-50 border-b border-red-200 -mt-4">
-                <p className="text-red-800 text-sm text-center">
-                  <strong>🚫 Deal-breakers: Profiles that don&apos;t match these will NOT be shown</strong>
-                </p>
-              </div>
-              <PreferencesMustHavesSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
-            </div>
-          )}
-
-          {/* Step 8: Nice-to-Haves (Optional preferences) */}
-          {currentSection === 'preferences_nice_to_haves' && (
-            <div className="space-y-4">
-              {/* Sticky info banner */}
-              <div className="sticky top-0 z-10 -mx-6 px-6 py-2 bg-blue-50 border-b border-blue-200 -mt-4">
-                <p className="text-blue-800 text-sm text-center">
-                  <strong>✨ Nice-to-haves: Used to rank matches (not filter)</strong>
-                </p>
-              </div>
-              <PreferencesNiceToHavesSection {...sectionProps} />
+              <PreferencesUnifiedSection {...sectionProps} />
               {renderContinueButton(handleSectionContinue)}
             </div>
           )}
