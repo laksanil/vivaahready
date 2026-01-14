@@ -15,7 +15,6 @@ import {
   AboutMeSection,
   ReligionSection,
   PreferencesSection,
-  ReferralSection
 } from './ProfileFormSections'
 
 interface FindMatchModalProps {
@@ -39,8 +38,7 @@ const SECTION_TITLES: Record<string, string> = {
   basics: 'Basic Info',
   account: 'Create Account',
   admin_account: 'Account Details',
-  location: 'Location & Background',
-  education: 'Education & Career',
+  location_education: 'Location & Background',
   religion: 'Religion & Astro',
   family: 'Family Details',
   lifestyle: 'Lifestyle',
@@ -50,11 +48,11 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Steps for user: 1=basics, 2=location, 3=education, 4=religion, 5=family, 6=lifestyle, 7=aboutme, 8=preferences, 9=account, 10=referral, 11=photos
-const SECTION_ORDER = ['basics', 'location', 'education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'referral', 'photos']
+// Steps for user: 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences, 8=account, 9=photos
+const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location', 'education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -112,23 +110,20 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
   const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus)
 
-  // Location section validation
+  // Location & Education section validation (combined) - now includes motherTongue
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
-  const isLocationComplete = !!(
+  const isLocationEducationComplete = !!(
     formData.country &&
     formData.grewUpIn &&
     formData.citizenship &&
-    (!isUSALocation || formData.zipCode) // zipCode only required for USA
-  )
-
-  // Education section validation
-  const isEducationComplete = !!(
+    (!isUSALocation || formData.zipCode) && // zipCode only required for USA
+    formData.motherTongue && // Mother tongue is required (moved from Family)
     formData.qualification &&
     formData.occupation
   )
 
-  // Family section validation (motherTongue is required)
-  const isFamilyComplete = !!(formData.motherTongue)
+  // Family section validation - no required fields now
+  const isFamilyComplete = true
 
   // About Me section validation (LinkedIn is required)
   const linkedinUrl = formData.linkedinProfile as string || ''
@@ -146,6 +141,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
+      // Step 1: Create user account
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +163,27 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       sessionStorage.setItem('newUserId', data.userId)
       sessionStorage.setItem('newUserEmail', email)
-      setStep(step + 1) // Move to next section after account creation
+
+      // Step 2: Create profile
+      const profileResponse = await fetch('/api/profile/create-from-modal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          ...formData,
+        }),
+      })
+
+      if (!profileResponse.ok) {
+        const profileData = await profileResponse.json()
+        setError(profileData.error || 'Failed to create profile')
+        setLoading(false)
+        return
+      }
+
+      const profileData = await profileResponse.json()
+      setCreatedProfileId(profileData.profileId)
+      setStep(step + 1) // Move to photos step
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -259,37 +275,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       updated.splice(index, 1)
       return updated
     })
-  }
-
-  const handleCreateProfile = async () => {
-    setError('')
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/profile/create-from-modal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          ...formData,
-        }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        setError(data.error || 'Failed to create profile')
-        setLoading(false)
-        return
-      }
-
-      const profileData = await response.json()
-      setCreatedProfileId(profileData.profileId)
-      setStep(step + 1) // Move to photos step
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
   }
 
   const handlePhotoSubmit = async () => {
@@ -571,23 +556,16 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 3: Location */}
-          {currentSection === 'location' && (
-            <div className="space-y-4">
+          {/* Step 2: Location, Education & Background */}
+          {currentSection === 'location_education' && (
+            <div className="space-y-6">
               <LocationSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue, !isLocationComplete)}
-            </div>
-          )}
-
-          {/* Step 4: Education */}
-          {currentSection === 'education' && (
-            <div className="space-y-4">
               <EducationSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue, !isEducationComplete)}
+              {renderContinueButton(handleSectionContinue, !isLocationEducationComplete)}
             </div>
           )}
 
-          {/* Step 5: Religion */}
+          {/* Step 3: Religion */}
           {currentSection === 'religion' && (
             <div className="space-y-4">
               <ReligionSection {...sectionProps} />
@@ -703,15 +681,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 10: Referral */}
-          {currentSection === 'referral' && (
-            <div className="space-y-4">
-              <ReferralSection {...sectionProps} />
-              {renderContinueButton(handleCreateProfile, false, true)}
-            </div>
-          )}
-
-          {/* Step 10: Photos */}
+          {/* Step 9: Photos */}
           {currentSection === 'photos' && (
             <div>
               <div className="text-center mb-6">

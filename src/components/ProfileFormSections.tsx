@@ -477,6 +477,44 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
         </div>
       )}
 
+      {/* Language & Background */}
+      <div className="space-y-4 mt-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language & Background</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
+            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              <option value="Other">Other</option>
+            </select>
+            {(formData.motherTongue as string) === 'Other' && (
+              <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
+            )}
+          </div>
+          <div>
+            <label className="form-label">Languages Known</label>
+            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-1">
+                {LANGUAGES.map(lang => (
+                  <label key={lang} className="flex items-center text-sm">
+                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
+                    {lang}
+                  </label>
+                ))}
+                <label className="flex items-center text-sm">
+                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
+                  Other
+                </label>
+              </div>
+            </div>
+            {(formData.languagesKnown as string || '').includes('Other') && (
+              <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
+            )}
+          </div>
+        </div>
+      </div>
+
     </>
   )
 }
@@ -625,56 +663,9 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
   )
 }
 
-export function FamilySection({ formData, handleChange, setFormData }: SectionProps) {
-  const handleLanguageCheckbox = (language: string, checked: boolean) => {
-    const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
-    if (checked) {
-      setFormData(prev => ({ ...prev, languagesKnown: [...current, language].join(', ') }))
-    } else {
-      setFormData(prev => ({ ...prev, languagesKnown: current.filter(l => l !== language).join(', ') }))
-    }
-  }
-
+export function FamilySection({ formData, handleChange }: SectionProps) {
   return (
     <>
-      {/* Language & Background */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language & Background</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
-            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-              <option value="Other">Other</option>
-            </select>
-            {(formData.motherTongue as string) === 'Other' && (
-              <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
-            )}
-          </div>
-          <div>
-            <label className="form-label">Languages Known</label>
-            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-1">
-                {LANGUAGES.map(lang => (
-                  <label key={lang} className="flex items-center text-sm">
-                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
-                    {lang}
-                  </label>
-                ))}
-                <label className="flex items-center text-sm">
-                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
-                  Other
-                </label>
-              </div>
-            </div>
-            {(formData.languagesKnown as string || '').includes('Other') && (
-              <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Family Location */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Family Location</h4>
@@ -1183,6 +1174,50 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
             <label className="form-label">Facebook</label>
             <input type="url" name="facebook" value={formData.facebook as string || ''} onChange={handleChange} className="input-field" placeholder="facebook.com/..." />
           </div>
+        </div>
+      </div>
+
+      {/* Referral Source */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">How Did You Find Us?</h4>
+        <div>
+          <label className="form-label">Referral Source</label>
+          <select name="referralSource" value={formData.referralSource as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select</option>
+            <option value="friend">Friend</option>
+            <option value="family">Family/Relative</option>
+            <option value="instagram">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="whatsapp">WhatsApp Message</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="youtube">YouTube</option>
+            <option value="google">Google Search</option>
+            <option value="temple">Temple/Religious Organization</option>
+            <option value="community_event">Community Event/Meetup</option>
+            <option value="organization">Other Organization</option>
+            <option value="advertisement">Advertisement</option>
+            <option value="other">Other</option>
+          </select>
+          {(formData.referralSource as string) === 'other' && (
+            <input
+              type="text"
+              name="referralSourceOther"
+              value={formData.referralSourceOther as string || ''}
+              onChange={handleChange}
+              className="input-field mt-2"
+              placeholder="Please specify how you heard about us"
+            />
+          )}
+          {(formData.referralSource as string) === 'organization' && (
+            <input
+              type="text"
+              name="referralOrganization"
+              value={formData.referralOrganization as string || ''}
+              onChange={handleChange}
+              className="input-field mt-2"
+              placeholder="Organization name"
+            />
+          )}
         </div>
       </div>
     </div>
