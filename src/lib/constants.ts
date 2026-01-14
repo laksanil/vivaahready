@@ -133,11 +133,16 @@ export const PREF_INCOME_OPTIONS = [
 
 // Preferred Location options
 export const PREF_LOCATION_OPTIONS = [
-  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "within_50_miles", label: "Within 50 miles" },
+  { value: "within_100_miles", label: "Within 100 miles" },
+  { value: "within_200_miles", label: "Within 200 miles" },
+  { value: "same_state", label: "Same state as me" },
   { value: "usa", label: "Anywhere in USA" },
   // Specific regions
-  { value: "bay_area", label: "Bay Area, California" },
-  { value: "southern_california", label: "Southern California (LA, San Diego)" },
+  { value: "bay_area", label: "Bay Area, CA" },
+  { value: "southern_california", label: "SoCal (LA, San Diego)" },
+  { value: "tri_state", label: "Tri-State (NY, NJ, CT)" },
+  { value: "dmv_area", label: "DMV (DC, MD, VA)" },
   // States
   { value: "california", label: "California" },
   { value: "texas", label: "Texas" },
@@ -160,7 +165,6 @@ export const PREF_LOCATION_OPTIONS = [
   { value: "indiana", label: "Indiana" },
   { value: "missouri", label: "Missouri" },
   { value: "other_state", label: "Other US State" },
-  { value: "open_to_relocation", label: "Open to relocation" },
 ]
 
 // Education/Qualification options for profile (US-based degrees)

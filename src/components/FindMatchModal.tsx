@@ -14,7 +14,8 @@ import {
   LifestyleSection,
   AboutMeSection,
   ReligionSection,
-  PreferencesSection,
+  PreferencesMustHavesSection,
+  PreferencesNiceToHavesSection,
 } from './ProfileFormSections'
 
 interface FindMatchModalProps {
@@ -43,16 +44,17 @@ const SECTION_TITLES: Record<string, string> = {
   family: 'Family Details',
   lifestyle: 'Lifestyle',
   aboutme: 'About Me',
-  preferences: 'Partner Preferences',
+  preferences_must_haves: 'Must-Haves',
+  preferences_nice_to_haves: 'Nice-to-Haves',
   referral: 'How Did You Find Us?',
   photos: 'Add Your Photos',
 }
 
-// Steps for user: 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences, 8=account, 9=photos
-const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'photos']
+// Steps for user: basics → location → religion → family → lifestyle → aboutme → must-haves → nice-to-haves → account → photos
+const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_must_haves', 'preferences_nice_to_haves', 'account', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_must_haves', 'preferences_nice_to_haves', 'admin_account', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -341,15 +343,22 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const activeSectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
   const currentSection = activeSectionOrder[step - 1]
   const totalSteps = activeSectionOrder.length
-  const progress = (step / totalSteps) * 100
+  const progress = Math.round((step / totalSteps) * 100)
 
   const sectionProps = { formData, handleChange, setFormData }
+
+  // Calculate section completion for visual indicators
+  const getSectionStatus = (sectionIndex: number) => {
+    if (sectionIndex < step - 1) return 'completed'
+    if (sectionIndex === step - 1) return 'current'
+    return 'upcoming'
+  }
 
   const renderContinueButton = (onClick: () => void, disabled: boolean = false, isLast: boolean = false) => (
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`mt-8 w-full py-3.5 font-semibold text-base transition-all duration-200 ${
+      className={`mt-8 w-full py-3.5 font-semibold text-base transition-all duration-200 flex items-center justify-center gap-2 ${
         !disabled && !loading
           ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md active:scale-[0.99]'
           : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -361,7 +370,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {isLast ? 'Creating Profile...' : 'Processing...'}
         </span>
       ) : (
-        isLast ? 'Create Profile' : 'Continue'
+        <>
+          {isLast ? 'Create Profile' : 'Continue'}
+          {!disabled && <CheckCircle className="w-4 h-4" />}
+        </>
       )}
     </button>
   )
@@ -371,28 +383,50 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative bg-white shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
-        {/* Progress Bar */}
-        <div className="h-1 bg-gray-100">
-          <div
-            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
         {/* Header */}
-        <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10">
-          <button onClick={handleBack} className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {SECTION_TITLES[currentSection]}
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">Step {step} of {totalSteps}</p>
+        <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
+          {/* Top bar with back, title, close */}
+          <div className="px-6 py-3 flex justify-between items-center">
+            <button onClick={handleBack} className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {SECTION_TITLES[currentSection]}
+              </h2>
+            </div>
+            <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-            <X className="w-5 h-5" />
-          </button>
+
+          {/* Progress indicator */}
+          <div className="px-6 pb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">Step {step} of {totalSteps}</span>
+              <span className="text-xs font-semibold text-primary-600">{progress}% Complete</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500 ease-out rounded-full"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            {/* Step dots */}
+            <div className="flex justify-between mt-2">
+              {activeSectionOrder.map((section, index) => (
+                <div
+                  key={section}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    getSectionStatus(index) === 'completed' ? 'bg-primary-600' :
+                    getSectionStatus(index) === 'current' ? 'bg-primary-400 ring-2 ring-primary-200' :
+                    'bg-gray-200'
+                  }`}
+                  title={SECTION_TITLES[section]}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Error Message */}
@@ -403,17 +437,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         )}
 
         {/* Info Banner - Different message for preferences section */}
-        <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
-          {currentSection === 'preferences' ? (
-            <p className="text-primary-800 text-sm">
-              <strong>All criteria selected will be used for matching. For more results, choose this section wisely.</strong>
-            </p>
-          ) : (
+        {currentSection !== 'preferences' && (
+          <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
             <p className="text-primary-800 text-xs">
               <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-6 pb-8">
@@ -603,10 +633,30 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 9: Preferences */}
-          {currentSection === 'preferences' && (
+          {/* Step 7: Must-Haves (Deal-breakers) */}
+          {currentSection === 'preferences_must_haves' && (
             <div className="space-y-4">
-              <PreferencesSection {...sectionProps} />
+              {/* Sticky warning banner */}
+              <div className="sticky top-0 z-10 -mx-6 px-6 py-2 bg-red-50 border-b border-red-200 -mt-4">
+                <p className="text-red-800 text-sm text-center">
+                  <strong>🚫 Deal-breakers: Profiles that don&apos;t match these will NOT be shown</strong>
+                </p>
+              </div>
+              <PreferencesMustHavesSection {...sectionProps} />
+              {renderContinueButton(handleSectionContinue)}
+            </div>
+          )}
+
+          {/* Step 8: Nice-to-Haves (Optional preferences) */}
+          {currentSection === 'preferences_nice_to_haves' && (
+            <div className="space-y-4">
+              {/* Sticky info banner */}
+              <div className="sticky top-0 z-10 -mx-6 px-6 py-2 bg-blue-50 border-b border-blue-200 -mt-4">
+                <p className="text-blue-800 text-sm text-center">
+                  <strong>✨ Nice-to-haves: Used to rank matches (not filter)</strong>
+                </p>
+              </div>
+              <PreferencesNiceToHavesSection {...sectionProps} />
               {renderContinueButton(handleSectionContinue)}
             </div>
           )}
