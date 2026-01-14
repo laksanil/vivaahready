@@ -37,6 +37,8 @@ interface ProfileData {
   qualification: string | null
   university: string | null
   caste: string | null
+  community: string | null
+  subCommunity: string | null
   gotra: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
@@ -68,11 +70,21 @@ interface ProfileData {
   placeOfBirthCountry: string | null
   placeOfBirthState: string | null
   placeOfBirthCity: string | null
+  // Hindu-specific
   timeOfBirth: string | null
   manglik: string | null
   raasi: string | null
   nakshatra: string | null
   doshas: string | null
+  // Muslim-specific
+  maslak: string | null
+  namazPractice: string | null
+  // Sikh-specific
+  amritdhari: string | null
+  turban: string | null
+  // Christian-specific
+  churchAttendance: string | null
+  baptized: string | null
   healthInfo: string | null
   anyDisability: string | null
   disabilityDetails: string | null
@@ -535,7 +547,7 @@ function ProfileCard({
                   <div>{profile.maritalStatus || 'Never Married'}</div>
                   <div>{profile.languagesKnown || 'English'}</div>
                   <div>{profile.currentLocation}</div>
-                  <div>{profile.caste ? `${profile.religion || 'Hindu'}, ${profile.caste}` : (profile.religion || 'Hindu')}</div>
+                  <div>{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}${profile.subCommunity ? ` (${profile.subCommunity})` : ''}` : (profile.religion || 'Hindu')}</div>
                   <div>{profile.occupation?.replace(/_/g, ' ')}</div>
                   <div>{profile.grewUpIn ? `Grew up in ${profile.grewUpIn}` : ''}</div>
                   <div>{profile.citizenship ? `${profile.citizenship} Citizen` : ''}</div>
@@ -730,7 +742,7 @@ function ProfileCard({
                   </div>
                 </div>
 
-                {/* Religion & Astro Section */}
+                {/* Religion & Background Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
@@ -740,7 +752,7 @@ function ProfileCard({
                     </div>
                   </div>
                   <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Religion & Astro</h3>
+                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Religion & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.religion && (
                         <div className="flex items-center gap-2">
@@ -748,18 +760,82 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.religion}</span>
                         </div>
                       )}
-                      {profile.caste && (
+                      {profile.community && (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Caste</span>
-                          <span className="text-gray-800">{profile.caste}</span>
+                          <span className="text-gray-500 w-32">Community</span>
+                          <span className="text-gray-800">{profile.community}</span>
                         </div>
                       )}
-                      {profile.gotra && (
+                      {profile.subCommunity && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Sub-Community</span>
+                          <span className="text-gray-800">{profile.subCommunity}</span>
+                        </div>
+                      )}
+
+                      {/* Hindu/Jain specific: Gotra */}
+                      {(profile.religion === 'Hindu' || profile.religion === 'Jain') && profile.gotra && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">Gotra</span>
                           <span className="text-gray-800">{profile.gotra}</span>
                         </div>
                       )}
+
+                      {/* Muslim specific fields */}
+                      {profile.religion === 'Muslim' && (
+                        <>
+                          {profile.maslak && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Maslak</span>
+                              <span className="text-gray-800">{profile.maslak.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                          {profile.namazPractice && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Namaz</span>
+                              <span className="text-gray-800">{profile.namazPractice.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Sikh specific fields */}
+                      {profile.religion === 'Sikh' && (
+                        <>
+                          {profile.amritdhari && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Amritdhari</span>
+                              <span className="text-gray-800">{profile.amritdhari.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                          {profile.turban && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Turban</span>
+                              <span className="text-gray-800">{profile.turban === 'yes' ? 'Yes, wears turban' : 'No'}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Christian specific fields */}
+                      {profile.religion === 'Christian' && (
+                        <>
+                          {profile.churchAttendance && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Church</span>
+                              <span className="text-gray-800">{profile.churchAttendance.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                          {profile.baptized && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Baptized</span>
+                              <span className="text-gray-800">{profile.baptized === 'yes' ? 'Yes' : 'No'}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Birth place - shown for all */}
                       {profile.placeOfBirthCountry && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">Birth Country</span>
@@ -778,35 +854,43 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.placeOfBirthCity}</span>
                         </div>
                       )}
-                      {profile.timeOfBirth && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Time of Birth</span>
-                          <span className="text-gray-800">{profile.timeOfBirth}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500 w-32">Manglik</span>
-                        <span className="text-gray-800">
-                          {profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}
-                        </span>
-                      </div>
-                      {profile.raasi && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Raasi</span>
-                          <span className="text-gray-800">{profile.raasi.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.nakshatra && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Nakshatra</span>
-                          <span className="text-gray-800">{profile.nakshatra.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.doshas && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Doshas</span>
-                          <span className="text-gray-800">{profile.doshas.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
+
+                      {/* Hindu-specific astrology fields */}
+                      {profile.religion === 'Hindu' && (
+                        <>
+                          {profile.timeOfBirth && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Time of Birth</span>
+                              <span className="text-gray-800">{profile.timeOfBirth}</span>
+                            </div>
+                          )}
+                          {profile.manglik && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Manglik</span>
+                              <span className="text-gray-800">
+                                {profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}
+                              </span>
+                            </div>
+                          )}
+                          {profile.raasi && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Raasi</span>
+                              <span className="text-gray-800">{profile.raasi.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                          {profile.nakshatra && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Nakshatra</span>
+                              <span className="text-gray-800">{profile.nakshatra.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                          {profile.doshas && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500 w-32">Doshas</span>
+                              <span className="text-gray-800">{profile.doshas.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

@@ -33,16 +33,91 @@ export const HEIGHT_OPTIONS = [
   { value: "7'0\"", label: "7'0\" (213 cm)" },
 ]
 
-// Preferred Age Range options
-export const PREF_AGE_OPTIONS = [
+// Preferred Age Range options (min/max ages 18-65)
+export const PREF_AGE_MIN_MAX = Array.from({ length: 48 }, (_, i) => ({
+  value: String(18 + i),
+  label: `${18 + i} years`
+}))
+
+// Preferred Smoking options for partner
+export const PREF_SMOKING_OPTIONS = [
   { value: "doesnt_matter", label: "Doesn't matter" },
-  { value: "same_age", label: "Same age (±1 year)" },
-  { value: "1-3_younger", label: "1-3 years younger" },
-  { value: "1-3_older", label: "1-3 years older" },
-  { value: "3-5_younger", label: "3-5 years younger" },
-  { value: "3-5_older", label: "3-5 years older" },
-  { value: "5+_younger", label: "5+ years younger" },
-  { value: "5+_older", label: "5+ years older" },
+  { value: "no", label: "Non-smoker only" },
+  { value: "occasionally_ok", label: "Occasional smoking OK" },
+]
+
+// Preferred Drinking options for partner
+export const PREF_DRINKING_OPTIONS = [
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "no", label: "Non-drinker only" },
+  { value: "social_ok", label: "Social drinking OK" },
+]
+
+// Preferred Marital Status options for partner
+export const PREF_MARITAL_STATUS_OPTIONS = [
+  { value: "never_married", label: "Never Married only" },
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "divorced_ok", label: "Divorced OK" },
+  { value: "widowed_ok", label: "Widowed OK" },
+]
+
+// Relocation Preference options
+export const PREF_RELOCATION_OPTIONS = [
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "willing", label: "Must be willing to relocate" },
+  { value: "not_required", label: "No relocation needed" },
+]
+
+// Mother Tongue preference options
+export const PREF_MOTHER_TONGUE_OPTIONS = [
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "same_as_mine", label: "Same as mine" },
+  { value: "telugu", label: "Telugu" },
+  { value: "hindi", label: "Hindi" },
+  { value: "tamil", label: "Tamil" },
+  { value: "kannada", label: "Kannada" },
+  { value: "malayalam", label: "Malayalam" },
+  { value: "marathi", label: "Marathi" },
+  { value: "gujarati", label: "Gujarati" },
+  { value: "punjabi", label: "Punjabi" },
+  { value: "bengali", label: "Bengali" },
+  { value: "urdu", label: "Urdu" },
+  { value: "english", label: "English" },
+]
+
+// Pets preference options for partner
+export const PREF_PETS_OPTIONS = [
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "must_love", label: "Must love pets" },
+  { value: "no_pets", label: "No pets preferred" },
+  { value: "open_to_pets", label: "Open to pets" },
+]
+
+// Preferred Community options for partner (multi-select when specific)
+export const PREF_COMMUNITY_OPTIONS = [
+  { value: "same_as_mine", label: "Same as mine" },
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "specific", label: "Specific communities..." },
+]
+
+// Work Area / Industry options for partner preference
+export const PREF_WORK_AREA_OPTIONS = [
+  { value: "doesnt_matter", label: "Doesn't matter" },
+  { value: "tech_it", label: "Technology / IT" },
+  { value: "healthcare_medical", label: "Healthcare / Medical" },
+  { value: "finance_banking", label: "Finance / Banking" },
+  { value: "consulting", label: "Consulting" },
+  { value: "education_research", label: "Education / Research" },
+  { value: "legal", label: "Legal" },
+  { value: "engineering", label: "Engineering (Non-IT)" },
+  { value: "business_entrepreneur", label: "Business / Entrepreneur" },
+  { value: "government_public", label: "Government / Public Sector" },
+  { value: "creative_arts", label: "Creative / Arts / Media" },
+  { value: "sales_marketing", label: "Sales / Marketing" },
+  { value: "real_estate", label: "Real Estate" },
+  { value: "hospitality", label: "Hospitality / Travel" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "other", label: "Other" },
 ]
 
 // Preferred Income options (minimum)
@@ -219,6 +294,180 @@ export const INTERESTS_OPTIONS = [
   'Sports',
   'Startups',
   'Travel & Adventure',
+]
+
+// US Visa Status options for non-US citizens living in USA
+export const US_VISA_STATUS_OPTIONS = [
+  { value: "h1b", label: "H-1B (Specialty Occupation)" },
+  { value: "h4", label: "H-4 (H-1B Dependent)" },
+  { value: "l1a", label: "L-1A (Intracompany Transferee Manager)" },
+  { value: "l1b", label: "L-1B (Intracompany Transferee Specialized Knowledge)" },
+  { value: "l2", label: "L-2 (L-1 Dependent)" },
+  { value: "f1", label: "F-1 (Student Visa)" },
+  { value: "f1_opt", label: "F-1 OPT (Optional Practical Training)" },
+  { value: "f1_stem_opt", label: "F-1 STEM OPT Extension" },
+  { value: "h1b_cap_exempt", label: "H-1B Cap Exempt" },
+  { value: "o1", label: "O-1 (Extraordinary Ability)" },
+  { value: "eb1", label: "EB-1 (Employment Green Card - Priority Worker)" },
+  { value: "eb2", label: "EB-2 (Employment Green Card - Advanced Degree)" },
+  { value: "eb3", label: "EB-3 (Employment Green Card - Skilled Workers)" },
+  { value: "green_card", label: "Green Card Holder (Permanent Resident)" },
+  { value: "ead", label: "EAD (Employment Authorization Document)" },
+  { value: "tn", label: "TN (NAFTA Professional)" },
+  { value: "e2", label: "E-2 (Treaty Investor)" },
+  { value: "j1", label: "J-1 (Exchange Visitor)" },
+  { value: "b1_b2", label: "B-1/B-2 (Business/Tourist)" },
+  { value: "other", label: "Other" },
+]
+
+// Comprehensive list of countries (USA first, India second, then alphabetical)
+export const COUNTRIES_LIST = [
+  "USA",
+  "India",
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Argentina",
+  "Australia",
+  "Austria",
+  "Bahrain",
+  "Bangladesh",
+  "Belgium",
+  "Bhutan",
+  "Brazil",
+  "Brunei",
+  "Cambodia",
+  "Canada",
+  "Chile",
+  "China",
+  "Colombia",
+  "Croatia",
+  "Czech Republic",
+  "Denmark",
+  "Egypt",
+  "Ethiopia",
+  "Fiji",
+  "Finland",
+  "France",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Hong Kong",
+  "Hungary",
+  "Iceland",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Japan",
+  "Jordan",
+  "Kenya",
+  "Kuwait",
+  "Lebanon",
+  "Luxembourg",
+  "Malaysia",
+  "Maldives",
+  "Mauritius",
+  "Mexico",
+  "Morocco",
+  "Myanmar",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nigeria",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Saudi Arabia",
+  "Singapore",
+  "South Africa",
+  "South Korea",
+  "Spain",
+  "Sri Lanka",
+  "Sweden",
+  "Switzerland",
+  "Taiwan",
+  "Tanzania",
+  "Thailand",
+  "Turkey",
+  "UAE",
+  "Uganda",
+  "UK",
+  "Ukraine",
+  "Vietnam",
+  "Zimbabwe",
+  "Other",
+]
+
+// Hindu Raasi (Moon Sign) options
+export const RAASI_OPTIONS = [
+  { value: "mesha", label: "Mesha (Aries)" },
+  { value: "vrishabha", label: "Vrishabha (Taurus)" },
+  { value: "mithuna", label: "Mithuna (Gemini)" },
+  { value: "karka", label: "Karka (Cancer)" },
+  { value: "simha", label: "Simha (Leo)" },
+  { value: "kanya", label: "Kanya (Virgo)" },
+  { value: "tula", label: "Tula (Libra)" },
+  { value: "vrishchika", label: "Vrishchika (Scorpio)" },
+  { value: "dhanu", label: "Dhanu (Sagittarius)" },
+  { value: "makara", label: "Makara (Capricorn)" },
+  { value: "kumbha", label: "Kumbha (Aquarius)" },
+  { value: "meena", label: "Meena (Pisces)" },
+  { value: "dont_know", label: "Don't Know" },
+]
+
+// Hindu Nakshatra (Birth Star) options - 27 Nakshatras
+export const NAKSHATRA_OPTIONS = [
+  { value: "ashwini", label: "Ashwini" },
+  { value: "bharani", label: "Bharani" },
+  { value: "krittika", label: "Krittika" },
+  { value: "rohini", label: "Rohini" },
+  { value: "mrigashira", label: "Mrigashira" },
+  { value: "ardra", label: "Ardra" },
+  { value: "punarvasu", label: "Punarvasu" },
+  { value: "pushya", label: "Pushya" },
+  { value: "ashlesha", label: "Ashlesha" },
+  { value: "magha", label: "Magha" },
+  { value: "purva_phalguni", label: "Purva Phalguni" },
+  { value: "uttara_phalguni", label: "Uttara Phalguni" },
+  { value: "hasta", label: "Hasta" },
+  { value: "chitra", label: "Chitra" },
+  { value: "swati", label: "Swati" },
+  { value: "vishakha", label: "Vishakha" },
+  { value: "anuradha", label: "Anuradha" },
+  { value: "jyeshtha", label: "Jyeshtha" },
+  { value: "moola", label: "Moola" },
+  { value: "purva_ashadha", label: "Purva Ashadha" },
+  { value: "uttara_ashadha", label: "Uttara Ashadha" },
+  { value: "shravana", label: "Shravana" },
+  { value: "dhanishta", label: "Dhanishta" },
+  { value: "shatabhisha", label: "Shatabhisha" },
+  { value: "purva_bhadrapada", label: "Purva Bhadrapada" },
+  { value: "uttara_bhadrapada", label: "Uttara Bhadrapada" },
+  { value: "revati", label: "Revati" },
+  { value: "dont_know", label: "Don't Know" },
+]
+
+// Doshas options
+export const DOSHAS_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "manglik", label: "Manglik / Kuja Dosha" },
+  { value: "kaal_sarp", label: "Kaal Sarp Dosha" },
+  { value: "shani_dosha", label: "Shani Dosha" },
+  { value: "pitra_dosha", label: "Pitra Dosha" },
+  { value: "nadi_dosha", label: "Nadi Dosha" },
+  { value: "gandmool", label: "Gandmool Dosha" },
+  { value: "multiple", label: "Multiple Doshas" },
+  { value: "dont_know", label: "Don't Know" },
+  { value: "other", label: "Other" },
 ]
 
 // Occupation options for profile

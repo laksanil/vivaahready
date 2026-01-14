@@ -23,7 +23,9 @@ const profileSchema = z.object({
   // Location & Background
   country: z.string().optional(),
   currentLocation: z.string().optional(),
+  zipCode: z.string().optional(),
   citizenship: z.string().optional(),
+  residencyStatus: z.string().optional(),
   grewUpIn: z.string().optional(),
   livesWithFamily: z.string().optional(),
   familyLocation: z.string().optional(),
@@ -41,18 +43,36 @@ const profileSchema = z.object({
   annualIncome: z.string().optional(),
   educationCareerDetails: z.string().optional(),
 
-  // Religion & Astro
+  // Religion & Community
   religion: z.string().optional(),
+  community: z.string().optional(),
+  subCommunity: z.string().optional(),
   caste: z.string().optional(),
   gotra: z.string().optional(),
+
+  // Birth Details
   placeOfBirthCountry: z.string().optional(),
   placeOfBirthState: z.string().optional(),
   placeOfBirthCity: z.string().optional(),
+
+  // Hindu-specific Astro
   timeOfBirth: z.string().optional(),
   manglik: z.string().optional(),
   raasi: z.string().optional(),
   nakshatra: z.string().optional(),
   doshas: z.string().optional(),
+
+  // Muslim-specific
+  maslak: z.string().optional(),
+  namazPractice: z.string().optional(),
+
+  // Sikh-specific
+  amritdhari: z.string().optional(),
+  turban: z.string().optional(),
+
+  // Christian-specific
+  churchAttendance: z.string().optional(),
+  baptized: z.string().optional(),
 
   // Family
   fatherName: z.string().optional(),
@@ -63,12 +83,14 @@ const profileSchema = z.object({
   numberOfSisters: z.string().optional(),
   familyType: z.string().optional(),
   familyValues: z.string().optional(),
+  familyDetails: z.string().optional(),
 
   // Lifestyle
   dietaryPreference: z.string().optional(),
   smoking: z.string().optional(),
   drinking: z.string().optional(),
   hobbies: z.string().optional(),
+  fitness: z.string().optional(),
   interests: z.string().optional(),
   pets: z.string().optional(),
   allergiesOrMedical: z.string().optional(),
@@ -76,14 +98,34 @@ const profileSchema = z.object({
 
   // Partner Preferences
   prefAgeDiff: z.string().optional(),
+  prefAgeMin: z.string().optional(),
+  prefAgeMax: z.string().optional(),
   prefHeight: z.string().optional(),
+  prefHeightMin: z.string().optional(),
+  prefHeightMax: z.string().optional(),
+  prefCommunity: z.string().optional(),
+  prefSubCommunity: z.string().optional(),
+  prefCommunityList: z.string().optional(),
   prefCaste: z.string().optional(),
   prefGotra: z.string().optional(),
   prefLocation: z.string().optional(),
   prefCountry: z.string().optional(),
+  prefCitizenship: z.string().optional(),
   prefGrewUpIn: z.string().optional(),
   prefQualification: z.string().optional(),
+  prefWorkArea: z.string().optional(),
+  prefOccupation: z.string().optional(),
+  prefIncome: z.string().optional(),
   prefDiet: z.string().optional(),
+  prefSmoking: z.string().optional(),
+  prefDrinking: z.string().optional(),
+  prefMaritalStatus: z.string().optional(),
+  prefRelocation: z.string().optional(),
+  prefMotherTongue: z.string().optional(),
+  prefPets: z.string().optional(),
+  prefHobbies: z.string().optional(),
+  prefFitness: z.string().optional(),
+  prefInterests: z.string().optional(),
   idealPartnerDesc: z.string().optional(),
 })
 
@@ -137,7 +179,9 @@ export async function POST(request: Request) {
         // Location & Background
         country: data.country,
         currentLocation: data.currentLocation,
+        zipCode: data.zipCode,
         citizenship: data.citizenship,
+        residencyStatus: data.residencyStatus,
         grewUpIn: data.grewUpIn,
         livesWithFamily: data.livesWithFamily,
         familyLocation: data.familyLocation,
@@ -155,18 +199,36 @@ export async function POST(request: Request) {
         annualIncome: data.annualIncome,
         educationCareerDetails: data.educationCareerDetails,
 
-        // Religion & Astro
+        // Religion & Community
         religion: data.religion,
+        community: data.community,
+        subCommunity: data.subCommunity,
         caste: data.caste,
         gotra: data.gotra,
+
+        // Birth Details
         placeOfBirthCountry: data.placeOfBirthCountry,
         placeOfBirthState: data.placeOfBirthState,
         placeOfBirthCity: data.placeOfBirthCity,
+
+        // Hindu-specific Astro
         timeOfBirth: data.timeOfBirth,
         manglik: data.manglik,
         raasi: data.raasi,
         nakshatra: data.nakshatra,
         doshas: data.doshas,
+
+        // Muslim-specific
+        maslak: data.maslak,
+        namazPractice: data.namazPractice,
+
+        // Sikh-specific
+        amritdhari: data.amritdhari,
+        turban: data.turban,
+
+        // Christian-specific
+        churchAttendance: data.churchAttendance,
+        baptized: data.baptized,
 
         // Family
         fatherName: data.fatherName,
@@ -177,12 +239,14 @@ export async function POST(request: Request) {
         numberOfSisters: data.numberOfSisters,
         familyType: data.familyType,
         familyValues: data.familyValues,
+        familyDetails: data.familyDetails,
 
         // Lifestyle
         dietaryPreference: data.dietaryPreference,
         smoking: data.smoking,
         drinking: data.drinking,
         hobbies: data.hobbies,
+        fitness: data.fitness,
         interests: data.interests,
         pets: data.pets,
         allergiesOrMedical: data.allergiesOrMedical,
@@ -190,14 +254,33 @@ export async function POST(request: Request) {
 
         // Partner Preferences
         prefAgeDiff: data.prefAgeDiff,
+        prefAgeMin: data.prefAgeMin,
+        prefAgeMax: data.prefAgeMax,
         prefHeight: data.prefHeight,
+        prefHeightMin: data.prefHeightMin,
+        prefHeightMax: data.prefHeightMax,
+        prefCommunity: data.prefCommunityList || data.prefCommunity,
+        prefSubCommunity: data.prefSubCommunity,
         prefCaste: data.prefCaste,
         prefGotra: data.prefGotra,
         prefLocation: data.prefLocation,
         prefCountry: data.prefCountry,
+        prefCitizenship: data.prefCitizenship,
         prefGrewUpIn: data.prefGrewUpIn,
         prefQualification: data.prefQualification,
+        prefWorkArea: data.prefWorkArea,
+        prefOccupation: data.prefOccupation,
+        prefIncome: data.prefIncome,
         prefDiet: data.prefDiet,
+        prefSmoking: data.prefSmoking,
+        prefDrinking: data.prefDrinking,
+        prefMaritalStatus: data.prefMaritalStatus,
+        prefRelocation: data.prefRelocation,
+        prefMotherTongue: data.prefMotherTongue,
+        prefPets: data.prefPets,
+        prefHobbies: data.prefHobbies,
+        prefFitness: data.prefFitness,
+        prefInterests: data.prefInterests,
         idealPartnerDesc: data.idealPartnerDesc,
 
         // Status

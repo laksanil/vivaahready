@@ -72,6 +72,7 @@ model Profile {
   numberOfBrothers  String?
   numberOfSisters   String?
   siblingDetails    String?
+  familyDetails     String?  // Additional family details text box
   familyType        String?  // nuclear, joint
   familyValues      String?  // traditional, moderate, liberal
   familyLocation    String?
@@ -86,7 +87,9 @@ model Profile {
 
   // Background
   religion          String?  // Hindu, Muslim, Christian, etc.
-  caste             String?
+  community         String?  // Community based on religion (e.g., Brahmin, Reddy for Hindu)
+  subCommunity      String?  // Sub-community (e.g., Madhwa, Smartha for Brahmin)
+  caste             String?  // Legacy field - kept for backwards compatibility
   gotra             String?
 
   // Additional Career Details
@@ -98,15 +101,29 @@ model Profile {
   livesWithFamily   String?  // yes, no
   createdBy         String?  // self, parent, sibling, relative, friend
 
-  // Astro Details
+  // Birth Details (shown for all religions)
   placeOfBirthCountry String?
   placeOfBirthState   String?
   placeOfBirthCity    String?
+
+  // Hindu-specific Astro Details
   timeOfBirth         String?
   manglik             String?  // yes, no, dont_know
   raasi               String?  // Moon sign
   nakshatra           String?  // Birth star
   doshas              String?  // Doshas if any
+
+  // Muslim-specific fields
+  maslak              String?  // School of thought: hanafi, shafi, maliki, hanbali, etc.
+  namazPractice       String?  // Prayer practice: five_times, sometimes, friday_only, etc.
+
+  // Sikh-specific fields
+  amritdhari          String?  // Baptized: yes, no, keshdhari
+  turban              String?  // yes, no
+
+  // Christian-specific fields
+  churchAttendance    String?  // weekly, occasionally, special_occasions, rarely
+  baptized            String?  // yes, no
 
   // Lifestyle
   smoking           String?  // no, occasionally, yes
@@ -121,16 +138,27 @@ model Profile {
   aboutMe           String?
 
   // Partner Preferences
-  prefHeight        String?
-  prefAgeDiff       String?  // "< 3 years", "between 3 to 5 years", etc.
+  prefHeight        String?  // Legacy - kept for backwards compatibility
+  prefHeightMin     String?  // Minimum preferred height
+  prefHeightMax     String?  // Maximum preferred height
+  prefAgeDiff       String?  // Legacy - "< 3 years", "between 3 to 5 years", etc.
+  prefAgeMin        String?  // Minimum preferred age
+  prefAgeMax        String?  // Maximum preferred age
   prefLocation      String?
   prefDiet          String?
-  prefCaste         String?
+  prefSmoking       String?  // doesnt_matter, no, occasionally_ok
+  prefDrinking      String?  // doesnt_matter, no, social_ok
+  prefCommunity     String?  // JSON array of preferred communities or "same_as_mine" or "doesnt_matter"
+  prefSubCommunity  String?  // JSON array of preferred sub-communities or "same_as_mine" or "doesnt_matter"
+  prefCaste         String?  // Legacy field - kept for backwards compatibility
   prefGotra         String?  // "Different Gothra", "Doesn't Matter"
   prefQualification String?
+  prefWorkArea      String?  // Preferred work area/industry
+  prefOccupation    String?  // Preferred occupation/job title
   prefIncome        String?
   prefLanguage      String?
-  prefCountry       String?
+  prefCountry       String?  // Legacy - kept for backwards compatibility
+  prefCitizenship   String?  // Preferred citizenship/nationality
   prefHobbies       String?  // doesnt_matter, same_as_mine, specific
   prefSpecificHobbies String? // Comma-separated specific hobbies if prefHobbies = specific
   prefFitness       String?  // doesnt_matter, same_as_mine, specific
@@ -138,6 +166,10 @@ model Profile {
   prefInterests     String?  // doesnt_matter, same_as_mine, specific
   prefSpecificInterests String? // Comma-separated specific interests if prefInterests = specific
   prefGrewUpIn      String?  // doesnt_matter, same_as_mine, specific country
+  prefMaritalStatus String?  // never_married, doesnt_matter, divorced_ok, widowed_ok
+  prefRelocation    String?  // doesnt_matter, willing, not_required
+  prefMotherTongue  String?  // doesnt_matter, same_as_mine, specific language
+  prefPets          String?  // doesnt_matter, must_love, no_pets, open_to_pets
   idealPartnerDesc  String?  // Free text description
 
   // Metadata

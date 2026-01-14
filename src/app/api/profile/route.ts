@@ -166,6 +166,8 @@ export async function PUT(request: Request) {
     if (body.facebookInstagram !== undefined) updateData.facebookInstagram = body.facebookInstagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.instagram !== undefined) updateData.instagram = body.instagram
+    if (body.community !== undefined) updateData.community = body.community
+    if (body.subCommunity !== undefined) updateData.subCommunity = body.subCommunity
     if (body.caste !== undefined) updateData.caste = body.caste
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.qualification !== undefined) updateData.qualification = body.qualification
@@ -191,16 +193,36 @@ export async function PUT(request: Request) {
     if (body.languagesKnown !== undefined) updateData.languagesKnown = body.languagesKnown
     if (body.aboutMe !== undefined) updateData.aboutMe = body.aboutMe
     if (body.prefHeight !== undefined) updateData.prefHeight = body.prefHeight
+    if (body.prefHeightMin !== undefined) updateData.prefHeightMin = body.prefHeightMin
+    if (body.prefHeightMax !== undefined) updateData.prefHeightMax = body.prefHeightMax
     if (body.prefAgeDiff !== undefined) updateData.prefAgeDiff = body.prefAgeDiff
+    if (body.prefAgeMin !== undefined) updateData.prefAgeMin = body.prefAgeMin
+    if (body.prefAgeMax !== undefined) updateData.prefAgeMax = body.prefAgeMax
     if (body.prefLocation !== undefined) updateData.prefLocation = body.prefLocation
     if (body.preferredDistance !== undefined) updateData.prefLocation = body.preferredDistance
     if (body.prefCountry !== undefined) updateData.prefCountry = body.prefCountry
+    if (body.prefCitizenship !== undefined) updateData.prefCitizenship = body.prefCitizenship
     if (body.prefDiet !== undefined) updateData.prefDiet = body.prefDiet
+    if (body.prefSmoking !== undefined) updateData.prefSmoking = body.prefSmoking
+    if (body.prefDrinking !== undefined) updateData.prefDrinking = body.prefDrinking
+    if (body.prefCommunity !== undefined) updateData.prefCommunity = body.prefCommunity
+    if (body.prefSubCommunity !== undefined) updateData.prefSubCommunity = body.prefSubCommunity
+    if (body.prefCommunityList !== undefined) updateData.prefCommunity = body.prefCommunityList // Store the list in prefCommunity when specific
     if (body.prefCaste !== undefined) updateData.prefCaste = body.prefCaste
     if (body.prefGotra !== undefined) updateData.prefGotra = body.prefGotra
     if (body.prefQualification !== undefined) updateData.prefQualification = body.prefQualification
+    if (body.prefWorkArea !== undefined) updateData.prefWorkArea = body.prefWorkArea
+    if (body.prefOccupation !== undefined) updateData.prefOccupation = body.prefOccupation
     if (body.prefIncome !== undefined) updateData.prefIncome = body.prefIncome
     if (body.prefLanguage !== undefined) updateData.prefLanguage = body.prefLanguage
+    if (body.prefHobbies !== undefined) updateData.prefHobbies = body.prefHobbies
+    if (body.prefFitness !== undefined) updateData.prefFitness = body.prefFitness
+    if (body.prefInterests !== undefined) updateData.prefInterests = body.prefInterests
+    if (body.prefGrewUpIn !== undefined) updateData.prefGrewUpIn = body.prefGrewUpIn
+    if (body.prefMaritalStatus !== undefined) updateData.prefMaritalStatus = body.prefMaritalStatus
+    if (body.prefRelocation !== undefined) updateData.prefRelocation = body.prefRelocation
+    if (body.prefMotherTongue !== undefined) updateData.prefMotherTongue = body.prefMotherTongue
+    if (body.prefPets !== undefined) updateData.prefPets = body.prefPets
     if (body.idealPartnerDesc !== undefined) updateData.idealPartnerDesc = body.idealPartnerDesc
     if (body.photoUrls !== undefined) updateData.photoUrls = body.photoUrls
     if (body.profileImageUrl !== undefined) updateData.profileImageUrl = body.profileImageUrl
@@ -208,20 +230,35 @@ export async function PUT(request: Request) {
     if (body.grewUpIn !== undefined) updateData.grewUpIn = body.grewUpIn
     if (body.country !== undefined) updateData.country = body.country
 
-    // Astro details fields
+    // Birth details (all religions)
     if (body.placeOfBirthCountry !== undefined) updateData.placeOfBirthCountry = body.placeOfBirthCountry
     if (body.placeOfBirthState !== undefined) updateData.placeOfBirthState = body.placeOfBirthState
     if (body.placeOfBirthCity !== undefined) updateData.placeOfBirthCity = body.placeOfBirthCity
+
+    // Hindu-specific astro fields
     if (body.timeOfBirth !== undefined) updateData.timeOfBirth = body.timeOfBirth
     if (body.manglik !== undefined) updateData.manglik = body.manglik
     if (body.raasi !== undefined) updateData.raasi = body.raasi
     if (body.nakshatra !== undefined) updateData.nakshatra = body.nakshatra
     if (body.doshas !== undefined) updateData.doshas = body.doshas
 
+    // Muslim-specific fields
+    if (body.maslak !== undefined) updateData.maslak = body.maslak
+    if (body.namazPractice !== undefined) updateData.namazPractice = body.namazPractice
+
+    // Sikh-specific fields
+    if (body.amritdhari !== undefined) updateData.amritdhari = body.amritdhari
+    if (body.turban !== undefined) updateData.turban = body.turban
+
+    // Christian-specific fields
+    if (body.churchAttendance !== undefined) updateData.churchAttendance = body.churchAttendance
+    if (body.baptized !== undefined) updateData.baptized = body.baptized
+
     // Lifestyle fields
     if (body.smoking !== undefined) updateData.smoking = body.smoking
     if (body.drinking !== undefined) updateData.drinking = body.drinking
     if (body.hobbies !== undefined) updateData.hobbies = body.hobbies
+    if (body.fitness !== undefined) updateData.fitness = body.fitness
     if (body.interests !== undefined) updateData.interests = body.interests
     if (body.pets !== undefined) updateData.pets = body.pets
     if (body.allergiesOrMedical !== undefined) updateData.allergiesOrMedical = body.allergiesOrMedical

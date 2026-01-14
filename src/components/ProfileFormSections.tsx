@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { HEIGHT_OPTIONS, PREF_AGE_OPTIONS, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES } from '@/lib/constants'
+import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS } from '@/lib/constants'
+import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
@@ -197,6 +198,12 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
 
 export function LocationSection({ formData, handleChange, setFormData }: SectionProps) {
   const [zipLookupLoading, setZipLookupLoading] = useState(false)
+  const [countrySearch, setCountrySearch] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
+  const [grewUpInSearch, setGrewUpInSearch] = useState('')
+  const [showGrewUpInDropdown, setShowGrewUpInDropdown] = useState(false)
+  const [citizenshipSearch, setCitizenshipSearch] = useState('')
+  const [showCitizenshipDropdown, setShowCitizenshipDropdown] = useState(false)
 
   const handleLanguageCheckbox = (language: string, checked: boolean) => {
     const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
@@ -207,14 +214,38 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
     }
   }
 
-  // Auto-set grewUpIn to country if not already set
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newCountry = e.target.value
-    handleChange(e)
+  // Filter countries based on search
+  const filteredCountries = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(countrySearch.toLowerCase())
+  )
+  const filteredGrewUpIn = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(grewUpInSearch.toLowerCase())
+  )
+  const filteredCitizenship = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(citizenshipSearch.toLowerCase())
+  )
+
+  const handleCountrySelect = (country: string) => {
+    const oldCountry = formData.country as string
+    setFormData(prev => ({ ...prev, country }))
+    setCountrySearch('')
+    setShowCountryDropdown(false)
     // If grewUpIn is not set or was same as old country, update it
-    if (!formData.grewUpIn || formData.grewUpIn === formData.country) {
-      setFormData(prev => ({ ...prev, grewUpIn: newCountry }))
+    if (!formData.grewUpIn || formData.grewUpIn === oldCountry) {
+      setFormData(prev => ({ ...prev, grewUpIn: country }))
     }
+  }
+
+  const handleGrewUpInSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, grewUpIn: country }))
+    setGrewUpInSearch('')
+    setShowGrewUpInDropdown(false)
+  }
+
+  const handleCitizenshipSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, citizenship: country }))
+    setCitizenshipSearch('')
+    setShowCitizenshipDropdown(false)
   }
 
   // Lookup city and state from zipcode
@@ -250,22 +281,47 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
   }
 
   const isUSA = (formData.country as string || 'USA') === 'USA'
+  const citizenshipValue = formData.citizenship as string || ''
+  const showVisaStatus = isUSA && citizenshipValue && citizenshipValue !== 'USA' && citizenshipValue !== ''
 
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div>
+        {/* Country - Searchable Dropdown */}
+        <div className="relative">
           <label className="form-label">Country <span className="text-red-500">*</span></label>
-          <select name="country" value={formData.country as string || 'USA'} onChange={handleCountryChange} className="input-field">
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Australia">Australia</option>
-            <option value="Other">Other</option>
-          </select>
-          {(formData.country as string) === 'Other' && (
-            <input type="text" name="countryOther" value={formData.countryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          <input
+            type="text"
+            value={countrySearch || (formData.country as string) || 'USA'}
+            onChange={(e) => {
+              setCountrySearch(e.target.value)
+              setShowCountryDropdown(true)
+            }}
+            onFocus={() => {
+              setCountrySearch('')
+              setShowCountryDropdown(true)
+            }}
+            className="input-field"
+            placeholder="Type to search..."
+          />
+          {showCountryDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredCountries.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleCountrySelect(country)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                    country === (formData.country as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                  }`}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
+          {showCountryDropdown && (
+            <div className="fixed inset-0 z-40" onClick={() => setShowCountryDropdown(false)} />
           )}
         </div>
         {isUSA && (
@@ -316,19 +372,41 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
+        {/* Citizenship - Searchable Dropdown */}
+        <div className="relative">
           <label className="form-label">Citizenship</label>
-          <select name="citizenship" value={formData.citizenship as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Australia">Australia</option>
-            <option value="Other">Other</option>
-          </select>
-          {(formData.citizenship as string) === 'Other' && (
-            <input type="text" name="citizenshipOther" value={formData.citizenshipOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify citizenship" />
+          <input
+            type="text"
+            value={citizenshipSearch || (formData.citizenship as string) || ''}
+            onChange={(e) => {
+              setCitizenshipSearch(e.target.value)
+              setShowCitizenshipDropdown(true)
+            }}
+            onFocus={() => {
+              setCitizenshipSearch('')
+              setShowCitizenshipDropdown(true)
+            }}
+            className="input-field"
+            placeholder="Type to search..."
+          />
+          {showCitizenshipDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredCitizenship.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleCitizenshipSelect(country)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                    country === (formData.citizenship as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                  }`}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
+          {showCitizenshipDropdown && (
+            <div className="fixed inset-0 z-40" onClick={() => setShowCitizenshipDropdown(false)} />
           )}
         </div>
         <div>
@@ -339,19 +417,64 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           </select>
         </div>
       </div>
+
+      {/* Visa Status - Shows when country is USA and citizenship is not USA */}
+      {showVisaStatus && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">US Visa Status <span className="text-red-500">*</span></label>
+            <select name="residencyStatus" value={formData.residencyStatus as string || ''} onChange={handleChange} className="input-field" required>
+              <option value="">Select Visa Status</option>
+              {US_VISA_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {(formData.residencyStatus as string) === 'other' && (
+              <input type="text" name="residencyStatusOther" value={formData.residencyStatusOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify visa type" />
+            )}
+          </div>
+          <div>
+            {/* Empty div for alignment */}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
-        <div>
+        {/* Grew Up In - Searchable Dropdown */}
+        <div className="relative">
           <label className="form-label">Grew Up In <span className="text-red-500">*</span></label>
-          <select name="grewUpIn" value={formData.grewUpIn as string || formData.country as string || 'USA'} onChange={handleChange} className="input-field">
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Australia">Australia</option>
-            <option value="Other">Other</option>
-          </select>
-          {(formData.grewUpIn as string) === 'Other' && (
-            <input type="text" name="grewUpInOther" value={formData.grewUpInOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          <input
+            type="text"
+            value={grewUpInSearch || (formData.grewUpIn as string) || (formData.country as string) || 'USA'}
+            onChange={(e) => {
+              setGrewUpInSearch(e.target.value)
+              setShowGrewUpInDropdown(true)
+            }}
+            onFocus={() => {
+              setGrewUpInSearch('')
+              setShowGrewUpInDropdown(true)
+            }}
+            className="input-field"
+            placeholder="Type to search..."
+          />
+          {showGrewUpInDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredGrewUpIn.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleGrewUpInSelect(country)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                    country === (formData.grewUpIn as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                  }`}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
+          {showGrewUpInDropdown && (
+            <div className="fixed inset-0 z-40" onClick={() => setShowGrewUpInDropdown(false)} />
           )}
         </div>
         <div>
@@ -436,8 +559,8 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
     <>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Highest Qualification *</label>
-          <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
+          <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             {QUALIFICATION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -510,8 +633,8 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
       )}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Occupation *</label>
-          <select name="occupation" value={formData.occupation as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Occupation <span className="text-red-500">*</span></label>
+          <select name="occupation" value={formData.occupation as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             {OCCUPATION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -559,21 +682,21 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
     <>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Father's Name</label>
+          <label className="form-label">Father&apos;s Name</label>
           <input type="text" name="fatherName" value={formData.fatherName as string || ''} onChange={handleChange} className="input-field" />
         </div>
         <div>
-          <label className="form-label">Father's Occupation</label>
+          <label className="form-label">Father&apos;s Occupation</label>
           <input type="text" name="fatherOccupation" value={formData.fatherOccupation as string || ''} onChange={handleChange} className="input-field" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="form-label">Mother's Name</label>
+          <label className="form-label">Mother&apos;s Name</label>
           <input type="text" name="motherName" value={formData.motherName as string || ''} onChange={handleChange} className="input-field" />
         </div>
         <div>
-          <label className="form-label">Mother's Occupation</label>
+          <label className="form-label">Mother&apos;s Occupation</label>
           <input type="text" name="motherOccupation" value={formData.motherOccupation as string || ''} onChange={handleChange} className="input-field" />
         </div>
       </div>
@@ -607,6 +730,18 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
       </div>
+      <div>
+        <label className="form-label">Family Details</label>
+        <textarea
+          name="familyDetails"
+          value={formData.familyDetails as string || ''}
+          onChange={handleChange}
+          className="input-field"
+          rows={3}
+          placeholder="Share more about your family background, siblings, family business, or any other relevant details..."
+        />
+        <p className="text-xs text-gray-500 mt-1">Optional: Provide additional information about your family</p>
+      </div>
     </>
   )
 }
@@ -629,8 +764,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     <>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="form-label">Diet</label>
-          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Diet <span className="text-red-500">*</span></label>
+          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="veg">Vegetarian</option>
             <option value="non_veg">Non-Vegetarian</option>
@@ -641,8 +776,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Smoking</label>
-          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Smoking <span className="text-red-500">*</span></label>
+          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="occasionally">Occasionally</option>
@@ -650,8 +785,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Drinking</label>
-          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Drinking <span className="text-red-500">*</span></label>
+          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="social">Social Drinker</option>
@@ -800,12 +935,15 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
 function generateAboutMe(formData: Record<string, unknown>): string {
   const parts: string[] = []
 
-  // Religion and caste
+  // Religion and community
   const religion = formData.religion as string || ''
-  const caste = formData.caste as string || ''
-  if (religion || caste) {
-    if (religion && caste) {
-      parts.push(`I come from a ${religion} ${caste} family.`)
+  const community = formData.community as string || ''
+  const subCommunity = formData.subCommunity as string || ''
+  if (religion || community) {
+    if (religion && community && subCommunity) {
+      parts.push(`I come from a ${religion} ${community} (${subCommunity}) family.`)
+    } else if (religion && community) {
+      parts.push(`I come from a ${religion} ${community} family.`)
     } else if (religion) {
       parts.push(`I come from a ${religion} family.`)
     }
@@ -891,7 +1029,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="form-label mb-0">About Me</label>
+          <label className="form-label mb-0">About Me <span className="text-red-500">*</span></label>
           {hasInfoToGenerate && (
             <button
               type="button"
@@ -922,6 +1060,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
           onChange={handleChange}
           className="input-field min-h-[120px]"
           placeholder="Tell us about yourself, your values, interests, and what you're looking for in a partner..."
+          required
         />
         <p className="text-xs text-gray-500 mt-1">
           Tip: Fill in religion, family details, hobbies, fitness, and interests to get a personalized suggestion
@@ -931,48 +1070,278 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
   )
 }
 
-export function ReligionSection({ formData, handleChange }: SectionProps) {
+export function ReligionSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [birthCountrySearch, setBirthCountrySearch] = useState('')
+  const [showBirthCountryDropdown, setShowBirthCountryDropdown] = useState(false)
+
+  const filteredBirthCountries = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(birthCountrySearch.toLowerCase())
+  )
+
+  const handleBirthCountrySelect = (country: string) => {
+    setFormData(prev => ({ ...prev, placeOfBirthCountry: country }))
+    setBirthCountrySearch('')
+    setShowBirthCountryDropdown(false)
+  }
+
+  // Get communities based on selected religion
+  const selectedReligion = formData.religion as string || ''
+  const availableCommunities = selectedReligion ? getCommunities(selectedReligion) : []
+
+  // Get sub-communities based on selected community
+  const selectedCommunity = formData.community as string || ''
+  const availableSubCommunities = selectedReligion && selectedCommunity
+    ? getSubCommunities(selectedReligion, selectedCommunity)
+    : []
+
+  // Handle religion change - reset community and sub-community
+  const handleReligionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleChange(e)
+    setFormData(prev => ({ ...prev, community: '', subCommunity: '' }))
+  }
+
+  // Handle community change - reset sub-community
+  const handleCommunityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleChange(e)
+    setFormData(prev => ({ ...prev, subCommunity: '' }))
+  }
+
   return (
     <>
-      <div className="grid grid-cols-3 gap-4">
+      {/* Basic Religion Info - shown for all */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div>
           <label className="form-label">Religion</label>
-          <select name="religion" value={formData.religion as string || ''} onChange={handleChange} className="input-field">
+          <select name="religion" value={formData.religion as string || ''} onChange={handleReligionChange} className="input-field">
             <option value="">Select</option>
-            <option value="Hindu">Hindu</option>
-            <option value="Muslim">Muslim</option>
-            <option value="Christian">Christian</option>
-            <option value="Sikh">Sikh</option>
-            <option value="Jain">Jain</option>
-            <option value="Buddhist">Buddhist</option>
-            <option value="Other">Other</option>
+            {RELIGIONS.map(religion => (
+              <option key={religion} value={religion}>{religion}</option>
+            ))}
           </select>
           {(formData.religion as string) === 'Other' && (
             <input type="text" name="religionOther" value={formData.religionOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify religion" />
           )}
         </div>
         <div>
-          <label className="form-label">Caste/Community</label>
-          <input type="text" name="caste" value={formData.caste as string || ''} onChange={handleChange} className="input-field" />
+          <label className="form-label">Community</label>
+          <select
+            name="community"
+            value={formData.community as string || ''}
+            onChange={handleCommunityChange}
+            className="input-field"
+            disabled={!selectedReligion}
+          >
+            <option value="">Select Community</option>
+            {availableCommunities.map(community => (
+              <option key={community} value={community}>{community}</option>
+            ))}
+          </select>
+          {!selectedReligion && (
+            <p className="text-xs text-gray-500 mt-1">Select religion first</p>
+          )}
         </div>
         <div>
-          <label className="form-label">Gothra</label>
-          <input type="text" name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" />
+          <label className="form-label">Sub-Community</label>
+          <select
+            name="subCommunity"
+            value={formData.subCommunity as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            disabled={!selectedCommunity}
+          >
+            <option value="">Select Sub-Community</option>
+            {availableSubCommunities.map(subCommunity => (
+              <option key={subCommunity} value={subCommunity}>{subCommunity}</option>
+            ))}
+          </select>
+          {!selectedCommunity && selectedReligion && (
+            <p className="text-xs text-gray-500 mt-1">Select community first</p>
+          )}
         </div>
       </div>
+
+      {/* Hindu-specific fields: Gothra, Birth details, Astrology */}
+      {selectedReligion === 'Hindu' && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label className="form-label">Gothra</label>
+              <input type="text" name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Bharadwaj" />
+            </div>
+            <div>
+              <label className="form-label">Time of Birth</label>
+              <input type="text" name="timeOfBirth" value={formData.timeOfBirth as string || ''} onChange={handleChange} className="input-field" placeholder="HH:MM AM/PM" />
+            </div>
+            <div>
+              <label className="form-label">Manglik</label>
+              <select name="manglik" value={formData.manglik as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="dont_know">Don&apos;t Know</option>
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Raasi (Moon Sign)</label>
+              <select name="raasi" value={formData.raasi as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Select</option>
+                {RAASI_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="form-label">Nakshatra (Birth Star)</label>
+              <select name="nakshatra" value={formData.nakshatra as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Select</option>
+                {NAKSHATRA_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="form-label">Doshas</label>
+              <select name="doshas" value={formData.doshas as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Select</option>
+                {DOSHAS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {(formData.doshas as string) === 'other' && (
+                <input type="text" name="doshasOther" value={formData.doshasOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify dosha" />
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Jain-specific fields: Gothra (shared with Hindu tradition) */}
+      {selectedReligion === 'Jain' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Gothra</label>
+            <input type="text" name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Kashyap" />
+          </div>
+        </div>
+      )}
+
+      {/* Muslim-specific fields */}
+      {selectedReligion === 'Muslim' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Maslak (School of Thought)</label>
+            <select name="maslak" value={formData.maslak as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="hanafi">Hanafi</option>
+              <option value="shafi">Shafi</option>
+              <option value="maliki">Maliki</option>
+              <option value="hanbali">Hanbali</option>
+              <option value="ahle_hadith">Ahle Hadith</option>
+              <option value="deobandi">Deobandi</option>
+              <option value="barelvi">Barelvi</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Namaz (Prayer)</label>
+            <select name="namazPractice" value={formData.namazPractice as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="five_times">5 times daily</option>
+              <option value="sometimes">Sometimes</option>
+              <option value="friday_only">Friday only</option>
+              <option value="occasionally">Occasionally</option>
+              <option value="rarely">Rarely</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* Sikh-specific fields */}
+      {selectedReligion === 'Sikh' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Amritdhari (Baptized)</label>
+            <select name="amritdhari" value={formData.amritdhari as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+              <option value="keshdhari">Keshdhari (Not baptized but keeps hair)</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Turban</label>
+            <select name="turban" value={formData.turban as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="yes">Yes, wears turban</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* Christian-specific fields */}
+      {selectedReligion === 'Christian' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Church Attendance</label>
+            <select name="churchAttendance" value={formData.churchAttendance as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="weekly">Weekly</option>
+              <option value="occasionally">Occasionally</option>
+              <option value="special_occasions">Special occasions only</option>
+              <option value="rarely">Rarely</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Baptized</label>
+            <select name="baptized" value={formData.baptized as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* Birth Place - shown for all religions */}
       <div className="grid grid-cols-3 gap-4">
-        <div>
+        {/* Birth Country - Searchable Dropdown */}
+        <div className="relative">
           <label className="form-label">Birth Country</label>
-          <select name="placeOfBirthCountry" value={formData.placeOfBirthCountry as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Other">Other</option>
-          </select>
-          {(formData.placeOfBirthCountry as string) === 'Other' && (
-            <input type="text" name="placeOfBirthCountryOther" value={formData.placeOfBirthCountryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          <input
+            type="text"
+            value={birthCountrySearch || (formData.placeOfBirthCountry as string) || ''}
+            onChange={(e) => {
+              setBirthCountrySearch(e.target.value)
+              setShowBirthCountryDropdown(true)
+            }}
+            onFocus={() => {
+              setBirthCountrySearch('')
+              setShowBirthCountryDropdown(true)
+            }}
+            className="input-field"
+            placeholder="Type to search..."
+          />
+          {showBirthCountryDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredBirthCountries.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleBirthCountrySelect(country)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                    country === (formData.placeOfBirthCountry as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                  }`}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          )}
+          {showBirthCountryDropdown && (
+            <div className="fixed inset-0 z-40" onClick={() => setShowBirthCountryDropdown(false)} />
           )}
         </div>
         <div>
@@ -984,40 +1353,24 @@ export function ReligionSection({ formData, handleChange }: SectionProps) {
           <input type="text" name="placeOfBirthCity" value={formData.placeOfBirthCity as string || ''} onChange={handleChange} className="input-field" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Time of Birth</label>
-          <input type="text" name="timeOfBirth" value={formData.timeOfBirth as string || ''} onChange={handleChange} className="input-field" placeholder="HH:MM AM/PM" />
-        </div>
-        <div>
-          <label className="form-label">Manglik</label>
-          <select name="manglik" value={formData.manglik as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-            <option value="dont_know">Don't Know</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="form-label">Raasi</label>
-          <input type="text" name="raasi" value={formData.raasi as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">Nakshatra</label>
-          <input type="text" name="nakshatra" value={formData.nakshatra as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-        <div>
-          <label className="form-label">Doshas</label>
-          <input type="text" name="doshas" value={formData.doshas as string || ''} onChange={handleChange} className="input-field" />
-        </div>
-      </div>
     </>
   )
 }
 
 export function PreferencesSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [prefCitizenshipSearch, setPrefCitizenshipSearch] = useState('')
+  const [showPrefCitizenshipDropdown, setShowPrefCitizenshipDropdown] = useState(false)
+
+  const filteredPrefCitizenship = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(prefCitizenshipSearch.toLowerCase())
+  )
+
+  const handlePrefCitizenshipSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, prefCitizenship: country }))
+    setPrefCitizenshipSearch('')
+    setShowPrefCitizenshipDropdown(false)
+  }
+
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
     const current = (formData[field] as string || '').split(', ').filter(v => v)
     if (checked) {
@@ -1031,232 +1384,494 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
     return (formData[field] as string || '').split(', ').includes(value)
   }
 
+  // Gender-based age defaults:
+  // For male profiles: default max age = user's age (looking for same age or younger)
+  // For female profiles: default min age = user's age (looking for same age or older)
+  const userAge = formData.age as string || ''
+  const userGender = formData.gender as string || ''
+
+  const getDefaultAgeMin = () => {
+    if (formData.prefAgeMin) return formData.prefAgeMin as string
+    if (userGender === 'female' && userAge) return userAge
+    return ''
+  }
+
+  const getDefaultAgeMax = () => {
+    if (formData.prefAgeMax) return formData.prefAgeMax as string
+    if (userGender === 'male' && userAge) return userAge
+    return ''
+  }
+
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Preferred Age Range</label>
-          <select name="prefAgeDiff" value={formData.prefAgeDiff as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            {PREF_AGE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Preferred Height Range</label>
-          <div className="grid grid-cols-2 gap-2">
+    <div className="space-y-6">
+      {/* Basic Preferences Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Basic Preferences</h4>
+
+        {/* Marital Status Preference */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Partner&apos;s Marital Status</label>
             <select
-              name="prefHeightMin"
-              value={formData.prefHeightMin as string || ''}
+              name="prefMaritalStatus"
+              value={formData.prefMaritalStatus as string || 'never_married'}
               onChange={handleChange}
-              className="input-field text-sm"
+              className="input-field"
             >
-              <option value="">Min</option>
-              {HEIGHT_OPTIONS.map((h) => (
-                <option key={h.value} value={h.value}>{h.value}</option>
+              {PREF_MARITAL_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="form-label">Mother Tongue Preference</label>
             <select
-              name="prefHeightMax"
-              value={formData.prefHeightMax as string || ''}
+              name="prefMotherTongue"
+              value={formData.prefMotherTongue as string || 'doesnt_matter'}
               onChange={handleChange}
-              className="input-field text-sm"
+              className="input-field"
             >
-              <option value="">Max</option>
-              {HEIGHT_OPTIONS.map((h) => (
-                <option key={h.value} value={h.value}>{h.value}</option>
+              {PREF_MOTHER_TONGUE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Age Range - Min/Max with gender-based defaults */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Age Range {userAge && <span className="text-xs text-gray-500">(Your age: {userAge})</span>}</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                name="prefAgeMin"
+                value={getDefaultAgeMin()}
+                onChange={handleChange}
+                className="input-field text-sm"
+              >
+                <option value="">Min Age</option>
+                {PREF_AGE_MIN_MAX.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <select
+                name="prefAgeMax"
+                value={getDefaultAgeMax()}
+                onChange={handleChange}
+                className="input-field text-sm"
+              >
+                <option value="">Max Age</option>
+                {PREF_AGE_MIN_MAX.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            {userGender && userAge && (
+              <p className="text-xs text-gray-500 mt-1">
+                {userGender === 'male'
+                  ? 'Default: Max age set to your age (looking for same age or younger)'
+                  : 'Default: Min age set to your age (looking for same age or older)'}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="form-label">Height Range</label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                name="prefHeightMin"
+                value={formData.prefHeightMin as string || ''}
+                onChange={handleChange}
+                className="input-field text-sm"
+              >
+                <option value="">Min</option>
+                {HEIGHT_OPTIONS.map((h) => (
+                  <option key={h.value} value={h.value}>{h.value}</option>
+                ))}
+              </select>
+              <select
+                name="prefHeightMax"
+                value={formData.prefHeightMax as string || ''}
+                onChange={handleChange}
+                className="input-field text-sm"
+              >
+                <option value="">Max</option>
+                {HEIGHT_OPTIONS.map((h) => (
+                  <option key={h.value} value={h.value}>{h.value}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Location & Background Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Location & Background</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Preferred Location (US)</label>
+            <select name="prefLocation" value={formData.prefLocation as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              {PREF_LOCATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          {/* Citizenship - Searchable Dropdown */}
+          <div className="relative">
+            <label className="form-label">Preferred Citizenship</label>
+            <input
+              type="text"
+              value={prefCitizenshipSearch || (formData.prefCitizenship as string) || ''}
+              onChange={(e) => {
+                setPrefCitizenshipSearch(e.target.value)
+                setShowPrefCitizenshipDropdown(true)
+              }}
+              onFocus={() => {
+                setPrefCitizenshipSearch('')
+                setShowPrefCitizenshipDropdown(true)
+              }}
+              className="input-field"
+              placeholder="Any or type to search..."
+            />
+            {showPrefCitizenshipDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, prefCitizenship: '' }))
+                    setPrefCitizenshipSearch('')
+                    setShowPrefCitizenshipDropdown(false)
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600"
+                >
+                  Doesn&apos;t Matter
+                </button>
+                {filteredPrefCitizenship.map((country) => (
+                  <button
+                    key={country}
+                    type="button"
+                    onClick={() => handlePrefCitizenshipSelect(country)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      country === (formData.prefCitizenship as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                    }`}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            )}
+            {showPrefCitizenshipDropdown && (
+              <div className="fixed inset-0 z-40" onClick={() => setShowPrefCitizenshipDropdown(false)} />
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Partner Grew Up In</label>
+            <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine ({formData.grewUpIn as string || 'USA'})</option>
+              <option value="USA">USA</option>
+              <option value="India">India</option>
+              <option value="UK">UK</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Relocation Preference</label>
+            <select name="prefRelocation" value={formData.prefRelocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              {PREF_RELOCATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Minimum Income</label>
+            <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              {PREF_INCOME_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            {/* Empty for alignment */}
+          </div>
+        </div>
+      </div>
+
+      {/* Education & Career Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Education & Career</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Minimum Education</label>
+            <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Work Area / Industry</label>
+            <select name="prefWorkArea" value={formData.prefWorkArea as string || ''} onChange={handleChange} className="input-field">
+              {PREF_WORK_AREA_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Preferred Occupation</label>
+            <select name="prefOccupation" value={formData.prefOccupation as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              {OCCUPATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            {/* Empty for alignment */}
+          </div>
+        </div>
+      </div>
+
+      {/* Lifestyle Preferences Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Lifestyle</h4>
+        <div className="grid grid-cols-4 gap-4">
+          <div>
+            <label className="form-label">Diet Preference</label>
+            <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              <option value="veg">Vegetarian Only</option>
+              <option value="veg_eggetarian">Veg / Eggetarian</option>
+              <option value="non_veg_ok">Non-Veg OK</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Smoking</label>
+            <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handleChange} className="input-field">
+              {PREF_SMOKING_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Drinking</label>
+            <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handleChange} className="input-field">
+              {PREF_DRINKING_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Pets Preference</label>
+            <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              {PREF_PETS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Preferred Location</label>
-          <select name="prefLocation" value={formData.prefLocation as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            {PREF_LOCATION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Preferred Country</label>
-          <select name="prefCountry" value={formData.prefCountry as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="any">Any</option>
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Partner Grew Up In</label>
-          <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-            <option value="doesnt_matter">Doesn&apos;t Matter</option>
-            <option value="same_as_mine">Same as Mine ({formData.grewUpIn as string || 'USA'})</option>
-            <option value="USA">USA</option>
-            <option value="India">India</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-            <option value="Australia">Australia</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Preferred Income (Minimum)</label>
-          <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            {PREF_INCOME_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Preferred Education</label>
-          <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            {PREF_EDUCATION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Preferred Diet</label>
-          <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="any">Any</option>
-            <option value="veg">Vegetarian</option>
-            <option value="non_veg">Non-Vegetarian</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Preferred Caste</label>
-          <input type="text" name="prefCaste" value={formData.prefCaste as string || ''} onChange={handleChange} className="input-field" placeholder="Any or specific" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Preferred Gothra</label>
-          <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="different">Different Gothra</option>
-            <option value="doesnt_matter">Doesn't Matter</option>
-          </select>
-        </div>
-      </div>
 
-      {/* Hobbies, Fitness & Interests Preferences */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <h4 className="font-semibold text-gray-900 mb-4">Lifestyle Preferences</h4>
+      {/* Religion & Community Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Religion & Community</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Preferred Community</label>
+            <select
+              name="prefCommunity"
+              value={formData.prefCommunity as string || 'same_as_mine'}
+              onChange={handleChange}
+              className="input-field"
+            >
+              {PREF_COMMUNITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Gothra Preference</label>
+            <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Doesn&apos;t Matter</option>
+              <option value="different">Different Gothra Only</option>
+            </select>
+          </div>
+        </div>
 
-        {/* Hobbies Preference */}
-        <div className="mb-4">
-          <label className="form-label">Partner's Hobbies</label>
-          <select
-            name="prefHobbies"
-            value={formData.prefHobbies as string || 'doesnt_matter'}
-            onChange={handleChange}
-            className="input-field"
-          >
-            <option value="doesnt_matter">Doesn't Matter</option>
-            <option value="same_as_mine">Same as Mine</option>
-            <option value="specific">Specific Hobbies</option>
-          </select>
-          {(formData.prefHobbies as string) === 'specific' && (
-            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {HOBBIES_OPTIONS.map(hobby => (
-                  <label key={hobby} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={isChecked('prefHobbiesList', hobby)}
-                      onChange={(e) => handleCheckboxChange('prefHobbiesList', hobby, e.target.checked)}
-                      className="rounded text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-gray-700">{hobby}</span>
-                  </label>
-                ))}
-              </div>
+        {/* Show community multi-select when "specific" is selected */}
+        {(formData.prefCommunity as string) === 'specific' && (
+          <div className="p-3 border rounded-xl bg-gray-50">
+            <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred communities:</label>
+            <div className="max-h-48 overflow-y-auto">
+              {/* Group by religion */}
+              {Object.entries(
+                getAllCommunities().reduce((acc, item) => {
+                  if (!acc[item.religion]) acc[item.religion] = [];
+                  acc[item.religion].push(item.community);
+                  return acc;
+                }, {} as Record<string, string[]>)
+              ).map(([religion, communities]) => (
+                <div key={religion} className="mb-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-1 sticky top-0 bg-gray-50 py-1">{religion}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pl-2">
+                    {communities.map(community => (
+                      <label key={`${religion}-${community}`} className="flex items-center gap-1.5 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={isChecked('prefCommunityList', `${religion}:${community}`)}
+                          onChange={(e) => handleCheckboxChange('prefCommunityList', `${religion}:${community}`, e.target.checked)}
+                          className="rounded text-primary-600 focus:ring-primary-500 h-3 w-3"
+                        />
+                        <span className="text-gray-700 truncate">{community}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-
-        {/* Fitness Preference */}
-        <div className="mb-4">
-          <label className="form-label">Partner's Fitness & Sports</label>
-          <select
-            name="prefFitness"
-            value={formData.prefFitness as string || 'doesnt_matter'}
-            onChange={handleChange}
-            className="input-field"
-          >
-            <option value="doesnt_matter">Doesn't Matter</option>
-            <option value="same_as_mine">Same as Mine</option>
-            <option value="specific">Specific Activities</option>
-          </select>
-          {(formData.prefFitness as string) === 'specific' && (
-            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {FITNESS_OPTIONS.map(fitness => (
-                  <label key={fitness} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={isChecked('prefFitnessList', fitness)}
-                      onChange={(e) => handleCheckboxChange('prefFitnessList', fitness, e.target.checked)}
-                      className="rounded text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-gray-700">{fitness}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Interests Preference */}
-        <div className="mb-4">
-          <label className="form-label">Partner's Interests</label>
-          <select
-            name="prefInterests"
-            value={formData.prefInterests as string || 'doesnt_matter'}
-            onChange={handleChange}
-            className="input-field"
-          >
-            <option value="doesnt_matter">Doesn't Matter</option>
-            <option value="same_as_mine">Same as Mine</option>
-            <option value="specific">Specific Interests</option>
-          </select>
-          {(formData.prefInterests as string) === 'specific' && (
-            <div className="mt-2 p-3 border rounded-xl bg-gray-50 max-h-40 overflow-y-auto">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {INTERESTS_OPTIONS.map(interest => (
-                  <label key={interest} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 rounded-lg transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={isChecked('prefInterestsList', interest)}
-                      onChange={(e) => handleCheckboxChange('prefInterestsList', interest, e.target.checked)}
-                      className="rounded text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-gray-700">{interest}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Selected: {(formData.prefCommunityList as string || '').split(', ').filter(c => c).length} communities
+            </p>
+          </div>
+        )}
       </div>
 
-      <div>
-        <label className="form-label">Ideal Partner Description</label>
-        <textarea name="idealPartnerDesc" value={formData.idealPartnerDesc as string || ''} onChange={handleChange} className="input-field min-h-[100px]" placeholder="Describe your ideal partner..." />
+      {/* Interests & Activities Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Interests & Activities (Optional)</h4>
+
+        <div className="grid grid-cols-3 gap-4">
+          {/* Hobbies Preference */}
+          <div>
+            <label className="form-label text-xs">Partner&apos;s Hobbies</label>
+            <select
+              name="prefHobbies"
+              value={formData.prefHobbies as string || 'doesnt_matter'}
+              onChange={handleChange}
+              className="input-field text-sm"
+            >
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+              <option value="specific">Specific</option>
+            </select>
+          </div>
+
+          {/* Fitness Preference */}
+          <div>
+            <label className="form-label text-xs">Partner&apos;s Fitness</label>
+            <select
+              name="prefFitness"
+              value={formData.prefFitness as string || 'doesnt_matter'}
+              onChange={handleChange}
+              className="input-field text-sm"
+            >
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+              <option value="specific">Specific</option>
+            </select>
+          </div>
+
+          {/* Interests Preference */}
+          <div>
+            <label className="form-label text-xs">Partner&apos;s Interests</label>
+            <select
+              name="prefInterests"
+              value={formData.prefInterests as string || 'doesnt_matter'}
+              onChange={handleChange}
+              className="input-field text-sm"
+            >
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+              <option value="specific">Specific</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Expandable sections for specific selections */}
+        {(formData.prefHobbies as string) === 'specific' && (
+          <div className="p-3 border rounded-xl bg-gray-50">
+            <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred hobbies:</label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
+              {HOBBIES_OPTIONS.map(hobby => (
+                <label key={hobby} className="flex items-center gap-1.5 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={isChecked('prefHobbiesList', hobby)}
+                    onChange={(e) => handleCheckboxChange('prefHobbiesList', hobby, e.target.checked)}
+                    className="rounded text-primary-600 focus:ring-primary-500 h-3 w-3"
+                  />
+                  <span className="text-gray-700 truncate">{hobby}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(formData.prefFitness as string) === 'specific' && (
+          <div className="p-3 border rounded-xl bg-gray-50">
+            <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred activities:</label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
+              {FITNESS_OPTIONS.map(fitness => (
+                <label key={fitness} className="flex items-center gap-1.5 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={isChecked('prefFitnessList', fitness)}
+                    onChange={(e) => handleCheckboxChange('prefFitnessList', fitness, e.target.checked)}
+                    className="rounded text-primary-600 focus:ring-primary-500 h-3 w-3"
+                  />
+                  <span className="text-gray-700 truncate">{fitness}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(formData.prefInterests as string) === 'specific' && (
+          <div className="p-3 border rounded-xl bg-gray-50">
+            <label className="text-xs font-medium text-gray-600 mb-2 block">Select preferred interests:</label>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
+              {INTERESTS_OPTIONS.map(interest => (
+                <label key={interest} className="flex items-center gap-1.5 text-xs cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={isChecked('prefInterestsList', interest)}
+                    onChange={(e) => handleCheckboxChange('prefInterestsList', interest, e.target.checked)}
+                    className="rounded text-primary-600 focus:ring-primary-500 h-3 w-3"
+                  />
+                  <span className="text-gray-700 truncate">{interest}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </>
+
+      {/* Additional Notes Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Additional Notes</h4>
+        <div>
+          <label className="form-label">Describe Your Ideal Partner</label>
+          <textarea
+            name="idealPartnerDesc"
+            value={formData.idealPartnerDesc as string || ''}
+            onChange={handleChange}
+            className="input-field min-h-[80px]"
+            placeholder="Share any additional preferences or qualities you're looking for in a partner..."
+          />
+          <p className="text-xs text-gray-500 mt-1">Optional: Add any details not covered above</p>
+        </div>
+      </div>
+    </div>
   )
 }
 
