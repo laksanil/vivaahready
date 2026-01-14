@@ -10,8 +10,10 @@ import {
   Users,
   RotateCcw,
   Sparkles,
+  Search,
 } from 'lucide-react'
-import { ProfileCard, ProfileCardSkeleton, ProfileData } from '@/components/ProfileCard'
+import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
+import { ProfileData } from '@/components/ProfileCard'
 
 interface FeedProfile extends ProfileData {
   approvalStatus?: string
@@ -28,12 +30,13 @@ function FeedPageContent() {
   const [loadingProfileId, setLoadingProfileId] = useState<string | null>(null)
   const [isAdminView, setIsAdminView] = useState(false)
   const [viewingUserName, setViewingUserName] = useState<string | null>(null)
-  const [likedYouCount, setLikedYouCount] = useState(0)
+  const [, setLikedYouCount] = useState(0)
   const [userStatus, setUserStatus] = useState<{
     isApproved: boolean
     canExpressInterest: boolean
   } | null>(null)
   const [showMatchModal, setShowMatchModal] = useState<FeedProfile | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -90,7 +93,7 @@ function FeedPageContent() {
         if (data.mutual || profile.theyLikedMeFirst) {
           setShowMatchModal(profile)
         }
-        // Remove profile from list with animation
+        // Remove profile from list
         removeProfile(profile.id)
       }
     } catch (error) {
@@ -121,21 +124,34 @@ function FeedPageContent() {
     setProfiles((prev) => prev.filter((p) => p.id !== profileId))
   }
 
+  // Filter profiles by search
+  const filteredProfiles = profiles.filter((p) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      p.user.name.toLowerCase().includes(query) ||
+      p.currentLocation?.toLowerCase().includes(query) ||
+      p.occupation?.toLowerCase().includes(query) ||
+      p.qualification?.toLowerCase().includes(query) ||
+      p.caste?.toLowerCase().includes(query)
+    )
+  })
+
   // Separate profiles into "liked you" and "discover"
-  const likedYouProfiles = profiles.filter((p) => p.theyLikedMeFirst)
-  const discoverProfiles = profiles.filter((p) => !p.theyLikedMeFirst)
+  const likedYouProfiles = filteredProfiles.filter((p) => p.theyLikedMeFirst)
+  const discoverProfiles = filteredProfiles.filter((p) => !p.theyLikedMeFirst)
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
+      <div className="min-h-screen bg-gray-50 py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="mb-6">
             <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-2" />
             <div className="h-5 w-64 bg-gray-200 rounded animate-pulse" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-3">
             {[...Array(6)].map((_, i) => (
-              <ProfileCardSkeleton key={i} />
+              <DirectoryCardSkeleton key={i} />
             ))}
           </div>
         </div>
@@ -148,26 +164,26 @@ function FeedPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Admin View Banner */}
         {isAdminView && viewingUserName && (
-          <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-5 shadow-lg">
+          <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 shadow-lg">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  <Users className="h-6 w-6 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <Users className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">ADMIN VIEW MODE</h3>
-                  <p className="text-purple-100">
+                  <h3 className="text-lg font-bold text-white">ADMIN VIEW MODE</h3>
+                  <p className="text-purple-100 text-sm">
                     Viewing as <span className="font-bold text-white">{viewingUserName}</span>
                   </p>
                 </div>
               </div>
               <Link
                 href="/admin/matches"
-                className="px-4 py-2 text-sm bg-white/20 text-white rounded-lg hover:bg-white/30"
+                className="px-3 py-1.5 text-sm bg-white/20 text-white rounded-lg hover:bg-white/30"
               >
                 ← Back to Admin
               </Link>
@@ -176,59 +192,84 @@ function FeedPageContent() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Discover</h1>
-            <p className="text-gray-600 mt-1">
-              {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'} matching your preferences
-            </p>
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">My Matches</h1>
+              <p className="text-gray-600 text-sm">
+                {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'} matching your preferences
+              </p>
+            </div>
+            <Link
+              href="/reconsider"
+              className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 text-sm font-medium"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden sm:inline">Reconsider</span>
+            </Link>
           </div>
-          <Link
-            href="/reconsider"
-            className="flex items-center gap-2 text-gray-600 hover:text-primary-600 text-sm font-medium"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reconsider Passed
-          </Link>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, location, occupation..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            />
+          </div>
         </div>
 
         {/* No Profiles Message */}
-        {profiles.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center max-w-lg mx-auto">
-            <Heart className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No More Profiles</h3>
-            <p className="text-gray-600 mb-6">
-              You&apos;ve seen all the profiles that match your preferences.
-              Check back later for new matches!
+        {filteredProfiles.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+            <Heart className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {searchQuery ? 'No Matching Profiles' : 'No More Profiles'}
+            </h3>
+            <p className="text-gray-600 mb-6 text-sm">
+              {searchQuery
+                ? 'Try adjusting your search terms.'
+                : "You've seen all the profiles that match your preferences. Check back later for new matches!"}
             </p>
-            <div className="flex justify-center gap-4">
-              <Link href="/connections" className="btn-primary">
-                View Connections
-              </Link>
-              <Link href="/reconsider" className="btn-secondary">
-                Reconsider Passed
-              </Link>
+            <div className="flex justify-center gap-3">
+              {searchQuery ? (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="btn-secondary text-sm py-2"
+                >
+                  Clear Search
+                </button>
+              ) : (
+                <>
+                  <Link href="/connections" className="btn-primary text-sm py-2">
+                    View Connections
+                  </Link>
+                  <Link href="/reconsider" className="btn-secondary text-sm py-2">
+                    Reconsider Passed
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         ) : (
-          <>
+          <div className="space-y-6">
             {/* Liked You Section */}
             {likedYouProfiles.length > 0 && (
-              <section className="mb-10">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-2 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-white" />
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg">
+                    <Sparkles className="h-4 w-4 text-white" />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">
-                      They Like You ({likedYouProfiles.length})
-                    </h2>
-                    <p className="text-sm text-gray-500">Like them back to connect!</p>
-                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    They Like You ({likedYouProfiles.length})
+                  </h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
                   {likedYouProfiles.map((profile) => (
-                    <ProfileCard
+                    <DirectoryCard
                       key={profile.id}
                       profile={profile}
                       onLike={() => handleLike(profile)}
@@ -245,13 +286,13 @@ function FeedPageContent() {
             {discoverProfiles.length > 0 && (
               <section>
                 {likedYouProfiles.length > 0 && (
-                  <h2 className="text-xl font-bold text-gray-900 mb-5">
+                  <h2 className="text-lg font-bold text-gray-900 mb-3">
                     Discover More ({discoverProfiles.length})
                   </h2>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
                   {discoverProfiles.map((profile) => (
-                    <ProfileCard
+                    <DirectoryCard
                       key={profile.id}
                       profile={profile}
                       onLike={() => handleLike(profile)}
@@ -263,7 +304,7 @@ function FeedPageContent() {
                 </div>
               </section>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -272,15 +313,15 @@ function FeedPageContent() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 text-center max-w-md w-full animate-in zoom-in-95">
             <div className="relative">
-              <Heart className="h-20 w-20 text-pink-500 mx-auto mb-4 animate-pulse" />
-              <Sparkles className="h-8 w-8 text-yellow-400 absolute top-0 right-1/4 animate-bounce" />
+              <Heart className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
+              <Sparkles className="h-6 w-6 text-yellow-400 absolute top-0 right-1/4 animate-bounce" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">It&apos;s a Match!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">It&apos;s a Match!</h2>
             <p className="text-gray-600 mb-6">
               You and <span className="font-semibold">{showMatchModal.user.name}</span> liked each other!
               You can now message them.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Link
                 href="/connections"
                 className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
