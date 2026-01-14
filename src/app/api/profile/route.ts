@@ -48,6 +48,7 @@ export async function POST(request: Request) {
         placeOfBirth: body.nativePlace || body.placeOfBirth,
         height: body.height,
         maritalStatus: body.maritalStatus,
+        hasChildren: body.hasChildren,
         dietaryPreference: body.diet || body.dietaryPreference,
         languagesKnown: body.motherTongue || body.languagesKnown,
         currentLocation: currentLocation,
@@ -159,6 +160,7 @@ export async function PUT(request: Request) {
     if (body.height !== undefined) updateData.height = body.height
     if (body.weight !== undefined) updateData.weight = body.weight
     if (body.maritalStatus !== undefined) updateData.maritalStatus = body.maritalStatus
+    if (body.hasChildren !== undefined) updateData.hasChildren = body.hasChildren
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship

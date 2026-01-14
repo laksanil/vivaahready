@@ -34,6 +34,7 @@ interface Profile {
   height: string
   weight: string
   maritalStatus: string
+  hasChildren: string
   currentLocation: string
   citizenship: string
   linkedinProfile: string

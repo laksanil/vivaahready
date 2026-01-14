@@ -26,6 +26,7 @@ interface Profile {
   placeOfBirth: string | null
   height: string | null
   maritalStatus: string | null
+  hasChildren: string | null
   currentLocation: string | null
   country: string | null
   citizenship: string | null

@@ -53,6 +53,7 @@ model Profile {
   bloodGroup        String?  // A+, A-, B+, B-, AB+, AB-, O+, O-
   languagesKnown    String?
   maritalStatus     String?  // Single, Never Married, Divorced
+  hasChildren       String?  // no, yes_living_together, yes_not_living_together
 
   // Contact & Social
   linkedinProfile   String?

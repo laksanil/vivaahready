@@ -44,6 +44,7 @@ interface ProfileData {
   gotra: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
+  hasChildren: string | null
   aboutMe: string | null
   photoUrls: string | null
   profileImageUrl: string | null
@@ -731,7 +732,13 @@ function ProfileCard({
                       {profile.maritalStatus && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">Marital Status</span>
-                          <span className="text-gray-800">{profile.maritalStatus}</span>
+                          <span className="text-gray-800">{profile.maritalStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                        </div>
+                      )}
+                      {profile.hasChildren && profile.maritalStatus !== 'never_married' && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Children</span>
+                          <span className="text-gray-800">{profile.hasChildren.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                         </div>
                       )}
                       {profile.bloodGroup && (

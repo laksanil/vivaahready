@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS } from '@/lib/constants'
+import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -210,10 +210,23 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
             <select name="maritalStatus" value={formData.maritalStatus as string || 'never_married'} onChange={handleChange} className="input-field">
               <option value="never_married">Never Married</option>
               <option value="divorced">Divorced</option>
+              <option value="separated">Separated</option>
               <option value="widowed">Widowed</option>
               <option value="awaiting_divorce">Awaiting Divorce</option>
             </select>
           </div>
+          {/* Show children question only if not never_married */}
+          {(formData.maritalStatus as string) && (formData.maritalStatus as string) !== 'never_married' && (
+            <div>
+              <label className="form-label">Do you have children? <span className="text-red-500">*</span></label>
+              <select name="hasChildren" value={formData.hasChildren as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                <option value="no">No</option>
+                <option value="yes_living_together">Yes, living with me</option>
+                <option value="yes_not_living_together">Yes, not living with me</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -281,19 +294,19 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
             </div>
           )}
           <div>
-            <label className="form-label">City</label>
+            <label className="form-label">City <span className="text-red-500">*</span></label>
             <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
               const state = (formData.currentLocation as string || '').split(', ')[1] || ''
               setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
-            }} className="input-field" />
+            }} className="input-field" required />
           </div>
           <div>
-            <label className="form-label">State</label>
+            <label className="form-label">State <span className="text-red-500">*</span></label>
             {isUSA ? (
               <select name="state" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
                 const city = (formData.currentLocation as string || '').split(', ')[0] || ''
                 setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
-              }} className="input-field">
+              }} className="input-field" required>
                 <option value="">Select State</option>
                 {US_STATES.map(state => <option key={state} value={state}>{state}</option>)}
               </select>
@@ -301,7 +314,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               <input type="text" placeholder="State/Province" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
                 const city = (formData.currentLocation as string || '').split(', ')[0] || ''
                 setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
-              }} className="input-field" />
+              }} className="input-field" required />
             )}
           </div>
         </div>
@@ -811,15 +824,18 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
         </div>
       </div>
       <div>
-        <label className="form-label">Annual Income (USD)</label>
-        <select name="annualIncome" value={formData.annualIncome as string || ''} onChange={handleChange} className="input-field">
+        <label className="form-label">Annual Income (USD) <span className="text-red-500">*</span></label>
+        <select name="annualIncome" value={formData.annualIncome as string || ''} onChange={handleChange} className="input-field" required>
           <option value="">Select</option>
+          <option value="student">Student / No Income</option>
+          <option value="homemaker">Homemaker / Not Working</option>
           <option value="<50k">Less than $50k</option>
           <option value="50k-75k">$50k - $75k</option>
           <option value="75k-100k">$75k - $100k</option>
           <option value="100k-150k">$100k - $150k</option>
           <option value="150k-200k">$150k - $200k</option>
           <option value=">200k">More than $200k</option>
+          <option value="prefer_not_to_say">Prefer not to say</option>
         </select>
       </div>
       <div>
@@ -969,8 +985,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     <>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="form-label">Diet</label>
-          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Diet <span className="text-red-500">*</span></label>
+          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="veg">Vegetarian</option>
             <option value="non_veg">Non-Vegetarian</option>
@@ -981,8 +997,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Smoking</label>
-          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Smoking <span className="text-red-500">*</span></label>
+          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="occasionally">Occasionally</option>
@@ -990,8 +1006,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Drinking</label>
-          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Drinking <span className="text-red-500">*</span></label>
+          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="social">Social Drinker</option>
@@ -1559,8 +1575,13 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label className="form-label">Gothra</label>
-              <input type="text" name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Bharadwaj" />
+              <label className="form-label">Gothra <span className="text-red-500">*</span></label>
+              <select name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                {GOTRA_OPTIONS.map((gotra) => (
+                  <option key={gotra} value={gotra}>{gotra}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="form-label">Time of Birth</label>
@@ -1615,8 +1636,13 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
       {selectedReligion === 'Jain' && (
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="form-label">Gothra</label>
-            <input type="text" name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., Kashyap" />
+            <label className="form-label">Gothra <span className="text-red-500">*</span></label>
+            <select name="gotra" value={formData.gotra as string || ''} onChange={handleChange} className="input-field" required>
+              <option value="">Select</option>
+              {GOTRA_OPTIONS.map((gotra) => (
+                <option key={gotra} value={gotra}>{gotra}</option>
+              ))}
+            </select>
           </div>
         </div>
       )}
@@ -1802,20 +1828,57 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Basic Preferences</h4>
 
-        {/* Marital Status Preference */}
+        {/* Marital Status Preference - Multi-select */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="form-label">Partner&apos;s Marital Status</label>
-            <select
-              name="prefMaritalStatus"
-              value={formData.prefMaritalStatus as string || 'never_married'}
-              onChange={handleChange}
-              className="input-field"
-            >
-              {PREF_MARITAL_STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            <label className="form-label">Partner&apos;s Marital Status (select all that apply)</label>
+            <div className="p-2 border rounded-lg bg-gray-50 space-y-1">
+              <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                <input
+                  type="checkbox"
+                  checked={isChecked('prefMaritalStatus', 'never_married')}
+                  onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'never_married', e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span>Never Married</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                <input
+                  type="checkbox"
+                  checked={isChecked('prefMaritalStatus', 'divorced')}
+                  onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'divorced', e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span>Divorced</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                <input
+                  type="checkbox"
+                  checked={isChecked('prefMaritalStatus', 'separated')}
+                  onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'separated', e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span>Separated</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                <input
+                  type="checkbox"
+                  checked={isChecked('prefMaritalStatus', 'widowed')}
+                  onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'widowed', e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span>Widowed</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1 rounded">
+                <input
+                  type="checkbox"
+                  checked={isChecked('prefMaritalStatus', 'doesnt_matter')}
+                  onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'doesnt_matter', e.target.checked)}
+                  className="rounded text-primary-600 focus:ring-primary-500"
+                />
+                <span className="font-medium">Doesn&apos;t Matter</span>
+              </label>
+            </div>
           </div>
           <div>
             <label className="form-label">Mother Tongue Preference</label>
