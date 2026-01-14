@@ -589,18 +589,32 @@ export const RELIGION_COMMUNITIES: Record<string, CommunityData> = {
   },
 };
 
-// Helper function to get communities for a religion
+// Helper function to get communities for a religion (alphabetically sorted, with "Other" at the end)
 export function getCommunities(religion: string): string[] {
   const religionData = RELIGION_COMMUNITIES[religion];
   if (!religionData) return ['Other'];
-  return Object.keys(religionData.communities);
+  const communities = Object.keys(religionData.communities);
+  // Sort alphabetically but keep "Other" at the end
+  return communities.sort((a, b) => {
+    if (a === 'Other') return 1;
+    if (b === 'Other') return -1;
+    return a.localeCompare(b);
+  });
 }
 
-// Helper function to get sub-communities for a religion and community
+// Helper function to get sub-communities for a religion and community (alphabetically sorted, with "Other" variants at the end)
 export function getSubCommunities(religion: string, community: string): string[] {
   const religionData = RELIGION_COMMUNITIES[religion];
   if (!religionData) return ['Other'];
-  return religionData.communities[community] || ['Other'];
+  const subCommunities = religionData.communities[community] || ['Other'];
+  // Sort alphabetically but keep "Other" and "Other X" at the end
+  return [...subCommunities].sort((a, b) => {
+    const aIsOther = a === 'Other' || a.startsWith('Other ');
+    const bIsOther = b === 'Other' || b.startsWith('Other ');
+    if (aIsOther && !bIsOther) return 1;
+    if (!aIsOther && bIsOther) return -1;
+    return a.localeCompare(b);
+  });
 }
 
 // Get all communities across all religions (for partner preferences)

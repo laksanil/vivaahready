@@ -85,7 +85,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       {/* Age & Physical Attributes */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Age & Physical Details</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
             <label className="form-label">Date of Birth <span className="text-red-500">*</span></label>
             <input
@@ -120,27 +120,13 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               ))}
             </select>
           </div>
-          <div>
-            <label className="form-label">Blood Group</label>
-            <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Marital & Health Status */}
+      {/* Marital Status */}
       <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Status & Health</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Marital Status</h4>
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="form-label">Marital Status <span className="text-red-500">*</span></label>
             <select name="maritalStatus" value={formData.maritalStatus as string || 'never_married'} onChange={handleChange} className="input-field">
@@ -150,47 +136,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               <option value="awaiting_divorce">Awaiting Divorce</option>
             </select>
           </div>
-          <div>
-            <label className="form-label">Health Info</label>
-            <select name="healthInfo" value={formData.healthInfo as string || 'no_health_issues'} onChange={handleChange} className="input-field">
-              <option value="no_health_issues">No Issues</option>
-              <option value="diabetes">Diabetes</option>
-              <option value="heart_condition">Heart Condition</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Any Disability</label>
-            <select name="anyDisability" value={formData.anyDisability as string || 'none'} onChange={handleChange} className="input-field">
-              <option value="none">None</option>
-              <option value="physical">Physical</option>
-              <option value="visually_impaired">Visual</option>
-              <option value="hearing_impaired">Hearing</option>
-              <option value="speech_impaired">Speech</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            {/* Spacer for alignment or future field */}
-          </div>
         </div>
-        {/* Conditional inputs for health/disability details */}
-        {((formData.healthInfo as string) === 'other' || ((formData.anyDisability as string) && (formData.anyDisability as string) !== 'none')) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {(formData.healthInfo as string) === 'other' && (
-              <div>
-                <label className="form-label">Health Condition Details</label>
-                <input type="text" name="healthInfoOther" value={formData.healthInfoOther as string || ''} onChange={handleChange} className="input-field" placeholder="Please specify health condition" />
-              </div>
-            )}
-            {(formData.anyDisability as string) && (formData.anyDisability as string) !== 'none' && (
-              <div>
-                <label className="form-label">Disability Details</label>
-                <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Please specify details" />
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
@@ -941,9 +887,62 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           <option value="allergic">Allergic to pets</option>
         </select>
       </div>
-      <div>
-        <label className="form-label">Allergies or Medical Conditions</label>
-        <textarea name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field min-h-[60px]" placeholder="e.g., None, Peanut allergy" />
+
+      {/* Health & Wellness Section */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Health & Wellness</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Blood Group</label>
+            <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="unknown">Don't Know</option>
+            </select>
+          </div>
+          <div>
+            <label className="form-label">Health Information</label>
+            <select name="healthInfo" value={formData.healthInfo as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="other">Other (please specify)</option>
+            </select>
+          </div>
+        </div>
+        {formData.healthInfo === 'other' && (
+          <div>
+            <label className="form-label">Please specify health details</label>
+            <input type="text" name="healthInfoOther" value={formData.healthInfoOther as string || ''} onChange={handleChange} className="input-field" placeholder="Enter health details" />
+          </div>
+        )}
+        <div>
+          <label className="form-label">Any Disability</label>
+          <select name="anyDisability" value={formData.anyDisability as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select</option>
+            <option value="none">None</option>
+            <option value="physical">Physical</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        {(formData.anyDisability === 'physical' || formData.anyDisability === 'other') && (
+          <div>
+            <label className="form-label">Please specify disability details</label>
+            <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Enter details" />
+          </div>
+        )}
+        <div>
+          <label className="form-label">Allergies or Medical Conditions</label>
+          <textarea name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field min-h-[60px]" placeholder="e.g., None, Peanut allergy" />
+        </div>
       </div>
     </>
   )
