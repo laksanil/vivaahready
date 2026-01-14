@@ -98,7 +98,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
 
     if (value === '') {
       setAgeError('')
-      setFormData(prev => ({ ...prev, age: '' }))
+      setFormData(prev => ({ ...prev, age: '', dateOfBirth: '' }))
       return
     }
 
@@ -112,8 +112,13 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       setAgeError('')
     }
 
-    setFormData(prev => ({ ...prev, age: value }))
+    // Clear DOB when age is entered manually
+    setFormData(prev => ({ ...prev, age: value, dateOfBirth: '' }))
   }
+
+  // Determine which field is "active" (has a value)
+  const hasValidDob = (formData.dateOfBirth as string || '').length === 10
+  const hasManualAge = !!(formData.age as string) && !(formData.dateOfBirth as string)
 
   // Filter countries based on search
   const filteredCountries = COUNTRIES_LIST.filter(country =>
@@ -224,32 +229,40 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       {/* Age & Physical Attributes */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Age & Physical Details</h4>
+        <p className="text-xs text-gray-500 -mt-2">Enter either Date of Birth OR Age (not both)</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
-            <label className="form-label">Date of Birth <span className="text-red-500">*</span></label>
+            <label className="form-label">
+              Date of Birth {!hasManualAge && <span className="text-red-500">*</span>}
+            </label>
             <input
               type="text"
               name="dateOfBirth"
               value={formData.dateOfBirth as string || ''}
               onChange={handleDateOfBirthChange}
-              className={`input-field ${dobError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+              className={`input-field ${dobError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''} ${hasManualAge ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               placeholder="MM/DD/YYYY"
               maxLength={10}
-              required
+              disabled={hasManualAge}
+              required={!hasManualAge}
             />
             {dobError && <p className="text-red-500 text-xs mt-1">{dobError}</p>}
           </div>
           <div>
-            <label className="form-label">Age (optional)</label>
+            <label className="form-label">
+              Age {hasManualAge && <span className="text-red-500">*</span>}
+              {!hasManualAge && !hasValidDob && <span className="text-gray-400 text-xs ml-1">(or enter age)</span>}
+            </label>
             <input
               type="number"
               name="age"
               value={formData.age as string || ''}
               onChange={handleAgeChange}
-              className={`input-field ${ageError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-              placeholder="Or enter age"
+              className={`input-field ${ageError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''} ${hasValidDob ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              placeholder={hasValidDob ? 'Calculated from DOB' : 'Enter age'}
               min={18}
               max={99}
+              disabled={hasValidDob}
             />
             {ageError && <p className="text-red-500 text-xs mt-1">{ageError}</p>}
           </div>
