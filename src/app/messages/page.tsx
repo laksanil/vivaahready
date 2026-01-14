@@ -126,7 +126,7 @@ export default function MessagesPage() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Link
-              href="/matches"
+              href="/feed"
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -167,7 +167,7 @@ export default function MessagesPage() {
                 : 'Start messaging your matches to see conversations here'}
             </p>
             {!searchQuery && (
-              <Link href="/matches" className="btn-primary inline-block">
+              <Link href="/feed" className="btn-primary inline-block">
                 Browse Matches
               </Link>
             )}

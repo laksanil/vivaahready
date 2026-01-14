@@ -414,7 +414,7 @@ export default function AdminMatchesPage() {
                       {/* Potential Matches */}
                       <td className="px-4 py-3">
                         <Link
-                          href={`/matches?viewAsUser=${profile.user.id}&tab=matches`}
+                          href={`/feed?viewAsUser=${profile.user.id}`}
                           target="_blank"
                           className="flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:underline"
                         >
@@ -426,7 +426,7 @@ export default function AdminMatchesPage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <Link
-                            href={`/matches?viewAsUser=${profile.user.id}&tab=received`}
+                            href={`/feed?viewAsUser=${profile.user.id}`}
                             target="_blank"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
                           >
@@ -443,7 +443,7 @@ export default function AdminMatchesPage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <Link
-                            href={`/matches?viewAsUser=${profile.user.id}&tab=sent`}
+                            href={`/feed?viewAsUser=${profile.user.id}`}
                             target="_blank"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
                           >
@@ -459,7 +459,7 @@ export default function AdminMatchesPage() {
                       {/* Mutual Matches */}
                       <td className="px-4 py-3">
                         <Link
-                          href={`/matches?viewAsUser=${profile.user.id}&tab=mutual`}
+                          href={`/connections?viewAsUser=${profile.user.id}`}
                           target="_blank"
                           className={`font-semibold hover:underline ${profile.stats.mutualMatches > 0 ? 'text-pink-600 hover:text-pink-700' : 'text-gray-400'}`}
                         >
@@ -469,7 +469,7 @@ export default function AdminMatchesPage() {
                       {/* Declined */}
                       <td className="px-4 py-3">
                         <Link
-                          href={`/matches?viewAsUser=${profile.user.id}&tab=declined`}
+                          href={`/reconsider?viewAsUser=${profile.user.id}`}
                           target="_blank"
                           className={`font-semibold hover:underline ${profile.stats.declined > 0 ? 'text-orange-600 hover:text-orange-700' : 'text-gray-400'}`}
                         >

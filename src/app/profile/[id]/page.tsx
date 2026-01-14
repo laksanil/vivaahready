@@ -21,7 +21,9 @@ import {
   Lock,
   ZoomIn,
   ArrowLeft,
+  Flag,
 } from 'lucide-react'
+import ReportModal from '@/components/ReportModal'
 import { calculateAge, getInitials, extractPhotoUrls } from '@/lib/utils'
 
 interface ProfileData {
@@ -170,6 +172,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     myProfile: { profileImageUrl: string | null; gender: string; name: string }
     theirProfile: { profileImageUrl: string | null; gender: string; name: string }
   } | null>(null)
+  const [showReportModal, setShowReportModal] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -296,7 +299,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">{error || 'Profile not found'}</h2>
-          <Link href="/matches" className="text-primary-600 hover:underline">
+          <Link href="/feed" className="text-primary-600 hover:underline">
             Back to Matches
           </Link>
         </div>
@@ -341,6 +344,15 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           matchProfiles={matchProfiles}
           viewerUserId={viewerUserId}
           isLoggedIn={!!session}
+          onReport={() => setShowReportModal(true)}
+        />
+
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportedUserId={profile.userId}
+          reportedUserName={profile.user.name}
         />
       </div>
     </div>
@@ -374,6 +386,7 @@ interface ProfileCardProps {
   matchProfiles?: MatchProfilesData | null
   viewerUserId?: string | null
   isLoggedIn?: boolean
+  onReport?: () => void
 }
 
 function ProfileCard({
@@ -382,6 +395,7 @@ function ProfileCard({
   isSending,
   canExpressInterest,
   theirMatchScore,
+  onReport,
   yourMatchScore,
   matchProfiles,
   viewerUserId,
@@ -617,6 +631,18 @@ function ProfileCard({
                     <span className="text-xs text-gray-600 mt-1">Message</span>
                   </div>
                 )}
+
+                {/* Report Button */}
+                <button
+                  onClick={onReport}
+                  className="flex flex-col items-center mt-2"
+                  title="Report this profile"
+                >
+                  <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors">
+                    <Flag className="h-4 w-4 text-gray-400 hover:text-orange-500" />
+                  </div>
+                  <span className="text-xs text-gray-400 mt-1">Report</span>
+                </button>
               </div>
             </div>
           </div>

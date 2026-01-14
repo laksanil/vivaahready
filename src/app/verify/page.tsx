@@ -184,7 +184,7 @@ export default function VerifyPage() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link
-          href="/matches"
+          href="/feed"
           className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

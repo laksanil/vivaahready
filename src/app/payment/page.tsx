@@ -97,7 +97,7 @@ export default function PaymentPage() {
               Once approved, you'll be able to express interest in matching profiles.
             </p>
             <div className="flex justify-center gap-4">
-              <Link href="/matches" className="btn-primary">
+              <Link href="/feed" className="btn-primary">
                 View Matches
               </Link>
               <Link href="/profile" className="btn-secondary">
@@ -114,7 +114,7 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Link
-          href="/matches"
+          href="/feed"
           className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
