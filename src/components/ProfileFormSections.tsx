@@ -682,7 +682,6 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
           <option value="100k-150k">$100k - $150k</option>
           <option value="150k-200k">$150k - $200k</option>
           <option value=">200k">More than $200k</option>
-          <option value="prefer_not_to_say">Prefer not to say</option>
         </select>
       </div>
       <div>
@@ -704,8 +703,8 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
 export function FamilySection({ formData, handleChange }: SectionProps) {
   return (
     <>
-      {/* Family Location & Type */}
-      <div className="grid grid-cols-4 gap-3">
+      {/* Family Location & Values */}
+      <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="form-label">Lives with Family?</label>
           <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
@@ -714,21 +713,12 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
         <div>
-          <label className="form-label">Family Location</label>
-          <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" />
+          <label className="form-label">Family Location <span className="text-red-500">*</span></label>
+          <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" required />
         </div>
         <div>
-          <label className="form-label">Family Type</label>
-          <select name="familyType" value={formData.familyType as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="nuclear">Nuclear</option>
-            <option value="joint">Joint</option>
-            <option value="extended">Extended</option>
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Family Values</label>
-          <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Family Values <span className="text-red-500">*</span></label>
+          <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="traditional">Traditional</option>
             <option value="moderate">Moderate</option>
@@ -1072,23 +1062,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
               <option value="unknown">Don't Know</option>
             </select>
           </div>
-          <div>
-            <label className="form-label">Health Information</label>
-            <select name="healthInfo" value={formData.healthInfo as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              <option value="excellent">Excellent</option>
-              <option value="good">Good</option>
-              <option value="fair">Fair</option>
-              <option value="other">Other (please specify)</option>
-            </select>
-          </div>
         </div>
-        {formData.healthInfo === 'other' && (
-          <div>
-            <label className="form-label">Please specify health details</label>
-            <input type="text" name="healthInfoOther" value={formData.healthInfoOther as string || ''} onChange={handleChange} className="input-field" placeholder="Enter health details" />
-          </div>
-        )}
         <div>
           <label className="form-label">Any Disability</label>
           <select name="anyDisability" value={formData.anyDisability as string || ''} onChange={handleChange} className="input-field">
@@ -1729,10 +1703,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Age & Height */}
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <PreferenceHeader title="Age & Height" field="prefAge" formData={formData} setFormData={setFormData} required />
+          <h4 className="text-sm font-semibold text-gray-800">Age & Height <span className="text-red-500">*</span></h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="form-label">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-gray-400 text-xs">(You: {userAge})</span>}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-gray-400 text-xs">(You: {userAge})</span>}</label>
+                <DealBreakerToggle field="prefAge" formData={formData} setFormData={setFormData} />
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <select name="prefAgeMin" value={getDefaultAgeMin()} onChange={handleChange} className="input-field" required>
                   <option value="">Min Age</option>
@@ -1745,8 +1722,8 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </div>
             </div>
             <div>
-              <div className="flex items-center justify-between">
-                <label className="form-label">Height Range <span className="text-red-500">*</span></label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Height Range <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefHeight" formData={formData} setFormData={setFormData} />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -1767,7 +1744,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Marital Status */}
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <PreferenceHeader title="Marital Status" field="prefMaritalStatus" formData={formData} setFormData={setFormData} required />
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">Marital Status <span className="text-red-500">*</span></h4>
+            <DealBreakerToggle field="prefMaritalStatus" formData={formData} setFormData={setFormData} />
+          </div>
           <div className="flex flex-wrap gap-3 p-3 border rounded bg-gray-50">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={isChecked('prefMaritalStatus', 'never_married')} onChange={(e) => handleCheckboxChange('prefMaritalStatus', 'never_married', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
@@ -1796,10 +1776,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Religion & Community */}
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <PreferenceHeader title="Religion & Community" field="prefReligion" formData={formData} setFormData={setFormData} required />
+          <h4 className="text-sm font-semibold text-gray-800">Religion & Community <span className="text-red-500">*</span></h4>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="form-label">Religion <span className="text-red-500">*</span></label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Religion <span className="text-red-500">*</span></label>
+                <DealBreakerToggle field="prefReligion" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefReligion" value={prefReligion} onChange={handleChange} className="input-field" required>
                 <option value="">Select Religion</option>
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
@@ -1808,7 +1791,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
             {prefReligion && prefReligion !== 'doesnt_matter' && (
               <div>
-                <label className="form-label">Community</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="form-label mb-0">Community</label>
+                  <DealBreakerToggle field="prefCommunity" formData={formData} setFormData={setFormData} />
+                </div>
                 <select name="prefCommunity" value={formData.prefCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                   <option value="doesnt_matter">Doesn&apos;t Matter</option>
                   <option value="same_as_mine">Same as Mine</option>
@@ -1818,7 +1804,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             )}
             {showGotra && (
               <div>
-                <label className="form-label">Gothra</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="form-label mb-0">Gothra</label>
+                  <DealBreakerToggle field="prefGotra" formData={formData} setFormData={setFormData} />
+                </div>
                 <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handleChange} className="input-field">
                   <option value="">Doesn&apos;t Matter</option>
                   <option value="different">Different Gothra Only</option>
@@ -1874,9 +1863,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Location Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <PreferenceHeader title="Location" field="prefLocation" formData={formData} setFormData={setFormData} />
+          <h4 className="text-sm font-semibold text-gray-800">Location</h4>
           <div>
-            <label className="form-label text-sm">Preferred Locations (select all that apply)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0 text-sm">Preferred Locations (select all that apply)</label>
+              <DealBreakerToggle field="prefLocation" formData={formData} setFormData={setFormData} />
+            </div>
             <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
               <div className="grid grid-cols-3 gap-2">
                 {PREF_LOCATION_OPTIONS.map((opt) => (
@@ -1891,7 +1883,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="relative">
-              <label className="form-label">Citizenship</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Citizenship</label>
+                <DealBreakerToggle field="prefCitizenship" formData={formData} setFormData={setFormData} />
+              </div>
               <input type="text" value={prefCitizenshipSearch || (formData.prefCitizenship as string) || ''} onChange={(e) => { setPrefCitizenshipSearch(e.target.value); setShowPrefCitizenshipDropdown(true) }} onFocus={() => { setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(true) }} className="input-field" placeholder="Any citizenship" />
               {showPrefCitizenshipDropdown && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
@@ -1902,7 +1897,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {showPrefCitizenshipDropdown && (<div className="fixed inset-0 z-40" onClick={() => setShowPrefCitizenshipDropdown(false)} />)}
             </div>
             <div>
-              <label className="form-label">Grew Up In</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Grew Up In</label>
+                <DealBreakerToggle field="prefGrewUpIn" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
                 <option value="same_as_mine">Same as Mine</option>
@@ -1913,7 +1911,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </select>
             </div>
             <div>
-              <label className="form-label">Relocation</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Relocation</label>
+                <DealBreakerToggle field="prefRelocation" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefRelocation" value={formData.prefRelocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 {PREF_RELOCATION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
@@ -1925,17 +1926,23 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Education & Career */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <PreferenceHeader title="Education & Career" field="prefEducation" formData={formData} setFormData={setFormData} />
+          <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="form-label">Minimum Education</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Minimum Education</label>
+                <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Doesn&apos;t Matter</option>
                 {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
             </div>
             <div>
-              <label className="form-label">Industry</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Industry</label>
+                <DealBreakerToggle field="prefWorkArea" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefWorkArea" value={formData.prefWorkArea as string || ''} onChange={handleChange} className="input-field">
                 {PREF_WORK_AREA_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
@@ -1952,7 +1959,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
           </div>
           <div>
-            <label className="form-label text-sm">Preferred Occupations (select all that apply)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0 text-sm">Preferred Occupations (select all that apply)</label>
+              <DealBreakerToggle field="prefOccupation" formData={formData} setFormData={setFormData} />
+            </div>
             <div className="p-3 border rounded bg-gray-50 max-h-32 overflow-y-auto">
               <div className="grid grid-cols-3 gap-2">
                 {OCCUPATION_OPTIONS.map((opt) => (
@@ -1964,6 +1974,42 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-1">{(formData.prefOccupationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
+          </div>
+        </div>
+      )}
+
+      {/* Family Preferences */}
+      {!showOnlyRequired && (
+        <div className="space-y-3 p-3 rounded-lg border bg-white">
+          <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Family Values</label>
+                <DealBreakerToggle field="prefFamilyValues" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefFamilyValues" value={formData.prefFamilyValues as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                <option value="same_as_mine">Same as Mine</option>
+                <option value="traditional">Traditional</option>
+                <option value="moderate">Moderate</option>
+                <option value="liberal">Liberal</option>
+              </select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Family Location</label>
+                <DealBreakerToggle field="prefFamilyLocation" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefFamilyLocation" value={formData.prefFamilyLocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                <option value="same_as_mine">Same as Mine</option>
+                <option value="USA">USA</option>
+                <option value="India">India</option>
+                <option value="UK">UK</option>
+                <option value="Canada">Canada</option>
+              </select>
+            </div>
           </div>
         </div>
       )}
@@ -1983,14 +2029,20 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </select>
             </div>
             <div>
-              <label className="form-label">Sub-Community</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Sub-Community</label>
+                <DealBreakerToggle field="prefSubCommunity" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefSubCommunity" value={formData.prefSubCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
                 <option value="same_as_mine">Same as Mine</option>
               </select>
             </div>
             <div>
-              <label className="form-label">Pets</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Pets</label>
+                <DealBreakerToggle field="prefPets" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 {PREF_PETS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
@@ -2025,6 +2077,16 @@ export function PreferencesSection({ formData, handleChange, setFormData }: Sect
       <PreferencesNiceToHavesSection formData={formData} handleChange={handleChange} setFormData={setFormData} />
     </div>
   )
+}
+
+// Page 1: Core preferences (Age, Height, Marital Status, Religion, Lifestyle)
+export function PreferencesPage1Section({ formData, handleChange, setFormData }: SectionProps) {
+  return <PreferencesUnifiedSection formData={formData} handleChange={handleChange} setFormData={setFormData} showOnlyRequired />
+}
+
+// Page 2: Additional preferences (Location, Education, Family, Other, Notes)
+export function PreferencesPage2Section({ formData, handleChange, setFormData }: SectionProps) {
+  return <PreferencesUnifiedSection formData={formData} handleChange={handleChange} setFormData={setFormData} showOnlyOptional />
 }
 
 export function ReferralSection({ formData, handleChange }: SectionProps) {

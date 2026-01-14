@@ -23,20 +23,76 @@ interface ProfileForMatching {
   dateOfBirth: string | null
   currentLocation: string | null
   caste: string | null
+  community: string | null
+  subCommunity: string | null
   dietaryPreference: string | null
   qualification: string | null
   height: string | null
   gotra: string | null
   aboutMe?: string | null  // Used to check for ongoing education
+  smoking: string | null
+  drinking: string | null
+  motherTongue: string | null
+  familyValues: string | null
+  familyLocation: string | null
+  maritalStatus: string | null
+  annualIncome: string | null
 
-  // Preferences
-  prefAgeDiff: string | null
-  prefLocation: string | null
-  prefCaste: string | null
-  prefDiet: string | null
-  prefQualification: string | null
-  prefHeight: string | null
-  prefGotra: string | null
+  // Preferences - Core (Page 1)
+  prefAgeDiff?: string | null
+  prefAgeMin?: string | null
+  prefAgeMax?: string | null
+  prefHeight?: string | null
+  prefHeightMin?: string | null
+  prefHeightMax?: string | null
+  prefMaritalStatus?: string | null
+  prefReligion?: string | null
+  prefCommunity?: string | null
+  prefGotra?: string | null
+  prefDiet?: string | null
+  prefSmoking?: string | null
+  prefDrinking?: string | null
+
+  // Preferences - Additional (Page 2)
+  prefLocation?: string | null
+  prefLocationList?: string | null
+  prefCitizenship?: string | null
+  prefGrewUpIn?: string | null
+  prefRelocation?: string | null
+  prefQualification?: string | null
+  prefWorkArea?: string | null
+  prefIncome?: string | null
+  prefOccupationList?: string | null
+  prefFamilyValues?: string | null
+  prefFamilyLocation?: string | null
+  prefMotherTongue?: string | null
+  prefSubCommunity?: string | null
+  prefPets?: string | null
+  prefCaste?: string | null
+
+  // Deal-breaker flags
+  prefAgeIsDealbreaker?: boolean | string
+  prefHeightIsDealbreaker?: boolean | string
+  prefMaritalStatusIsDealbreaker?: boolean | string
+  prefReligionIsDealbreaker?: boolean | string
+  prefCommunityIsDealbreaker?: boolean | string
+  prefGotraIsDealbreaker?: boolean | string
+  prefDietIsDealbreaker?: boolean | string
+  prefSmokingIsDealbreaker?: boolean | string
+  prefDrinkingIsDealbreaker?: boolean | string
+  prefLocationIsDealbreaker?: boolean | string
+  prefCitizenshipIsDealbreaker?: boolean | string
+  prefGrewUpInIsDealbreaker?: boolean | string
+  prefRelocationIsDealbreaker?: boolean | string
+  prefEducationIsDealbreaker?: boolean | string
+  prefWorkAreaIsDealbreaker?: boolean | string
+  prefIncomeIsDealbreaker?: boolean | string
+  prefOccupationIsDealbreaker?: boolean | string
+  prefFamilyValuesIsDealbreaker?: boolean | string
+  prefFamilyLocationIsDealbreaker?: boolean | string
+  prefMotherTongueIsDealbreaker?: boolean | string
+  prefSubCommunityIsDealbreaker?: boolean | string
+  prefPetsIsDealbreaker?: boolean | string
 }
 
 /**
@@ -94,7 +150,7 @@ export function calculateAgeFromDOB(dob: string | null): number | null {
  * - "< 5 years" -> less than
  * - "3-5 years older" -> relative
  */
-export function parseAgePreference(prefAgeDiff: string | null, seekerAge: number | null): { min: number; max: number } | null {
+export function parseAgePreference(prefAgeDiff: string | null | undefined, seekerAge: number | null): { min: number; max: number } | null {
   if (!prefAgeDiff) return null
 
   const pref = prefAgeDiff.toLowerCase().trim()
@@ -284,7 +340,7 @@ const PREF_EDUCATION_CONFIG: Record<string, { type: string; minLevel?: number; c
   'md': { type: 'category', categories: ['md', 'ms_medical'] },  // Legacy
 }
 
-function getEducationLevel(qualification: string | null): number {
+function getEducationLevel(qualification: string | null | undefined): number {
   if (!qualification) return 0
   const normalized = qualification.toLowerCase().trim()
 
@@ -306,7 +362,7 @@ function getEducationLevel(qualification: string | null): number {
 /**
  * Check if candidate's qualification matches a specific category
  */
-function matchesEducationCategory(candidateQual: string | null, categories: string[]): boolean {
+function matchesEducationCategory(candidateQual: string | null | undefined, categories: string[]): boolean {
   if (!candidateQual) return false
   const normalized = candidateQual.toLowerCase().trim()
 
@@ -367,7 +423,7 @@ function isBrahmin(caste: string): boolean {
  * - "Same Caste only" -> Match at broad level (e.g., both Brahmins)
  * - Specific caste -> Match if castes are compatible
  */
-function isCasteMatch(seekerCaste: string | null, seekerPref: string | null, candidateCaste: string | null): boolean {
+function isCasteMatch(seekerCaste: string | null | undefined, seekerPref: string | null | undefined, candidateCaste: string | null | undefined): boolean {
   // No preference or "doesn't matter"
   if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'any') {
     return true
@@ -536,7 +592,7 @@ const BAY_AREA_CITIES = [
  * Smart location matching that handles dropdown preference values
  * STRICT: If someone specifies a state, only match that state
  */
-function isLocationMatch(preference: string | null, candidateLocation: string | null): boolean {
+function isLocationMatch(preference: string | null | undefined, candidateLocation: string | null | undefined): boolean {
   // No preference or "doesn't matter"
   if (!preference || preference.toLowerCase() === "doesn't matter" || preference.toLowerCase() === 'any') {
     return true
@@ -630,7 +686,7 @@ function isLocationMatch(preference: string | null, candidateLocation: string | 
 /**
  * Check if diet preferences match
  */
-function isDietMatch(seekerPref: string | null, candidateDiet: string | null): boolean {
+function isDietMatch(seekerPref: string | null | undefined, candidateDiet: string | null | undefined): boolean {
   // No preference
   if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'any') {
     return true
@@ -665,7 +721,7 @@ function isDietMatch(seekerPref: string | null, candidateDiet: string | null): b
 /**
  * Check if gotra requirement is met
  */
-function isGotraMatch(seekerGotra: string | null, seekerPref: string | null, candidateGotra: string | null): boolean {
+function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string | null | undefined, candidateGotra: string | null | undefined): boolean {
   if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'any') {
     return true
   }
@@ -689,7 +745,7 @@ function isGotraMatch(seekerGotra: string | null, seekerPref: string | null, can
  * Check if education requirement is met
  * Supports both level-based (e.g., "Bachelor's or higher") and category-based (e.g., "Medical Professional") matching
  */
-function isEducationMatch(seekerPref: string | null, candidateQual: string | null): boolean {
+function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined): boolean {
   if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'any') {
     return true
   }
@@ -730,9 +786,222 @@ function isEducationMatch(seekerPref: string | null, candidateQual: string | nul
 }
 
 /**
+ * Check if a deal-breaker flag is set
+ */
+function isDealbreaker(flag: boolean | string | undefined): boolean {
+  return flag === true || flag === 'true'
+}
+
+/**
+ * Check if smoking preferences match
+ */
+function isSmokingMatch(seekerPref: string | null | undefined, candidateSmoking: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateSmoking) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateSmoking.toLowerCase()
+
+  // "no" or "never" - only match non-smokers
+  if (pref === 'no' || pref === 'never' || pref === 'non_smoker') {
+    return cand === 'no' || cand === 'never' || cand === 'non_smoker'
+  }
+
+  // "occasional" - match non-smokers or occasional
+  if (pref === 'occasional' || pref === 'socially') {
+    return cand !== 'yes' && cand !== 'regular'
+  }
+
+  return true // "yes" or any other preference matches anyone
+}
+
+/**
+ * Check if drinking preferences match
+ */
+function isDrinkingMatch(seekerPref: string | null | undefined, candidateDrinking: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateDrinking) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateDrinking.toLowerCase()
+
+  // "no" or "never" - only match non-drinkers
+  if (pref === 'no' || pref === 'never' || pref === 'non_drinker') {
+    return cand === 'no' || cand === 'never' || cand === 'non_drinker'
+  }
+
+  // "occasional" or "socially" - match non-drinkers or occasional
+  if (pref === 'occasional' || pref === 'socially' || pref === 'social') {
+    return cand !== 'yes' && cand !== 'regular'
+  }
+
+  return true // "yes" or any other preference matches anyone
+}
+
+/**
+ * Check if marital status preferences match
+ */
+function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMaritalStatus: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateMaritalStatus) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+
+  // Check if "any" or "doesnt_matter" is in the preference list
+  if (pref.includes('doesnt_matter') || pref.includes('any')) {
+    return true
+  }
+
+  const candStatus = candidateMaritalStatus.toLowerCase()
+
+  // Preference could be comma-separated list like "never_married, divorced"
+  const acceptedStatuses = pref.split(',').map(s => s.trim().replace(/\s+/g, '_'))
+
+  return acceptedStatuses.some(status =>
+    candStatus === status ||
+    candStatus.includes(status) ||
+    status.includes(candStatus)
+  )
+}
+
+/**
+ * Check if family values preferences match
+ */
+function isFamilyValuesMatch(seekerPref: string | null | undefined, seekerFamilyValues: string | null | undefined, candidateFamilyValues: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateFamilyValues) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateFamilyValues.toLowerCase()
+
+  // "same_as_mine" - match if same as seeker's family values
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerFamilyValues) return true
+    return seekerFamilyValues.toLowerCase() === cand
+  }
+
+  // Direct match (traditional, moderate, liberal)
+  return pref === cand
+}
+
+/**
+ * Check if family location preferences match
+ */
+function isFamilyLocationMatch(seekerPref: string | null | undefined, seekerFamilyLocation: string | null | undefined, candidateFamilyLocation: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateFamilyLocation) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateFamilyLocation.toLowerCase()
+
+  // "same_as_mine" - match if similar location
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerFamilyLocation) return true
+    // Check for overlap in location strings
+    const seekerLoc = seekerFamilyLocation.toLowerCase()
+    return cand.includes(seekerLoc) || seekerLoc.includes(cand) ||
+           extractUSState(cand) === extractUSState(seekerLoc)
+  }
+
+  // Country-based matching (USA, India, UK, Canada)
+  if (pref === 'usa') {
+    return isUSLocation(candidateFamilyLocation)
+  }
+
+  return cand.includes(pref) || pref.includes(cand)
+}
+
+/**
+ * Check if mother tongue preferences match
+ */
+function isMotherTongueMatch(seekerPref: string | null | undefined, seekerMotherTongue: string | null | undefined, candidateMotherTongue: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateMotherTongue) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateMotherTongue.toLowerCase()
+
+  // "same_as_mine" - match if same mother tongue
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerMotherTongue) return true
+    return seekerMotherTongue.toLowerCase() === cand
+  }
+
+  // Direct match
+  return pref === cand
+}
+
+/**
+ * Check if income preferences match
+ */
+function isIncomeMatch(seekerPref: string | null | undefined, candidateIncome: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateIncome) return true // Can't verify, allow
+
+  // Map income ranges to numeric values for comparison
+  const incomeToValue: Record<string, number> = {
+    'student': 0,
+    'homemaker': 0,
+    '<50k': 25,
+    '50k-75k': 62,
+    '75k-100k': 87,
+    '100k-150k': 125,
+    '150k-200k': 175,
+    '>200k': 250,
+  }
+
+  const prefToMinValue: Record<string, number> = {
+    '50k+': 50,
+    '75k+': 75,
+    '100k+': 100,
+    '150k+': 150,
+    '200k+': 200,
+  }
+
+  const candValue = incomeToValue[candidateIncome.toLowerCase()] ?? 0
+  const minRequired = prefToMinValue[seekerPref.toLowerCase()] ?? 0
+
+  return candValue >= minRequired
+}
+
+/**
+ * Check if sub-community preferences match
+ */
+function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCommunity: string | null | undefined, candidateSubCommunity: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateSubCommunity) return true // Can't verify, allow
+
+  const pref = seekerPref.toLowerCase()
+
+  // "same_as_mine" - match if same sub-community
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerSubCommunity) return true
+    return seekerSubCommunity.toLowerCase() === candidateSubCommunity.toLowerCase()
+  }
+
+  return true
+}
+
+/**
  * Check if a candidate matches the seeker's preferences
- * Returns true if candidate is potentially compatible
- * This is now more lenient - we show profiles and let users decide
+ * Uses deal-breaker flags to determine hard filters vs soft preferences
+ * Returns true if candidate passes all deal-breaker criteria
  */
 export function matchesSeekerPreferences(
   seeker: ProfileForMatching,
@@ -745,49 +1014,145 @@ export function matchesSeekerPreferences(
   const seekerAge = calculateAgeFromDOB(seeker.dateOfBirth)
   const candidateAge = calculateAgeFromDOB(candidate.dateOfBirth)
 
-  // 2. Age check (lenient - only filter if WAY outside range)
-  if (seeker.prefAgeDiff && seeker.prefAgeDiff.toLowerCase() !== "doesn't matter") {
-    const ageRange = parseAgePreference(seeker.prefAgeDiff, seekerAge)
-    if (candidateAge !== null && ageRange !== null) {
-      // Allow 3 years buffer on either side for flexibility
-      if (candidateAge < ageRange.min - 3 || candidateAge > ageRange.max + 3) {
-        return false
+  // 2. Age check - use prefAgeMin/Max if available, otherwise legacy prefAgeDiff
+  const hasAgePref = isPrefSet(seeker.prefAgeMin) || isPrefSet(seeker.prefAgeMax) || isPrefSet(seeker.prefAgeDiff)
+  if (hasAgePref) {
+    let ageMatches = true
+
+    if (candidateAge !== null) {
+      // Use min/max if set
+      if (isPrefSet(seeker.prefAgeMin)) {
+        const minAge = parseInt(seeker.prefAgeMin || '18')
+        if (candidateAge < minAge - 2) ageMatches = false // 2 year buffer
+      }
+      if (isPrefSet(seeker.prefAgeMax)) {
+        const maxAge = parseInt(seeker.prefAgeMax || '99')
+        if (candidateAge > maxAge + 2) ageMatches = false // 2 year buffer
+      }
+      // Legacy support
+      if (!isPrefSet(seeker.prefAgeMin) && !isPrefSet(seeker.prefAgeMax) && isPrefSet(seeker.prefAgeDiff)) {
+        const ageRange = parseAgePreference(seeker.prefAgeDiff, seekerAge)
+        if (ageRange && (candidateAge < ageRange.min - 2 || candidateAge > ageRange.max + 2)) {
+          ageMatches = false
+        }
       }
     }
-  }
 
-  // 3. Location check - HARD FILTER for specific state preferences
-  if (!isLocationMatch(seeker.prefLocation, candidate.currentLocation)) {
-    return false
-  }
-
-  // 4. Caste - use intelligent matching
-  if (!isCasteMatch(seeker.caste, seeker.prefCaste, candidate.caste)) {
-    // Only hard filter if "same caste ONLY" and clearly different caste
-    const prefLower = (seeker.prefCaste || '').toLowerCase()
-    if (prefLower.includes('only')) {
+    // If deal-breaker and doesn't match, reject
+    if (!ageMatches && isDealbreaker(seeker.prefAgeIsDealbreaker)) {
       return false
     }
   }
 
-  // 5. Diet check (can be a dealbreaker for vegetarians)
-  if (!isDietMatch(seeker.prefDiet, candidate.dietaryPreference)) {
-    // Vegetarian preference is usually strict
-    const prefLower = (seeker.prefDiet || '').toLowerCase()
-    if (prefLower.includes('vegetarian') || prefLower === 'veg') {
+  // 3. Marital Status check
+  if (isPrefSet(seeker.prefMaritalStatus)) {
+    const matches = isMaritalStatusMatch(seeker.prefMaritalStatus, candidate.maritalStatus)
+    if (!matches && isDealbreaker(seeker.prefMaritalStatusIsDealbreaker)) {
       return false
     }
   }
 
-  // 6. Gotra check (traditional requirement)
-  if (!isGotraMatch(seeker.gotra, seeker.prefGotra, candidate.gotra)) {
-    return false
+  // 4. Diet check
+  if (isPrefSet(seeker.prefDiet)) {
+    const matches = isDietMatch(seeker.prefDiet, candidate.dietaryPreference)
+    if (!matches && isDealbreaker(seeker.prefDietIsDealbreaker)) {
+      return false
+    }
   }
 
-  // 7. Education check - HARD FILTER for specific preferences
-  // Category-based preferences (medical_masters, eng_masters, etc.) are strict requirements
-  if (!isEducationMatch(seeker.prefQualification, candidate.qualification)) {
-    return false
+  // 5. Smoking check
+  if (isPrefSet(seeker.prefSmoking)) {
+    const matches = isSmokingMatch(seeker.prefSmoking, candidate.smoking)
+    if (!matches && isDealbreaker(seeker.prefSmokingIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 6. Drinking check
+  if (isPrefSet(seeker.prefDrinking)) {
+    const matches = isDrinkingMatch(seeker.prefDrinking, candidate.drinking)
+    if (!matches && isDealbreaker(seeker.prefDrinkingIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 7. Religion/Community check
+  if (isPrefSet(seeker.prefReligion) && seeker.prefReligion?.toLowerCase() !== 'doesnt_matter') {
+    // For now, religion is informational - we don't have religion field in candidate
+    // This would need to be added if religion filtering is required
+  }
+
+  // 8. Community check
+  if (isPrefSet(seeker.prefCommunity)) {
+    const matches = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community)
+    if (!matches && isDealbreaker(seeker.prefCommunityIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 9. Gotra check (always a deal-breaker if "different" is specified)
+  if (isPrefSet(seeker.prefGotra)) {
+    const matches = isGotraMatch(seeker.gotra, seeker.prefGotra, candidate.gotra)
+    if (!matches) {
+      return false // Gotra is always strict
+    }
+  }
+
+  // 10. Location check
+  const locationPref = seeker.prefLocationList || seeker.prefLocation
+  if (isPrefSet(locationPref)) {
+    const matches = isLocationMatch(locationPref, candidate.currentLocation)
+    if (!matches && isDealbreaker(seeker.prefLocationIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 11. Education check
+  if (isPrefSet(seeker.prefQualification)) {
+    const matches = isEducationMatch(seeker.prefQualification, candidate.qualification)
+    if (!matches && isDealbreaker(seeker.prefEducationIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 12. Income check
+  if (isPrefSet(seeker.prefIncome)) {
+    const matches = isIncomeMatch(seeker.prefIncome, candidate.annualIncome)
+    if (!matches && isDealbreaker(seeker.prefIncomeIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 13. Family Values check
+  if (isPrefSet(seeker.prefFamilyValues)) {
+    const matches = isFamilyValuesMatch(seeker.prefFamilyValues, seeker.familyValues, candidate.familyValues)
+    if (!matches && isDealbreaker(seeker.prefFamilyValuesIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 14. Family Location check
+  if (isPrefSet(seeker.prefFamilyLocation)) {
+    const matches = isFamilyLocationMatch(seeker.prefFamilyLocation, seeker.familyLocation, candidate.familyLocation)
+    if (!matches && isDealbreaker(seeker.prefFamilyLocationIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 15. Mother Tongue check
+  if (isPrefSet(seeker.prefMotherTongue)) {
+    const matches = isMotherTongueMatch(seeker.prefMotherTongue, seeker.motherTongue, candidate.motherTongue)
+    if (!matches && isDealbreaker(seeker.prefMotherTongueIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 16. Sub-Community check
+  if (isPrefSet(seeker.prefSubCommunity)) {
+    const matches = isSubCommunityMatch(seeker.prefSubCommunity, seeker.subCommunity, candidate.subCommunity)
+    if (!matches && isDealbreaker(seeker.prefSubCommunityIsDealbreaker)) {
+      return false
+    }
   }
 
   return true
@@ -833,7 +1198,7 @@ export function findMutualMatches<T extends ProfileForMatching>(
 /**
  * Helper to check if preference is set (not empty, "doesn't matter", or "any")
  */
-function isPrefSet(pref: string | null): boolean {
+function isPrefSet(pref: string | null | undefined): boolean {
   if (!pref) return false
   const lower = pref.toLowerCase().trim()
   return lower !== "" && lower !== "doesn't matter" && lower !== "any" && lower !== "no preference"
@@ -977,6 +1342,141 @@ export function calculateMatchScore(
     matched: qualMatched,
     seekerPref: seeker.prefQualification || "Doesn't matter",
     candidateValue: candidate.qualification || 'Not specified'
+  })
+
+  // 8. Marital Status match
+  let maritalMatched = true
+  if (isPrefSet(seeker.prefMaritalStatus)) {
+    totalCriteria++
+    maritalMatched = isMaritalStatusMatch(seeker.prefMaritalStatus, candidate.maritalStatus)
+    if (maritalMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Marital Status',
+    matched: maritalMatched,
+    seekerPref: seeker.prefMaritalStatus || "Doesn't matter",
+    candidateValue: candidate.maritalStatus || 'Not specified'
+  })
+
+  // 9. Smoking match
+  let smokingMatched = true
+  if (isPrefSet(seeker.prefSmoking)) {
+    totalCriteria++
+    smokingMatched = isSmokingMatch(seeker.prefSmoking, candidate.smoking)
+    if (smokingMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Smoking',
+    matched: smokingMatched,
+    seekerPref: seeker.prefSmoking || "Doesn't matter",
+    candidateValue: candidate.smoking || 'Not specified'
+  })
+
+  // 10. Drinking match
+  let drinkingMatched = true
+  if (isPrefSet(seeker.prefDrinking)) {
+    totalCriteria++
+    drinkingMatched = isDrinkingMatch(seeker.prefDrinking, candidate.drinking)
+    if (drinkingMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Drinking',
+    matched: drinkingMatched,
+    seekerPref: seeker.prefDrinking || "Doesn't matter",
+    candidateValue: candidate.drinking || 'Not specified'
+  })
+
+  // 11. Community match
+  let communityMatched = true
+  if (isPrefSet(seeker.prefCommunity)) {
+    totalCriteria++
+    communityMatched = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community)
+    if (communityMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Community',
+    matched: communityMatched,
+    seekerPref: seeker.prefCommunity || "Doesn't matter",
+    candidateValue: candidate.community || 'Not specified'
+  })
+
+  // 12. Income match
+  let incomeMatched = true
+  if (isPrefSet(seeker.prefIncome)) {
+    totalCriteria++
+    incomeMatched = isIncomeMatch(seeker.prefIncome, candidate.annualIncome)
+    if (incomeMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Income',
+    matched: incomeMatched,
+    seekerPref: seeker.prefIncome || "Doesn't matter",
+    candidateValue: candidate.annualIncome || 'Not specified'
+  })
+
+  // 13. Family Values match
+  let familyValuesMatched = true
+  if (isPrefSet(seeker.prefFamilyValues)) {
+    totalCriteria++
+    familyValuesMatched = isFamilyValuesMatch(seeker.prefFamilyValues, seeker.familyValues, candidate.familyValues)
+    if (familyValuesMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Family Values',
+    matched: familyValuesMatched,
+    seekerPref: seeker.prefFamilyValues || "Doesn't matter",
+    candidateValue: candidate.familyValues || 'Not specified'
+  })
+
+  // 14. Family Location match
+  let familyLocationMatched = true
+  if (isPrefSet(seeker.prefFamilyLocation)) {
+    totalCriteria++
+    familyLocationMatched = isFamilyLocationMatch(seeker.prefFamilyLocation, seeker.familyLocation, candidate.familyLocation)
+    if (familyLocationMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Family Location',
+    matched: familyLocationMatched,
+    seekerPref: seeker.prefFamilyLocation || "Doesn't matter",
+    candidateValue: candidate.familyLocation || 'Not specified'
+  })
+
+  // 15. Mother Tongue match
+  let motherTongueMatched = true
+  if (isPrefSet(seeker.prefMotherTongue)) {
+    totalCriteria++
+    motherTongueMatched = isMotherTongueMatch(seeker.prefMotherTongue, seeker.motherTongue, candidate.motherTongue)
+    if (motherTongueMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Mother Tongue',
+    matched: motherTongueMatched,
+    seekerPref: seeker.prefMotherTongue || "Doesn't matter",
+    candidateValue: candidate.motherTongue || 'Not specified'
+  })
+
+  // 16. Sub-Community match
+  let subCommunityMatched = true
+  if (isPrefSet(seeker.prefSubCommunity)) {
+    totalCriteria++
+    subCommunityMatched = isSubCommunityMatch(seeker.prefSubCommunity, seeker.subCommunity, candidate.subCommunity)
+    if (subCommunityMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Sub-Community',
+    matched: subCommunityMatched,
+    seekerPref: seeker.prefSubCommunity || "Doesn't matter",
+    candidateValue: candidate.subCommunity || 'Not specified'
   })
 
   // Calculate percentage (only from criteria where preference was set)

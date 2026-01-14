@@ -14,7 +14,8 @@ import {
   LifestyleSection,
   AboutMeSection,
   ReligionSection,
-  PreferencesUnifiedSection,
+  PreferencesPage1Section,
+  PreferencesPage2Section,
 } from './ProfileFormSections'
 
 interface FindMatchModalProps {
@@ -43,16 +44,17 @@ const SECTION_TITLES: Record<string, string> = {
   family: 'Family Details',
   lifestyle: 'Lifestyle',
   aboutme: 'About Me',
-  preferences: 'Partner Preferences',
+  preferences_1: 'Partner Preferences',
+  preferences_2: 'More Preferences',
   referral: 'How Did You Find Us?',
   photos: 'Add Your Photos',
 }
 
-// Steps for user: basics → location → religion → family → lifestyle → aboutme → preferences → account → photos
-const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'account', 'photos']
+// Steps for user: basics → location → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → account → photos
+const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'account', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences', 'admin_account', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'admin_account', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -122,8 +124,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     formData.occupation
   )
 
-  // Family section validation - no required fields now
-  const isFamilyComplete = true
+  // Family section validation - Family Location and Family Values are required
+  const familyLocationValue = formData.familyLocation as string || ''
+  const familyValuesValue = formData.familyValues as string || ''
+  const isFamilyComplete = familyLocationValue !== '' && familyValuesValue !== ''
 
   // Lifestyle section validation - Diet, Smoking, Drinking are required
   const dietValue = formData.dietaryPreference as string || ''
@@ -441,7 +445,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         )}
 
         {/* Info Banner - Different message for preferences section */}
-        {currentSection !== 'preferences' && (
+        {currentSection !== 'preferences_1' && currentSection !== 'preferences_2' && (
           <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
             <p className="text-primary-800 text-xs">
               <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
@@ -637,10 +641,18 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 7: Partner Preferences (with deal-breaker toggles) */}
-          {currentSection === 'preferences' && (
+          {/* Step 7: Partner Preferences Page 1 (Core: Age, Height, Marital Status, Religion, Lifestyle) */}
+          {currentSection === 'preferences_1' && (
             <div className="space-y-4">
-              <PreferencesUnifiedSection {...sectionProps} />
+              <PreferencesPage1Section {...sectionProps} />
+              {renderContinueButton(handleSectionContinue)}
+            </div>
+          )}
+
+          {/* Step 8: Partner Preferences Page 2 (Additional: Location, Education, Family, Other) */}
+          {currentSection === 'preferences_2' && (
+            <div className="space-y-4">
+              <PreferencesPage2Section {...sectionProps} />
               {renderContinueButton(handleSectionContinue)}
             </div>
           )}
