@@ -38,7 +38,7 @@ const SECTION_TITLES: Record<string, string> = {
   basics: 'Basic Info',
   account: 'Create Account',
   admin_account: 'Account Details',
-  location_education: 'Location & Background',
+  location_education: 'Education & Career',
   religion: 'Religion & Astro',
   family: 'Family Details',
   lifestyle: 'Lifestyle',
@@ -108,16 +108,16 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   // Either dateOfBirth or age is required
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
-  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus)
+  // Basic Info now includes Mother Tongue
+  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus && formData.motherTongue)
 
-  // Location & Education section validation (combined) - now includes motherTongue
+  // Education & Career section validation (includes location fields)
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
   const isLocationEducationComplete = !!(
     formData.country &&
     formData.grewUpIn &&
     formData.citizenship &&
     (!isUSALocation || formData.zipCode) && // zipCode only required for USA
-    formData.motherTongue && // Mother tongue is required (moved from Family)
     formData.qualification &&
     formData.occupation
   )
@@ -126,11 +126,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const isFamilyComplete = true
 
   // Lifestyle section validation - Diet, Smoking, Drinking are required
-  const isLifestyleComplete = !!(
-    formData.dietaryPreference &&
-    formData.smoking &&
-    formData.drinking
-  )
+  const dietValue = formData.dietaryPreference as string || ''
+  const smokingValue = formData.smoking as string || ''
+  const drinkingValue = formData.drinking as string || ''
+  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== ''
 
   // About Me section validation (LinkedIn is required)
   const linkedinUrl = formData.linkedinProfile as string || ''

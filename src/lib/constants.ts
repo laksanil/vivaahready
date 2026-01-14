@@ -661,7 +661,7 @@ export const GOTRA_OPTIONS = [
   "Galvasaya",
   "Garga",
   "Gautama",
-  "Harita",
+  "Harithasa",
   "Jamadagni",
   "Jatukarna",
   "Kalabodhana",
