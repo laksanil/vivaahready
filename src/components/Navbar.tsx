@@ -83,15 +83,19 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href={buildUrl('/feed')} className="text-gray-600 hover:text-primary-600 transition-colors">
-              My Matches
-            </Link>
-            <Link href={buildUrl('/connections')} className="text-gray-600 hover:text-primary-600 transition-colors">
-              Connections
-            </Link>
-            <Link href={buildUrl('/messages')} className="text-gray-600 hover:text-primary-600 transition-colors">
-              Messages
-            </Link>
+            {session && (
+              <>
+                <Link href={buildUrl('/feed')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                  My Matches
+                </Link>
+                <Link href={buildUrl('/connections')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                  Connections
+                </Link>
+                <Link href={buildUrl('/messages')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                  Messages
+                </Link>
+              </>
+            )}
             <Link href="/about" className="text-gray-600 hover:text-primary-600 transition-colors">
               About Us
             </Link>
@@ -212,27 +216,31 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-4 space-y-4">
-            <Link
-              href={buildUrl('/feed')}
-              className="block text-gray-600 hover:text-primary-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              My Matches
-            </Link>
-            <Link
-              href={buildUrl('/connections')}
-              className="block text-gray-600 hover:text-primary-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Connections
-            </Link>
-            <Link
-              href={buildUrl('/messages')}
-              className="block text-gray-600 hover:text-primary-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Messages
-            </Link>
+            {session && (
+              <>
+                <Link
+                  href={buildUrl('/feed')}
+                  className="block text-gray-600 hover:text-primary-600"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  My Matches
+                </Link>
+                <Link
+                  href={buildUrl('/connections')}
+                  className="block text-gray-600 hover:text-primary-600"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Connections
+                </Link>
+                <Link
+                  href={buildUrl('/messages')}
+                  className="block text-gray-600 hover:text-primary-600"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Messages
+                </Link>
+              </>
+            )}
             <Link
               href="/about"
               className="block text-gray-600 hover:text-primary-600"
