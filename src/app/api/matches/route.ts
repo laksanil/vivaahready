@@ -190,6 +190,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if admin is viewing as another user
+    const { searchParams } = new URL(request.url)
+    const viewAsUserId = await getAdminViewUserId(searchParams)
+    const currentUserId = viewAsUserId || session.user.id
+
     const { receiverId, message } = await request.json()
 
     if (!receiverId) {
@@ -200,7 +205,7 @@ export async function POST(request: Request) {
     const existingMatch = await prisma.match.findUnique({
       where: {
         senderId_receiverId: {
-          senderId: session.user.id,
+          senderId: currentUserId,
           receiverId,
         },
       },
@@ -213,7 +218,7 @@ export async function POST(request: Request) {
     // Create match
     const match = await prisma.match.create({
       data: {
-        senderId: session.user.id,
+        senderId: currentUserId,
         receiverId,
         message,
         status: 'pending',

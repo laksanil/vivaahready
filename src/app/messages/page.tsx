@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { MessageCircle, Loader2, ChevronLeft, Search } from 'lucide-react'
 import MessageModal from '@/components/MessageModal'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface Conversation {
   partnerId: string
@@ -18,9 +19,10 @@ interface Conversation {
   isLastMessageFromMe: boolean
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { buildApiUrl, viewAsUser } = useImpersonation()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -53,7 +55,7 @@ export default function MessagesPage() {
   const fetchConversations = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/messages')
+      const response = await fetch(buildApiUrl('/api/messages'))
       if (response.ok) {
         const data = await response.json()
         setConversations(data.conversations || [])
@@ -240,5 +242,17 @@ export default function MessagesPage() {
         recipientPhotoUrls={messageModal.recipientPhotoUrls}
       />
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      </div>
+    }>
+      <MessagesPageContent />
+    </Suspense>
   )
 }

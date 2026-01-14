@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
 
 interface PendingProfile {
@@ -24,6 +25,7 @@ interface PendingProfile {
   drivePhotosLink: string | null
   referralSource: string | null
   user: {
+    id: string
     name: string
     email: string
     phone: string | null
@@ -384,14 +386,16 @@ export default function AdminApprovalsPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 lg:flex-shrink-0">
-                  <Link
-                    href={`/profile?id=${profile.id}`}
+                  <a
+                    href={adminLinks.profile(profile.id, profile.user.id)}
                     target="_blank"
-                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors"
                   >
                     <Eye className="h-4 w-4" />
-                    View & Edit
-                  </Link>
+                    View as User
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                   <button
                     onClick={() => handleApprove(profile.id)}
                     disabled={actionLoading === profile.id}

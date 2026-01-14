@@ -17,7 +17,9 @@ import {
   RefreshCw,
   User,
   Filter,
+  ExternalLink,
 } from 'lucide-react'
+import { adminLinks } from '@/lib/adminLinks'
 
 interface Report {
   id: string
@@ -310,12 +312,15 @@ export default function AdminReportsPage() {
                           <p className="text-sm text-gray-500">{report.reportedUser.email}</p>
                         </div>
                         {report.reportedUser.profile && (
-                          <Link
-                            href={`/admin/profiles/${report.reportedUser.profile.id}/edit`}
-                            className="text-sm text-primary-600 hover:text-primary-700"
+                          <a
+                            href={adminLinks.profile(report.reportedUser.profile.id, report.reportedUser.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-purple-600 hover:text-purple-700 inline-flex items-center gap-1"
                           >
-                            View Profile
-                          </Link>
+                            View as User
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
                         )}
                       </div>
                     </div>

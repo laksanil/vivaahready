@@ -2,18 +2,18 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Heart,
   Loader2,
-  Users,
   RotateCcw,
   Sparkles,
   Search,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface FeedProfile extends ProfileData {
   approvalStatus?: string
@@ -22,14 +22,11 @@ interface FeedProfile extends ProfileData {
 function FeedPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const viewAsUser = searchParams.get('viewAsUser')
+  const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
 
   const [profiles, setProfiles] = useState<FeedProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingProfileId, setLoadingProfileId] = useState<string | null>(null)
-  const [isAdminView, setIsAdminView] = useState(false)
-  const [viewingUserName, setViewingUserName] = useState<string | null>(null)
   const [, setLikedYouCount] = useState(0)
   const [userStatus, setUserStatus] = useState<{
     isApproved: boolean
@@ -48,15 +45,12 @@ function FeedPageContent() {
     if (session) {
       fetchProfiles()
     }
-  }, [session])
+  }, [session, viewAsUser])
 
   const fetchProfiles = async () => {
     setLoading(true)
     try {
-      const url = viewAsUser
-        ? `/api/matches/auto?viewAsUser=${viewAsUser}`
-        : '/api/matches/auto'
-      const response = await fetch(url)
+      const response = await fetch(buildApiUrl('/api/matches/auto'))
       const data = await response.json()
 
       setProfiles(data.freshMatches || [])
@@ -64,10 +58,6 @@ function FeedPageContent() {
 
       if (data.userStatus) {
         setUserStatus(data.userStatus)
-      }
-      if (data.isAdminView) {
-        setIsAdminView(true)
-        setViewingUserName(data.viewingUserName || null)
       }
     } catch (error) {
       console.error('Error fetching profiles:', error)
@@ -80,7 +70,7 @@ function FeedPageContent() {
     setLoadingProfileId(profile.id)
 
     try {
-      const response = await fetch('/api/matches', {
+      const response = await fetch(buildApiUrl('/api/matches'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: profile.user.id }),
@@ -107,7 +97,7 @@ function FeedPageContent() {
     setLoadingProfileId(profile.id)
 
     try {
-      await fetch('/api/matches/decline', {
+      await fetch(buildApiUrl('/api/matches/decline'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ declinedUserId: profile.userId }),
@@ -166,31 +156,6 @@ function FeedPageContent() {
   return (
     <div className="min-h-screen bg-gray-50 py-6">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        {/* Admin View Banner */}
-        {isAdminView && viewingUserName && (
-          <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-4 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">ADMIN VIEW MODE</h3>
-                  <p className="text-purple-100 text-sm">
-                    Viewing as <span className="font-bold text-white">{viewingUserName}</span>
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/admin/matches"
-                className="px-3 py-1.5 text-sm bg-white/20 text-white rounded-lg hover:bg-white/30"
-              >
-                ← Back to Admin
-              </Link>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">

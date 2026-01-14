@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 // PATCH - Update match status (accept/reject)
 export async function PATCH(
@@ -14,6 +15,13 @@ export async function PATCH(
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
 
     const { id } = await params
     const body = await request.json()
@@ -60,7 +68,7 @@ export async function PATCH(
     }
 
     // Verify the current user is the receiver
-    if (match.receiverId !== session.user.id) {
+    if (match.receiverId !== currentUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -80,7 +88,7 @@ export async function PATCH(
       const reverseInterest = await prisma.match.findUnique({
         where: {
           senderId_receiverId: {
-            senderId: session.user.id,
+            senderId: currentUserId,
             receiverId: match.senderId,
           }
         }
@@ -136,6 +144,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
+
     const { id } = await params
 
     const match = await prisma.match.findUnique({
@@ -159,7 +174,7 @@ export async function GET(
     }
 
     // Verify the current user is either sender or receiver
-    if (match.senderId !== session.user.id && match.receiverId !== session.user.id) {
+    if (match.senderId !== currentUserId && match.receiverId !== currentUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

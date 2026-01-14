@@ -1,30 +1,20 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
 
 export const dynamic = 'force-dynamic'
 
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
-
 // Check if request is from admin viewing as another user
-async function getAdminViewUserId(request: Request): Promise<string | null> {
+function getAdminViewUserId(request: Request, session: any): string | null {
   const { searchParams } = new URL(request.url)
   const viewAsUserId = searchParams.get('viewAsUser')
 
   if (!viewAsUserId) return null
 
-  // Verify admin access
-  const adminSession = cookies().get('admin_session')
-  if (adminSession?.value === ADMIN_TOKEN) {
-    return viewAsUserId
-  }
-
-  const session = await getServerSession(authOptions)
-  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
+  // Verify admin access via session
+  if (session?.user?.isAdmin) {
     return viewAsUserId
   }
 
@@ -41,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     // Check if admin is viewing as another user
-    const viewAsUserId = await getAdminViewUserId(request)
+    const viewAsUserId = getAdminViewUserId(request, session)
     const targetUserId = viewAsUserId || session.user.id
     const isAdminView = !!viewAsUserId
 

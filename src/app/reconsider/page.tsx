@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface DeclinedProfile {
   id: string
@@ -42,6 +43,7 @@ interface DeclinedProfile {
 function ReconsiderPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { buildApiUrl, buildUrl } = useImpersonation()
 
   const [profiles, setProfiles] = useState<DeclinedProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,12 +59,13 @@ function ReconsiderPageContent() {
     if (session) {
       fetchDeclinedProfiles()
     }
-  }, [session])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, buildApiUrl])
 
   const fetchDeclinedProfiles = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/matches/decline')
+      const response = await fetch(buildApiUrl('/api/matches/decline'))
       const data = await response.json()
       setProfiles(data.profiles || [])
     } catch (error) {
@@ -75,7 +78,7 @@ function ReconsiderPageContent() {
   const handleReconsider = async (declinedUserId: string) => {
     setReconsidering(declinedUserId)
     try {
-      await fetch(`/api/matches/decline?declinedUserId=${declinedUserId}`, {
+      await fetch(buildApiUrl(`/api/matches/decline?declinedUserId=${declinedUserId}`), {
         method: 'DELETE',
       })
       // Remove from local state

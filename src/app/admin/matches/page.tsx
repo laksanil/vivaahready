@@ -11,6 +11,7 @@ import {
   ArrowUpDown, Filter, Users, XCircle, Flag, Eye,
   ExternalLink,
 } from 'lucide-react'
+import { adminLinks } from '@/lib/adminLinks'
 
 interface ProfileStats {
   id: string
@@ -402,36 +403,41 @@ export default function AdminMatchesPage() {
                               {profile.gender === 'female' ? 'B' : 'G'}
                             </span>
                           </div>
-                          <Link
-                            href={`/profile/${profile.id}`}
-                            className="font-medium text-primary-600 hover:text-primary-700 hover:underline"
+                          <a
+                            href={adminLinks.profile(profile.id, profile.user.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
                           >
                             {profile.user.name}
-                          </Link>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
                           <span className="text-xs text-gray-500">{profile.currentLocation || '-'}</span>
                         </div>
                       </td>
                       {/* Potential Matches */}
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/feed?viewAsUser=${profile.user.id}`}
+                        <a
+                          href={adminLinks.feed(profile.user.id)}
                           target="_blank"
+                          rel="noopener noreferrer"
                           className="flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:underline"
                         >
                           <span className="font-semibold">{profile.stats.potentialMatches}</span>
                           <ExternalLink className="h-3 w-3" />
-                        </Link>
+                        </a>
                       </td>
                       {/* Interests Received */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
-                          <Link
-                            href={`/feed?viewAsUser=${profile.user.id}`}
+                          <a
+                            href={adminLinks.feed(profile.user.id)}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
                           >
                             {profile.stats.interestsReceived.total}
-                          </Link>
+                          </a>
                           <div className="flex gap-1 text-xs">
                             <span className="text-yellow-600">{profile.stats.interestsReceived.pending}P</span>
                             <span className="text-green-600">{profile.stats.interestsReceived.accepted}A</span>
@@ -442,13 +448,14 @@ export default function AdminMatchesPage() {
                       {/* Interests Sent */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
-                          <Link
-                            href={`/feed?viewAsUser=${profile.user.id}`}
+                          <a
+                            href={adminLinks.feed(profile.user.id)}
                             target="_blank"
+                            rel="noopener noreferrer"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
                           >
                             {profile.stats.interestsSent.total}
-                          </Link>
+                          </a>
                           <div className="flex gap-1 text-xs">
                             <span className="text-yellow-600">{profile.stats.interestsSent.pending}P</span>
                             <span className="text-green-600">{profile.stats.interestsSent.accepted}A</span>
@@ -458,23 +465,25 @@ export default function AdminMatchesPage() {
                       </td>
                       {/* Mutual Matches */}
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/connections?viewAsUser=${profile.user.id}`}
+                        <a
+                          href={adminLinks.connections(profile.user.id)}
                           target="_blank"
+                          rel="noopener noreferrer"
                           className={`font-semibold hover:underline ${profile.stats.mutualMatches > 0 ? 'text-pink-600 hover:text-pink-700' : 'text-gray-400'}`}
                         >
                           {profile.stats.mutualMatches}
-                        </Link>
+                        </a>
                       </td>
                       {/* Declined */}
                       <td className="px-4 py-3">
-                        <Link
-                          href={`/reconsider?viewAsUser=${profile.user.id}`}
+                        <a
+                          href={adminLinks.reconsider(profile.user.id)}
                           target="_blank"
+                          rel="noopener noreferrer"
                           className={`font-semibold hover:underline ${profile.stats.declined > 0 ? 'text-orange-600 hover:text-orange-700' : 'text-gray-400'}`}
                         >
                           {profile.stats.declined}
-                        </Link>
+                        </a>
                       </td>
                       {/* Reports */}
                       <td className="px-4 py-3">
@@ -499,20 +508,24 @@ export default function AdminMatchesPage() {
                       {/* Actions */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link
-                            href={`/profile/${profile.id}`}
+                          <a
+                            href={adminLinks.feed(profile.user.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 text-purple-500 hover:text-purple-600 hover:bg-purple-50 rounded"
+                            title="View as this user"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </a>
+                          <a
+                            href={adminLinks.profile(profile.id, profile.user.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
                             title="View Profile"
                           >
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            href={`/admin/profiles/${profile.id}`}
-                            className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
-                            title="Edit Profile"
-                          >
                             <ExternalLink className="h-4 w-4" />
-                          </Link>
+                          </a>
                         </div>
                       </td>
                     </tr>

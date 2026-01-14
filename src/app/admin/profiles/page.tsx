@@ -8,8 +8,9 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Search, Download, Trash2,
   ChevronLeft, ChevronRight, CheckCircle, XCircle,
-  Loader2, RefreshCw, Ban, UserCheck, Clock, ShieldCheck, ImageOff,
+  Loader2, RefreshCw, Ban, UserCheck, Clock, ShieldCheck, ImageOff, ExternalLink, Eye
 } from 'lucide-react'
+import { adminLinks } from '@/lib/adminLinks'
 
 interface Profile {
   id: string
@@ -348,12 +349,15 @@ function AdminProfilesContent() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div>
-                            <Link
-                              href={`/profile/${profile.id}`}
-                              className="font-medium text-primary-600 hover:text-primary-700 hover:underline"
+                            <a
+                              href={adminLinks.profile(profile.id, profile.user.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
                             >
                               {profile.user.name}
-                            </Link>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                             <div className="text-xs text-gray-500">{profile.user.email}</div>
                           </div>
                           {!hasPhotos(profile) && (
@@ -394,6 +398,17 @@ function AdminProfilesContent() {
                             <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
                           ) : (
                             <>
+                              {/* View as User */}
+                              <a
+                                href={adminLinks.feed(profile.user.id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 text-purple-500 hover:bg-purple-50 rounded"
+                                title="View as this user"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </a>
+
                               {/* Verify Toggle */}
                               <button
                                 onClick={() => handleVerify(profile.id, !profile.isVerified)}

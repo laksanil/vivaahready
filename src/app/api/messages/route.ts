@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
 // GET - Get all conversations (grouped by user)
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -14,7 +15,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = targetUser.userId
 
     // Get all messages where user is sender or receiver
     const messages = await prisma.message.findMany({
@@ -110,10 +116,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized - please log in' }, { status: 401 })
     }
 
-    const senderId = session.user.id
-    if (!senderId) {
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'User ID not found in session' }, { status: 401 })
     }
+    const senderId = targetUser.userId
 
     const body = await request.json()
     const { receiverId, content } = body

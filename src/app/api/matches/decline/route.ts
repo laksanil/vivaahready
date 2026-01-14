@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 // POST - Decline a profile (add to declined list)
 export async function POST(request: NextRequest) {
@@ -11,6 +12,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
+
     const { declinedUserId } = await request.json()
 
     if (!declinedUserId) {
@@ -18,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Can't decline yourself
-    if (declinedUserId === session.user.id) {
+    if (declinedUserId === currentUserId) {
       return NextResponse.json({ error: 'Cannot decline yourself' }, { status: 400 })
     }
 
@@ -26,13 +34,13 @@ export async function POST(request: NextRequest) {
     const declined = await prisma.declinedProfile.upsert({
       where: {
         userId_declinedUserId: {
-          userId: session.user.id,
+          userId: currentUserId,
           declinedUserId: declinedUserId,
         },
       },
       update: {}, // No update needed if exists
       create: {
-        userId: session.user.id,
+        userId: currentUserId,
         declinedUserId: declinedUserId,
       },
     })
@@ -52,6 +60,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
+
     const { searchParams } = new URL(request.url)
     const declinedUserId = searchParams.get('declinedUserId')
 
@@ -62,7 +77,7 @@ export async function DELETE(request: NextRequest) {
     // Delete the declined profile record
     await prisma.declinedProfile.deleteMany({
       where: {
-        userId: session.user.id,
+        userId: currentUserId,
         declinedUserId: declinedUserId,
       },
     })
@@ -75,17 +90,24 @@ export async function DELETE(request: NextRequest) {
 }
 
 // GET - Get all declined profiles for the current user
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
+
     // Get all declined profiles with their profile data
     const declinedRecords = await prisma.declinedProfile.findMany({
       where: {
-        userId: session.user.id,
+        userId: currentUserId,
       },
       orderBy: {
         createdAt: 'desc',

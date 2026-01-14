@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 // Process a deletion request (approve/reject/complete)
 export async function PATCH(
@@ -8,10 +8,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies()
-    const adminCookie = cookieStore.get('admin_session')
-
-    if (!adminCookie?.value) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }

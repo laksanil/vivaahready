@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,13 @@ export async function GET(request: Request) {
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { userId: currentUserId } = targetUser
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'received'
@@ -34,7 +42,7 @@ export async function GET(request: Request) {
       const sentInterest = await prisma.match.findUnique({
         where: {
           senderId_receiverId: {
-            senderId: session.user.id,
+            senderId: currentUserId,
             receiverId: targetProfile.userId,
           }
         }
@@ -44,7 +52,7 @@ export async function GET(request: Request) {
         where: {
           senderId_receiverId: {
             senderId: targetProfile.userId,
-            receiverId: session.user.id,
+            receiverId: currentUserId,
           }
         }
       })
@@ -67,7 +75,7 @@ export async function GET(request: Request) {
       // Get all interests received (pending only by default)
       const statusFilter = searchParams.get('status') // 'pending', 'rejected', 'accepted', or 'all'
 
-      const whereClause: any = { receiverId: session.user.id }
+      const whereClause: any = { receiverId: currentUserId }
       if (statusFilter && statusFilter !== 'all') {
         whereClause.status = statusFilter
       }
@@ -108,7 +116,7 @@ export async function GET(request: Request) {
           const mySentInterest = await prisma.match.findUnique({
             where: {
               senderId_receiverId: {
-                senderId: session.user.id,
+                senderId: currentUserId,
                 receiverId: interest.senderId,
               }
             }
@@ -129,7 +137,7 @@ export async function GET(request: Request) {
     if (type === 'sent') {
       // Get all interests sent
       const allSentInterests = await prisma.match.findMany({
-        where: { senderId: session.user.id },
+        where: { senderId: currentUserId },
         orderBy: { createdAt: 'desc' },
         include: {
           receiver: {
@@ -159,7 +167,7 @@ export async function GET(request: Request) {
           where: {
             senderId_receiverId: {
               senderId: interest.receiverId,
-              receiverId: session.user.id,
+              receiverId: currentUserId,
             }
           }
         })
@@ -189,6 +197,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { userId: currentUserId } = targetUser
+
     const body = await request.json()
     const { profileId, message } = body
 
@@ -198,7 +213,7 @@ export async function POST(request: Request) {
 
     // Get current user's profile to check if approved
     const myProfile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: currentUserId },
     })
 
     if (!myProfile || myProfile.approvalStatus !== 'approved') {
@@ -225,7 +240,7 @@ export async function POST(request: Request) {
     const existingInterest = await prisma.match.findUnique({
       where: {
         senderId_receiverId: {
-          senderId: session.user.id,
+          senderId: currentUserId,
           receiverId: targetProfile.userId,
         }
       }
@@ -243,7 +258,7 @@ export async function POST(request: Request) {
       where: {
         senderId_receiverId: {
           senderId: targetProfile.userId,
-          receiverId: session.user.id,
+          receiverId: currentUserId,
         }
       }
     })
@@ -258,7 +273,7 @@ export async function POST(request: Request) {
       // Create our interest as accepted too
       const newInterest = await prisma.match.create({
         data: {
-          senderId: session.user.id,
+          senderId: currentUserId,
           receiverId: targetProfile.userId,
           message,
           status: 'accepted',
@@ -282,7 +297,7 @@ export async function POST(request: Request) {
     // Create new interest (pending)
     const newInterest = await prisma.match.create({
       data: {
-        senderId: session.user.id,
+        senderId: currentUserId,
         receiverId: targetProfile.userId,
         message,
         status: 'pending',
@@ -308,6 +323,13 @@ export async function PATCH(request: Request) {
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { userId: currentUserId } = targetUser
 
     const body = await request.json()
     const { interestId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
@@ -360,8 +382,8 @@ export async function PATCH(request: Request) {
     }
 
     // Validate user can perform this action
-    const isReceiver = interest.receiverId === session.user.id
-    const isSender = interest.senderId === session.user.id
+    const isReceiver = interest.receiverId === currentUserId
+    const isSender = interest.senderId === currentUserId
 
     if (action === 'accept' || action === 'reject' || action === 'reconsider') {
       // Only receiver can accept/reject/reconsider

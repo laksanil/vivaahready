@@ -1,24 +1,22 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-// Admin credentials - in production, use environment variables
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'usdesivivaahL123'
+// Hardcoded admin credentials - change these!
+const ADMIN_USERNAME = 'admin'
+const ADMIN_PASSWORD = 'vivaah2024'
+const ADMIN_TOKEN = 'vivaah_admin_session_token_2024'
 
-// Simple token for admin session
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // Set admin cookie
+      // Set admin session cookie
       cookies().set('admin_session', ADMIN_TOKEN, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24, // 24 hours
+        maxAge: 60 * 60 * 24 * 7, // 7 days
         path: '/',
       })
 
@@ -27,6 +25,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Login failed' }, { status: 500 })
   }
 }

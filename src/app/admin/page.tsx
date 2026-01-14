@@ -6,8 +6,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Users, UserCheck, Heart, Clock, Ban, AlertTriangle,
-  ShieldCheck, ShieldOff, ArrowRight, Loader2
+  ShieldCheck, ShieldOff, ArrowRight, Loader2, ExternalLink
 } from 'lucide-react'
+import { adminLinks } from '@/lib/adminLinks'
 
 interface Stats {
   totalProfiles: number
@@ -304,9 +305,15 @@ export default function AdminDashboard() {
                     <span className="font-mono text-sm text-gray-600">{profile.odNumber || '-'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <Link href={`/profile/${profile.id}`} className="font-medium text-primary-600 hover:text-primary-700 hover:underline">
+                    <a
+                      href={adminLinks.profile(profile.id, profile.user?.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                    >
                       {profile.user?.name || 'N/A'}
-                    </Link>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${

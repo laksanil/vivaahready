@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { cookies } from 'next/headers'
-
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 function formatValue(value: string | null | undefined): string {
   if (!value) return ''
@@ -138,13 +133,8 @@ function generateAboutMeSummary(profile: any, userName: string): string {
 
 export async function POST(request: Request) {
   try {
-    // Check admin access
-    const session = await getServerSession(authOptions)
-    const adminSession = cookies().get('admin_session')
-    const isAdminViaCookie = adminSession?.value === ADMIN_TOKEN
-    const isAdminViaEmail = session?.user?.email && ADMIN_EMAILS.includes(session.user.email)
-
-    if (!isAdminViaCookie && !isAdminViaEmail) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -201,13 +191,8 @@ export async function POST(request: Request) {
 // GET endpoint to preview what would be generated
 export async function GET(request: Request) {
   try {
-    // Check admin access
-    const session = await getServerSession(authOptions)
-    const adminSession = cookies().get('admin_session')
-    const isAdminViaCookie = adminSession?.value === ADMIN_TOKEN
-    const isAdminViaEmail = session?.user?.email && ADMIN_EMAILS.includes(session.user.email)
-
-    if (!isAdminViaCookie && !isAdminViaEmail) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

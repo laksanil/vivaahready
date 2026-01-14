@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 export async function GET() {
-  const adminSession = cookies().get('admin_session')
+  const isAdmin = await isAdminAuthenticated()
 
-  if (adminSession?.value === ADMIN_TOKEN) {
+  if (isAdmin) {
     return NextResponse.json({ authenticated: true })
   }
 

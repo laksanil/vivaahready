@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 // POST - Suspend or unsuspend a profile
 export async function POST(request: Request) {
   try {
-    // Check admin authentication
-    const cookieStore = await cookies()
-    const adminSession = cookieStore.get('admin_session')
-
-    if (!adminSession || adminSession.value !== ADMIN_TOKEN) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

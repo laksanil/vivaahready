@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
-  Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle, Monitor,
+  Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
   UserPlus, Trash2
 } from 'lucide-react'
 
@@ -24,49 +24,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return
     }
 
-    checkAuth()
-  }, [pathname, isLoginPage])
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/admin/check')
-      if (response.ok) {
-        setIsAuthenticated(true)
-      } else {
+    // Check admin auth via API
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/admin/check')
+        setIsAuthenticated(response.ok)
+        if (!response.ok) {
+          router.push('/admin/login')
+        }
+      } catch {
         setIsAuthenticated(false)
         router.push('/admin/login')
       }
-    } catch {
-      setIsAuthenticated(false)
-      router.push('/admin/login')
     }
-  }
+
+    checkAuth()
+  }, [pathname, router, isLoginPage])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
       await fetch('/api/admin/logout', { method: 'POST' })
       router.push('/admin/login')
-      router.refresh()
     } catch {
-      console.error('Logout failed')
-    } finally {
       setIsLoggingOut(false)
     }
   }
 
-  // Show loading state while checking auth
-  if (isAuthenticated === null && !isLoginPage) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    )
-  }
-
-  // For login page, just render children without layout
+  // Show login page without layout
   if (isLoginPage) {
     return <>{children}</>
+  }
+
+  // Show loading state while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    )
   }
 
   // Not authenticated
@@ -162,15 +158,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <UserPlus className="h-5 w-5 mr-3" />
               Create Profile
-            </Link>
-            <Link
-              href="/admin/testing"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/testing' ? 'bg-gray-800 text-white' : ''
-              }`}
-            >
-              <Monitor className="h-5 w-5 mr-3" />
-              Testing Sandbox
             </Link>
           </nav>
 

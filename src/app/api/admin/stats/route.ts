@@ -1,24 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { cookies } from 'next/headers'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
-
-// Helper to check admin authentication (either via cookie or NextAuth session)
-async function isAdminAuthenticated(): Promise<boolean> {
-  const adminSession = cookies().get('admin_session')
-  if (adminSession?.value === ADMIN_TOKEN) {
-    return true
-  }
-  const session = await getServerSession(authOptions)
-  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
-    return true
-  }
-  return false
-}
+import { isAdminAuthenticated } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 

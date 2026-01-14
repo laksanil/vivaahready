@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2 } from 'lucide-react'
 import DeleteProfileModal from './DeleteProfileModal'
@@ -16,6 +16,13 @@ export function Navbar() {
   const searchParams = useSearchParams()
   const viewAsUser = searchParams.get('viewAsUser')
   const [viewedUserName, setViewedUserName] = useState<string | null>(null)
+
+  // Helper to build URLs with viewAsUser preserved
+  const buildUrl = useCallback((path: string) => {
+    if (!viewAsUser) return path
+    const separator = path.includes('?') ? '&' : '?'
+    return `${path}${separator}viewAsUser=${viewAsUser}`
+  }, [viewAsUser])
 
   // Fetch viewed user's name when in admin view mode
   useEffect(() => {
@@ -42,11 +49,31 @@ export function Navbar() {
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
+      {/* Admin View Banner */}
+      {isAdminViewMode && (
+        <div className="bg-purple-600 text-white px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4" />
+              <span className="text-sm">
+                Viewing as: <strong>{viewedUserName || 'Loading...'}</strong>
+              </span>
+            </div>
+            <Link
+              href="/admin"
+              className="text-sm bg-white text-purple-600 px-3 py-1 rounded font-medium hover:bg-purple-50"
+            >
+              ← Exit to Admin
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={session ? "/dashboard" : "/"} className="flex items-center space-x-2">
+            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-primary-600" />
               <span className="font-display text-2xl font-semibold text-gray-900">
                 Vivaah<span className="text-primary-600">Ready</span>
@@ -56,13 +83,13 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/feed" className="text-gray-600 hover:text-primary-600 transition-colors">
+            <Link href={buildUrl('/feed')} className="text-gray-600 hover:text-primary-600 transition-colors">
               My Matches
             </Link>
-            <Link href="/connections" className="text-gray-600 hover:text-primary-600 transition-colors">
+            <Link href={buildUrl('/connections')} className="text-gray-600 hover:text-primary-600 transition-colors">
               Connections
             </Link>
-            <Link href="/messages" className="text-gray-600 hover:text-primary-600 transition-colors">
+            <Link href={buildUrl('/messages')} className="text-gray-600 hover:text-primary-600 transition-colors">
               Messages
             </Link>
             <Link href="/about" className="text-gray-600 hover:text-primary-600 transition-colors">
@@ -98,7 +125,7 @@ export function Navbar() {
                 {isProfileMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border">
                     <Link
-                      href="/dashboard"
+                      href={buildUrl('/dashboard')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -106,7 +133,7 @@ export function Navbar() {
                       Dashboard
                     </Link>
                     <Link
-                      href="/profile"
+                      href={buildUrl('/profile')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -114,7 +141,7 @@ export function Navbar() {
                       My Profile
                     </Link>
                     <Link
-                      href="/feed"
+                      href={buildUrl('/feed')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -122,7 +149,7 @@ export function Navbar() {
                       My Matches
                     </Link>
                     <Link
-                      href="/connections"
+                      href={buildUrl('/connections')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -130,31 +157,35 @@ export function Navbar() {
                       Connections
                     </Link>
                     <Link
-                      href="/messages"
+                      href={buildUrl('/messages')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Messages
                     </Link>
-                    <hr className="my-2" />
-                    <button
-                      onClick={() => {
-                        setIsProfileMenuOpen(false)
-                        setIsDeleteModalOpen(true)
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Profile
-                    </button>
-                    <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                      className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </button>
+                    {!isAdminViewMode && (
+                      <>
+                        <hr className="my-2" />
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false)
+                            setIsDeleteModalOpen(true)
+                          }}
+                          className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Profile
+                        </button>
+                        <button
+                          onClick={() => signOut({ callbackUrl: '/' })}
+                          className="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -182,21 +213,21 @@ export function Navbar() {
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-4 space-y-4">
             <Link
-              href="/feed"
+              href={buildUrl('/feed')}
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
               My Matches
             </Link>
             <Link
-              href="/connections"
+              href={buildUrl('/connections')}
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
               Connections
             </Link>
             <Link
-              href="/messages"
+              href={buildUrl('/messages')}
               className="block text-gray-600 hover:text-primary-600"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -214,34 +245,38 @@ export function Navbar() {
               <>
                 <hr />
                 <Link
-                  href="/dashboard"
+                  href={buildUrl('/dashboard')}
                   className="block text-gray-600 hover:text-primary-600"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
-                  href="/profile"
+                  href={buildUrl('/profile')}
                   className="block text-gray-600 hover:text-primary-600"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Profile
                 </Link>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    setIsDeleteModalOpen(true)
-                  }}
-                  className="block text-red-600"
-                >
-                  Delete Profile
-                </button>
-                <button
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="block text-red-600"
-                >
-                  Sign Out
-                </button>
+                {!isAdminViewMode && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false)
+                        setIsDeleteModalOpen(true)
+                      }}
+                      className="block text-red-600"
+                    >
+                      Delete Profile
+                    </button>
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="block text-red-600"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               <>

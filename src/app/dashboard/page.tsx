@@ -20,9 +20,7 @@ import {
   Shield,
 } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
-
-// Admin emails - keep in sync with API routes
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface DashboardStats {
   interestsReceived: number
@@ -35,6 +33,7 @@ function DashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { buildUrl, buildApiUrl, isImpersonating } = useImpersonation()
   const [stats, setStats] = useState<DashboardStats>({
     interestsReceived: 0,
     interestsSent: 0,
@@ -50,7 +49,14 @@ function DashboardContent() {
   const isPending = hasProfile && approvalStatus === 'pending'
   const isRejected = hasProfile && approvalStatus === 'rejected'
   const needsProfile = !hasProfile
-  const isAdmin = session?.user?.email && ADMIN_EMAILS.includes(session.user.email)
+
+  // Admin link is shown based on a simple check - can be enhanced later
+  const [isAdmin, setIsAdmin] = useState(false)
+  useEffect(() => {
+    fetch('/api/admin/check')
+      .then(res => setIsAdmin(res.ok))
+      .catch(() => setIsAdmin(false))
+  }, [])
 
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
@@ -79,16 +85,17 @@ function DashboardContent() {
     } else {
       setLoading(false)
     }
-  }, [isApproved])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isApproved, buildApiUrl])
 
   const fetchStats = async () => {
     try {
-      // Fetch interests received
-      const receivedRes = await fetch('/api/interest?type=received')
+      // Fetch interests received (with viewAsUser support)
+      const receivedRes = await fetch(buildApiUrl('/api/interest?type=received'))
       const receivedData = await receivedRes.json()
 
-      // Fetch interests sent
-      const sentRes = await fetch('/api/interest?type=sent')
+      // Fetch interests sent (with viewAsUser support)
+      const sentRes = await fetch(buildApiUrl('/api/interest?type=sent'))
       const sentData = await sentRes.json()
 
       // Count mutual matches
@@ -96,8 +103,8 @@ function DashboardContent() {
         (i: any) => i.status === 'accepted'
       ).length
 
-      // Fetch matches count
-      const matchesRes = await fetch('/api/matches/auto')
+      // Fetch matches count (with viewAsUser support)
+      const matchesRes = await fetch(buildApiUrl('/api/matches/auto'))
       const matchesData = await matchesRes.json()
 
       setStats({
@@ -242,7 +249,7 @@ function DashboardContent() {
                       Your profile has been approved. You can now view your matches and start connecting!
                     </p>
                     <Link
-                      href="/feed"
+                      href={buildUrl('/feed')}
                       className="inline-flex items-center mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
                     >
                       View Your Matches
@@ -330,7 +337,7 @@ function DashboardContent() {
                     </div>
                   </div>
                   <Link
-                    href="/feed"
+                    href={buildUrl('/feed')}
                     className="btn-primary text-sm"
                   >
                     My Matches
@@ -349,7 +356,7 @@ function DashboardContent() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Link
-                  href="/feed"
+                  href={buildUrl('/feed')}
                   className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!isApproved ? 'opacity-60 pointer-events-none' : ''}`}
                 >
                   <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
@@ -392,7 +399,7 @@ function DashboardContent() {
                 {isApproved && (
                   <>
                     <Link
-                      href="/feed"
+                      href={buildUrl('/feed')}
                       className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center mr-4">
@@ -405,7 +412,7 @@ function DashboardContent() {
                     </Link>
 
                     <Link
-                      href="/connections"
+                      href={buildUrl('/connections')}
                       className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center mr-4">

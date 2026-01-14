@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 // Get all deletion requests
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const adminCookie = cookieStore.get('admin_session')
-
-    if (!adminCookie?.value) {
+    const isAdmin = await isAdminAuthenticated()
+    if (!isAdmin) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 401 }
