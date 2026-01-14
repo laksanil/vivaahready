@@ -402,11 +402,17 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           </div>
         )}
 
-        {/* Falsification Warning */}
+        {/* Info Banner - Different message for preferences section */}
         <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
-          <p className="text-primary-800 text-xs">
-            <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
-          </p>
+          {currentSection === 'preferences' ? (
+            <p className="text-primary-800 text-sm">
+              <strong>All criteria selected will be used for matching. For more results, choose this section wisely.</strong>
+            </p>
+          ) : (
+            <p className="text-primary-800 text-xs">
+              <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
+            </p>
+          )}
         </div>
 
         {/* Content */}

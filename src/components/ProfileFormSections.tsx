@@ -24,6 +24,14 @@ interface SectionProps {
 }
 
 export function BasicsSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [zipLookupLoading, setZipLookupLoading] = useState(false)
+  const [countrySearch, setCountrySearch] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
+  const [grewUpInSearch, setGrewUpInSearch] = useState('')
+  const [showGrewUpInDropdown, setShowGrewUpInDropdown] = useState(false)
+  const [citizenshipSearch, setCitizenshipSearch] = useState('')
+  const [showCitizenshipDropdown, setShowCitizenshipDropdown] = useState(false)
+
   const handleDateOfBirthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value
 
@@ -45,6 +53,75 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
     setFormData(prev => ({ ...prev, dateOfBirth: formatted }))
   }
 
+  // Filter countries based on search
+  const filteredCountries = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(countrySearch.toLowerCase())
+  )
+  const filteredGrewUpIn = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(grewUpInSearch.toLowerCase())
+  )
+  const filteredCitizenship = COUNTRIES_LIST.filter(country =>
+    country.toLowerCase().includes(citizenshipSearch.toLowerCase())
+  )
+
+  const handleCountrySelect = (country: string) => {
+    const oldCountry = formData.country as string
+    setFormData(prev => ({ ...prev, country }))
+    setCountrySearch('')
+    setShowCountryDropdown(false)
+    // If grewUpIn is not set or was same as old country, update it
+    if (!formData.grewUpIn || formData.grewUpIn === oldCountry) {
+      setFormData(prev => ({ ...prev, grewUpIn: country }))
+    }
+  }
+
+  const handleGrewUpInSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, grewUpIn: country }))
+    setGrewUpInSearch('')
+    setShowGrewUpInDropdown(false)
+  }
+
+  const handleCitizenshipSelect = (country: string) => {
+    setFormData(prev => ({ ...prev, citizenship: country }))
+    setCitizenshipSearch('')
+    setShowCitizenshipDropdown(false)
+  }
+
+  // Lookup city and state from zipcode
+  const handleZipCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const zipCode = e.target.value.replace(/\D/g, '').slice(0, 5)
+    setFormData(prev => ({ ...prev, zipCode }))
+
+    // Only lookup if we have a 5-digit zipcode and country is USA
+    if (zipCode.length === 5 && (formData.country as string || 'USA') === 'USA') {
+      setZipLookupLoading(true)
+      try {
+        const response = await fetch(`https://api.zippopotam.us/us/${zipCode}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.places && data.places.length > 0) {
+            const place = data.places[0]
+            const city = place['place name']
+            const state = place['state']
+            setFormData(prev => ({
+              ...prev,
+              currentLocation: `${city}, ${state}`,
+              country: 'USA'
+            }))
+          }
+        }
+      } catch (error) {
+        // Silently fail - user can still manually enter
+        console.error('Zip lookup failed:', error)
+      } finally {
+        setZipLookupLoading(false)
+      }
+    }
+  }
+
+  const isUSA = (formData.country as string || 'USA') === 'USA'
+  const citizenshipValue = formData.citizenship as string || ''
+  const showVisaStatus = isUSA && citizenshipValue && citizenshipValue !== 'USA' && citizenshipValue !== ''
 
   return (
     <div className="space-y-6">
@@ -138,6 +215,196 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </div>
         </div>
       </div>
+
+      {/* Location */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Location</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {/* Country - Searchable Dropdown */}
+          <div className="relative">
+            <label className="form-label">Country <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={countrySearch || (formData.country as string) || 'USA'}
+              onChange={(e) => {
+                setCountrySearch(e.target.value)
+                setShowCountryDropdown(true)
+              }}
+              onFocus={() => {
+                setCountrySearch('')
+                setShowCountryDropdown(true)
+              }}
+              className="input-field"
+              placeholder="Type to search..."
+            />
+            {showCountryDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                {filteredCountries.map((country) => (
+                  <button
+                    key={country}
+                    type="button"
+                    onClick={() => handleCountrySelect(country)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      country === (formData.country as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                    }`}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            )}
+            {showCountryDropdown && (
+              <div className="fixed inset-0 z-40" onClick={() => setShowCountryDropdown(false)} />
+            )}
+          </div>
+          {isUSA && (
+            <div>
+              <label className="form-label">Zip Code <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="zipCode"
+                  value={formData.zipCode as string || ''}
+                  onChange={handleZipCodeChange}
+                  className="input-field"
+                  placeholder="e.g., 94102"
+                  maxLength={5}
+                />
+                {zipLookupLoading && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="h-4 w-4 border-2 border-primary-600 border-t-transparent animate-spin" />
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Auto-fills city & state</p>
+            </div>
+          )}
+          <div>
+            <label className="form-label">City</label>
+            <input type="text" placeholder="City" value={(formData.currentLocation as string || '').split(', ')[0] || ''} onChange={(e) => {
+              const state = (formData.currentLocation as string || '').split(', ')[1] || ''
+              setFormData(prev => ({ ...prev, currentLocation: state ? `${e.target.value}, ${state}` : e.target.value }))
+            }} className="input-field" />
+          </div>
+          <div>
+            <label className="form-label">State</label>
+            {isUSA ? (
+              <select name="state" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
+                const city = (formData.currentLocation as string || '').split(', ')[0] || ''
+                setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
+              }} className="input-field">
+                <option value="">Select State</option>
+                {US_STATES.map(state => <option key={state} value={state}>{state}</option>)}
+              </select>
+            ) : (
+              <input type="text" placeholder="State/Province" value={(formData.currentLocation as string || '').split(', ')[1] || ''} onChange={(e) => {
+                const city = (formData.currentLocation as string || '').split(', ')[0] || ''
+                setFormData(prev => ({ ...prev, currentLocation: city ? `${city}, ${e.target.value}` : e.target.value }))
+              }} className="input-field" />
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Citizenship - Searchable Dropdown */}
+          <div className="relative">
+            <label className="form-label">Citizenship <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={citizenshipSearch || (formData.citizenship as string) || ''}
+              onChange={(e) => {
+                setCitizenshipSearch(e.target.value)
+                setShowCitizenshipDropdown(true)
+              }}
+              onFocus={() => {
+                setCitizenshipSearch('')
+                setShowCitizenshipDropdown(true)
+              }}
+              onBlur={() => {
+                setTimeout(() => {
+                  if (citizenshipSearch && !COUNTRIES_LIST.includes(citizenshipSearch)) {
+                    setCitizenshipSearch('')
+                  }
+                }, 200)
+              }}
+              className="input-field"
+              placeholder="Type to search..."
+            />
+            {showCitizenshipDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                {filteredCitizenship.map((country) => (
+                  <button
+                    key={country}
+                    type="button"
+                    onClick={() => handleCitizenshipSelect(country)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      country === (formData.citizenship as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                    }`}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            )}
+            {showCitizenshipDropdown && (
+              <div className="fixed inset-0 z-40" onClick={() => setShowCitizenshipDropdown(false)} />
+            )}
+          </div>
+          {/* Grew Up In - Searchable Dropdown */}
+          <div className="relative">
+            <label className="form-label">Grew Up In <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={grewUpInSearch || (formData.grewUpIn as string) || (formData.country as string) || 'USA'}
+              onChange={(e) => {
+                setGrewUpInSearch(e.target.value)
+                setShowGrewUpInDropdown(true)
+              }}
+              onFocus={() => {
+                setGrewUpInSearch('')
+                setShowGrewUpInDropdown(true)
+              }}
+              className="input-field"
+              placeholder="Type to search..."
+            />
+            {showGrewUpInDropdown && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                {filteredGrewUpIn.map((country) => (
+                  <button
+                    key={country}
+                    type="button"
+                    onClick={() => handleGrewUpInSelect(country)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      country === (formData.grewUpIn as string) ? 'bg-primary-50 text-primary-700 font-medium' : ''
+                    }`}
+                  >
+                    {country}
+                  </button>
+                ))}
+              </div>
+            )}
+            {showGrewUpInDropdown && (
+              <div className="fixed inset-0 z-40" onClick={() => setShowGrewUpInDropdown(false)} />
+            )}
+          </div>
+        </div>
+        {/* Visa Status - Shows when country is USA and citizenship is not USA */}
+        {showVisaStatus && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="form-label">US Visa Status <span className="text-red-500">*</span></label>
+              <select name="residencyStatus" value={formData.residencyStatus as string || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select Visa Status</option>
+                {US_VISA_STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {(formData.residencyStatus as string) === 'other' && (
+                <input type="text" name="residencyStatusOther" value={formData.residencyStatusOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify visa type" />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -150,15 +417,6 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
   const [showGrewUpInDropdown, setShowGrewUpInDropdown] = useState(false)
   const [citizenshipSearch, setCitizenshipSearch] = useState('')
   const [showCitizenshipDropdown, setShowCitizenshipDropdown] = useState(false)
-
-  const handleLanguageCheckbox = (language: string, checked: boolean) => {
-    const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
-    if (checked) {
-      setFormData(prev => ({ ...prev, languagesKnown: [...current, language].join(', ') }))
-    } else {
-      setFormData(prev => ({ ...prev, languagesKnown: current.filter(l => l !== language).join(', ') }))
-    }
-  }
 
   // Filter countries based on search
   const filteredCountries = COUNTRIES_LIST.filter(country =>
@@ -422,45 +680,6 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           </div>
         </div>
       )}
-
-      {/* Language & Background */}
-      <div className="space-y-4 mt-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language & Background</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
-            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-              <option value="Other">Other</option>
-            </select>
-            {(formData.motherTongue as string) === 'Other' && (
-              <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
-            )}
-          </div>
-          <div>
-            <label className="form-label">Languages Known</label>
-            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-1">
-                {LANGUAGES.map(lang => (
-                  <label key={lang} className="flex items-center text-sm">
-                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
-                    {lang}
-                  </label>
-                ))}
-                <label className="flex items-center text-sm">
-                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
-                  Other
-                </label>
-              </div>
-            </div>
-            {(formData.languagesKnown as string || '').includes('Other') && (
-              <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
-            )}
-          </div>
-        </div>
-      </div>
-
     </>
   )
 }
@@ -473,6 +692,15 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
   const filteredUniversities = US_UNIVERSITIES.filter(uni =>
     uni.toLowerCase().includes(universitySearch.toLowerCase())
   )
+
+  const handleLanguageCheckbox = (language: string, checked: boolean) => {
+    const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
+    if (checked) {
+      setFormData(prev => ({ ...prev, languagesKnown: [...current, language].join(', ') }))
+    } else {
+      setFormData(prev => ({ ...prev, languagesKnown: current.filter(l => l !== language).join(', ') }))
+    }
+  }
 
   const handleUniversitySelect = (university: string) => {
     if (university === "Other (specify below)") {
@@ -605,6 +833,44 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
         />
         <p className="text-xs text-gray-500 mt-1">Optional: Share more about your educational background or career journey</p>
       </div>
+
+      {/* Language & Background */}
+      <div className="space-y-4 mt-4">
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language & Background</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
+            <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              {LANGUAGES.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              <option value="Other">Other</option>
+            </select>
+            {(formData.motherTongue as string) === 'Other' && (
+              <input type="text" name="motherTongueOther" value={formData.motherTongueOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify language" />
+            )}
+          </div>
+          <div>
+            <label className="form-label">Languages Known</label>
+            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-1">
+                {LANGUAGES.map(lang => (
+                  <label key={lang} className="flex items-center text-sm">
+                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
+                    {lang}
+                  </label>
+                ))}
+                <label className="flex items-center text-sm">
+                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
+                  Other
+                </label>
+              </div>
+            </div>
+            {(formData.languagesKnown as string || '').includes('Other') && (
+              <input type="text" name="languagesKnownOther" value={formData.languagesKnownOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify other languages" />
+            )}
+          </div>
+        </div>
+      </div>
     </>
   )
 }
@@ -612,98 +878,72 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
 export function FamilySection({ formData, handleChange }: SectionProps) {
   return (
     <>
-      {/* Family Location */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Family Location</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Lives with Family?</label>
-            <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
-              <option value="no">No</option>
-              <option value="yes">Yes</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Family Location</label>
-            <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" />
-          </div>
+      {/* Family Location & Type */}
+      <div className="grid grid-cols-4 gap-3">
+        <div>
+          <label className="form-label">Lives with Family?</label>
+          <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Family Location</label>
+          <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" />
+        </div>
+        <div>
+          <label className="form-label">Family Type</label>
+          <select name="familyType" value={formData.familyType as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select</option>
+            <option value="nuclear">Nuclear</option>
+            <option value="joint">Joint</option>
+            <option value="extended">Extended</option>
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Family Values</label>
+          <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field">
+            <option value="">Select</option>
+            <option value="traditional">Traditional</option>
+            <option value="moderate">Moderate</option>
+            <option value="liberal">Liberal</option>
+          </select>
         </div>
       </div>
 
-      {/* Parents */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Parents</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Father&apos;s Name</label>
-            <input type="text" name="fatherName" value={formData.fatherName as string || ''} onChange={handleChange} className="input-field" />
-          </div>
-          <div>
-            <label className="form-label">Father&apos;s Occupation</label>
-            <input type="text" name="fatherOccupation" value={formData.fatherOccupation as string || ''} onChange={handleChange} className="input-field" />
-          </div>
+      {/* Parents - All in one row */}
+      <div className="grid grid-cols-4 gap-3">
+        <div>
+          <label className="form-label">Father&apos;s Name</label>
+          <input type="text" name="fatherName" value={formData.fatherName as string || ''} onChange={handleChange} className="input-field" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Mother&apos;s Name</label>
-            <input type="text" name="motherName" value={formData.motherName as string || ''} onChange={handleChange} className="input-field" />
-          </div>
-          <div>
-            <label className="form-label">Mother&apos;s Occupation</label>
-            <input type="text" name="motherOccupation" value={formData.motherOccupation as string || ''} onChange={handleChange} className="input-field" />
-          </div>
+        <div>
+          <label className="form-label">Father&apos;s Occupation</label>
+          <input type="text" name="fatherOccupation" value={formData.fatherOccupation as string || ''} onChange={handleChange} className="input-field" />
+        </div>
+        <div>
+          <label className="form-label">Mother&apos;s Name</label>
+          <input type="text" name="motherName" value={formData.motherName as string || ''} onChange={handleChange} className="input-field" />
+        </div>
+        <div>
+          <label className="form-label">Mother&apos;s Occupation</label>
+          <input type="text" name="motherOccupation" value={formData.motherOccupation as string || ''} onChange={handleChange} className="input-field" />
         </div>
       </div>
 
       {/* Siblings */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Siblings</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Number of Brothers</label>
-            <input type="number" name="numberOfBrothers" value={formData.numberOfBrothers as string || ''} onChange={handleChange} className="input-field" min="0" />
-          </div>
-          <div>
-            <label className="form-label">Number of Sisters</label>
-            <input type="number" name="numberOfSisters" value={formData.numberOfSisters as string || ''} onChange={handleChange} className="input-field" min="0" />
-          </div>
-        </div>
-      </div>
-
-      {/* Family Type & Values */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Family Type & Values</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="form-label">Family Type</label>
-            <select name="familyType" value={formData.familyType as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              <option value="nuclear">Nuclear</option>
-              <option value="joint">Joint</option>
-              <option value="extended">Extended</option>
-            </select>
-          </div>
-          <div>
-            <label className="form-label">Family Values</label>
-            <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
-              <option value="traditional">Traditional</option>
-              <option value="moderate">Moderate</option>
-              <option value="liberal">Liberal</option>
-            </select>
-          </div>
+      <div className="grid grid-cols-4 gap-3">
+        <div>
+          <label className="form-label">Brothers</label>
+          <input type="number" name="numberOfBrothers" value={formData.numberOfBrothers as string || ''} onChange={handleChange} className="input-field" min="0" placeholder="0" />
         </div>
         <div>
-          <label className="form-label">Family Details</label>
-          <textarea
-            name="familyDetails"
-            value={formData.familyDetails as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            rows={3}
-            placeholder="Share more about your family background, siblings, family business, or any other relevant details..."
-          />
-          <p className="text-xs text-gray-500 mt-1">Optional: Provide additional information about your family</p>
+          <label className="form-label">Sisters</label>
+          <input type="number" name="numberOfSisters" value={formData.numberOfSisters as string || ''} onChange={handleChange} className="input-field" min="0" placeholder="0" />
+        </div>
+        <div className="col-span-2">
+          <label className="form-label">Family Details (Optional)</label>
+          <input type="text" name="familyDetails" value={formData.familyDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Any additional family details..." />
         </div>
       </div>
     </>
@@ -1180,8 +1420,8 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">How Did You Find Us?</h4>
         <div>
-          <label className="form-label">Referral Source</label>
-          <select name="referralSource" value={formData.referralSource as string || ''} onChange={handleChange} className="input-field">
+          <label className="form-label">Referral Source <span className="text-red-500">*</span></label>
+          <select name="referralSource" value={formData.referralSource as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
             <option value="friend">Friend</option>
             <option value="family">Family/Relative</option>
