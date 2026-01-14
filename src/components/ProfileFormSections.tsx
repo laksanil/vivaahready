@@ -968,8 +968,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     <>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="form-label">Diet <span className="text-red-500">*</span></label>
-          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field" required>
+          <label className="form-label">Diet</label>
+          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select</option>
             <option value="veg">Vegetarian</option>
             <option value="non_veg">Non-Vegetarian</option>
@@ -980,8 +980,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Smoking <span className="text-red-500">*</span></label>
-          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field" required>
+          <label className="form-label">Smoking</label>
+          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="occasionally">Occasionally</option>
@@ -989,8 +989,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
           </select>
         </div>
         <div>
-          <label className="form-label">Drinking <span className="text-red-500">*</span></label>
-          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field" required>
+          <label className="form-label">Drinking</label>
+          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field">
             <option value="">Select</option>
             <option value="no">No</option>
             <option value="social">Social Drinker</option>
