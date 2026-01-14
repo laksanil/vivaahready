@@ -307,9 +307,9 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
         </div>
       </div>
 
-      {/* Location */}
+      {/* Current Location */}
       <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Location</h4>
+        <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Current Location</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {/* Country - Searchable Dropdown */}
           <div className="relative">
