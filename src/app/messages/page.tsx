@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { MessageCircle, Loader2, ChevronLeft, Search } from 'lucide-react'
 import MessageModal from '@/components/MessageModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface Conversation {
   partnerId: string
@@ -22,7 +23,8 @@ interface Conversation {
 function MessagesPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const { buildApiUrl, viewAsUser } = useImpersonation()
+  const { buildApiUrl, buildUrl, viewAsUser } = useImpersonation()
+  const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -40,17 +42,23 @@ function MessagesPageContent() {
     recipientPhotoUrls: null,
   })
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-  }, [status, router])
+  const canAccess = !!session || (isAdminView && isAdmin)
 
   useEffect(() => {
-    if (session) {
+    if (status === 'unauthenticated') {
+      if (!isAdminView) {
+        router.push('/login')
+      } else if (adminChecked && !isAdmin) {
+        router.push('/login')
+      }
+    }
+  }, [status, router, isAdminView, adminChecked, isAdmin])
+
+  useEffect(() => {
+    if (canAccess) {
       fetchConversations()
     }
-  }, [session])
+  }, [canAccess, viewAsUser])
 
   const fetchConversations = async () => {
     setLoading(true)
@@ -109,7 +117,7 @@ function MessagesPageContent() {
     c.partnerName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  if (status === 'loading') {
+  if (status === 'loading' || (isAdminView && !adminChecked)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -117,7 +125,7 @@ function MessagesPageContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
@@ -128,7 +136,7 @@ function MessagesPageContent() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Link
-              href="/feed"
+              href={buildUrl('/feed')}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -169,7 +177,7 @@ function MessagesPageContent() {
                 : 'Start messaging your matches to see conversations here'}
             </p>
             {!searchQuery && (
-              <Link href="/feed" className="btn-primary inline-block">
+              <Link href={buildUrl('/feed')} className="btn-primary inline-block">
                 Browse Matches
               </Link>
             )}

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface DeclinedProfile {
   id: string
@@ -44,23 +45,30 @@ function ReconsiderPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { buildApiUrl, buildUrl } = useImpersonation()
+  const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
 
   const [profiles, setProfiles] = useState<DeclinedProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [reconsidering, setReconsidering] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-  }, [status, router])
+  const canAccess = !!session || (isAdminView && isAdmin)
 
   useEffect(() => {
-    if (session) {
+    if (status === 'unauthenticated') {
+      if (!isAdminView) {
+        router.push('/login')
+      } else if (adminChecked && !isAdmin) {
+        router.push('/login')
+      }
+    }
+  }, [status, router, isAdminView, adminChecked, isAdmin])
+
+  useEffect(() => {
+    if (canAccess) {
       fetchDeclinedProfiles()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, buildApiUrl])
+  }, [canAccess, buildApiUrl])
 
   const fetchDeclinedProfiles = async () => {
     setLoading(true)
@@ -90,7 +98,7 @@ function ReconsiderPageContent() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -98,7 +106,7 @@ function ReconsiderPageContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
@@ -107,7 +115,7 @@ function ReconsiderPageContent() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <Link
-          href="/feed"
+          href={buildUrl('/feed')}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -131,7 +139,7 @@ function ReconsiderPageContent() {
               You haven&apos;t passed on any profiles yet.
               When you do, they&apos;ll appear here for reconsideration.
             </p>
-            <Link href="/feed" className="btn-primary inline-block">
+            <Link href={buildUrl('/feed')} className="btn-primary inline-block">
               Browse Feed
             </Link>
           </div>
@@ -178,6 +186,7 @@ interface ReconsiderCardProps {
 }
 
 function ReconsiderCard({ profile, onReconsider, isReconsidering }: ReconsiderCardProps) {
+  const { buildUrl } = useImpersonation()
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
   const [imageError, setImageError] = useState(false)
 
@@ -258,7 +267,7 @@ function ReconsiderCard({ profile, onReconsider, isReconsidering }: ReconsiderCa
             Bring Back
           </button>
           <Link
-            href={`/profile/${profile.id}`}
+            href={buildUrl(`/profile/${profile.id}`)}
             className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
           >
             <User className="h-4 w-4" />

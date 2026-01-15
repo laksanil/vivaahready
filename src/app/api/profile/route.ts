@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateVrId } from '@/lib/vrId'
+import { getTargetUserId } from '@/lib/admin'
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
 
     // Check if profile already exists
     const existingProfile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: targetUser.userId },
     })
 
     if (existingProfile) {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     // Create profile
     const profile = await prisma.profile.create({
       data: {
-        userId: session.user.id,
+        userId: targetUser.userId,
         odNumber: vrId,
         gender: body.gender,
         dateOfBirth: body.dateOfBirth,
@@ -99,13 +100,13 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: targetUser.userId },
       include: { user: { select: { name: true } } },
     })
 
@@ -134,14 +135,14 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Check if profile exists first
     const existingProfile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: targetUser.userId },
     })
 
     if (!existingProfile) {

@@ -12,10 +12,6 @@ export async function PATCH(
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {
@@ -139,10 +135,6 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)

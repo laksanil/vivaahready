@@ -8,10 +8,6 @@ import { getTargetUserId } from '@/lib/admin'
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {
@@ -56,10 +52,6 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {
@@ -93,10 +85,6 @@ export async function DELETE(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {

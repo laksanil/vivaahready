@@ -17,8 +17,13 @@ export async function GET(request: Request) {
     const gender = searchParams.get('gender')
     const search = searchParams.get('search')
     const filter = searchParams.get('filter') // pending, verified, unverified, suspended
+    const userId = searchParams.get('userId')
 
     const where: any = {}
+
+    if (userId) {
+      where.userId = userId
+    }
 
     // Apply filter based on tab
     if (filter === 'pending') {

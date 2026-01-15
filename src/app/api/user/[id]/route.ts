@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { isAdminAuthenticated } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,14 +14,12 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
+    const isAdminCookie = await isAdminAuthenticated()
+    const isAdminUser = session?.user?.email
+      ? ADMIN_EMAILS.includes(session.user.email)
+      : false
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Only allow admins to fetch user info by ID
-    const isAdmin = ADMIN_EMAILS.includes(session.user.email || '')
-    if (!isAdmin) {
+    if (!isAdminCookie && !isAdminUser) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

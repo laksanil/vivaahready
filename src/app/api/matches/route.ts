@@ -1,46 +1,22 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { cookies } from 'next/headers'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
-const ADMIN_TOKEN = 'vivaahready-admin-authenticated'
-
-// Check if request is from admin viewing as another user
-async function getAdminViewUserId(searchParams: URLSearchParams): Promise<string | null> {
-  const viewAsUserId = searchParams.get('viewAsUser')
-
-  if (!viewAsUserId) return null
-
-  // Verify admin access
-  const adminSession = cookies().get('admin_session')
-  if (adminSession?.value === ADMIN_TOKEN) {
-    return viewAsUserId
-  }
-
-  const session = await getServerSession(authOptions)
-  if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
-    return viewAsUserId
-  }
-
-  return null
-}
+import { getTargetUserId } from '@/lib/admin'
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'received'
 
-    // Check if admin is viewing as another user
-    const viewAsUserId = await getAdminViewUserId(searchParams)
-    const targetUserId = viewAsUserId || session.user.id
+    const targetUserId = targetUser.userId
 
     let matches = []
 
@@ -186,14 +162,12 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if admin is viewing as another user
-    const { searchParams } = new URL(request.url)
-    const viewAsUserId = await getAdminViewUserId(searchParams)
-    const currentUserId = viewAsUserId || session.user.id
+    const currentUserId = targetUser.userId
 
     const { receiverId, message } = await request.json()
 

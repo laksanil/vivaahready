@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { X, Send, Loader2 } from 'lucide-react'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface Message {
   id: string
@@ -36,6 +37,7 @@ export default function MessageModal({
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { buildApiUrl } = useImpersonation()
 
   const photoUrl = recipientPhoto || null
 
@@ -57,7 +59,7 @@ export default function MessageModal({
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`/api/messages/${recipientId}`)
+      const response = await fetch(buildApiUrl(`/api/messages/${recipientId}`))
       const data = await response.json()
       if (response.ok) {
         setMessages(data.messages || [])
@@ -85,7 +87,7 @@ export default function MessageModal({
     setError(null)
     console.log('Sending message to:', recipientId, 'content:', newMessage.trim())
     try {
-      const response = await fetch('/api/messages', {
+      const response = await fetch(buildApiUrl('/api/messages'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

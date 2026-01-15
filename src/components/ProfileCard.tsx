@@ -20,6 +20,7 @@ import {
   Flag,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 export interface ProfileData {
   id: string
@@ -78,6 +79,7 @@ export function ProfileCard({
   const [photoIndex, setPhotoIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const { buildUrl } = useImpersonation()
 
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
 
@@ -307,7 +309,7 @@ export function ProfileCard({
 
               {!canLike ? (
                 <Link
-                  href="/profile"
+                  href={buildUrl('/profile')}
                   className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-400 text-white rounded-xl font-semibold"
                 >
                   <Lock className="h-5 w-5" />

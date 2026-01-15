@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Heart,
@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import MessageModal from '@/components/MessageModal'
+import { useImpersonation } from '@/hooks/useImpersonation'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface ConnectionProfile {
   id: string
@@ -62,12 +64,12 @@ interface ConnectionProfile {
 function ConnectionsPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const viewAsUser = searchParams.get('viewAsUser')
+  const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
+  const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
 
   const [connections, setConnections] = useState<ConnectionProfile[]>([])
   const [loading, setLoading] = useState(true)
-  const [isAdminView, setIsAdminView] = useState(false)
+  const [isAdminDataView, setIsAdminDataView] = useState(false)
   const [viewingUserName, setViewingUserName] = useState<string | null>(null)
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
@@ -83,31 +85,34 @@ function ConnectionsPageContent() {
     recipientPhotoUrls: null,
   })
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-  }, [status, router])
+  const canAccess = !!session || (isAdminView && isAdmin)
 
   useEffect(() => {
-    if (session) {
+    if (status === 'unauthenticated') {
+      if (!isAdminView) {
+        router.push('/login')
+      } else if (adminChecked && !isAdmin) {
+        router.push('/login')
+      }
+    }
+  }, [status, router, isAdminView, adminChecked, isAdmin])
+
+  useEffect(() => {
+    if (canAccess) {
       fetchConnections()
     }
-  }, [session])
+  }, [canAccess, viewAsUser])
 
   const fetchConnections = async () => {
     setLoading(true)
     try {
-      const url = viewAsUser
-        ? `/api/matches/auto?viewAsUser=${viewAsUser}`
-        : '/api/matches/auto'
-      const response = await fetch(url)
+      const response = await fetch(buildApiUrl('/api/matches/auto'))
       const data = await response.json()
 
       setConnections(data.mutualMatches || [])
 
       if (data.isAdminView) {
-        setIsAdminView(true)
+        setIsAdminDataView(true)
         setViewingUserName(data.viewingUserName || null)
       }
     } catch (error) {
@@ -151,7 +156,7 @@ function ConnectionsPageContent() {
     return !createdAt || createdAt <= sevenDaysAgo
   })
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -159,7 +164,7 @@ function ConnectionsPageContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
@@ -167,7 +172,7 @@ function ConnectionsPageContent() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Admin View Banner */}
-        {isAdminView && viewingUserName && (
+        {isAdminDataView && viewingUserName && (
           <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -206,7 +211,7 @@ function ConnectionsPageContent() {
               When you and another member both like each other,
               you&apos;ll see them here with their contact information.
             </p>
-            <Link href="/feed" className="btn-primary inline-block">
+            <Link href={buildUrl('/feed')} className="btn-primary inline-block">
               Browse Feed
             </Link>
           </div>
@@ -389,7 +394,7 @@ function ConnectionCard({ profile, onMessage, isNew }: ConnectionCardProps) {
               Message
             </button>
             <Link
-              href={`/profile/${profile.id}`}
+              href={buildUrl(`/profile/${profile.id}`)}
               className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
             >
               <User className="h-4 w-4" />

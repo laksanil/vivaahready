@@ -11,10 +11,6 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {
@@ -111,10 +107,6 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized - please log in' }, { status: 401 })
-    }
 
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)

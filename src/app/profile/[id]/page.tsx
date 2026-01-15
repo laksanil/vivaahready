@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Heart,
@@ -25,6 +25,8 @@ import {
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
 import { calculateAge, getInitials, extractPhotoUrls } from '@/lib/utils'
+import { useImpersonation } from '@/hooks/useImpersonation'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface ProfileData {
   id: string
@@ -132,8 +134,8 @@ interface ProfileData {
 export default function ProfileViewPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const viewAsUser = searchParams.get('viewAsUser')
+  const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
+  const { isAdminView, isAdmin: isAdminAccess, adminChecked } = useAdminViewAccess()
   // In admin view mode, use viewAsUser as the viewer's ID; otherwise use session user ID
   const viewerUserId = viewAsUser || session?.user?.id
   const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -174,15 +176,19 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
 
+  const canAccess = !!session || (isAdminView && isAdminAccess)
+
   useEffect(() => {
     fetchProfile()
     checkAdminStatus()
-    fetchUserStatus()
-  }, [params.id, session])
+    if (canAccess) {
+      fetchUserStatus()
+    }
+  }, [params.id, buildApiUrl, canAccess])
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`/api/profile/${params.id}`)
+      const response = await fetch(buildApiUrl(`/api/profile/${params.id}`))
       if (!response.ok) {
         if (response.status === 404) {
           setError('Profile not found')
@@ -204,8 +210,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     try {
       const response = await fetch('/api/admin/check')
       if (response.ok) {
-        const data = await response.json()
-        setIsAdmin(data.isAdmin)
+        setIsAdmin(true)
       }
     } catch (err) {
       // Not admin
@@ -213,13 +218,10 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   }
 
   const fetchUserStatus = async () => {
-    if (!session) return
+    if (!canAccess) return
     try {
       // Pass viewAsUser parameter for admin view mode
-      const url = viewAsUser
-        ? `/api/matches/auto?viewAsUser=${viewAsUser}`
-        : '/api/matches/auto'
-      const response = await fetch(url)
+      const response = await fetch(buildApiUrl('/api/matches/auto'))
       if (response.ok) {
         const data = await response.json()
         if (data.userStatus) {
@@ -236,13 +238,10 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
 
   // Fetch match score when viewing another profile
   const fetchMatchScore = async () => {
-    if (!session || !profile) return
+    if (!canAccess || !profile) return
     try {
       // Pass viewAsUser parameter for admin view mode
-      const url = viewAsUser
-        ? `/api/profile/${params.id}/match-score?viewAsUser=${viewAsUser}`
-        : `/api/profile/${params.id}/match-score`
-      const response = await fetch(url)
+      const response = await fetch(buildApiUrl(`/api/profile/${params.id}/match-score`))
       if (response.ok) {
         const data = await response.json()
         setTheirMatchScore(data.theirMatchScore)
@@ -260,16 +259,16 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   }
 
   useEffect(() => {
-    if (profile && session) {
+    if (profile && canAccess) {
       fetchMatchScore()
     }
-  }, [profile, session, viewAsUser])
+  }, [profile, canAccess, viewAsUser])
 
   const handleSendInterest = async () => {
-    if (!profile) return
+    if (!profile || !canAccess) return
     setSendingInterest(true)
     try {
-      const response = await fetch('/api/matches', {
+      const response = await fetch(buildApiUrl('/api/matches'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: profile.userId }),
@@ -286,7 +285,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -299,7 +298,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">{error || 'Profile not found'}</h2>
-          <Link href="/feed" className="text-primary-600 hover:underline">
+          <Link href={buildUrl('/feed')} className="text-primary-600 hover:underline">
             Back to Matches
           </Link>
         </div>
@@ -343,7 +342,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           yourMatchScore={yourMatchScore}
           matchProfiles={matchProfiles}
           viewerUserId={viewerUserId}
-          isLoggedIn={!!session}
+          isLoggedIn={canAccess}
           onReport={() => setShowReportModal(true)}
         />
 
@@ -600,7 +599,7 @@ function ProfileCard({
                     <span className="text-xs text-gray-600 mt-1">Likes You - Accept</span>
                   </button>
                 ) : !canExpressInterest ? (
-                  <Link href="/profile" className="flex flex-col items-center">
+                  <Link href={buildUrl('/profile')} className="flex flex-col items-center">
                     <div className="w-14 h-14 rounded-full bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors">
                       <Lock className="h-7 w-7 text-white" />
                     </div>
@@ -1475,7 +1474,7 @@ function ProfileCard({
                   </button>
                 ) : (
                   <Link
-                    href="/profile"
+                    href={buildUrl('/profile')}
                     className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
                   >
                     <Lock className="h-5 w-5" />

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import { ProfileData } from './ProfileCard'
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface DirectoryCardProps {
   profile: ProfileData
@@ -35,6 +36,7 @@ export function DirectoryCard({
   showActions = true,
 }: DirectoryCardProps) {
   const [imageError, setImageError] = useState(false)
+  const { buildUrl } = useImpersonation()
 
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
 
@@ -47,7 +49,7 @@ export function DirectoryCard({
     <div className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200">
       <div className="flex items-stretch">
         {/* Photo - Square, smaller */}
-        <Link href={`/profile/${profile.id}`} className="flex-shrink-0">
+        <Link href={buildUrl(`/profile/${profile.id}`)} className="flex-shrink-0">
           <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 rounded-l-lg overflow-hidden">
             {primaryPhoto && !imageError ? (
               <img
@@ -72,7 +74,7 @@ export function DirectoryCard({
           {/* Top Row: Name, Age, Badges */}
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <div className="min-w-0">
-              <Link href={`/profile/${profile.id}`} className="hover:text-primary-600">
+              <Link href={buildUrl(`/profile/${profile.id}`)} className="hover:text-primary-600">
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">
                   {profile.user.name}{age ? `, ${age}` : ''}
                 </h3>
@@ -142,7 +144,7 @@ export function DirectoryCard({
         {showActions && (
           <div className="flex flex-col justify-center gap-2 p-3 border-l border-gray-100">
             <Link
-              href={`/profile/${profile.id}`}
+              href={buildUrl(`/profile/${profile.id}`)}
               className="p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
               title="View Profile"
             >
@@ -151,7 +153,7 @@ export function DirectoryCard({
 
             {!canLike ? (
               <Link
-                href="/profile"
+                href={buildUrl('/profile')}
                 className="p-2.5 text-gray-400 bg-gray-100 rounded-lg"
                 title="Verify to Like"
               >

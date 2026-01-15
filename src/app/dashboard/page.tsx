@@ -22,6 +22,7 @@ import {
 import FindMatchModal from '@/components/FindMatchModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import AdminViewBanner from '@/components/AdminViewBanner'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface DashboardStats {
   interestsReceived: number
@@ -34,7 +35,8 @@ function DashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { buildUrl, buildApiUrl, isImpersonating } = useImpersonation()
+  const { viewAsUser, buildUrl, buildApiUrl, isImpersonating } = useImpersonation()
+  const { isAdminView, isAdmin: isAdminAccess, adminChecked } = useAdminViewAccess()
   const [stats, setStats] = useState<DashboardStats>({
     interestsReceived: 0,
     interestsSent: 0,
@@ -43,13 +45,25 @@ function DashboardContent() {
   })
   const [loading, setLoading] = useState(true)
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false)
+  const [impersonatedUser, setImpersonatedUser] = useState<{
+    name: string
+    profile: { approvalStatus: string } | null
+  } | null>(null)
+  const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
 
-  const hasProfile = (session?.user as any)?.hasProfile || false
-  const approvalStatus = (session?.user as any)?.approvalStatus || null
+  const hasProfile = isAdminView
+    ? !!impersonatedUser?.profile
+    : ((session?.user as any)?.hasProfile || false)
+  const approvalStatus = isAdminView
+    ? (impersonatedUser?.profile?.approvalStatus || null)
+    : ((session?.user as any)?.approvalStatus || null)
   const isApproved = hasProfile && approvalStatus === 'approved'
   const isPending = hasProfile && approvalStatus === 'pending'
   const isRejected = hasProfile && approvalStatus === 'rejected'
   const needsProfile = !hasProfile
+  const canAccess = !!session || (isAdminView && isAdminAccess)
+  const userContextReady = !isAdminView || impersonatedLoaded
+  const displayName = (isAdminView ? impersonatedUser?.name : session?.user?.name) || 'User'
 
   // Admin link is shown based on a simple check - can be enhanced later
   const [isAdmin, setIsAdmin] = useState(false)
@@ -59,6 +73,36 @@ function DashboardContent() {
       .catch(() => setIsAdmin(false))
   }, [])
 
+  useEffect(() => {
+    let active = true
+
+    if (!isAdminView || !isAdminAccess || !viewAsUser) {
+      setImpersonatedUser(null)
+      setImpersonatedLoaded(false)
+      return () => {}
+    }
+
+    setImpersonatedLoaded(false)
+    fetch(`/api/admin/users/${viewAsUser}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return
+        setImpersonatedUser(data.user || null)
+      })
+      .catch(() => {
+        if (!active) return
+        setImpersonatedUser(null)
+      })
+      .finally(() => {
+        if (!active) return
+        setImpersonatedLoaded(true)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [isAdminView, isAdminAccess, viewAsUser])
+
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
@@ -67,9 +111,13 @@ function DashboardContent() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login')
+      if (!isAdminView) {
+        router.push('/login')
+      } else if (adminChecked && !isAdminAccess) {
+        router.push('/login')
+      }
     }
-  }, [status, router])
+  }, [status, router, isAdminView, adminChecked, isAdminAccess])
 
   // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
@@ -140,13 +188,14 @@ function DashboardContent() {
   }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal])
 
   useEffect(() => {
+    if (!userContextReady) return
     if (isApproved) {
       fetchStats()
     } else {
       setLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isApproved, buildApiUrl])
+  }, [isApproved, buildApiUrl, userContextReady])
 
   const fetchStats = async () => {
     try {
@@ -180,7 +229,7 @@ function DashboardContent() {
     }
   }
 
-  if (status === 'loading') {
+  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -188,7 +237,7 @@ function DashboardContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
@@ -202,7 +251,7 @@ function DashboardContent() {
           {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {session.user?.name?.split(' ')[0]}!
+            Welcome back, {displayName.split(' ')[0]}!
           </h1>
           <p className="text-gray-600 mt-1">
             {isApproved
@@ -214,7 +263,7 @@ function DashboardContent() {
           <div className="flex items-center gap-4 mt-2">
             {hasProfile && (
               <Link
-                href="/profile"
+                href={buildUrl('/profile')}
                 className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium text-sm"
               >
                 <Eye className="h-4 w-4 mr-1" />
@@ -271,7 +320,7 @@ function DashboardContent() {
               You'll be notified once your profile is approved. This usually takes 24-48 hours.
             </p>
             <Link
-              href="/profile/edit"
+              href={buildUrl('/profile/edit')}
               className="inline-flex items-center mt-6 text-yellow-700 hover:text-yellow-800 font-medium"
             >
               Edit Profile
@@ -291,7 +340,7 @@ function DashboardContent() {
             <p className="text-gray-600 max-w-md mx-auto mb-4">
               Unfortunately, your profile could not be approved. Please update your profile with complete and accurate information.
             </p>
-            <Link href="/profile/edit" className="btn-primary">
+            <Link href={buildUrl('/profile/edit')} className="btn-primary">
               Update Profile
             </Link>
           </div>
@@ -434,7 +483,7 @@ function DashboardContent() {
 
                 {hasProfile ? (
                   <Link
-                    href="/profile/edit"
+                    href={buildUrl('/profile/edit')}
                     className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
@@ -574,7 +623,7 @@ function DashboardContent() {
               )}
               {hasProfile && !isApproved && (
                 <Link
-                  href="/profile/edit"
+                  href={buildUrl('/profile/edit')}
                   className="btn-outline w-full text-center text-sm py-2"
                 >
                   Edit Profile

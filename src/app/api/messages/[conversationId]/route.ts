@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,12 +14,12 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
+    const { conversationId } = await params
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { conversationId } = await params
-    const userId = session.user.id
+    const userId = targetUser.userId
     const partnerId = conversationId
 
     // Get the partner's info

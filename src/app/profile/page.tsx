@@ -23,8 +23,7 @@ import {
 } from 'lucide-react'
 import ProfileEditModal from '@/components/ProfileEditModal'
 import { validateProfilePhoto } from '@/lib/faceDetection'
-
-const ADMIN_EMAILS = ['lnagasamudra1@gmail.com', 'usdesivivah@gmail.com', 'usedesivivah@gmail.com']
+import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface Profile {
   id: string
@@ -107,6 +106,7 @@ function ViewProfilePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const adminProfileId = searchParams.get('id') // Admin can view any profile with ?id=xxx
+  const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileUserName, setProfileUserName] = useState<string>('')
@@ -120,6 +120,8 @@ function ViewProfilePageContent() {
   // Derived value - true when admin is viewing another user's profile
   // Not using useState to avoid timing issues between isAdmin and isAdminMode
   const isAdminMode = isAdmin && !!adminProfileId
+  const isImpersonationMode = !!viewAsUser
+  const canAccess = !!session || (isImpersonationMode && isAdmin) || isAdminMode
 
   // Photo management state
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -132,36 +134,53 @@ function ViewProfilePageContent() {
 
   // Check if current user is admin
   useEffect(() => {
+    let active = true
     const checkAdmin = async () => {
-      // Check via email
-      if (session?.user?.email && ADMIN_EMAILS.includes(session.user.email)) {
-        setIsAdmin(true)
-        setAdminCheckDone(true)
-        return
-      }
-      // Check via admin cookie
       try {
         const res = await fetch('/api/admin/check')
-        if (res.ok) {
-          const data = await res.json()
-          // API returns { authenticated: true } when admin
-          setIsAdmin(data.authenticated === true)
+        if (active) {
+          setIsAdmin(res.ok)
         }
       } catch {
-        // Not admin
+        if (active) {
+          setIsAdmin(false)
+        }
+      } finally {
+        if (active) {
+          setAdminCheckDone(true)
+        }
       }
-      setAdminCheckDone(true)
     }
-    if (session) {
-      checkAdmin()
-    } else if (status === 'unauthenticated') {
-      setAdminCheckDone(true)
+
+    checkAdmin()
+
+    return () => {
+      active = false
     }
-  }, [session, status])
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    if (!isImpersonationMode || !isAdmin || !viewAsUser || adminProfileId) return () => {}
+
+    fetch(`/api/admin/users/${viewAsUser}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active) return
+        if (data.user?.name) {
+          setProfileUserName(data.user.name)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      active = false
+    }
+  }, [isImpersonationMode, isAdmin, viewAsUser, adminProfileId])
 
   const refreshProfile = async () => {
     try {
-      const endpoint = isAdminMode ? `/api/admin/profiles/${adminProfileId}` : '/api/profile'
+      const endpoint = isAdminMode ? `/api/admin/profiles/${adminProfileId}` : buildApiUrl('/api/profile')
       const response = await fetch(endpoint)
       if (response.ok) {
         const data = await response.json()
@@ -194,7 +213,7 @@ function ViewProfilePageContent() {
       formData.append('file', file)
       formData.append('profileId', profile.id)
 
-      const response = await fetch('/api/profile/upload-photo', {
+      const response = await fetch(buildApiUrl('/api/profile/upload-photo'), {
         method: 'POST',
         body: formData,
       })
@@ -227,7 +246,7 @@ function ViewProfilePageContent() {
     setPhotoError('')
 
     try {
-      const response = await fetch('/api/profile/delete-photo', {
+      const response = await fetch(buildApiUrl('/api/profile/delete-photo'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -254,7 +273,7 @@ function ViewProfilePageContent() {
     if (!profile) return
 
     try {
-      const endpoint = isAdminMode ? `/api/admin/profiles/${profile.id}` : '/api/profile'
+      const endpoint = isAdminMode ? `/api/admin/profiles/${profile.id}` : buildApiUrl('/api/profile')
       const method = isAdminMode ? 'PATCH' : 'PUT'
 
       const response = await fetch(endpoint, {
@@ -274,10 +293,10 @@ function ViewProfilePageContent() {
   }
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'unauthenticated' && adminCheckDone && !canAccess) {
       router.push('/login')
     }
-  }, [status, router])
+  }, [status, router, adminCheckDone, canAccess])
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -285,7 +304,7 @@ function ViewProfilePageContent() {
         // If admin mode, fetch the specific profile via admin API
         const endpoint = (isAdmin && adminProfileId)
           ? `/api/admin/profiles/${adminProfileId}`
-          : '/api/profile'
+          : buildApiUrl('/api/profile')
 
         const response = await fetch(endpoint)
         if (response.ok) {
@@ -316,14 +335,26 @@ function ViewProfilePageContent() {
         // Not admin but trying to access with ?id= - show unauthorized
         setLoading(false)
       }
-    } else if (session?.user) {
+      return
+    }
+
+    if (isImpersonationMode) {
+      if (isAdmin) {
+        fetchProfile()
+      } else {
+        setLoading(false)
+      }
+      return
+    }
+
+    if (session?.user) {
       // Normal user viewing their own profile
       fetchProfile()
     }
-  }, [session, isAdmin, adminProfileId, adminCheckDone])
+  }, [session, isAdmin, adminProfileId, adminCheckDone, isImpersonationMode, buildApiUrl])
 
   // Show loading while checking session, admin status, or loading profile
-  if (status === 'loading' || loading || (adminProfileId && !adminCheckDone)) {
+  if (status === 'loading' || loading || ((adminProfileId || isImpersonationMode) && !adminCheckDone)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -331,18 +362,18 @@ function ViewProfilePageContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
   // If trying to access with ?id= but not admin, show unauthorized
-  if (adminProfileId && !isAdmin) {
+  if ((adminProfileId || isImpersonationMode) && !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">Unauthorized: Admin access required</p>
-            <Link href="/profile" className="btn-primary">
+            <Link href={buildUrl('/profile')} className="btn-primary">
               Go to My Profile
             </Link>
           </div>
@@ -357,7 +388,7 @@ function ViewProfilePageContent() {
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">{error || 'No profile found'}</p>
-            <Link href="/profile/create" className="btn-primary">
+            <Link href={buildUrl('/profile/create')} className="btn-primary">
               Create Profile
             </Link>
           </div>
@@ -473,7 +504,7 @@ function ViewProfilePageContent() {
   const generateAboutMeSummary = () => {
     const createdBy = profile.createdBy?.toLowerCase() || 'self'
     const isMale = profile.gender === 'male'
-    const name = session.user?.name?.split(' ')[0] || 'I'
+    const name = session?.user?.name?.split(' ')[0] || 'I'
 
     // Relationship terms based on who's filling
     const subjectPronoun = isMale ? 'he' : 'she'
@@ -601,8 +632,10 @@ function ViewProfilePageContent() {
 
   const aboutMeText = profile.aboutMe || generateAboutMeSummary()
 
-  // Determine the display name - use profileUserName for admin mode, session.user.name otherwise
-  const displayName = isAdminMode ? profileUserName : (session.user?.name || 'User')
+  // Determine the display name - use profileUserName for admin/impersonation mode
+  const displayName = (isAdminMode || isImpersonationMode)
+    ? (profileUserName || 'User')
+    : (session?.user?.name || 'User')
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1330,7 +1363,7 @@ function ViewProfilePageContent() {
           section={editSection || ''}
           profile={profile as unknown as Record<string, unknown>}
           onSave={refreshProfile}
-          apiEndpoint={isAdminMode ? `/api/admin/profiles/${adminProfileId}` : '/api/profile'}
+          apiEndpoint={isAdminMode ? `/api/admin/profiles/${adminProfileId}` : buildApiUrl('/api/profile')}
           httpMethod={isAdminMode ? 'PATCH' : 'PUT'}
         />
       )}

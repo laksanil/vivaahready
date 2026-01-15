@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
+import { getTargetUserId } from '@/lib/admin'
 
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -25,9 +26,12 @@ export async function POST(request: Request) {
       profile = await prisma.profile.findUnique({
         where: { id: profileId }
       })
+      if (profile && !targetUser.isAdminView && profile.userId !== targetUser.userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      }
     } else {
       profile = await prisma.profile.findUnique({
-        where: { userId: session.user.id }
+        where: { userId: targetUser.userId }
       })
     }
 

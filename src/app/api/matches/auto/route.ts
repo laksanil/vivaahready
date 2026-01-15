@@ -3,37 +3,21 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
+import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
-
-// Check if request is from admin viewing as another user
-function getAdminViewUserId(request: Request, session: any): string | null {
-  const { searchParams } = new URL(request.url)
-  const viewAsUserId = searchParams.get('viewAsUser')
-
-  if (!viewAsUserId) return null
-
-  // Verify admin access via session
-  if (session?.user?.isAdmin) {
-    return viewAsUserId
-  }
-
-  return null
-}
 
 // GET - Get auto-matched profiles for the current user
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if admin is viewing as another user
-    const viewAsUserId = getAdminViewUserId(request, session)
-    const targetUserId = viewAsUserId || session.user.id
-    const isAdminView = !!viewAsUserId
+    const { userId: targetUserId, isAdminView } = targetUser
 
     // Get target user's profile
     const myProfile = await prisma.profile.findUnique({
@@ -240,7 +224,7 @@ export async function GET(request: Request) {
     const allMatches = [...sortedFreshMatches, ...sortedMutualMatches]
 
     // Get target user's name if admin view
-    let targetUserName = session.user.name
+    let targetUserName = session?.user?.name || 'User'
     if (isAdminView) {
       const targetUser = await prisma.user.findUnique({
         where: { id: targetUserId },
@@ -285,7 +269,7 @@ export async function GET(request: Request) {
         isApproved,
         hasPaid,
         approvalStatus: myProfile.approvalStatus,
-        canExpressInterest: isAdminView ? true : isApproved, // Admin can view all actions
+        canExpressInterest: isApproved,
       },
       myProfile: {
         id: myProfile.id,

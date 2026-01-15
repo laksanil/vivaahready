@@ -15,6 +15,7 @@ import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard
 import { ProfileData } from '@/components/ProfileCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import AdminViewBanner from '@/components/AdminViewBanner'
+import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface FeedProfile extends ProfileData {
   approvalStatus?: string
@@ -24,6 +25,7 @@ function FeedPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { viewAsUser, buildApiUrl, buildUrl, isImpersonating } = useImpersonation()
+  const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
 
   const [profiles, setProfiles] = useState<FeedProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,17 +38,23 @@ function FeedPageContent() {
   const [showMatchModal, setShowMatchModal] = useState<FeedProfile | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-  }, [status, router])
+  const canAccess = !!session || (isAdminView && isAdmin)
 
   useEffect(() => {
-    if (session) {
+    if (status === 'unauthenticated') {
+      if (!isAdminView) {
+        router.push('/login')
+      } else if (adminChecked && !isAdmin) {
+        router.push('/login')
+      }
+    }
+  }, [status, router, isAdminView, adminChecked, isAdmin])
+
+  useEffect(() => {
+    if (canAccess) {
       fetchProfiles()
     }
-  }, [session, viewAsUser])
+  }, [canAccess, viewAsUser])
 
   const fetchProfiles = async () => {
     setLoading(true)
@@ -132,7 +140,7 @@ function FeedPageContent() {
   const likedYouProfiles = filteredProfiles.filter((p) => p.theyLikedMeFirst)
   const discoverProfiles = filteredProfiles.filter((p) => !p.theyLikedMeFirst)
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
       <div className="min-h-screen bg-gray-50 py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -150,7 +158,7 @@ function FeedPageContent() {
     )
   }
 
-  if (!session) {
+  if (!canAccess) {
     return null
   }
 
@@ -171,7 +179,7 @@ function FeedPageContent() {
               </p>
             </div>
             <Link
-              href="/reconsider"
+              href={buildUrl('/reconsider')}
               className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 text-sm font-medium"
             >
               <RotateCcw className="h-4 w-4" />
@@ -214,10 +222,10 @@ function FeedPageContent() {
                 </button>
               ) : (
                 <>
-                  <Link href="/connections" className="btn-primary text-sm py-2">
+                  <Link href={buildUrl('/connections')} className="btn-primary text-sm py-2">
                     View Connections
                   </Link>
-                  <Link href="/reconsider" className="btn-secondary text-sm py-2">
+                  <Link href={buildUrl('/reconsider')} className="btn-secondary text-sm py-2">
                     Reconsider Passed
                   </Link>
                 </>
@@ -293,7 +301,7 @@ function FeedPageContent() {
             </p>
             <div className="flex gap-3">
               <Link
-                href="/connections"
+                href={buildUrl('/connections')}
                 className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
               >
                 View Connections

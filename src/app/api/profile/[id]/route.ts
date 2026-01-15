@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 export async function GET(
   request: Request,
@@ -9,6 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
+    const targetUser = await getTargetUserId(request, session)
 
     // Fetch the profile with user info
     const profile = await prisma.profile.findUnique({
@@ -34,11 +36,12 @@ export async function GET(
     // Check interest status if user is logged in
     let interestStatus = { sentByMe: false, receivedFromThem: false, mutual: false }
 
-    if (session?.user?.id && session.user.id !== profile.userId) {
+    const viewerUserId = targetUser?.userId
+    if (viewerUserId && viewerUserId !== profile.userId) {
       const sentInterest = await prisma.match.findUnique({
         where: {
           senderId_receiverId: {
-            senderId: session.user.id,
+            senderId: viewerUserId,
             receiverId: profile.userId,
           }
         }
@@ -48,7 +51,7 @@ export async function GET(
         where: {
           senderId_receiverId: {
             senderId: profile.userId,
-            receiverId: session.user.id,
+            receiverId: viewerUserId,
           }
         }
       })

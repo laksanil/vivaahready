@@ -39,6 +39,9 @@ export const PREF_AGE_MIN_MAX = Array.from({ length: 48 }, (_, i) => ({
   label: `${18 + i} years`
 }))
 
+// Legacy alias for preference age options used in tests/older code paths
+export const PREF_AGE_OPTIONS = PREF_AGE_MIN_MAX
+
 // Preferred Smoking options for partner
 export const PREF_SMOKING_OPTIONS = [
   { value: "doesnt_matter", label: "Doesn't matter" },
