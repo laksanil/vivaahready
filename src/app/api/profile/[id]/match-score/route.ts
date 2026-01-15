@@ -18,13 +18,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Helper function to format profile name as "FirstName L." from user.name
+    // Helper function to format profile name as "FirstName L" from user.name
     const formatProfileName = (userName?: string | null): string => {
       if (!userName) return 'User'
       const nameParts = userName.trim().split(' ')
       const firstName = nameParts[0] || 'User'
       const lastName = nameParts.slice(1).join(' ')
-      const lastInitial = lastName ? ` ${lastName.charAt(0).toUpperCase()}.` : ''
+      const lastInitial = lastName ? ` ${lastName.charAt(0).toUpperCase()}` : ''
       return `${firstName}${lastInitial}`
     }
 
