@@ -18,14 +18,20 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get the profile being viewed
+    // Helper function to format profile name as "FirstName L." from user.name
+    const formatProfileName = (userName?: string | null): string => {
+      if (!userName) return 'User'
+      const nameParts = userName.trim().split(' ')
+      const firstName = nameParts[0] || 'User'
+      const lastName = nameParts.slice(1).join(' ')
+      const lastInitial = lastName ? ` ${lastName.charAt(0).toUpperCase()}.` : ''
+      return `${firstName}${lastInitial}`
+    }
+
+    // Get the profile being viewed (with user for name)
     const viewedProfile = await prisma.profile.findUnique({
       where: { id: params.id },
-      include: {
-        user: {
-          select: { name: true }
-        }
-      }
+      include: { user: { select: { name: true } } },
     })
 
     if (!viewedProfile) {
@@ -33,20 +39,11 @@ export async function GET(
     }
 
     // Get the "viewer's" profile - either the actual user or the user being viewed as (admin mode)
-    let myProfile
-    let viewerName = session?.user?.name || 'User'
     const viewerUserId = targetUser.userId
 
-    if (targetUser.isAdminView || !session?.user?.name) {
-      const viewAsUser = await prisma.user.findUnique({
-        where: { id: viewerUserId },
-        select: { name: true }
-      })
-      viewerName = viewAsUser?.name || viewerName
-    }
-
-    myProfile = await prisma.profile.findUnique({
+    const myProfile = await prisma.profile.findUnique({
       where: { userId: viewerUserId },
+      include: { user: { select: { name: true } } },
     })
 
     if (!myProfile) {
@@ -71,12 +68,12 @@ export async function GET(
       myProfile: {
         profileImageUrl: myProfile.profileImageUrl,
         gender: myProfile.gender,
-        name: viewerName,
+        name: formatProfileName(myProfile.user?.name),
       },
       theirProfile: {
         profileImageUrl: viewedProfile.profileImageUrl,
         gender: viewedProfile.gender,
-        name: viewedProfile.user?.name,
+        name: formatProfileName(viewedProfile.user?.name),
       }
     })
   } catch (error) {
