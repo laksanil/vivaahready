@@ -96,6 +96,9 @@ interface ProfileData {
   employerName: string | null
   workingAs: string | null
   livesWithFamily: string | null
+  familyLocationCountry: string | null
+  familyDetails: string | null
+  openToRelocation: string | null
   createdBy: string | null
   smoking: string | null
   drinking: string | null
@@ -309,12 +312,12 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const canExpressInterest = userStatus?.canExpressInterest ?? false
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6"
+          className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6 font-medium"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -325,7 +328,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           <div className="mb-4">
             <Link
               href={`/admin/profiles/${profile.id}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
             >
               <span className="font-medium">Admin: Edit This Profile</span>
             </Link>
@@ -445,13 +448,13 @@ function ProfileCard({
   }
 
   return (
-    <div className="bg-gray-50 rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* Two Column Layout */}
       <div className="flex flex-col lg:flex-row">
         {/* Left Column - Photo & Verification */}
-        <div className="lg:w-[380px] flex-shrink-0 flex flex-col">
+        <div className="lg:w-[400px] flex-shrink-0 flex flex-col bg-gray-50">
           {/* Photo Carousel */}
-          <div className="relative bg-gray-200 h-[280px]">
+          <div className="relative bg-gray-100 h-[320px]">
             {(carouselPhotos.length > 0 || photoUrl) && !imageError ? (
               <>
                 <img
@@ -470,14 +473,14 @@ function ProfileCard({
                 {/* Zoom Button */}
                 <button
                   onClick={() => openLightbox(photoIndex)}
-                  className="absolute top-3 right-3 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+                  className="absolute top-3 right-3 p-2 bg-primary-600/80 hover:bg-primary-600 text-white transition-colors"
                   title="View full size"
                 >
                   <ZoomIn className="h-5 w-5" />
                 </button>
                 {/* Photo Counter & Navigation */}
                 {carouselPhotos.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white px-3 py-1.5 rounded-full text-sm">
+                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-primary-600/90 text-white px-3 py-1.5 text-sm">
                     <button
                       onClick={() => setPhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length)}
                       className="hover:text-gray-300"
@@ -495,8 +498,8 @@ function ProfileCard({
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-primary-100">
-                <span className="text-5xl font-semibold text-primary-600">
+              <div className="w-full h-full flex items-center justify-center bg-primary-50">
+                <span className="text-6xl font-semibold text-primary-600">
                   {getInitials(profile.user.name)}
                 </span>
               </div>
@@ -504,43 +507,43 @@ function ProfileCard({
           </div>
 
           {/* Verifications Section */}
-          <div className="bg-white border border-gray-200 rounded-lg m-4 p-4">
+          <div className="bg-white border-t border-gray-200 m-4 p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <span className="font-semibold text-gray-800">Verifications</span>
+              <span className="font-semibold text-gray-900">Verifications</span>
             </div>
-            <div className="space-y-2 text-sm text-gray-600">
+            <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 {profile.approvalStatus === 'approved' ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-primary-600" />
                 ) : (
                   <X className="w-4 h-4 text-gray-300" />
                 )}
-                <span className={profile.approvalStatus === 'approved' ? 'text-gray-700' : 'text-gray-400'}>
+                <span className={profile.approvalStatus === 'approved' ? 'text-gray-800 font-medium' : 'text-gray-400'}>
                   Profile Verified by Admin
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {profile.user.emailVerified ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-primary-600" />
                 ) : (
                   <X className="w-4 h-4 text-gray-300" />
                 )}
-                <span className={profile.user.emailVerified ? 'text-gray-700' : 'text-gray-400'}>
+                <span className={profile.user.emailVerified ? 'text-gray-800 font-medium' : 'text-gray-400'}>
                   Email Verified
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {profile.user.phoneVerified ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-primary-600" />
                 ) : (
                   <X className="w-4 h-4 text-gray-300" />
                 )}
-                <span className={profile.user.phoneVerified ? 'text-gray-700' : 'text-gray-400'}>
+                <span className={profile.user.phoneVerified ? 'text-gray-800 font-medium' : 'text-gray-400'}>
                   Phone Number Verified
                 </span>
               </div>
@@ -549,24 +552,24 @@ function ProfileCard({
         </div>
 
         {/* Right Column - Details */}
-        <div className="flex-1 bg-white">
+        <div className="flex-1 bg-white border-l border-gray-200">
           {/* Header Section */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white">
             <div className="flex items-start justify-between">
               {/* Name and Quick Info */}
               <div className="flex-1">
-                <h2 className="text-2xl font-semibold text-gray-900">{profile.user.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{profile.user.name}</h2>
 
                 {/* Quick Stats Grid */}
-                <div className="grid grid-cols-2 gap-x-8 gap-y-1 mt-3 text-sm text-gray-700">
-                  <div>{age ? `${age} yrs` : ''}{profile.height ? `, ${profile.height}` : ''}</div>
-                  <div>{profile.maritalStatus || 'Never Married'}</div>
-                  <div>{profile.languagesKnown || 'English'}</div>
-                  <div>{profile.currentLocation}</div>
-                  <div>{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}${profile.subCommunity ? ` (${profile.subCommunity})` : ''}` : (profile.religion || 'Hindu')}</div>
-                  <div>{profile.occupation?.replace(/_/g, ' ')}</div>
-                  <div>{profile.grewUpIn ? `Grew up in ${profile.grewUpIn}` : ''}</div>
-                  <div>{profile.citizenship ? `${profile.citizenship} Citizen` : ''}</div>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 mt-4 text-sm">
+                  <div className="text-gray-800 font-medium">{age ? `${age} yrs` : ''}{profile.height ? `, ${profile.height}` : ''}</div>
+                  <div className="text-gray-700">{profile.maritalStatus?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Never Married'}</div>
+                  <div className="text-gray-700">{profile.languagesKnown || 'English'}</div>
+                  <div className="text-gray-700">{profile.currentLocation}</div>
+                  <div className="text-gray-700">{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}${profile.subCommunity ? ` (${profile.subCommunity})` : ''}` : (profile.religion || 'Hindu')}</div>
+                  <div className="text-gray-700">{profile.occupation?.replace(/_/g, ' ')}</div>
+                  <div className="text-gray-700">{profile.grewUpIn ? `Grew up in ${profile.grewUpIn}` : ''}</div>
+                  <div className="text-gray-700">{profile.citizenship ? `${profile.citizenship} Citizen` : ''}</div>
                 </div>
               </div>
 
@@ -574,17 +577,17 @@ function ProfileCard({
               <div className="flex flex-col items-center gap-3 ml-6">
                 {isMutual ? (
                   <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center">
+                    <div className="w-14 h-14 bg-green-600 flex items-center justify-center">
                       <Check className="h-7 w-7 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Connected</span>
+                    <span className="text-xs text-gray-600 mt-1 font-medium">Connected</span>
                   </div>
                 ) : interestSent ? (
                   <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full bg-yellow-500 flex items-center justify-center">
+                    <div className="w-14 h-14 bg-yellow-500 flex items-center justify-center">
                       <Clock className="h-7 w-7 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Interest Sent</span>
+                    <span className="text-xs text-gray-600 mt-1 font-medium">Interest Sent</span>
                   </div>
                 ) : interestReceived ? (
                   <button
@@ -592,21 +595,21 @@ function ProfileCard({
                     disabled={isSending || !canExpressInterest}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-14 h-14 rounded-full bg-pink-500 hover:bg-pink-600 flex items-center justify-center transition-colors">
+                    <div className="w-14 h-14 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors">
                       {isSending ? (
                         <Loader2 className="h-7 w-7 text-white animate-spin" />
                       ) : (
                         <Heart className="h-7 w-7 text-white" />
                       )}
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Likes You - Accept</span>
+                    <span className="text-xs text-gray-600 mt-1 font-medium">Likes You - Accept</span>
                   </button>
                 ) : !canExpressInterest ? (
                   <Link href={buildUrl('/profile')} className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors">
+                    <div className="w-14 h-14 bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors">
                       <Lock className="h-7 w-7 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1 text-center leading-tight">Get Verified<br/>to Like</span>
+                    <span className="text-xs text-gray-600 mt-1 text-center leading-tight font-medium">Get Verified<br/>to Like</span>
                   </Link>
                 ) : (
                   <button
@@ -614,23 +617,23 @@ function ProfileCard({
                     disabled={isSending}
                     className="flex flex-col items-center"
                   >
-                    <div className="w-14 h-14 rounded-full bg-pink-500 hover:bg-pink-600 flex items-center justify-center transition-colors">
+                    <div className="w-14 h-14 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors">
                       {isSending ? (
                         <Loader2 className="h-7 w-7 text-white animate-spin" />
                       ) : (
                         <Heart className="h-7 w-7 text-white" />
                       )}
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Like</span>
+                    <span className="text-xs text-gray-600 mt-1 font-medium">Like</span>
                   </button>
                 )}
 
                 {isMutual && (
                   <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-gray-400 cursor-pointer transition-colors">
-                      <MessageCircle className="h-6 w-6 text-gray-500" />
+                    <div className="w-14 h-14 border-2 border-primary-300 flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 cursor-pointer transition-colors">
+                      <MessageCircle className="h-6 w-6 text-primary-600" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Message</span>
+                    <span className="text-xs text-gray-600 mt-1 font-medium">Message</span>
                   </div>
                 )}
 
@@ -640,7 +643,7 @@ function ProfileCard({
                   className="flex flex-col items-center mt-2"
                   title="Report this profile"
                 >
-                  <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors">
+                  <div className="w-10 h-10 border border-gray-300 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors">
                     <Flag className="h-4 w-4 text-gray-400 hover:text-orange-500" />
                   </div>
                   <span className="text-xs text-gray-400 mt-1">Report</span>
@@ -650,23 +653,23 @@ function ProfileCard({
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 bg-gray-50">
             <button
               onClick={() => setActiveTab('details')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-6 py-3 text-sm font-semibold transition-colors ${
                 activeTab === 'details'
-                  ? 'text-primary-600 border-primary-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-white bg-primary-600'
+                  : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
               }`}
             >
               Detailed Profile
             </button>
             <button
               onClick={() => setActiveTab('preferences')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-6 py-3 text-sm font-semibold transition-colors ${
                 activeTab === 'preferences'
-                  ? 'text-primary-600 border-primary-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
+                  ? 'text-white bg-primary-600'
+                  : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
               }`}
             >
               Partner Preferences
@@ -682,14 +685,14 @@ function ProfileCard({
                 {profile.aboutMe && (
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
                         </svg>
                       </div>
                     </div>
-                    <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                      <h3 className="text-lg font-semibold text-primary-600 mb-2">About {profile.user.name}</h3>
+                    <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">About {profile.user.name}</h3>
                       <p className="text-gray-700 leading-relaxed">{profile.aboutMe}</p>
                     </div>
                   </div>
@@ -698,12 +701,12 @@ function ProfileCard({
                 {/* Personal Details Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-400" />
+                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Personal Details</h3>
+                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Personal Details</h3>
                     <div className="space-y-2 text-sm">
                       {profile.height && (
                         <div className="flex items-center gap-2">
@@ -753,6 +756,12 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.disabilityDetails || profile.anyDisability}</span>
                         </div>
                       )}
+                      {profile.allergiesOrMedical && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-500 w-32 flex-shrink-0">Allergies/Medical</span>
+                          <span className="text-gray-800">{profile.allergiesOrMedical}</span>
+                        </div>
+                      )}
                       {profile.createdBy && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">Profile Created By</span>
@@ -766,14 +775,14 @@ function ProfileCard({
                 {/* Religion & Background Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
                     </div>
                   </div>
-                  <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Religion & Background</h3>
+                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Religion & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.religion && (
                         <div className="flex items-center gap-2">
@@ -914,12 +923,12 @@ function ProfileCard({
                 {/* Education & Career Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                      <GraduationCap className="w-5 h-5 text-gray-400" />
+                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                      <GraduationCap className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Education & Career</h3>
+                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Education & Career</h3>
                     <div className="space-y-2 text-sm">
                       {profile.qualification && (
                         <div className="flex items-center gap-2">
@@ -964,12 +973,12 @@ function ProfileCard({
                 {/* Family Details Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-gray-400" />
+                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Family Details</h3>
+                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Family Details</h3>
                     <div className="space-y-2 text-sm">
                       {profile.fatherName && (
                         <div className="flex items-center gap-2">
@@ -1029,6 +1038,24 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.familyLocation}</span>
                         </div>
                       )}
+                      {profile.familyLocationCountry && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Family Country</span>
+                          <span className="text-gray-800">{profile.familyLocationCountry}</span>
+                        </div>
+                      )}
+                      {profile.livesWithFamily && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Lives With Family</span>
+                          <span className="text-gray-800">{profile.livesWithFamily === 'yes' ? 'Yes' : 'No'}</span>
+                        </div>
+                      )}
+                      {profile.familyDetails && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-500 w-32 flex-shrink-0">Family Details</span>
+                          <span className="text-gray-800">{profile.familyDetails}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1036,12 +1063,12 @@ function ProfileCard({
                 {/* Location & Background Section */}
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-gray-400" />
+                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-white" />
                     </div>
                   </div>
-                  <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                    <h3 className="text-lg font-semibold text-primary-600 mb-3">Location & Background</h3>
+                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-3">Location & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.currentLocation && (
                         <div className="flex items-center gap-2">
@@ -1067,10 +1094,10 @@ function ProfileCard({
                           <span className="text-gray-800">{profile.residencyStatus}</span>
                         </div>
                       )}
-                      {profile.livesWithFamily && (
+                      {profile.openToRelocation && (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Lives With Family</span>
-                          <span className="text-gray-800">{profile.livesWithFamily === 'yes' ? 'Yes' : 'No'}</span>
+                          <span className="text-gray-500 w-32">Open to Relocate</span>
+                          <span className="text-gray-800">{profile.openToRelocation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                         </div>
                       )}
                       {profile.motherTongue && (
@@ -1088,7 +1115,19 @@ function ProfileCard({
                       {profile.linkedinProfile && (
                         <div className="flex items-center gap-2">
                           <span className="text-gray-500 w-32">LinkedIn</span>
-                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">View Profile</a>
+                          <a href={profile.linkedinProfile.startsWith('http') ? profile.linkedinProfile : `https://${profile.linkedinProfile}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">View Profile</a>
+                        </div>
+                      )}
+                      {profile.instagram && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Instagram</span>
+                          <a href={profile.instagram.startsWith('http') ? profile.instagram : `https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">@{profile.instagram.replace('@', '').replace('https://instagram.com/', '')}</a>
+                        </div>
+                      )}
+                      {profile.facebook && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500 w-32">Facebook</span>
+                          <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">View Profile</a>
                         </div>
                       )}
                     </div>
@@ -1099,14 +1138,14 @@ function ProfileCard({
                 {(profile.smoking || profile.drinking || profile.hobbies || profile.fitness || profile.interests || profile.pets) && (
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                     </div>
-                    <div className="flex-1 border-l-2 border-gray-100 pl-4 -ml-1">
-                      <h3 className="text-lg font-semibold text-primary-600 mb-3">Lifestyle</h3>
+                    <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-3">Lifestyle</h3>
                       <div className="space-y-4 text-sm">
                         {/* Smoking & Drinking Row */}
                         {(profile.smoking || profile.drinking) && (
@@ -1131,7 +1170,7 @@ function ProfileCard({
                             <span className="text-gray-500 block mb-2">Hobbies</span>
                             <div className="flex flex-wrap gap-2">
                               {profile.hobbies.split(', ').map((hobby, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
+                                <span key={idx} className="px-3 py-1 bg-primary-50 text-primary-700 text-sm border border-primary-200">
                                   {hobby}
                                 </span>
                               ))}
@@ -1144,7 +1183,7 @@ function ProfileCard({
                             <span className="text-gray-500 block mb-2">Fitness & Sports</span>
                             <div className="flex flex-wrap gap-2">
                               {profile.fitness.split(', ').map((fit, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
+                                <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 text-sm border border-green-200">
                                   {fit}
                                 </span>
                               ))}
@@ -1157,7 +1196,7 @@ function ProfileCard({
                             <span className="text-gray-500 block mb-2">Interests</span>
                             <div className="flex flex-wrap gap-2">
                               {profile.interests.split(', ').map((interest, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">
+                                <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-sm border border-purple-200">
                                   {interest}
                                 </span>
                               ))}
@@ -1180,24 +1219,24 @@ function ProfileCard({
                 {isMutual && profile.user.email && (
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full border-2 border-green-300 bg-green-50 flex items-center justify-center">
-                        <Check className="w-5 h-5 text-green-600" />
+                      <div className="w-10 h-10 bg-green-600 flex items-center justify-center">
+                        <Check className="w-5 h-5 text-white" />
                       </div>
                     </div>
-                    <div className="flex-1 border-l-2 border-green-200 pl-4 -ml-1">
-                      <h3 className="text-lg font-semibold text-green-600 mb-2">Contact Information</h3>
-                      <p className="text-green-700 text-sm mb-3">You both expressed interest - connect now!</p>
+                    <div className="flex-1 border-l-2 border-green-300 pl-4 -ml-1 bg-green-50 py-3 -my-1">
+                      <h3 className="text-lg font-bold text-green-700 mb-2">Contact Information</h3>
+                      <p className="text-green-600 text-sm mb-3 font-medium">You both expressed interest - connect now!</p>
                       <div className="space-y-2 text-sm">
                         {profile.user.email && (
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Email</span>
-                            <span className="text-gray-800 font-medium">{profile.user.email}</span>
+                            <span className="text-gray-600 w-32">Email</span>
+                            <span className="text-gray-900 font-medium">{profile.user.email}</span>
                           </div>
                         )}
                         {profile.user.phone && (
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 w-32">Phone</span>
-                            <span className="text-gray-800 font-medium">{profile.user.phone}</span>
+                            <span className="text-gray-600 w-32">Phone</span>
+                            <span className="text-gray-900 font-medium">{profile.user.phone}</span>
                           </div>
                         )}
                       </div>
@@ -1209,9 +1248,9 @@ function ProfileCard({
               /* Partner Preferences Tab */
               <div className="space-y-8">
                 {/* Section 1: What THEY are looking for (how well YOU match THEIR preferences) */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-primary-600/10 to-primary-600/5 px-4 py-3 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-primary-600">What {pronoun} Is Looking For</h3>
+                <div className="bg-white border border-gray-200 overflow-hidden">
+                  <div className="bg-primary-600 px-4 py-3">
+                    <h3 className="text-lg font-bold text-white">What {pronoun} Is Looking For</h3>
                   </div>
 
                   <div className="p-4">
@@ -1221,7 +1260,7 @@ function ProfileCard({
                         <div className="flex items-center justify-between mb-4">
                           {/* Their Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-600">
+                            <div className="w-16 h-16 overflow-hidden border-2 border-primary-600">
                               {matchProfiles.theirProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.theirProfile.profileImageUrl}
@@ -1234,12 +1273,12 @@ function ProfileCard({
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500 mt-1">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
+                            <span className="text-xs text-gray-600 mt-1 font-medium">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
                           </div>
 
                           {/* Match Score Badge */}
                           <div className="flex-1 flex justify-center">
-                            <div className="px-4 py-2 bg-green-50 rounded-full border border-green-200">
+                            <div className="px-4 py-2 bg-green-50 border border-green-300">
                               <span className="text-sm text-gray-700">
                                 You match <span className="font-bold text-green-600">{theirMatchScore.totalScore}/{theirMatchScore.maxScore}</span> of {possessivePronoun} Preferences
                               </span>
@@ -1248,7 +1287,7 @@ function ProfileCard({
 
                           {/* Your Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-400">
+                            <div className="w-16 h-16 overflow-hidden border-2 border-blue-500">
                               {matchProfiles.myProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.myProfile.profileImageUrl}
@@ -1261,7 +1300,7 @@ function ProfileCard({
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500 mt-1">You</span>
+                            <span className="text-xs text-gray-600 mt-1 font-medium">You</span>
                           </div>
                         </div>
 
@@ -1274,22 +1313,22 @@ function ProfileCard({
                     )}
 
                     {/* Preference Comparison Table */}
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-200">
                       {theirMatchScore && theirMatchScore.criteria.length > 0 ? (
                         theirMatchScore.criteria.map((criterion, index) => (
                           <div key={index} className="flex justify-between items-center py-3">
                             <div className="flex-1">
-                              <div className="text-primary-600 text-sm font-medium">{criterion.name}</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{criterion.seekerPref}</div>
+                              <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                              <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
                             </div>
                             <div className="flex-shrink-0 ml-4">
                               {criterion.matched ? (
-                                <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-green-600" />
+                                <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                  <Check className="h-4 w-4 text-white" />
                                 </div>
                               ) : (
-                                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <span className="text-gray-400 text-lg">-</span>
+                                <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
+                                  <span className="text-gray-500 text-lg">-</span>
                                 </div>
                               )}
                             </div>
@@ -1361,9 +1400,9 @@ function ProfileCard({
 
                 {/* Section 2: What YOU are looking for (how well THEY match YOUR preferences) */}
                 {yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-100/50 to-blue-50/30 px-4 py-3 border-b border-gray-200">
-                      <h3 className="text-lg font-semibold text-blue-600">What You Are Looking For</h3>
+                  <div className="bg-white border border-gray-200 overflow-hidden">
+                    <div className="bg-blue-600 px-4 py-3">
+                      <h3 className="text-lg font-bold text-white">What You Are Looking For</h3>
                     </div>
 
                     <div className="p-4">
@@ -1372,7 +1411,7 @@ function ProfileCard({
                         <div className="flex items-center justify-between mb-4">
                           {/* Your Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-400">
+                            <div className="w-16 h-16 overflow-hidden border-2 border-blue-500">
                               {matchProfiles.myProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.myProfile.profileImageUrl}
@@ -1385,12 +1424,12 @@ function ProfileCard({
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500 mt-1">You</span>
+                            <span className="text-xs text-gray-600 mt-1 font-medium">You</span>
                           </div>
 
                           {/* Match Score Badge */}
                           <div className="flex-1 flex justify-center">
-                            <div className="px-4 py-2 bg-green-50 rounded-full border border-green-200">
+                            <div className="px-4 py-2 bg-green-50 border border-green-300">
                               <span className="text-sm text-gray-700">
                                 {pronoun} matches <span className="font-bold text-green-600">{yourMatchScore.totalScore}/{yourMatchScore.maxScore}</span> of Your Preferences
                               </span>
@@ -1399,7 +1438,7 @@ function ProfileCard({
 
                           {/* Their Photo */}
                           <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-600">
+                            <div className="w-16 h-16 overflow-hidden border-2 border-primary-600">
                               {matchProfiles.theirProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.theirProfile.profileImageUrl}
@@ -1412,7 +1451,7 @@ function ProfileCard({
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-500 mt-1">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
+                            <span className="text-xs text-gray-600 mt-1 font-medium">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
                           </div>
                         </div>
 
@@ -1424,21 +1463,21 @@ function ProfileCard({
                       </div>
 
                       {/* Preference Comparison Table */}
-                      <div className="divide-y divide-gray-100">
+                      <div className="divide-y divide-gray-200">
                         {yourMatchScore.criteria.map((criterion, index) => (
                           <div key={index} className="flex justify-between items-center py-3">
                             <div className="flex-1">
-                              <div className="text-blue-600 text-sm font-medium">{criterion.name}</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{criterion.seekerPref}</div>
+                              <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                              <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
                             </div>
                             <div className="flex-shrink-0 ml-4">
                               {criterion.matched ? (
-                                <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-green-600" />
+                                <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                  <Check className="h-4 w-4 text-white" />
                                 </div>
                               ) : (
-                                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                                  <span className="text-gray-400 text-lg">-</span>
+                                <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
+                                  <span className="text-gray-500 text-lg">-</span>
                                 </div>
                               )}
                             </div>
@@ -1451,9 +1490,9 @@ function ProfileCard({
 
                 {/* Ideal Partner Description */}
                 {profile.idealPartnerDesc && (
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="text-primary-600 text-sm font-medium mb-2">{possessivePronoun} Ideal Partner Description</div>
-                    <p className="text-gray-800 text-sm">{profile.idealPartnerDesc}</p>
+                  <div className="bg-white border border-gray-200 p-4">
+                    <div className="text-gray-900 text-sm font-bold mb-2">{possessivePronoun} Ideal Partner Description</div>
+                    <p className="text-gray-700 text-sm leading-relaxed">{profile.idealPartnerDesc}</p>
                   </div>
                 )}
               </div>
@@ -1466,7 +1505,7 @@ function ProfileCard({
                   <button
                     onClick={onSendInterest}
                     disabled={isSending}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-colors disabled:opacity-50"
                   >
                     {isSending ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -1478,7 +1517,7 @@ function ProfileCard({
                 ) : (
                   <Link
                     href={buildUrl('/profile')}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-colors"
                   >
                     <Lock className="h-5 w-5" />
                     Get Verified to Like
@@ -1512,7 +1551,7 @@ function ProfileCard({
           {/* Previous button */}
           {thumbnails.length > 1 && (
             <button
-              className="absolute left-4 text-white hover:text-gray-300 p-2 rounded-full bg-black/50 hover:bg-black/70"
+              className="absolute left-4 text-white hover:text-gray-300 p-2 bg-primary-600/80 hover:bg-primary-600"
               onClick={(e) => {
                 e.stopPropagation()
                 prevPhoto()
@@ -1538,7 +1577,7 @@ function ProfileCard({
           {/* Next button */}
           {thumbnails.length > 1 && (
             <button
-              className="absolute right-4 text-white hover:text-gray-300 p-2 rounded-full bg-black/50 hover:bg-black/70"
+              className="absolute right-4 text-white hover:text-gray-300 p-2 bg-primary-600/80 hover:bg-primary-600"
               onClick={(e) => {
                 e.stopPropagation()
                 nextPhoto()

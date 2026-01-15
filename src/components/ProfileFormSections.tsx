@@ -1311,14 +1311,14 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
 
   // Handle religion change - reset community and sub-community
   const handleReligionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleChange(e)
-    setFormData(prev => ({ ...prev, community: '', subCommunity: '' }))
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value, community: '', subCommunity: '' }))
   }
 
   // Handle community change - reset sub-community
   const handleCommunityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleChange(e)
-    setFormData(prev => ({ ...prev, subCommunity: '' }))
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value, subCommunity: '' }))
   }
 
   return (
