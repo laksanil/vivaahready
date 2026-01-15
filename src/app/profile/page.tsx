@@ -27,6 +27,7 @@ import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface Profile {
   id: string
+  odNumber: string
   gender: string
   dateOfBirth: string
   age: string
@@ -665,7 +666,7 @@ function ViewProfilePageContent() {
           <div className="bg-gray-700 text-white px-4 py-3 rounded-t-lg -mx-4 -mt-6 mb-6">
             <h1 className="text-xl font-semibold">
               {displayName}
-              <span className="text-gray-300 font-normal ml-2">( {profile.id.slice(0, 10).toUpperCase()} )</span>
+              <span className="text-gray-300 font-normal ml-2">( {profile.odNumber || profile.id.slice(0, 10).toUpperCase()} )</span>
             </h1>
           </div>
 
@@ -827,7 +828,7 @@ function ViewProfilePageContent() {
                 <button onClick={() => setEditSection('basics')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
                   <span className="text-[#E91E63]">■</span> Edit Basic Info
                 </button>
-                <button onClick={() => setEditSection('preferences')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
+                <button onClick={() => setEditSection('preferences_1')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
                   <span className="text-[#E91E63]">■</span> Edit Partner Preferences
                 </button>
                 <Link href={buildUrl(`/profile/${profile.id}`)} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
@@ -929,15 +930,16 @@ function ViewProfilePageContent() {
                 </div>
               </div>
 
-              {/* 2. Location & Background */}
+              {/* 2. Education & Career (combined location + education - matches create flow) */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Location & Background</h2>
-                  <button onClick={() => setEditSection('location')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-[#E91E63] font-semibold text-lg">Education & Career</h2>
+                  <button onClick={() => setEditSection('location_education')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                {/* Location Info */}
+                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm mb-4">
                   <div className="flex">
                     <span className="text-gray-500 w-36">Location</span>
                     <span className="text-gray-400 mr-2">:</span>
@@ -961,57 +963,12 @@ function ViewProfilePageContent() {
                     </div>
                   )}
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Lives with Family</span>
+                    <span className="text-gray-500 w-36">Open to Relocation</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">
-                      {profile.livesWithFamily === 'yes' ? 'Yes' : 'No'}
-                      {profile.livesWithFamily !== 'yes' && profile.familyLocation ? ` (Family in ${profile.familyLocation})` : ''}
-                    </span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).openToRelocation) || 'Not specified'}</span>
                   </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-36">Mother Tongue</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.motherTongue || 'Not specified'}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-36">Languages Known</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.languagesKnown || 'Not specified'}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-36">LinkedIn</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">
-                      {profile.linkedinProfile ? (
-                        <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">{profile.linkedinProfile.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '').replace(/\/$/, '') || 'View Profile'}</a>
-                      ) : 'Not specified'}
-                    </span>
-                  </div>
-                  {(profile.instagram || profile.facebookInstagram) && (
-                    <div className="flex">
-                      <span className="text-gray-500 w-36">Instagram</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.instagram || profile.facebookInstagram}</span>
-                    </div>
-                  )}
-                  {profile.facebook && (
-                    <div className="flex">
-                      <span className="text-gray-500 w-36">Facebook</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.facebook}</span>
-                    </div>
-                  )}
                 </div>
-              </div>
-
-              {/* 3. Education & Career */}
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Education & Career</h2>
-                  <button onClick={() => setEditSection('education')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
-                    Edit <span className="text-xs">▶</span>
-                  </button>
-                </div>
+                {/* Education & Career Info */}
                 <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
                     <span className="text-gray-500 w-36">Highest Qualification</span>
@@ -1280,8 +1237,55 @@ function ViewProfilePageContent() {
                     <span className="text-gray-800 ml-2">{profile.allergiesOrMedical}</span>
                   </div>
                 )}
+              </div>
+
+              {/* 7. About Me */}
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-[#E91E63] font-semibold text-lg">About Me</h2>
+                  <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                    Edit <span className="text-xs">▶</span>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm mb-4">
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Mother Tongue</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.motherTongue || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Languages Known</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.languagesKnown || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">LinkedIn</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">
+                      {profile.linkedinProfile ? (
+                        profile.linkedinProfile === 'no_linkedin' ? 'No LinkedIn' : (
+                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">{profile.linkedinProfile.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '').replace(/\/$/, '') || 'View Profile'}</a>
+                        )
+                      ) : 'Not specified'}
+                    </span>
+                  </div>
+                  {(profile.instagram || profile.facebookInstagram) && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-36">Instagram</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800">{profile.instagram || profile.facebookInstagram}</span>
+                    </div>
+                  )}
+                  {profile.facebook && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-36">Facebook</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800">{profile.facebook}</span>
+                    </div>
+                  )}
+                </div>
                 {profile.aboutMe && (
-                  <div className="mt-4 pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-gray-100">
                     <span className="text-gray-500 text-sm">About Me:</span>
                     <p className="text-gray-700 mt-1">{profile.aboutMe}</p>
                   </div>
@@ -1289,67 +1293,117 @@ function ViewProfilePageContent() {
               </div>
             </div>
           ) : (
-            /* 7. Partner Preferences Tab */
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-[#E91E63] font-semibold text-lg">Partner Preferences</h2>
-                <button onClick={() => setEditSection('preferences')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
-                  Edit <span className="text-xs">▶</span>
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Age Range</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefAgeDiff || 'Not specified'}</span>
+            /* Partner Preferences Tab - Split into 2 sections */
+            <div className="divide-y divide-gray-100">
+              {/* 8. Partner Preferences (Page 1) */}
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-[#E91E63] font-semibold text-lg">Partner Preferences</h2>
+                  <button onClick={() => setEditSection('preferences_1')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                    Edit <span className="text-xs">▶</span>
+                  </button>
                 </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Height Range</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefHeight || 'Not specified'}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Caste Preference</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefCaste || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Gotra Preference</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefGotra || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Preferred Location</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefLocation || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Preferred Country</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefCountry || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Education Preference</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{formatValue(profile.prefQualification) || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Income Preference</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.prefIncome || "Doesn't matter"}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Diet Preference</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{formatValue(profile.prefDiet) || "Doesn't matter"}</span>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Age Range</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefAgeDiff || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Height Range</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefHeight || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Marital Status</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefMaritalStatus) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Religion</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefReligion) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Community</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefCommunity) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Caste Preference</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefCaste || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Gotra Preference</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefGotra || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Mother Tongue</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefMotherTongue) || "Doesn't matter"}</span>
+                  </div>
                 </div>
               </div>
-              {profile.idealPartnerDesc && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <span className="text-gray-500 text-sm">About My Ideal Partner:</span>
-                  <p className="text-gray-700 mt-1">{profile.idealPartnerDesc}</p>
+
+              {/* 9. More Preferences (Page 2) */}
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-[#E91E63] font-semibold text-lg">More Preferences</h2>
+                  <button onClick={() => setEditSection('preferences_2')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                    Edit <span className="text-xs">▶</span>
+                  </button>
                 </div>
-              )}
+                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Preferred Location</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefLocation || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Open to Relocation</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefRelocation) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Education Preference</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue(profile.prefQualification) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Occupation</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefOccupation) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Income Preference</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.prefIncome || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Diet Preference</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue(profile.prefDiet) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Smoking</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefSmoking) || "Doesn't matter"}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Drinking</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefDrinking) || "Doesn't matter"}</span>
+                  </div>
+                </div>
+                {profile.idealPartnerDesc && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <span className="text-gray-500 text-sm">About My Ideal Partner:</span>
+                    <p className="text-gray-700 mt-1">{profile.idealPartnerDesc}</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
