@@ -107,7 +107,7 @@ export async function GET(request: Request) {
 
     const profile = await prisma.profile.findUnique({
       where: { userId: targetUser.userId },
-      include: { user: { select: { name: true } } },
+      include: { user: { select: { name: true, emailVerified: true } } },
     })
 
     if (!profile) {
@@ -119,12 +119,13 @@ export async function GET(request: Request) {
     const firstName = nameParts[0] || ''
     const lastName = nameParts.slice(1).join(' ') || ''
 
-    // Return profile with firstName and lastName
+    // Return profile with firstName, lastName, and verification status
     const { user, ...profileData } = profile
     return NextResponse.json({
       ...profileData,
       firstName,
       lastName,
+      emailVerified: !!user.emailVerified,
     })
   } catch (error) {
     console.error('Profile fetch error:', error)

@@ -20,6 +20,11 @@ import {
   ZoomIn,
   ChevronLeft,
   ChevronRight,
+  CheckCircle,
+  XCircle,
+  Mail,
+  Image,
+  UserCheck,
 } from 'lucide-react'
 import ProfileEditModal from '@/components/ProfileEditModal'
 import { validateProfilePhoto } from '@/lib/faceDetection'
@@ -100,6 +105,7 @@ interface Profile {
   interests: string
   pets: string
   allergiesOrMedical: string
+  emailVerified: boolean
 }
 
 function ViewProfilePageContent() {
@@ -784,23 +790,65 @@ function ViewProfilePageContent() {
               </p>
             </div>
 
-            {/* Quick Actions */}
+            {/* Profile Info */}
             <div className="flex-1 flex flex-col justify-center">
               {/* About Me at Top */}
               <div className="mb-4 pb-3 border-b border-gray-200">
                 <p className="text-gray-700 text-sm">{aboutMeText}</p>
               </div>
 
-              {/* Quick Actions */}
-              <div className="flex flex-wrap gap-3">
-                <button onClick={() => setEditSection('basics')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
-                  <span className="text-[#E91E63]">■</span> Edit Basic Info
-                </button>
-                <button onClick={() => setEditSection('preferences_1')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
-                  <span className="text-[#E91E63]">■</span> Edit Partner Preferences
-                </button>
+              {/* Verification Status */}
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2">
+                  {profile.emailVerified ? (
+                    <span className="flex items-center gap-1.5 text-green-600 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      Email Verified
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-gray-400 text-sm">
+                      <XCircle className="h-4 w-4" />
+                      Email Not Verified
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {allPhotos.length > 0 ? (
+                    <span className="flex items-center gap-1.5 text-green-600 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      Photo Uploaded
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-gray-400 text-sm">
+                      <XCircle className="h-4 w-4" />
+                      No Photo
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {profile.approvalStatus === 'approved' ? (
+                    <span className="flex items-center gap-1.5 text-green-600 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      Admin Approved
+                    </span>
+                  ) : profile.approvalStatus === 'pending' ? (
+                    <span className="flex items-center gap-1.5 text-yellow-600 text-sm">
+                      <XCircle className="h-4 w-4" />
+                      Pending Approval
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-red-600 text-sm">
+                      <XCircle className="h-4 w-4" />
+                      Rejected
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Preview Link */}
+              <div>
                 <Link href={buildUrl(`/profile/${profile.id}`)} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
-                  <span className="text-[#E91E63]">■</span> Preview Public Profile
+                  <Eye className="h-4 w-4" /> Preview Public Profile
                 </Link>
               </div>
             </div>
