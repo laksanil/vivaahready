@@ -1177,22 +1177,18 @@ function ProfileCard({
                 )}
               </div>
             ) : (
-              /* Partner Preferences Tab */
-              <div className="space-y-8">
-                {/* Section 1: What THEY are looking for (how well YOU match THEIR preferences) */}
-                <div className="bg-white border border-gray-200 overflow-hidden">
-                  <div className="bg-primary-600 px-4 py-3">
-                    <h3 className="text-lg font-bold text-white">What {pronoun} Is Looking For</h3>
-                  </div>
-
-                  <div className="p-4">
-                    {/* Match Score Header with Photos */}
-                    {theirMatchScore && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                          {/* Their Photo */}
-                          <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 overflow-hidden border-2 border-primary-600">
+              /* Partner Preferences Tab - Professional Combined View */
+              <div className="space-y-6">
+                {/* Combined Match Comparison Card */}
+                {theirMatchScore && yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
+                  <div className="bg-white border border-gray-200 overflow-hidden">
+                    {/* Header with Both Profiles */}
+                    <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        {/* Their Profile */}
+                        <div className="flex flex-col items-center">
+                          <div className="relative group">
+                            <div className="w-20 h-20 overflow-hidden border-3 border-white shadow-lg">
                               {matchProfiles.theirProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.theirProfile.profileImageUrl}
@@ -1201,25 +1197,54 @@ function ProfileCard({
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-8 w-8 text-gray-400" />
+                                  <User className="h-10 w-10 text-gray-400" />
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-600 mt-1 font-medium">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
+                            <button
+                              onClick={() => openLightbox(0)}
+                              className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                            >
+                              <ZoomIn className="h-5 w-5 text-white" />
+                            </button>
                           </div>
+                          <span className="text-sm text-white mt-2 font-semibold">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
+                          {/* Verification Badges */}
+                          <div className="flex gap-1 mt-1">
+                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.approvalStatus === 'approved' ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
+                              {profile.approvalStatus === 'approved' ? 'Verified' : 'Pending'}
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.emailVerified ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
+                              Email
+                            </span>
+                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.phoneVerified ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
+                              Phone
+                            </span>
+                          </div>
+                        </div>
 
-                          {/* Match Score Badge */}
-                          <div className="flex-1 flex justify-center">
-                            <div className="px-4 py-2 bg-green-50 border border-green-300">
-                              <span className="text-sm text-gray-700">
-                                You match <span className="font-bold text-green-600">{theirMatchScore.totalScore}/{theirMatchScore.maxScore}</span> of {possessivePronoun} Preferences
-                              </span>
+                        {/* Match Scores in Center */}
+                        <div className="flex-1 flex flex-col items-center gap-2 px-4">
+                          <div className="text-center">
+                            <div className="text-white/80 text-xs uppercase tracking-wider mb-1">Compatibility</div>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-white/20 backdrop-blur px-3 py-2">
+                                <div className="text-2xl font-bold text-white">{theirMatchScore.totalScore}/{theirMatchScore.maxScore}</div>
+                                <div className="text-[10px] text-white/80 uppercase">You match {possessivePronoun.toLowerCase()}</div>
+                              </div>
+                              <div className="text-white/60 text-lg">&</div>
+                              <div className="bg-white/20 backdrop-blur px-3 py-2">
+                                <div className="text-2xl font-bold text-white">{yourMatchScore.totalScore}/{yourMatchScore.maxScore}</div>
+                                <div className="text-[10px] text-white/80 uppercase">{pronoun} matches yours</div>
+                              </div>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Your Photo */}
-                          <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 overflow-hidden border-2 border-blue-500">
+                        {/* Your Profile */}
+                        <div className="flex flex-col items-center">
+                          <div className="relative group">
+                            <div className="w-20 h-20 overflow-hidden border-3 border-white shadow-lg">
                               {matchProfiles.myProfile.profileImageUrl ? (
                                 <img
                                   src={matchProfiles.myProfile.profileImageUrl}
@@ -1228,286 +1253,206 @@ function ProfileCard({
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-8 w-8 text-gray-400" />
+                                  <User className="h-10 w-10 text-gray-400" />
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-gray-600 mt-1 font-medium">You</span>
                           </div>
-                        </div>
-
-                        {/* Column Headers */}
-                        <div className="flex justify-between text-sm text-gray-500 mb-2 px-1 border-b pb-2">
-                          <span className="font-medium">{possessivePronoun} Preferences</span>
-                          <span className="font-medium">You match</span>
+                          <span className="text-sm text-white mt-2 font-semibold">You</span>
+                          <div className="flex gap-1 mt-1">
+                            <span className="text-[10px] px-1.5 py-0.5 bg-green-400 text-green-900">Verified</span>
+                          </div>
                         </div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Preference Comparison Table - Split by Deal Breakers and Optional */}
-                    {theirMatchScore && theirMatchScore.criteria.length > 0 ? (
-                      <>
-                        {/* Deal Breakers Section */}
-                        {theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
-                          <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2 px-1">
-                              <div className="w-2 h-2 bg-red-500 rounded-full" />
-                              <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Must Have</span>
+                    {/* Combined Comparison Table */}
+                    <div className="p-4">
+                      {/* Table Header */}
+                      <div className="grid grid-cols-12 gap-2 pb-3 border-b-2 border-gray-200 mb-4">
+                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Criteria</div>
+                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">{possessivePronoun} Preference</div>
+                        <div className="col-span-2 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">You Match</div>
+                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Your Preference</div>
+                        <div className="col-span-1 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">{pronoun}</div>
+                      </div>
+
+                      {/* Deal Breakers Section */}
+                      {(() => {
+                        const theirDealbreakers = theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                        const yourDealbreakers = yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                        const allCriteriaNames = [...new Set([...theirDealbreakers.map(c => c.name), ...yourDealbreakers.map(c => c.name)])]
+
+                        if (allCriteriaNames.length === 0) return null
+
+                        return (
+                          <div className="mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-3 h-3 bg-red-500"></div>
+                              <span className="text-sm font-bold text-red-600 uppercase tracking-wider">Must Have (Deal Breakers)</span>
                             </div>
-                            <div className="divide-y divide-gray-200 bg-red-50/50 rounded-lg">
-                              {theirMatchScore.criteria
-                                .filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                                .map((criterion, index) => (
-                                  <div key={index} className="flex justify-between items-center py-3 px-3">
-                                    <div className="flex-1">
-                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
-                                    </div>
-                                    <div className="flex-shrink-0 ml-4">
-                                      {criterion.matched ? (
-                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                          <Check className="h-4 w-4 text-white" />
-                                        </div>
+                            <div className="bg-red-50/50 border border-red-100">
+                              {allCriteriaNames.map((name, idx) => {
+                                const theirCrit = theirDealbreakers.find(c => c.name === name)
+                                const yourCrit = yourDealbreakers.find(c => c.name === name)
+                                return (
+                                  <div key={idx} className={`grid grid-cols-12 gap-2 py-3 px-3 ${idx !== allCriteriaNames.length - 1 ? 'border-b border-red-100' : ''}`}>
+                                    <div className="col-span-3 text-sm font-semibold text-gray-900">{name}</div>
+                                    <div className="col-span-3 text-sm text-gray-600 text-center">{theirCrit?.seekerPref || '-'}</div>
+                                    <div className="col-span-2 flex justify-center">
+                                      {theirCrit ? (
+                                        theirCrit.matched ? (
+                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+                                            <Check className="h-4 w-4 text-white" />
+                                          </div>
+                                        ) : (
+                                          <div className="w-6 h-6 bg-red-400 flex items-center justify-center">
+                                            <X className="h-4 w-4 text-white" />
+                                          </div>
+                                        )
                                       ) : (
-                                        <div className="w-7 h-7 bg-red-400 flex items-center justify-center">
-                                          <X className="h-4 w-4 text-white" />
-                                        </div>
+                                        <span className="text-gray-300">-</span>
+                                      )}
+                                    </div>
+                                    <div className="col-span-3 text-sm text-gray-600 text-center">{yourCrit?.seekerPref || '-'}</div>
+                                    <div className="col-span-1 flex justify-center">
+                                      {yourCrit ? (
+                                        yourCrit.matched ? (
+                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+                                            <Check className="h-4 w-4 text-white" />
+                                          </div>
+                                        ) : (
+                                          <div className="w-6 h-6 bg-red-400 flex items-center justify-center">
+                                            <X className="h-4 w-4 text-white" />
+                                          </div>
+                                        )
+                                      ) : (
+                                        <span className="text-gray-300">-</span>
                                       )}
                                     </div>
                                   </div>
-                                ))}
+                                )
+                              })}
                             </div>
                           </div>
-                        )}
+                        )
+                      })()}
 
-                        {/* Optional Preferences Section */}
-                        {theirMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
+                      {/* Nice to Have Section */}
+                      {(() => {
+                        const theirOptional = theirMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                        const yourOptional = yourMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                        const allCriteriaNames = [...new Set([...theirOptional.map(c => c.name), ...yourOptional.map(c => c.name)])]
+
+                        if (allCriteriaNames.length === 0) return null
+
+                        return (
                           <div>
-                            <div className="flex items-center gap-2 mb-2 px-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                              <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">Nice to Have</span>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-3 h-3 bg-blue-500"></div>
+                              <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Nice to Have</span>
                             </div>
-                            <div className="divide-y divide-gray-200">
-                              {theirMatchScore.criteria
-                                .filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                                .map((criterion, index) => (
-                                  <div key={index} className="flex justify-between items-center py-3 px-1">
-                                    <div className="flex-1">
-                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
-                                    </div>
-                                    <div className="flex-shrink-0 ml-4">
-                                      {criterion.matched ? (
-                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                          <Check className="h-4 w-4 text-white" />
-                                        </div>
+                            <div className="border border-gray-200">
+                              {allCriteriaNames.map((name, idx) => {
+                                const theirCrit = theirOptional.find(c => c.name === name)
+                                const yourCrit = yourOptional.find(c => c.name === name)
+                                return (
+                                  <div key={idx} className={`grid grid-cols-12 gap-2 py-3 px-3 ${idx !== allCriteriaNames.length - 1 ? 'border-b border-gray-100' : ''} ${idx % 2 === 0 ? 'bg-gray-50/50' : ''}`}>
+                                    <div className="col-span-3 text-sm font-semibold text-gray-900">{name}</div>
+                                    <div className="col-span-3 text-sm text-gray-600 text-center">{theirCrit?.seekerPref || '-'}</div>
+                                    <div className="col-span-2 flex justify-center">
+                                      {theirCrit ? (
+                                        theirCrit.matched ? (
+                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+                                            <Check className="h-4 w-4 text-white" />
+                                          </div>
+                                        ) : (
+                                          <div className="w-6 h-6 bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-400 text-sm">-</span>
+                                          </div>
+                                        )
                                       ) : (
-                                        <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
-                                          <span className="text-gray-500 text-lg">-</span>
-                                        </div>
+                                        <span className="text-gray-300">-</span>
+                                      )}
+                                    </div>
+                                    <div className="col-span-3 text-sm text-gray-600 text-center">{yourCrit?.seekerPref || '-'}</div>
+                                    <div className="col-span-1 flex justify-center">
+                                      {yourCrit ? (
+                                        yourCrit.matched ? (
+                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
+                                            <Check className="h-4 w-4 text-white" />
+                                          </div>
+                                        ) : (
+                                          <div className="w-6 h-6 bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-400 text-sm">-</span>
+                                          </div>
+                                        )
+                                      ) : (
+                                        <span className="text-gray-300">-</span>
                                       )}
                                     </div>
                                   </div>
-                                ))}
+                                )
+                              })}
                             </div>
                           </div>
-                        )}
-                      </>
-                    ) : (
+                        )
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Fallback: Show basic preferences if no match scores */}
+                {(!theirMatchScore || !yourMatchScore || !isLoggedIn || profile.userId === viewerUserId) && (
+                  <div className="bg-white border border-gray-200 overflow-hidden">
+                    <div className="bg-primary-600 px-4 py-3">
+                      <h3 className="text-lg font-bold text-white">{possessivePronoun} Partner Preferences</h3>
+                    </div>
+                    <div className="p-4">
                       <div className="divide-y divide-gray-200">
                         {profile.prefAgeDiff && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Age</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefAgeDiff}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Age</div>
+                            <div className="text-gray-800 text-sm">{profile.prefAgeDiff}</div>
                           </div>
                         )}
                         {profile.prefHeight && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Height</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefHeight}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Height</div>
+                            <div className="text-gray-800 text-sm">{profile.prefHeight}</div>
                           </div>
                         )}
                         {profile.prefLocation && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Location</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefLocation}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Location</div>
+                            <div className="text-gray-800 text-sm">{profile.prefLocation}</div>
                           </div>
                         )}
                         {profile.prefCaste && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Caste</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefCaste}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Caste</div>
+                            <div className="text-gray-800 text-sm">{profile.prefCaste}</div>
                           </div>
                         )}
                         {profile.prefGotra && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Gotra</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefGotra}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Gotra</div>
+                            <div className="text-gray-800 text-sm">{profile.prefGotra}</div>
                           </div>
                         )}
                         {profile.prefDiet && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Diet</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefDiet}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Diet</div>
+                            <div className="text-gray-800 text-sm">{profile.prefDiet}</div>
                           </div>
                         )}
                         {profile.prefQualification && (
                           <div className="flex justify-between items-center py-3">
-                            <div>
-                              <div className="text-primary-600 text-sm">Education</div>
-                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefQualification}</div>
-                            </div>
+                            <div className="text-gray-500 text-sm font-medium">Education</div>
+                            <div className="text-gray-800 text-sm">{profile.prefQualification}</div>
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Section 2: What YOU are looking for (how well THEY match YOUR preferences) */}
-                {yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
-                  <div className="bg-white border border-gray-200 overflow-hidden">
-                    <div className="bg-blue-600 px-4 py-3">
-                      <h3 className="text-lg font-bold text-white">What You Are Looking For</h3>
-                    </div>
-
-                    <div className="p-4">
-                      {/* Match Score Header with Photos */}
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                          {/* Your Photo */}
-                          <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 overflow-hidden border-2 border-blue-500">
-                              {matchProfiles.myProfile.profileImageUrl ? (
-                                <img
-                                  src={matchProfiles.myProfile.profileImageUrl}
-                                  alt="You"
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-8 w-8 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-600 mt-1 font-medium">You</span>
-                          </div>
-
-                          {/* Match Score Badge */}
-                          <div className="flex-1 flex justify-center">
-                            <div className="px-4 py-2 bg-green-50 border border-green-300">
-                              <span className="text-sm text-gray-700">
-                                {pronoun} matches <span className="font-bold text-green-600">{yourMatchScore.totalScore}/{yourMatchScore.maxScore}</span> of Your Preferences
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Their Photo */}
-                          <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 overflow-hidden border-2 border-primary-600">
-                              {matchProfiles.theirProfile.profileImageUrl ? (
-                                <img
-                                  src={matchProfiles.theirProfile.profileImageUrl}
-                                  alt={matchProfiles.theirProfile.name || 'Profile'}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-8 w-8 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-600 mt-1 font-medium">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
-                          </div>
-                        </div>
-
-                        {/* Column Headers */}
-                        <div className="flex justify-between text-sm text-gray-500 mb-2 px-1 border-b pb-2">
-                          <span className="font-medium">Your Preferences</span>
-                          <span className="font-medium">{pronoun} matches</span>
-                        </div>
-                      </div>
-
-                      {/* Preference Comparison Table - Split by Deal Breakers and Optional */}
-                      <>
-                        {/* Deal Breakers Section */}
-                        {yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
-                          <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2 px-1">
-                              <div className="w-2 h-2 bg-red-500 rounded-full" />
-                              <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Must Have</span>
-                            </div>
-                            <div className="divide-y divide-gray-200 bg-red-50/50 rounded-lg">
-                              {yourMatchScore.criteria
-                                .filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                                .map((criterion, index) => (
-                                  <div key={index} className="flex justify-between items-center py-3 px-3">
-                                    <div className="flex-1">
-                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
-                                    </div>
-                                    <div className="flex-shrink-0 ml-4">
-                                      {criterion.matched ? (
-                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                          <Check className="h-4 w-4 text-white" />
-                                        </div>
-                                      ) : (
-                                        <div className="w-7 h-7 bg-red-400 flex items-center justify-center">
-                                          <X className="h-4 w-4 text-white" />
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Optional Preferences Section */}
-                        {yourMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
-                          <div>
-                            <div className="flex items-center gap-2 mb-2 px-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                              <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">Nice to Have</span>
-                            </div>
-                            <div className="divide-y divide-gray-200">
-                              {yourMatchScore.criteria
-                                .filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                                .map((criterion, index) => (
-                                  <div key={index} className="flex justify-between items-center py-3 px-1">
-                                    <div className="flex-1">
-                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
-                                    </div>
-                                    <div className="flex-shrink-0 ml-4">
-                                      {criterion.matched ? (
-                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                          <Check className="h-4 w-4 text-white" />
-                                        </div>
-                                      ) : (
-                                        <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
-                                          <span className="text-gray-500 text-lg">-</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-                      </>
                     </div>
                   </div>
                 )}
