@@ -784,47 +784,15 @@ function ViewProfilePageContent() {
               </p>
             </div>
 
-            {/* Quick Stats */}
-            <div className="flex-1">
+            {/* Quick Actions */}
+            <div className="flex-1 flex flex-col justify-center">
               {/* About Me at Top */}
               <div className="mb-4 pb-3 border-b border-gray-200">
                 <p className="text-gray-700 text-sm">{aboutMeText}</p>
               </div>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div className="flex">
-                  <span className="text-gray-500 w-32">Age / Height</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{age ? `${age} / ${formatHeight(profile.height)}` : formatHeight(profile.height)}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Religion / Community</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.religion || 'Hindu'}, {profile.caste || 'Not specified'}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-32">Marital Status</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{formatValue(profile.maritalStatus)}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Location</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.currentLocation || 'Not specified'}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-32">Posted by</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{formatValue(profile.createdBy) || 'Self'}</span>
-                </div>
-                <div className="flex">
-                  <span className="text-gray-500 w-36">Mother Tongue</span>
-                  <span className="text-gray-400 mr-2">:</span>
-                  <span className="text-gray-800">{profile.motherTongue || profile.languagesKnown?.split(',')[0] || 'Not specified'}</span>
-                </div>
-              </div>
 
               {/* Quick Actions */}
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button onClick={() => setEditSection('basics')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
                   <span className="text-[#E91E63]">■</span> Edit Basic Info
                 </button>
