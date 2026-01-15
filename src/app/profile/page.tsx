@@ -1436,11 +1436,6 @@ function ViewProfilePageContent() {
                       <span className="text-gray-800">{formatValue(profile.prefQualification) || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Industry</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefWorkArea) || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
                       <span className="text-gray-500 w-36">Min Income</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefIncome || "Doesn't matter"}</span>

@@ -451,16 +451,16 @@ function ProfileCard({
     <div className="bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* Two Column Layout */}
       <div className="flex flex-col lg:flex-row">
-        {/* Left Column - Photo & Verification */}
-        <div className="lg:w-[400px] flex-shrink-0 flex flex-col bg-gray-50">
-          {/* Photo Carousel */}
-          <div className="relative bg-gray-100 h-[320px]">
+        {/* Left Column - Photo & Compact Info */}
+        <div className="lg:w-[320px] flex-shrink-0 flex flex-col">
+          {/* Photo Carousel - Taller */}
+          <div className="relative bg-gray-100 h-[400px]">
             {(carouselPhotos.length > 0 || photoUrl) && !imageError ? (
               <>
                 <img
                   src={carouselPhotos.length > 0 ? carouselPhotos[photoIndex] : (photoUrl || '')}
                   alt={profile.user.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     if (photoUrl && e.currentTarget.src !== photoUrl) {
@@ -473,180 +473,127 @@ function ProfileCard({
                 {/* Zoom Button */}
                 <button
                   onClick={() => openLightbox(photoIndex)}
-                  className="absolute top-3 right-3 p-2 bg-primary-600/80 hover:bg-primary-600 text-white transition-colors"
+                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 text-white transition-colors"
                   title="View full size"
                 >
-                  <ZoomIn className="h-5 w-5" />
+                  <ZoomIn className="h-4 w-4" />
                 </button>
                 {/* Photo Counter & Navigation */}
                 {carouselPhotos.length > 1 && (
-                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-primary-600/90 text-white px-3 py-1.5 text-sm">
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white px-2 py-1 text-xs">
                     <button
                       onClick={() => setPhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length)}
                       className="hover:text-gray-300"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-3 w-3" />
                     </button>
-                    <span>{photoIndex + 1} of {carouselPhotos.length}</span>
+                    <span>{photoIndex + 1}/{carouselPhotos.length}</span>
                     <button
                       onClick={() => setPhotoIndex((prev) => (prev + 1) % carouselPhotos.length)}
                       className="hover:text-gray-300"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-3 w-3" />
                     </button>
                   </div>
                 )}
               </>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-primary-50">
-                <span className="text-6xl font-semibold text-primary-600">
+                <span className="text-5xl font-semibold text-primary-600">
                   {getInitials(profile.user.name)}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Verifications Section */}
-          <div className="bg-white border-t border-gray-200 m-4 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <span className="font-semibold text-gray-900">Verifications</span>
+          {/* Compact Verification Badges */}
+          <div className="flex items-center justify-center gap-1 py-2 px-2 bg-gray-50 border-t border-gray-200">
+            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.approvalStatus === 'approved' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+              {profile.approvalStatus === 'approved' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+              <span>Verified</span>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                {profile.approvalStatus === 'approved' ? (
-                  <Check className="w-4 h-4 text-primary-600" />
-                ) : (
-                  <X className="w-4 h-4 text-gray-300" />
-                )}
-                <span className={profile.approvalStatus === 'approved' ? 'text-gray-800 font-medium' : 'text-gray-400'}>
-                  Profile Verified by Admin
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {profile.user.emailVerified ? (
-                  <Check className="w-4 h-4 text-primary-600" />
-                ) : (
-                  <X className="w-4 h-4 text-gray-300" />
-                )}
-                <span className={profile.user.emailVerified ? 'text-gray-800 font-medium' : 'text-gray-400'}>
-                  Email Verified
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {profile.user.phoneVerified ? (
-                  <Check className="w-4 h-4 text-primary-600" />
-                ) : (
-                  <X className="w-4 h-4 text-gray-300" />
-                )}
-                <span className={profile.user.phoneVerified ? 'text-gray-800 font-medium' : 'text-gray-400'}>
-                  Phone Number Verified
-                </span>
-              </div>
+            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.user.emailVerified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+              {profile.user.emailVerified ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+              <span>Email</span>
+            </div>
+            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.user.phoneVerified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+              {profile.user.phoneVerified ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+              <span>Phone</span>
             </div>
           </div>
         </div>
 
         {/* Right Column - Details */}
-        <div className="flex-1 bg-white border-l border-gray-200">
-          {/* Header Section */}
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white">
-            <div className="flex items-start justify-between">
-              {/* Name and Quick Info */}
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900">{profile.user.name}</h2>
-
-                {/* Quick Stats Grid */}
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2 mt-4 text-sm">
-                  <div className="text-gray-800 font-medium">{age ? `${age} yrs` : ''}{profile.height ? `, ${profile.height}` : ''}</div>
-                  <div className="text-gray-700">{profile.maritalStatus?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Never Married'}</div>
-                  <div className="text-gray-700">{profile.languagesKnown || 'English'}</div>
-                  <div className="text-gray-700">{profile.currentLocation}</div>
-                  <div className="text-gray-700">{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}${profile.subCommunity ? ` (${profile.subCommunity})` : ''}` : (profile.religion || 'Hindu')}</div>
-                  <div className="text-gray-700">{profile.occupation?.replace(/_/g, ' ')}</div>
-                  <div className="text-gray-700">{profile.grewUpIn ? `Grew up in ${profile.grewUpIn}` : ''}</div>
-                  <div className="text-gray-700">{profile.citizenship ? `${profile.citizenship} Citizen` : ''}</div>
+        <div className="flex-1 bg-white border-l border-gray-200 flex flex-col">
+          {/* Compact Header */}
+          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white">
+            <div className="flex items-center justify-between gap-4">
+              {/* Name and Key Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-gray-900 truncate">{profile.user.name}</h2>
+                  <span className="text-sm text-gray-600 flex-shrink-0">{age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}</span>
+                </div>
+                {/* Quick Info Row */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-600">
+                  <span>{profile.currentLocation}</span>
+                  <span>{profile.occupation?.replace(/_/g, ' ')}</span>
+                  <span>{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}` : (profile.religion || 'Hindu')}</span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col items-center gap-3 ml-6">
+              {/* Action Buttons - Horizontal */}
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {isMutual ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 bg-green-600 flex items-center justify-center">
-                      <Check className="h-7 w-7 text-white" />
+                  <>
+                    <div className="w-10 h-10 bg-green-600 flex items-center justify-center" title="Connected">
+                      <Check className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">Connected</span>
-                  </div>
+                    <div className="w-10 h-10 border-2 border-primary-300 flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 cursor-pointer transition-colors" title="Message">
+                      <MessageCircle className="h-5 w-5 text-primary-600" />
+                    </div>
+                  </>
                 ) : interestSent ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 bg-yellow-500 flex items-center justify-center">
-                      <Clock className="h-7 w-7 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">Interest Sent</span>
+                  <div className="w-10 h-10 bg-yellow-500 flex items-center justify-center" title="Interest Sent">
+                    <Clock className="h-5 w-5 text-white" />
                   </div>
                 ) : interestReceived ? (
                   <button
                     onClick={onSendInterest}
                     disabled={isSending || !canExpressInterest}
-                    className="flex flex-col items-center"
+                    className="w-10 h-10 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors"
+                    title="Likes You - Accept"
                   >
-                    <div className="w-14 h-14 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors">
-                      {isSending ? (
-                        <Loader2 className="h-7 w-7 text-white animate-spin" />
-                      ) : (
-                        <Heart className="h-7 w-7 text-white" />
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">Likes You - Accept</span>
+                    {isSending ? (
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    ) : (
+                      <Heart className="h-5 w-5 text-white" />
+                    )}
                   </button>
                 ) : !canExpressInterest ? (
-                  <Link href={buildUrl('/profile')} className="flex flex-col items-center">
-                    <div className="w-14 h-14 bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors">
-                      <Lock className="h-7 w-7 text-white" />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 text-center leading-tight font-medium">Get Verified<br/>to Like</span>
+                  <Link href={buildUrl('/profile')} className="w-10 h-10 bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors" title="Get Verified to Like">
+                    <Lock className="h-5 w-5 text-white" />
                   </Link>
                 ) : (
                   <button
                     onClick={onSendInterest}
                     disabled={isSending}
-                    className="flex flex-col items-center"
+                    className="w-10 h-10 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors"
+                    title="Like"
                   >
-                    <div className="w-14 h-14 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors">
-                      {isSending ? (
-                        <Loader2 className="h-7 w-7 text-white animate-spin" />
-                      ) : (
-                        <Heart className="h-7 w-7 text-white" />
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">Like</span>
+                    {isSending ? (
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    ) : (
+                      <Heart className="h-5 w-5 text-white" />
+                    )}
                   </button>
                 )}
-
-                {isMutual && (
-                  <div className="flex flex-col items-center">
-                    <div className="w-14 h-14 border-2 border-primary-300 flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 cursor-pointer transition-colors">
-                      <MessageCircle className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">Message</span>
-                  </div>
-                )}
-
-                {/* Report Button */}
                 <button
                   onClick={onReport}
-                  className="flex flex-col items-center mt-2"
+                  className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors"
                   title="Report this profile"
                 >
-                  <div className="w-10 h-10 border border-gray-300 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors">
-                    <Flag className="h-4 w-4 text-gray-400 hover:text-orange-500" />
-                  </div>
-                  <span className="text-xs text-gray-400 mt-1">Report</span>
+                  <Flag className="h-3.5 w-3.5 text-gray-400" />
                 </button>
               </div>
             </div>
@@ -656,17 +603,17 @@ function ProfileCard({
           <div className="flex border-b border-gray-200 bg-gray-50">
             <button
               onClick={() => setActiveTab('details')}
-              className={`px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`px-4 py-2 text-sm font-semibold transition-colors ${
                 activeTab === 'details'
                   ? 'text-white bg-primary-600'
                   : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
               }`}
             >
-              Detailed Profile
+              Details
             </button>
             <button
               onClick={() => setActiveTab('preferences')}
-              className={`px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`px-4 py-2 text-sm font-semibold transition-colors ${
                 activeTab === 'preferences'
                   ? 'text-white bg-primary-600'
                   : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
@@ -676,95 +623,91 @@ function ProfileCard({
             </button>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6 max-h-[500px] overflow-y-auto">
+          {/* Tab Content - Full height with scroll */}
+          <div className="flex-1 p-4 overflow-y-auto">
             {activeTab === 'details' ? (
               /* Detailed Profile Tab */
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* About Section */}
                 {profile.aboutMe && (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
-                        </svg>
-                      </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
+                      </svg>
                     </div>
-                    <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">About {profile.user.name}</h3>
-                      <p className="text-gray-700 leading-relaxed">{profile.aboutMe}</p>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-gray-900 mb-1">About</h3>
+                      <p className="text-sm text-gray-700 leading-relaxed">{profile.aboutMe}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Personal Details Section */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Personal Details</h3>
-                    <div className="space-y-2 text-sm">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Personal Details</h3>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                       {profile.height && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Height</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Height:</span>
                           <span className="text-gray-800">{profile.height}</span>
                         </div>
                       )}
                       {profile.weight && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Weight</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Weight:</span>
                           <span className="text-gray-800">{profile.weight}</span>
                         </div>
                       )}
                       {profile.maritalStatus && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Marital Status</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Marital:</span>
                           <span className="text-gray-800">{profile.maritalStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                         </div>
                       )}
                       {profile.hasChildren && profile.maritalStatus !== 'never_married' && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Children</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Children:</span>
                           <span className="text-gray-800">{profile.hasChildren.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                         </div>
                       )}
                       {profile.bloodGroup && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Blood Group</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Blood:</span>
                           <span className="text-gray-800">{profile.bloodGroup}</span>
                         </div>
                       )}
                       {profile.dietaryPreference && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Diet</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Diet:</span>
                           <span className="text-gray-800">{profile.dietaryPreference}</span>
                         </div>
                       )}
                       {profile.healthInfo && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Health Info</span>
+                        <div className="flex items-center gap-1 col-span-2">
+                          <span className="text-gray-500">Health:</span>
                           <span className="text-gray-800">{profile.healthInfo}</span>
                         </div>
                       )}
                       {profile.anyDisability && profile.anyDisability !== 'none' && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Disability</span>
+                        <div className="flex items-center gap-1 col-span-2">
+                          <span className="text-gray-500">Disability:</span>
                           <span className="text-gray-800">{profile.disabilityDetails || profile.anyDisability}</span>
                         </div>
                       )}
                       {profile.allergiesOrMedical && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-gray-500 w-32 flex-shrink-0">Allergies/Medical</span>
+                        <div className="flex items-start gap-1 col-span-2">
+                          <span className="text-gray-500 flex-shrink-0">Allergies:</span>
                           <span className="text-gray-800">{profile.allergiesOrMedical}</span>
                         </div>
                       )}
                       {profile.createdBy && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Profile Created By</span>
+                        <div className="flex items-center gap-1 col-span-2">
+                          <span className="text-gray-500">Created By:</span>
                           <span className="text-gray-800">{profile.createdBy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                         </div>
                       )}
@@ -773,11 +716,10 @@ function ProfileCard({
                 </div>
 
                 {/* Religion & Background Section */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
                     </div>
                   </div>

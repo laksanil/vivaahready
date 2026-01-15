@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
+import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -1983,15 +1983,6 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Doesn&apos;t Matter</option>
                 {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Industry</label>
-                <DealBreakerToggle field="prefWorkArea" formData={formData} setFormData={setFormData} />
-              </div>
-              <select name="prefWorkArea" value={formData.prefWorkArea as string || ''} onChange={handleChange} className="input-field">
-                {PREF_WORK_AREA_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
             </div>
             <div>
