@@ -23,6 +23,9 @@ export const adminLinks = {
   // View user's profile page
   profile: (profileId: string, userId: string) => adminViewLink(`/profile/${profileId}`, userId),
 
+  // View user's own profile (settings page)
+  myProfile: (userId: string) => adminViewLink('/profile', userId),
+
   // View user's dashboard
   dashboard: (userId: string) => adminViewLink('/dashboard', userId),
 
@@ -37,4 +40,22 @@ export const adminLinks = {
 
   // View user's reconsider page (declined profiles)
   reconsider: (userId: string) => adminViewLink('/reconsider', userId),
+
+  // Admin user detail page
+  userDetail: (userId: string) => `/admin/users/${userId}`,
+
+  // Admin user edit page
+  userEdit: (userId: string) => `/admin/users/${userId}/edit`,
 }
+
+/**
+ * All pages that support admin impersonation via viewAsUser
+ */
+export const IMPERSONATION_PAGES = [
+  '/dashboard',
+  '/feed',
+  '/connections',
+  '/messages',
+  '/reconsider',
+  '/profile',
+] as const

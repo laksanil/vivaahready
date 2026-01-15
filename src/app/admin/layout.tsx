@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
-  UserPlus, Trash2
+  UserPlus, Trash2, UserCog
 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -109,6 +109,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <ClipboardCheck className="h-5 w-5 mr-3" />
               Approvals
+            </Link>
+            <Link
+              href="/admin/users"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname.startsWith('/admin/users') ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <UserCog className="h-5 w-5 mr-3" />
+              Users
             </Link>
             <Link
               href="/admin/profiles"
