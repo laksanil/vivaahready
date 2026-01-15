@@ -61,6 +61,8 @@ function DashboardContent() {
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
+  const [creatingProfile, setCreatingProfile] = useState(false)
+  const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -68,8 +70,65 @@ function DashboardContent() {
     }
   }, [status, router])
 
-  // Auto-show create profile modal if user needs to create profile
+  // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
+    const handleGoogleAuthCallback = async () => {
+      if (status !== 'authenticated' || !shouldCreateProfile || !session?.user?.email) return
+
+      // Check if there's stored form data from before Google auth
+      const storedFormData = sessionStorage.getItem('signupFormData')
+      if (!storedFormData) return
+
+      // Prevent duplicate profile creation
+      if (creatingProfile || createdProfileId) return
+
+      setCreatingProfile(true)
+
+      try {
+        const formData = JSON.parse(storedFormData)
+
+        // Create profile with stored form data
+        const profileResponse = await fetch('/api/profile/create-from-modal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: session.user.email,
+            ...formData,
+          }),
+        })
+
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json()
+          setCreatedProfileId(profileData.profileId)
+
+          // Clear the stored form data
+          sessionStorage.removeItem('signupFormData')
+
+          // Redirect to photos upload page
+          router.push(`/profile/photos?profileId=${profileData.profileId}&fromSignup=true`)
+        } else {
+          // If profile creation fails, show the modal to let user complete manually
+          sessionStorage.removeItem('signupFormData')
+          setShowCreateProfileModal(true)
+        }
+      } catch (error) {
+        console.error('Error creating profile after Google auth:', error)
+        sessionStorage.removeItem('signupFormData')
+        setShowCreateProfileModal(true)
+      } finally {
+        setCreatingProfile(false)
+      }
+    }
+
+    handleGoogleAuthCallback()
+  }, [status, shouldCreateProfile, session?.user?.email, creatingProfile, createdProfileId, router])
+
+  // Auto-show create profile modal if user needs to create profile (and not handling Google auth)
+  useEffect(() => {
+    // Don't show modal if we're handling Google auth callback
+    const hasStoredFormData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData')
+    if (hasStoredFormData && shouldCreateProfile) return
+
     if (status === 'authenticated' && needsProfile && (shouldCreateProfile || !showCreateProfileModal)) {
       // Small delay to ensure page is ready
       const timer = setTimeout(() => {
@@ -77,7 +136,7 @@ function DashboardContent() {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [status, needsProfile, shouldCreateProfile])
+  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal])
 
   useEffect(() => {
     if (isApproved) {

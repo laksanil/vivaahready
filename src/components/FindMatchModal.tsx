@@ -121,19 +121,21 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     formData.citizenship &&
     (!isUSALocation || formData.zipCode) && // zipCode only required for USA
     formData.qualification &&
-    formData.occupation
+    formData.occupation &&
+    formData.openToRelocation // relocation is now required
   )
 
-  // Family section validation - Family Location and Family Values are required
-  const familyLocationValue = formData.familyLocation as string || ''
+  // Family section validation - Family Location Country and Family Values are required
+  const familyLocationCountryValue = formData.familyLocationCountry as string || ''
   const familyValuesValue = formData.familyValues as string || ''
-  const isFamilyComplete = familyLocationValue !== '' && familyValuesValue !== ''
+  const isFamilyComplete = familyLocationCountryValue !== '' && familyValuesValue !== ''
 
-  // Lifestyle section validation - Diet, Smoking, Drinking are required
+  // Lifestyle section validation - Diet, Smoking, Drinking, Pets are required
   const dietValue = formData.dietaryPreference as string || ''
   const smokingValue = formData.smoking as string || ''
   const drinkingValue = formData.drinking as string || ''
-  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== ''
+  const petsValue = formData.pets as string || ''
+  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' && petsValue !== ''
 
   // About Me section validation (LinkedIn is required)
   const linkedinUrl = formData.linkedinProfile as string || ''

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS } from '@/lib/constants'
+import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_WORK_AREA_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -550,6 +550,19 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           </div>
         </div>
       )}
+
+      {/* Relocation */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Open to Relocation <span className="text-red-500">*</span></label>
+          <select name="openToRelocation" value={formData.openToRelocation as string || ''} onChange={handleChange} className="input-field" required>
+            <option value="">Select</option>
+            {RELOCATION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
     </>
   )
 }
@@ -713,8 +726,16 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
         <div>
-          <label className="form-label">Family Location <span className="text-red-500">*</span></label>
-          <input type="text" name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" placeholder="Bay Area, CA" required />
+          <label className="form-label">Family Location Country <span className="text-red-500">*</span></label>
+          <select name="familyLocationCountry" value={formData.familyLocationCountry as string || ''} onChange={handleChange} className="input-field" required>
+            <option value="">Select Country</option>
+            {FAMILY_LOCATION_COUNTRIES.map(country => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
+          {(formData.familyLocationCountry as string) === 'Other' && (
+            <input type="text" name="familyLocationCountryOther" value={formData.familyLocationCountryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          )}
         </div>
         <div>
           <label className="form-label">Family Values <span className="text-red-500">*</span></label>
@@ -933,8 +954,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
       </div>
 
       <div>
-        <label className="form-label">Pets</label>
-        <select name="pets" value={formData.pets as string || ''} onChange={handleChange} className="input-field">
+        <label className="form-label">Pets <span className="text-red-500">*</span></label>
+        <select name="pets" value={formData.pets as string || ''} onChange={handleChange} className="input-field" required>
           <option value="">Select</option>
           <option value="have_love">Have pets and love them</option>
           <option value="no_but_love">Don't have, but love pets</option>
@@ -1043,10 +1064,10 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
 
   return (
     <div className="space-y-4">
-      {/* Health & Wellness Section - Ask first before About Me */}
-      <div className="space-y-4">
+      {/* Health & Wellness Section - Condensed layout */}
+      <div className="space-y-3">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Health & Wellness</h4>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="form-label">Blood Group</label>
             <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
@@ -1062,25 +1083,25 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
               <option value="unknown">Don't Know</option>
             </select>
           </div>
+          <div className="col-span-2">
+            <label className="form-label">Any Disability</label>
+            <select name="anyDisability" value={formData.anyDisability as string || ''} onChange={handleChange} className="input-field">
+              <option value="">Select</option>
+              {DISABILITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div>
-          <label className="form-label">Any Disability</label>
-          <select name="anyDisability" value={formData.anyDisability as string || ''} onChange={handleChange} className="input-field">
-            <option value="">Select</option>
-            <option value="none">None</option>
-            <option value="physical">Physical</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        {(formData.anyDisability === 'physical' || formData.anyDisability === 'other') && (
+        {(formData.anyDisability as string) && (formData.anyDisability as string) !== 'none' && (formData.anyDisability as string) !== '' && (
           <div>
-            <label className="form-label">Please specify disability details</label>
-            <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Enter details" />
+            <label className="form-label">Please specify details</label>
+            <input type="text" name="disabilityDetails" value={formData.disabilityDetails as string || ''} onChange={handleChange} className="input-field" placeholder="Enter details about your condition" />
           </div>
         )}
         <div>
           <label className="form-label">Allergies or Medical Conditions</label>
-          <textarea name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field min-h-[60px]" placeholder="e.g., None, Peanut allergy" />
+          <input type="text" name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., None, Peanut allergy" />
         </div>
       </div>
 
@@ -1566,22 +1587,38 @@ function DealBreakerToggle({
   field,
   formData,
   setFormData,
-  label
+  label,
+  relatedField
 }: {
   field: string
   formData: Record<string, unknown>
   setFormData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
   label?: string
+  relatedField?: string // The actual preference field name to clear "doesn't matter" from
 }) {
   const fieldName = `${field}IsDealbreaker`
   const isChecked = formData[fieldName] === true || formData[fieldName] === 'true'
+
+  const handleToggle = (checked: boolean) => {
+    const updates: Record<string, unknown> = { [fieldName]: checked }
+
+    // If turning on deal-breaker and the related field is "doesn't matter", clear it
+    if (checked && relatedField) {
+      const currentValue = formData[relatedField] as string || ''
+      if (currentValue === 'doesnt_matter' || currentValue === '') {
+        updates[relatedField] = '' // Clear the value to force user to make a real selection
+      }
+    }
+
+    setFormData(prev => ({ ...prev, ...updates }))
+  }
 
   return (
     <label className="flex items-center gap-1.5 cursor-pointer select-none">
       <input
         type="checkbox"
         checked={isChecked}
-        onChange={(e) => setFormData(prev => ({ ...prev, [fieldName]: e.target.checked }))}
+        onChange={(e) => handleToggle(e.target.checked)}
         className="rounded border-red-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5"
       />
       <span className={`text-xs ${isChecked ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
@@ -1589,6 +1626,12 @@ function DealBreakerToggle({
       </span>
     </label>
   )
+}
+
+// Helper to check if deal-breaker is enabled for a field
+function isDealbreaker(formData: Record<string, unknown>, field: string): boolean {
+  const fieldName = `${field}IsDealbreaker`
+  return formData[fieldName] === true || formData[fieldName] === 'true'
 }
 
 // Section header with deal-breaker toggle
@@ -1826,35 +1869,38 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="form-label mb-0">Diet <span className="text-red-500">*</span></label>
-                <DealBreakerToggle field="prefDiet" formData={formData} setFormData={setFormData} />
+                <DealBreakerToggle field="prefDiet" formData={formData} setFormData={setFormData} relatedField="prefDiet" />
               </div>
               <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handleChange} className="input-field" required>
                 <option value="">Select</option>
-                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+                {!isDealbreaker(formData, 'prefDiet') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
                 <option value="veg">Vegetarian Only</option>
                 <option value="veg_eggetarian">Veg / Eggetarian</option>
                 <option value="non_veg_ok">Non-Veg OK</option>
               </select>
+              {isDealbreaker(formData, 'prefDiet') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="form-label mb-0">Smoking <span className="text-red-500">*</span></label>
-                <DealBreakerToggle field="prefSmoking" formData={formData} setFormData={setFormData} />
+                <DealBreakerToggle field="prefSmoking" formData={formData} setFormData={setFormData} relatedField="prefSmoking" />
               </div>
               <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handleChange} className="input-field" required>
                 <option value="">Select</option>
-                {PREF_SMOKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                {PREF_SMOKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefSmoking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
+              {isDealbreaker(formData, 'prefSmoking') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="form-label mb-0">Drinking <span className="text-red-500">*</span></label>
-                <DealBreakerToggle field="prefDrinking" formData={formData} setFormData={setFormData} />
+                <DealBreakerToggle field="prefDrinking" formData={formData} setFormData={setFormData} relatedField="prefDrinking" />
               </div>
               <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handleChange} className="input-field" required>
                 <option value="">Select</option>
-                {PREF_DRINKING_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                {PREF_DRINKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefDrinking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
+              {isDealbreaker(formData, 'prefDrinking') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
           </div>
         </div>
@@ -1912,10 +1958,11 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Relocation</label>
+                <label className="form-label mb-0">Add profiles open to relocation?</label>
                 <DealBreakerToggle field="prefRelocation" formData={formData} setFormData={setFormData} />
               </div>
-              <select name="prefRelocation" value={formData.prefRelocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <select name="prefRelocation" value={formData.prefRelocation as string || ''} onChange={handleChange} className="input-field">
+                <option value="">Select</option>
                 {PREF_RELOCATION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
             </div>
@@ -1998,16 +2045,15 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Family Location</label>
+                <label className="form-label mb-0">Family Location Country</label>
                 <DealBreakerToggle field="prefFamilyLocation" formData={formData} setFormData={setFormData} />
               </div>
-              <select name="prefFamilyLocation" value={formData.prefFamilyLocation as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <select name="prefFamilyLocationCountry" value={formData.prefFamilyLocationCountry as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
                 <option value="same_as_mine">Same as Mine</option>
-                <option value="USA">USA</option>
-                <option value="India">India</option>
-                <option value="UK">UK</option>
-                <option value="Canada">Canada</option>
+                {FAMILY_LOCATION_COUNTRIES.filter(c => c !== 'Other').map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -2018,35 +2064,75 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
           <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Mother Tongue</label>
-                <DealBreakerToggle field="prefMotherTongue" formData={formData} setFormData={setFormData} />
-              </div>
-              <select name="prefMotherTongue" value={formData.prefMotherTongue as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-                {PREF_MOTHER_TONGUE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
+          {/* Mother Tongue - Multi-select */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0">Mother Tongue (select all that apply)</label>
+              <DealBreakerToggle field="prefMotherTongue" formData={formData} setFormData={setFormData} />
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Sub-Community</label>
-                <DealBreakerToggle field="prefSubCommunity" formData={formData} setFormData={setFormData} />
+            <div className="p-2 border rounded bg-gray-50 max-h-28 overflow-y-auto">
+              <div className="grid grid-cols-4 gap-1">
+                {PREF_MOTHER_TONGUE_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (
+                  <label key={opt.value} className="flex items-center gap-1.5 text-sm cursor-pointer hover:bg-white px-1.5 py-1 rounded">
+                    <input
+                      type="checkbox"
+                      checked={isChecked('prefMotherTongueList', opt.value)}
+                      onChange={(e) => handleCheckboxChange('prefMotherTongueList', opt.value, e.target.checked)}
+                      className="rounded text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                    />
+                    <span className="truncate">{opt.label}</span>
+                  </label>
+                ))}
               </div>
-              <select name="prefSubCommunity" value={formData.prefSubCommunity as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-                <option value="doesnt_matter">Doesn&apos;t Matter</option>
-                <option value="same_as_mine">Same as Mine</option>
-              </select>
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="form-label mb-0">Pets</label>
-                <DealBreakerToggle field="prefPets" formData={formData} setFormData={setFormData} />
+            <p className="text-xs text-gray-500 mt-1">{(formData.prefMotherTongueList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
+          </div>
+          {/* Sub-Community - Multi-select based on selected religion/community */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0">Sub-Community (select all that apply)</label>
+              <DealBreakerToggle field="prefSubCommunity" formData={formData} setFormData={setFormData} />
+            </div>
+            <div className="p-2 border rounded bg-gray-50 max-h-28 overflow-y-auto">
+              <div className="grid grid-cols-3 gap-1">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer hover:bg-white px-1.5 py-1 rounded">
+                  <input
+                    type="checkbox"
+                    checked={isChecked('prefSubCommunityList', 'same_as_mine')}
+                    onChange={(e) => handleCheckboxChange('prefSubCommunityList', 'same_as_mine', e.target.checked)}
+                    className="rounded text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                  />
+                  <span className="font-medium">Same as Mine</span>
+                </label>
+                {prefReligion && prefReligion !== 'doesnt_matter' && (formData.prefCommunity as string) && (formData.prefCommunity as string) !== 'doesnt_matter' && (formData.prefCommunity as string) !== 'same_as_mine' && (
+                  getSubCommunities(prefReligion, formData.prefCommunity as string).map((subCommunity) => (
+                    <label key={subCommunity} className="flex items-center gap-1.5 text-sm cursor-pointer hover:bg-white px-1.5 py-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={isChecked('prefSubCommunityList', subCommunity)}
+                        onChange={(e) => handleCheckboxChange('prefSubCommunityList', subCommunity, e.target.checked)}
+                        className="rounded text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                      />
+                      <span className="truncate">{subCommunity}</span>
+                    </label>
+                  ))
+                )}
               </div>
-              <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-                {PREF_PETS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {(formData.prefSubCommunityList as string || '').split(', ').filter(v => v).length || 0} selected
+              {(!prefReligion || prefReligion === 'doesnt_matter' || !(formData.prefCommunity as string) || (formData.prefCommunity as string) === 'doesnt_matter' || (formData.prefCommunity as string) === 'same_as_mine') && ' (select a specific community in Religion section to see sub-communities)'}
+            </p>
+          </div>
+          {/* Pets */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0">Pets</label>
+              <DealBreakerToggle field="prefPets" formData={formData} setFormData={setFormData} />
+            </div>
+            <select name="prefPets" value={formData.prefPets as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              {PREF_PETS_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+            </select>
           </div>
         </div>
       )}

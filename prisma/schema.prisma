@@ -178,6 +178,7 @@ model Profile {
   residencyStatus   String?
   grewUpIn          String?
   country           String?
+  openToRelocation  String?  // yes, no, depends - User's willingness to relocate
   promoCode         String?
   referralSource    String?
   isImported        Boolean  @default(false)

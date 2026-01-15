@@ -62,11 +62,41 @@ export const PREF_MARITAL_STATUS_OPTIONS = [
   { value: "widowed_ok", label: "Widowed OK" },
 ]
 
-// Relocation Preference options
+// Relocation Preference options for partner preferences
 export const PREF_RELOCATION_OPTIONS = [
-  { value: "doesnt_matter", label: "Doesn't matter" },
-  { value: "willing", label: "Must be willing to relocate" },
-  { value: "not_required", label: "No relocation needed" },
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+]
+
+// Relocation options for user's own profile
+export const RELOCATION_OPTIONS = [
+  { value: "yes", label: "Yes, open to relocation" },
+  { value: "no", label: "No, not open to relocation" },
+  { value: "depends", label: "Depends on opportunity" },
+]
+
+// Disability options
+export const DISABILITY_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "visual", label: "Visual impairment" },
+  { value: "hearing", label: "Hearing impairment" },
+  { value: "mobility", label: "Mobility/Physical disability" },
+  { value: "cognitive", label: "Cognitive disability" },
+  { value: "chronic_illness", label: "Chronic illness" },
+  { value: "other", label: "Other" },
+]
+
+// Family Location Country options
+export const FAMILY_LOCATION_COUNTRIES = [
+  "USA",
+  "India",
+  "Canada",
+  "UK",
+  "Australia",
+  "UAE",
+  "Singapore",
+  "Germany",
+  "Other",
 ]
 
 // Mother Tongue preference options
