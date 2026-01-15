@@ -277,7 +277,7 @@ export async function PUT(request: Request) {
     if (body.firstName !== undefined || body.lastName !== undefined) {
       // Get current user to preserve existing name parts
       const currentUser = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: targetUser.userId },
         select: { name: true },
       })
 
@@ -290,13 +290,13 @@ export async function PUT(request: Request) {
       const fullName = `${newFirstName} ${newLastName}`.trim()
 
       await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: targetUser.userId },
         data: { name: fullName },
       })
     }
 
     const profile = await prisma.profile.update({
-      where: { userId: session.user.id },
+      where: { userId: targetUser.userId },
       data: updateData,
     })
 

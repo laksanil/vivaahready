@@ -344,6 +344,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           viewerUserId={viewerUserId}
           isLoggedIn={canAccess}
           onReport={() => setShowReportModal(true)}
+          buildUrl={buildUrl}
         />
 
         {/* Report Modal */}
@@ -386,6 +387,7 @@ interface ProfileCardProps {
   viewerUserId?: string | null
   isLoggedIn?: boolean
   onReport?: () => void
+  buildUrl: (path: string) => string
 }
 
 function ProfileCard({
@@ -397,6 +399,7 @@ function ProfileCard({
   onReport,
   yourMatchScore,
   matchProfiles,
+  buildUrl,
   viewerUserId,
   isLoggedIn,
 }: ProfileCardProps) {

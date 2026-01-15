@@ -234,6 +234,7 @@ function ConnectionsPageContent() {
                       profile={profile}
                       onMessage={() => openMessageModal(profile)}
                       isNew
+                      buildUrl={buildUrl}
                     />
                   ))}
                 </div>
@@ -252,6 +253,7 @@ function ConnectionsPageContent() {
                       key={profile.id}
                       profile={profile}
                       onMessage={() => openMessageModal(profile)}
+                      buildUrl={buildUrl}
                     />
                   ))}
                 </div>
@@ -298,9 +300,10 @@ interface ConnectionCardProps {
   profile: ConnectionProfile
   onMessage: () => void
   isNew?: boolean
+  buildUrl: (path: string) => string
 }
 
-function ConnectionCard({ profile, onMessage, isNew }: ConnectionCardProps) {
+function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardProps) {
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
   const [photoIndex, setPhotoIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
