@@ -138,6 +138,29 @@ interface ProfileData {
   prefFamilyValues: string | null
   prefFamilyLocation: string | null
   prefPets: string | null
+  // Deal-breaker flags
+  prefAgeIsDealbreaker: boolean
+  prefHeightIsDealbreaker: boolean
+  prefMaritalStatusIsDealbreaker: boolean
+  prefCommunityIsDealbreaker: boolean
+  prefGotraIsDealbreaker: boolean
+  prefDietIsDealbreaker: boolean
+  prefSmokingIsDealbreaker: boolean
+  prefDrinkingIsDealbreaker: boolean
+  prefLocationIsDealbreaker: boolean
+  prefCitizenshipIsDealbreaker: boolean
+  prefGrewUpInIsDealbreaker: boolean
+  prefRelocationIsDealbreaker: boolean
+  prefEducationIsDealbreaker: boolean
+  prefWorkAreaIsDealbreaker: boolean
+  prefIncomeIsDealbreaker: boolean
+  prefOccupationIsDealbreaker: boolean
+  prefFamilyValuesIsDealbreaker: boolean
+  prefFamilyLocationIsDealbreaker: boolean
+  prefMotherTongueIsDealbreaker: boolean
+  prefSubCommunityIsDealbreaker: boolean
+  prefPetsIsDealbreaker: boolean
+  prefReligionIsDealbreaker: boolean
   user: {
     id: string
     name: string
@@ -675,36 +698,44 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Two Column Grid for Details */}
+        {/* Two Column Grid for Details - Organized to match Edit Profile sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Personal Details */}
+          {/* BASIC INFO Section */}
           <div className="space-y-1">
-            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Personal</h3>
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Basic Info</h3>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
               {profile.height && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.height}</span></>}
-              {profile.weight && <><span className="text-gray-500">Weight</span><span className="text-gray-800">{profile.weight}</span></>}
-              {profile.maritalStatus && <><span className="text-gray-500">Marital</span><span className="text-gray-800">{formatValue(profile.maritalStatus)}</span></>}
+              {profile.maritalStatus && <><span className="text-gray-500">Marital Status</span><span className="text-gray-800">{formatValue(profile.maritalStatus)}</span></>}
               {profile.hasChildren && profile.maritalStatus !== 'never_married' && <><span className="text-gray-500">Children</span><span className="text-gray-800">{formatValue(profile.hasChildren)}</span></>}
-              {profile.dietaryPreference && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.dietaryPreference}</span></>}
-              {profile.bloodGroup && <><span className="text-gray-500">Blood</span><span className="text-gray-800">{profile.bloodGroup}</span></>}
-              {profile.smoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{formatValue(profile.smoking)}</span></>}
-              {profile.drinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{formatValue(profile.drinking)}</span></>}
+              {profile.motherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.motherTongue}</span></>}
+              {profile.languagesKnown && <><span className="text-gray-500">Languages</span><span className="text-gray-800">{profile.languagesKnown}</span></>}
             </div>
           </div>
 
-          {/* Religion & Background */}
+          {/* LOCATION Section */}
           <div className="space-y-1">
-            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Background</h3>
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Location</h3>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+              {profile.currentLocation && <><span className="text-gray-500">Current</span><span className="text-gray-800">{profile.currentLocation}</span></>}
+              {profile.grewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.grewUpIn}</span></>}
+              {profile.citizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.citizenship}</span></>}
+              {profile.residencyStatus && <><span className="text-gray-500">Residency</span><span className="text-gray-800">{profile.residencyStatus}</span></>}
+              {profile.openToRelocation && <><span className="text-gray-500">Relocate</span><span className="text-gray-800">{formatValue(profile.openToRelocation)}</span></>}
+            </div>
+          </div>
+
+          {/* RELIGION & BACKGROUND Section */}
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Religion & Background</h3>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
               {profile.religion && <><span className="text-gray-500">Religion</span><span className="text-gray-800">{profile.religion}</span></>}
               {profile.community && <><span className="text-gray-500">Community</span><span className="text-gray-800">{profile.community}</span></>}
               {profile.subCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.subCommunity}</span></>}
               {profile.gotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.gotra}</span></>}
-              {profile.motherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.motherTongue}</span></>}
             </div>
           </div>
 
-          {/* Religion & Astro - Hindu specific */}
+          {/* ASTRO DETAILS - Hindu specific */}
           {profile.religion === 'Hindu' && (profile.manglik || profile.raasi || profile.nakshatra || profile.doshas || profile.placeOfBirth || profile.placeOfBirthCity) && (
             <div className="space-y-1">
               <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Astro Details</h3>
@@ -753,9 +784,9 @@ function ProfileCard({
             </div>
           )}
 
-          {/* Education & Career */}
+          {/* EDUCATION & CAREER Section */}
           <div className="space-y-1">
-            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Career</h3>
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
               {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.qualification}</span></>}
               {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
@@ -765,15 +796,14 @@ function ProfileCard({
             </div>
           </div>
 
-          {/* Location */}
+          {/* LIFESTYLE Section - Diet, Smoking, Drinking, Pets */}
           <div className="space-y-1">
-            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Location</h3>
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Lifestyle</h3>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
-              {profile.currentLocation && <><span className="text-gray-500">Current</span><span className="text-gray-800">{profile.currentLocation}</span></>}
-              {profile.grewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.grewUpIn}</span></>}
-              {profile.citizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.citizenship}</span></>}
-              {profile.residencyStatus && <><span className="text-gray-500">Residency</span><span className="text-gray-800">{profile.residencyStatus}</span></>}
-              {profile.openToRelocation && <><span className="text-gray-500">Relocate</span><span className="text-gray-800">{formatValue(profile.openToRelocation)}</span></>}
+              {profile.dietaryPreference && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.dietaryPreference}</span></>}
+              {profile.smoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{formatValue(profile.smoking)}</span></>}
+              {profile.drinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{formatValue(profile.drinking)}</span></>}
+              {profile.pets && <><span className="text-gray-500">Pets</span><span className="text-gray-800">{formatValue(profile.pets)}</span></>}
             </div>
           </div>
         </div>
@@ -815,47 +845,182 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Partner Preferences - Complete */}
+        {/* Partner Preferences - Separated by Deal-breakers and Nice-to-haves */}
         <div className="border-t border-gray-100 pt-3">
-          <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">{possessivePronoun} Partner Preferences</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
-            {/* Age & Height */}
-            {(profile.prefAgeDiff || profile.prefAgeMin) && (
-              <><span className="text-gray-500">Age</span><span className="text-gray-800">{profile.prefAgeDiff || `${profile.prefAgeMin}-${profile.prefAgeMax} years`}</span></>
-            )}
-            {(profile.prefHeight || profile.prefHeightMin) && (
-              <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.prefHeight || `${profile.prefHeightMin}-${profile.prefHeightMax}`}</span></>
-            )}
-            {/* Marital & Religion */}
-            {profile.prefMaritalStatus && <><span className="text-gray-500">Marital Status</span><span className="text-gray-800">{profile.prefMaritalStatus}</span></>}
-            {profile.prefReligion && <><span className="text-gray-500">Religion</span><span className="text-gray-800">{profile.prefReligion}</span></>}
-            {/* Community */}
-            {profile.prefCommunity && <><span className="text-gray-500">Community</span><span className="text-gray-800">{profile.prefCommunity}</span></>}
-            {profile.prefSubCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.prefSubCommunity}</span></>}
-            {profile.prefCaste && <><span className="text-gray-500">Caste</span><span className="text-gray-800">{profile.prefCaste}</span></>}
-            {profile.prefGotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.prefGotra}</span></>}
-            {/* Location */}
-            {profile.prefLocation && <><span className="text-gray-500">Location</span><span className="text-gray-800">{profile.prefLocation}</span></>}
-            {profile.prefCountry && <><span className="text-gray-500">Country</span><span className="text-gray-800">{profile.prefCountry}</span></>}
-            {profile.prefCitizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.prefCitizenship}</span></>}
-            {profile.prefGrewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.prefGrewUpIn}</span></>}
-            {profile.prefRelocation && <><span className="text-gray-500">Relocation</span><span className="text-gray-800">{profile.prefRelocation}</span></>}
-            {/* Education & Career */}
-            {profile.prefQualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.prefQualification}</span></>}
-            {profile.prefWorkArea && <><span className="text-gray-500">Work Area</span><span className="text-gray-800">{profile.prefWorkArea}</span></>}
-            {profile.prefOccupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{profile.prefOccupation}</span></>}
-            {profile.prefIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.prefIncome}</span></>}
-            {/* Lifestyle */}
-            {profile.prefDiet && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.prefDiet}</span></>}
-            {profile.prefSmoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{profile.prefSmoking}</span></>}
-            {profile.prefDrinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{profile.prefDrinking}</span></>}
-            {profile.prefPets && <><span className="text-gray-500">Pets</span><span className="text-gray-800">{profile.prefPets}</span></>}
-            {/* Family & Language */}
-            {profile.prefFamilyValues && <><span className="text-gray-500">Family Values</span><span className="text-gray-800">{profile.prefFamilyValues}</span></>}
-            {profile.prefFamilyLocation && <><span className="text-gray-500">Family Location</span><span className="text-gray-800">{profile.prefFamilyLocation}</span></>}
-            {profile.prefMotherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.prefMotherTongue}</span></>}
-            {profile.prefLanguage && <><span className="text-gray-500">Languages</span><span className="text-gray-800">{profile.prefLanguage}</span></>}
-          </div>
+          <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-3">{possessivePronoun} Partner Preferences</h3>
+
+          {/* Helper function to render preference item */}
+          {(() => {
+            // Build arrays of deal-breakers and nice-to-haves
+            const dealBreakers: { label: string; value: string }[] = []
+            const niceToHaves: { label: string; value: string }[] = []
+
+            // Age
+            if (profile.prefAgeDiff || profile.prefAgeMin) {
+              const val = profile.prefAgeDiff || `${profile.prefAgeMin}-${profile.prefAgeMax} years`
+              if (profile.prefAgeIsDealbreaker) dealBreakers.push({ label: 'Age', value: val })
+              else niceToHaves.push({ label: 'Age', value: val })
+            }
+            // Height
+            if (profile.prefHeight || profile.prefHeightMin) {
+              const val = profile.prefHeight || `${profile.prefHeightMin}-${profile.prefHeightMax}`
+              if (profile.prefHeightIsDealbreaker) dealBreakers.push({ label: 'Height', value: val })
+              else niceToHaves.push({ label: 'Height', value: val })
+            }
+            // Marital Status
+            if (profile.prefMaritalStatus) {
+              if (profile.prefMaritalStatusIsDealbreaker) dealBreakers.push({ label: 'Marital Status', value: profile.prefMaritalStatus })
+              else niceToHaves.push({ label: 'Marital Status', value: profile.prefMaritalStatus })
+            }
+            // Religion
+            if (profile.prefReligion) {
+              if (profile.prefReligionIsDealbreaker) dealBreakers.push({ label: 'Religion', value: profile.prefReligion })
+              else niceToHaves.push({ label: 'Religion', value: profile.prefReligion })
+            }
+            // Community
+            if (profile.prefCommunity) {
+              if (profile.prefCommunityIsDealbreaker) dealBreakers.push({ label: 'Community', value: profile.prefCommunity })
+              else niceToHaves.push({ label: 'Community', value: profile.prefCommunity })
+            }
+            // Sub-Community
+            if (profile.prefSubCommunity) {
+              if (profile.prefSubCommunityIsDealbreaker) dealBreakers.push({ label: 'Sub-Community', value: profile.prefSubCommunity })
+              else niceToHaves.push({ label: 'Sub-Community', value: profile.prefSubCommunity })
+            }
+            // Gotra
+            if (profile.prefGotra) {
+              if (profile.prefGotraIsDealbreaker) dealBreakers.push({ label: 'Gotra', value: profile.prefGotra })
+              else niceToHaves.push({ label: 'Gotra', value: profile.prefGotra })
+            }
+            // Location
+            if (profile.prefLocation) {
+              if (profile.prefLocationIsDealbreaker) dealBreakers.push({ label: 'Location', value: profile.prefLocation })
+              else niceToHaves.push({ label: 'Location', value: profile.prefLocation })
+            }
+            // Citizenship
+            if (profile.prefCitizenship) {
+              if (profile.prefCitizenshipIsDealbreaker) dealBreakers.push({ label: 'Citizenship', value: profile.prefCitizenship })
+              else niceToHaves.push({ label: 'Citizenship', value: profile.prefCitizenship })
+            }
+            // Grew Up In
+            if (profile.prefGrewUpIn) {
+              if (profile.prefGrewUpInIsDealbreaker) dealBreakers.push({ label: 'Grew Up In', value: profile.prefGrewUpIn })
+              else niceToHaves.push({ label: 'Grew Up In', value: profile.prefGrewUpIn })
+            }
+            // Relocation
+            if (profile.prefRelocation) {
+              if (profile.prefRelocationIsDealbreaker) dealBreakers.push({ label: 'Relocation', value: profile.prefRelocation })
+              else niceToHaves.push({ label: 'Relocation', value: profile.prefRelocation })
+            }
+            // Education
+            if (profile.prefQualification) {
+              if (profile.prefEducationIsDealbreaker) dealBreakers.push({ label: 'Education', value: profile.prefQualification })
+              else niceToHaves.push({ label: 'Education', value: profile.prefQualification })
+            }
+            // Work Area
+            if (profile.prefWorkArea) {
+              if (profile.prefWorkAreaIsDealbreaker) dealBreakers.push({ label: 'Work Area', value: profile.prefWorkArea })
+              else niceToHaves.push({ label: 'Work Area', value: profile.prefWorkArea })
+            }
+            // Occupation
+            if (profile.prefOccupation) {
+              if (profile.prefOccupationIsDealbreaker) dealBreakers.push({ label: 'Occupation', value: profile.prefOccupation })
+              else niceToHaves.push({ label: 'Occupation', value: profile.prefOccupation })
+            }
+            // Income
+            if (profile.prefIncome) {
+              if (profile.prefIncomeIsDealbreaker) dealBreakers.push({ label: 'Income', value: profile.prefIncome })
+              else niceToHaves.push({ label: 'Income', value: profile.prefIncome })
+            }
+            // Diet
+            if (profile.prefDiet) {
+              if (profile.prefDietIsDealbreaker) dealBreakers.push({ label: 'Diet', value: profile.prefDiet })
+              else niceToHaves.push({ label: 'Diet', value: profile.prefDiet })
+            }
+            // Smoking
+            if (profile.prefSmoking) {
+              if (profile.prefSmokingIsDealbreaker) dealBreakers.push({ label: 'Smoking', value: profile.prefSmoking })
+              else niceToHaves.push({ label: 'Smoking', value: profile.prefSmoking })
+            }
+            // Drinking
+            if (profile.prefDrinking) {
+              if (profile.prefDrinkingIsDealbreaker) dealBreakers.push({ label: 'Drinking', value: profile.prefDrinking })
+              else niceToHaves.push({ label: 'Drinking', value: profile.prefDrinking })
+            }
+            // Pets
+            if (profile.prefPets) {
+              if (profile.prefPetsIsDealbreaker) dealBreakers.push({ label: 'Pets', value: profile.prefPets })
+              else niceToHaves.push({ label: 'Pets', value: profile.prefPets })
+            }
+            // Family Values
+            if (profile.prefFamilyValues) {
+              if (profile.prefFamilyValuesIsDealbreaker) dealBreakers.push({ label: 'Family Values', value: profile.prefFamilyValues })
+              else niceToHaves.push({ label: 'Family Values', value: profile.prefFamilyValues })
+            }
+            // Family Location
+            if (profile.prefFamilyLocation) {
+              if (profile.prefFamilyLocationIsDealbreaker) dealBreakers.push({ label: 'Family Location', value: profile.prefFamilyLocation })
+              else niceToHaves.push({ label: 'Family Location', value: profile.prefFamilyLocation })
+            }
+            // Mother Tongue
+            if (profile.prefMotherTongue) {
+              if (profile.prefMotherTongueIsDealbreaker) dealBreakers.push({ label: 'Mother Tongue', value: profile.prefMotherTongue })
+              else niceToHaves.push({ label: 'Mother Tongue', value: profile.prefMotherTongue })
+            }
+            // Country (no deal-breaker flag, default to nice-to-have)
+            if (profile.prefCountry) {
+              niceToHaves.push({ label: 'Country', value: profile.prefCountry })
+            }
+            // Languages (no deal-breaker flag, default to nice-to-have)
+            if (profile.prefLanguage) {
+              niceToHaves.push({ label: 'Languages', value: profile.prefLanguage })
+            }
+
+            return (
+              <div className="space-y-4">
+                {/* Deal-breakers Section */}
+                {dealBreakers.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-red-600 uppercase">Must Have (Deal-breakers)</span>
+                      <span className="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded">{dealBreakers.length}</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs bg-red-50/50 p-2 rounded border border-red-100">
+                      {dealBreakers.map((item, idx) => (
+                        <div key={idx} className="contents">
+                          <span className="text-gray-500">{item.label}</span>
+                          <span className="text-gray-800 font-medium">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Nice-to-haves Section */}
+                {niceToHaves.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-green-600 uppercase">Nice to Have (Flexible)</span>
+                      <span className="text-[10px] text-green-500 bg-green-50 px-1.5 py-0.5 rounded">{niceToHaves.length}</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs bg-green-50/50 p-2 rounded border border-green-100">
+                      {niceToHaves.map((item, idx) => (
+                        <div key={idx} className="contents">
+                          <span className="text-gray-500">{item.label}</span>
+                          <span className="text-gray-800">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* If no preferences at all */}
+                {dealBreakers.length === 0 && niceToHaves.length === 0 && (
+                  <p className="text-xs text-gray-500 italic">No partner preferences specified</p>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Ideal Partner Description */}
