@@ -20,10 +20,12 @@ export async function GET() {
       pendingApproval,
       suspended,
       pendingReports,
+      pendingDeletions,
       verified,
       unverified,
       recentProfiles,
-      referralSourceProfiles
+      referralSourceProfiles,
+      usersWithoutProfile
     ] = await Promise.all([
       prisma.profile.count(),
       prisma.profile.count({ where: { gender: 'female' } }),
@@ -33,6 +35,7 @@ export async function GET() {
       prisma.profile.count({ where: { approvalStatus: 'pending' } }),
       prisma.profile.count({ where: { isSuspended: true } }),
       prisma.report.count({ where: { status: 'pending' } }),
+      prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
       prisma.profile.count({ where: { isVerified: true } }),
       prisma.profile.count({ where: { isVerified: false } }),
       prisma.profile.findMany({
@@ -53,14 +56,70 @@ export async function GET() {
       prisma.profile.groupBy({
         by: ['referralSource'],
         _count: { referralSource: true }
-      })
+      }),
+      prisma.user.count({ where: { profile: null } })
     ])
 
-    // Transform referral stats into a more usable format
+    // Mapping to unify similar referral sources
+    const unifySource = (source: string | null): string => {
+      if (!source) return 'unknown'
+      const s = source.toLowerCase().trim()
+
+      // WhatsApp variations
+      if (s.includes('whatsapp') || s.includes('wa') || s === 'watsapp' || s === 'whatapp') {
+        return 'whatsapp'
+      }
+      // Instagram variations
+      if (s.includes('instagram') || s === 'insta' || s === 'ig') {
+        return 'instagram'
+      }
+      // Facebook variations
+      if (s.includes('facebook') || s === 'fb') {
+        return 'facebook'
+      }
+      // Google variations
+      if (s.includes('google') || s === 'search') {
+        return 'google'
+      }
+      // YouTube variations
+      if (s.includes('youtube') || s === 'yt') {
+        return 'youtube'
+      }
+      // LinkedIn variations
+      if (s.includes('linkedin')) {
+        return 'linkedin'
+      }
+      // Friend/family word of mouth
+      if (s === 'friend' || s === 'friends') {
+        return 'friend'
+      }
+      if (s === 'family' || s === 'relative' || s === 'relatives') {
+        return 'family'
+      }
+      // Temple/religious
+      if (s.includes('temple') || s.includes('religious') || s.includes('mandir') || s.includes('church')) {
+        return 'temple'
+      }
+      // Community events
+      if (s.includes('community') || s.includes('event') || s.includes('meetup')) {
+        return 'community_event'
+      }
+      // Organization
+      if (s.includes('organization') || s.includes('org')) {
+        return 'organization'
+      }
+      // Advertisement
+      if (s.includes('adverti') || s.includes('ad ') || s === 'ad' || s === 'ads') {
+        return 'advertisement'
+      }
+      return source // Return original if no match
+    }
+
+    // Transform and unify referral stats
     const referralStats: Record<string, number> = {}
     referralSourceProfiles.forEach((item: { referralSource: string | null, _count: { referralSource: number } }) => {
-      const source = item.referralSource || 'unknown'
-      referralStats[source] = item._count.referralSource
+      const unifiedSource = unifySource(item.referralSource)
+      referralStats[unifiedSource] = (referralStats[unifiedSource] || 0) + item._count.referralSource
     })
 
     return NextResponse.json({
@@ -72,8 +131,10 @@ export async function GET() {
       pendingApproval,
       suspended,
       pendingReports,
+      pendingDeletions,
       verified,
       unverified,
+      usersWithoutProfile,
       recentProfiles,
       referralStats
     })

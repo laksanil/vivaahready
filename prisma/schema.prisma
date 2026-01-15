@@ -173,6 +173,31 @@ model Profile {
   prefPets          String?  // doesnt_matter, must_love, no_pets, open_to_pets
   idealPartnerDesc  String?  // Free text description
 
+  // Deal-breaker flags for partner preferences
+  // If true, the preference is a deal-breaker (hard filter)
+  // If false/null, the preference is optional (soft preference)
+  prefAgeIsDealbreaker          Boolean @default(false)
+  prefHeightIsDealbreaker       Boolean @default(false)
+  prefMaritalStatusIsDealbreaker Boolean @default(false)
+  prefCommunityIsDealbreaker    Boolean @default(false)
+  prefGotraIsDealbreaker        Boolean @default(false)
+  prefDietIsDealbreaker         Boolean @default(false)
+  prefSmokingIsDealbreaker      Boolean @default(false)
+  prefDrinkingIsDealbreaker     Boolean @default(false)
+  prefLocationIsDealbreaker     Boolean @default(false)
+  prefCitizenshipIsDealbreaker  Boolean @default(false)
+  prefGrewUpInIsDealbreaker     Boolean @default(false)
+  prefRelocationIsDealbreaker   Boolean @default(false)
+  prefEducationIsDealbreaker    Boolean @default(false)
+  prefWorkAreaIsDealbreaker     Boolean @default(false)
+  prefIncomeIsDealbreaker       Boolean @default(false)
+  prefOccupationIsDealbreaker   Boolean @default(false)
+  prefFamilyValuesIsDealbreaker Boolean @default(false)
+  prefFamilyLocationIsDealbreaker Boolean @default(false)
+  prefMotherTongueIsDealbreaker Boolean @default(false)
+  prefSubCommunityIsDealbreaker Boolean @default(false)
+  prefPetsIsDealbreaker         Boolean @default(false)
+
   // Metadata
   citizenship       String?
   residencyStatus   String?

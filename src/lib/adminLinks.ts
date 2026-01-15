@@ -26,6 +26,9 @@ export const adminLinks = {
   // View user's own profile (settings page)
   myProfile: (userId: string) => adminViewLink('/profile', userId),
 
+  // Edit user's profile (admin clicking on user name goes here)
+  editProfile: (userId: string) => adminViewLink('/profile/edit', userId),
+
   // View user's dashboard
   dashboard: (userId: string) => adminViewLink('/dashboard', userId),
 
@@ -58,4 +61,5 @@ export const IMPERSONATION_PAGES = [
   '/messages',
   '/reconsider',
   '/profile',
+  '/profile/edit',
 ] as const

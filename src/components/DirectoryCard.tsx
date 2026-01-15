@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Heart,
@@ -13,6 +13,9 @@ import {
   Lock,
   Sparkles,
   Eye,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import { ProfileData } from './ProfileCard'
@@ -35,39 +38,127 @@ export function DirectoryCard({
   canLike = true,
   showActions = true,
 }: DirectoryCardProps) {
-  const [imageError, setImageError] = useState(false)
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const { buildUrl } = useImpersonation()
 
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
 
-  // Get primary photo
+  // Get all photos
   const extractedPhotos = extractPhotoUrls(profile.photoUrls)
   const validProfileImageUrl = isValidImageUrl(profile.profileImageUrl) ? profile.profileImageUrl : null
-  const primaryPhoto = extractedPhotos[0] || validProfileImageUrl
+  const allPhotos = extractedPhotos.length > 0 ? extractedPhotos : (validProfileImageUrl ? [validProfileImageUrl] : [])
+  const hasMultiplePhotos = allPhotos.length > 1
+
+  const handleImageError = useCallback((index: number) => {
+    setImageErrors(prev => new Set(prev).add(index))
+  }, [])
+
+  const nextPhoto = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hasMultiplePhotos) {
+      setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length)
+    }
+  }
+
+  const prevPhoto = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hasMultiplePhotos) {
+      setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length)
+    }
+  }
+
+  const openLightbox = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setLightboxOpen(true)
+  }
+
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+  }
+
+  const currentPhoto = allPhotos[currentPhotoIndex]
+  const hasError = imageErrors.has(currentPhotoIndex)
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200">
-      <div className="flex items-stretch">
-        {/* Photo - Square, smaller */}
-        <Link href={buildUrl(`/profile/${profile.id}`)} className="flex-shrink-0">
-          <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 rounded-l-lg overflow-hidden">
-            {primaryPhoto && !imageError ? (
-              <img
-                src={primaryPhoto}
-                alt={profile.user.name}
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200">
-                <span className="text-2xl font-semibold text-primary-600">
-                  {getInitials(profile.user.name)}
-                </span>
+    <>
+      <div className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200">
+        <div className="flex items-stretch">
+          {/* Photo with Carousel */}
+          <div className="flex-shrink-0 relative group">
+            <Link href={buildUrl(`/profile/${profile.id}`)} className="block">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 rounded-l-lg overflow-hidden">
+                {currentPhoto && !hasError ? (
+                  <img
+                    src={currentPhoto}
+                    alt={profile.user.name}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={() => handleImageError(currentPhotoIndex)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200">
+                    <span className="text-2xl font-semibold text-primary-600">
+                      {getInitials(profile.user.name)}
+                    </span>
+                  </div>
+                )}
               </div>
+            </Link>
+
+            {/* Carousel Navigation - Only show if multiple photos */}
+            {hasMultiplePhotos && (
+              <>
+                {/* Prev Button */}
+                <button
+                  onClick={prevPhoto}
+                  className="absolute left-0.5 top-1/2 -translate-y-1/2 p-0.5 bg-black/40 hover:bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                {/* Next Button */}
+                <button
+                  onClick={nextPhoto}
+                  className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 bg-black/40 hover:bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+
+                {/* Photo Dots */}
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                  {allPhotos.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setCurrentPhotoIndex(index)
+                      }}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        index === currentPhotoIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Zoom Button */}
+            {currentPhoto && !hasError && (
+              <button
+                onClick={openLightbox}
+                className="absolute top-1 right-1 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                title="View full size"
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+              </button>
             )}
           </div>
-        </Link>
 
         {/* Content */}
         <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col">
@@ -194,6 +285,67 @@ export function DirectoryCard({
         )}
       </div>
     </div>
+
+      {/* Lightbox Modal */}
+      {lightboxOpen && allPhotos.length > 0 && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 p-2 text-white hover:bg-white/10 rounded-full z-10"
+          >
+            <X className="h-8 w-8" />
+          </button>
+
+          {/* Navigation arrows */}
+          {hasMultiplePhotos && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length)
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white z-10"
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length)
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white z-10"
+              >
+                <ChevronRight className="h-8 w-8" />
+              </button>
+            </>
+          )}
+
+          {/* Image */}
+          <div
+            className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={allPhotos[currentPhotoIndex]}
+              alt={`${profile.user.name} - Photo ${currentPhotoIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+
+          {/* Photo counter */}
+          {hasMultiplePhotos && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 text-sm">
+              {currentPhotoIndex + 1} / {allPhotos.length}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   )
 }
 

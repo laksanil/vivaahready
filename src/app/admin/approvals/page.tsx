@@ -8,6 +8,7 @@ import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, 
 import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
 import { useToast } from '@/components/Toast'
+import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminBadge, AdminModal } from '@/components/admin/AdminComponents'
 
 interface PendingProfile {
   id: string
@@ -178,69 +179,36 @@ export default function AdminApprovalsPage() {
     )
   }
 
+  const tabs = [
+    { id: 'pending', label: 'Pending', count: pendingProfiles.length },
+    { id: 'rejected', label: 'Rejected', count: rejectedProfiles.length },
+  ]
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile Approvals</h1>
-        <p className="text-gray-600 mt-1">Review and manage profile submissions</p>
-      </div>
+      <AdminPageHeader
+        title="Profile Approvals"
+        description="Review and manage profile submissions"
+        actions={
+          <AdminButton variant="secondary" onClick={fetchProfiles}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </AdminButton>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveTab('pending')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === 'pending'
-              ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Clock className="h-4 w-4" />
-          Pending
-          {pendingProfiles.length > 0 && (
-            <span className="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
-              {pendingProfiles.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('rejected')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            activeTab === 'rejected'
-              ? 'bg-red-100 text-red-700 border-2 border-red-300'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <X className="h-4 w-4" />
-          Rejected
-          {rejectedProfiles.length > 0 && (
-            <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-              {rejectedProfiles.length}
-            </span>
-          )}
-        </button>
-      </div>
+      <AdminTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as TabType)}
+      />
 
       {profiles.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl shadow-sm">
-          <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
-            activeTab === 'pending' ? 'bg-green-100' : 'bg-gray-100'
-          }`}>
-            {activeTab === 'pending' ? (
-              <Check className="h-8 w-8 text-green-600" />
-            ) : (
-              <X className="h-8 w-8 text-gray-400" />
-            )}
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            {activeTab === 'pending' ? 'All Caught Up!' : 'No Rejected Profiles'}
-          </h3>
-          <p className="text-gray-600 mt-1">
-            {activeTab === 'pending'
-              ? 'No pending profiles to review.'
-              : 'There are no rejected profiles at the moment.'}
-          </p>
-        </div>
+        <AdminEmptyState
+          icon={activeTab === 'pending' ? <Check className="h-12 w-12" /> : <X className="h-12 w-12" />}
+          title={activeTab === 'pending' ? 'All Caught Up!' : 'No Rejected Profiles'}
+          description={activeTab === 'pending' ? 'No pending profiles to review.' : 'There are no rejected profiles at the moment.'}
+        />
       ) : (
         <div className="space-y-4">
           {profiles.map((profile) => {
@@ -296,7 +264,15 @@ export default function AdminApprovalsPage() {
                 <div className="flex-grow">
                   <div className="flex items-center gap-3 mb-2">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{profile.user.name}</h3>
+                      <a
+                        href={adminLinks.editProfile(profile.user.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                      >
+                        {profile.user.name}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                       <p className="text-sm text-gray-500">{profile.user.email}</p>
                     </div>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -438,45 +414,42 @@ export default function AdminApprovalsPage() {
       )}
 
       {/* Rejection Modal */}
-      {selectedProfile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Profile</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Optionally provide a reason for rejection. This will be stored for reference.
-            </p>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Reason for rejection (optional)..."
-              className="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              rows={3}
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setSelectedProfile(null)
-                  setRejectionReason('')
-                }}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleReject(selectedProfile)}
-                disabled={actionLoading === selectedProfile}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-              >
-                {actionLoading === selectedProfile ? (
-                  <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                ) : (
-                  'Confirm Rejection'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AdminModal
+        isOpen={!!selectedProfile}
+        onClose={() => { setSelectedProfile(null); setRejectionReason(''); }}
+        title="Reject Profile"
+        icon={<X className="h-5 w-5 text-red-500" />}
+        footer={
+          <>
+            <AdminButton
+              variant="secondary"
+              onClick={() => { setSelectedProfile(null); setRejectionReason(''); }}
+              className="flex-1"
+            >
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="danger"
+              onClick={() => selectedProfile && handleReject(selectedProfile)}
+              loading={actionLoading === selectedProfile}
+              className="flex-1"
+            >
+              Confirm Rejection
+            </AdminButton>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-600 mb-4">
+          Optionally provide a reason for rejection. This will be stored for reference.
+        </p>
+        <textarea
+          value={rejectionReason}
+          onChange={(e) => setRejectionReason(e.target.value)}
+          placeholder="Reason for rejection (optional)..."
+          className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          rows={3}
+        />
+      </AdminModal>
 
       {/* Photo Zoom Modal */}
       {photoModal.isOpen && (

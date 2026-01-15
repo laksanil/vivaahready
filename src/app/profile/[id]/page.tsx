@@ -371,6 +371,7 @@ interface MatchScoreData {
     matched: boolean
     seekerPref: string | null
     candidateValue: string | null
+    isDealbreaker?: boolean
   }[]
 }
 
@@ -1243,89 +1244,135 @@ function ProfileCard({
                       </div>
                     )}
 
-                    {/* Preference Comparison Table */}
-                    <div className="divide-y divide-gray-200">
-                      {theirMatchScore && theirMatchScore.criteria.length > 0 ? (
-                        theirMatchScore.criteria.map((criterion, index) => (
-                          <div key={index} className="flex justify-between items-center py-3">
-                            <div className="flex-1">
-                              <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                              <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                    {/* Preference Comparison Table - Split by Deal Breakers and Optional */}
+                    {theirMatchScore && theirMatchScore.criteria.length > 0 ? (
+                      <>
+                        {/* Deal Breakers Section */}
+                        {theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
+                          <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <div className="w-2 h-2 bg-red-500 rounded-full" />
+                              <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Must Have</span>
                             </div>
-                            <div className="flex-shrink-0 ml-4">
-                              {criterion.matched ? (
-                                <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-white" />
-                                </div>
-                              ) : (
-                                <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
-                                  <span className="text-gray-500 text-lg">-</span>
-                                </div>
-                              )}
+                            <div className="divide-y divide-gray-200 bg-red-50/50 rounded-lg">
+                              {theirMatchScore.criteria
+                                .filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                                .map((criterion, index) => (
+                                  <div key={index} className="flex justify-between items-center py-3 px-3">
+                                    <div className="flex-1">
+                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                                    </div>
+                                    <div className="flex-shrink-0 ml-4">
+                                      {criterion.matched ? (
+                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                          <Check className="h-4 w-4 text-white" />
+                                        </div>
+                                      ) : (
+                                        <div className="w-7 h-7 bg-red-400 flex items-center justify-center">
+                                          <X className="h-4 w-4 text-white" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <>
-                          {profile.prefAgeDiff && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Age</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefAgeDiff}</div>
-                              </div>
+                        )}
+
+                        {/* Optional Preferences Section */}
+                        {theirMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                              <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">Nice to Have</span>
                             </div>
-                          )}
-                          {profile.prefHeight && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Height</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefHeight}</div>
-                              </div>
+                            <div className="divide-y divide-gray-200">
+                              {theirMatchScore.criteria
+                                .filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                                .map((criterion, index) => (
+                                  <div key={index} className="flex justify-between items-center py-3 px-1">
+                                    <div className="flex-1">
+                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                                    </div>
+                                    <div className="flex-shrink-0 ml-4">
+                                      {criterion.matched ? (
+                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                          <Check className="h-4 w-4 text-white" />
+                                        </div>
+                                      ) : (
+                                        <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
+                                          <span className="text-gray-500 text-lg">-</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                             </div>
-                          )}
-                          {profile.prefLocation && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Location</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefLocation}</div>
-                              </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="divide-y divide-gray-200">
+                        {profile.prefAgeDiff && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Age</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefAgeDiff}</div>
                             </div>
-                          )}
-                          {profile.prefCaste && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Caste</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefCaste}</div>
-                              </div>
+                          </div>
+                        )}
+                        {profile.prefHeight && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Height</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefHeight}</div>
                             </div>
-                          )}
-                          {profile.prefGotra && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Gotra</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefGotra}</div>
-                              </div>
+                          </div>
+                        )}
+                        {profile.prefLocation && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Location</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefLocation}</div>
                             </div>
-                          )}
-                          {profile.prefDiet && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Diet</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefDiet}</div>
-                              </div>
+                          </div>
+                        )}
+                        {profile.prefCaste && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Caste</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefCaste}</div>
                             </div>
-                          )}
-                          {profile.prefQualification && (
-                            <div className="flex justify-between items-center py-3">
-                              <div>
-                                <div className="text-primary-600 text-sm">Education</div>
-                                <div className="text-gray-800 text-sm mt-0.5">{profile.prefQualification}</div>
-                              </div>
+                          </div>
+                        )}
+                        {profile.prefGotra && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Gotra</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefGotra}</div>
                             </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                          </div>
+                        )}
+                        {profile.prefDiet && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Diet</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefDiet}</div>
+                            </div>
+                          </div>
+                        )}
+                        {profile.prefQualification && (
+                          <div className="flex justify-between items-center py-3">
+                            <div>
+                              <div className="text-primary-600 text-sm">Education</div>
+                              <div className="text-gray-800 text-sm mt-0.5">{profile.prefQualification}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1393,28 +1440,74 @@ function ProfileCard({
                         </div>
                       </div>
 
-                      {/* Preference Comparison Table */}
-                      <div className="divide-y divide-gray-200">
-                        {yourMatchScore.criteria.map((criterion, index) => (
-                          <div key={index} className="flex justify-between items-center py-3">
-                            <div className="flex-1">
-                              <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
-                              <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                      {/* Preference Comparison Table - Split by Deal Breakers and Optional */}
+                      <>
+                        {/* Deal Breakers Section */}
+                        {yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
+                          <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <div className="w-2 h-2 bg-red-500 rounded-full" />
+                              <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Must Have</span>
                             </div>
-                            <div className="flex-shrink-0 ml-4">
-                              {criterion.matched ? (
-                                <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
-                                  <Check className="h-4 w-4 text-white" />
-                                </div>
-                              ) : (
-                                <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
-                                  <span className="text-gray-500 text-lg">-</span>
-                                </div>
-                              )}
+                            <div className="divide-y divide-gray-200 bg-red-50/50 rounded-lg">
+                              {yourMatchScore.criteria
+                                .filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                                .map((criterion, index) => (
+                                  <div key={index} className="flex justify-between items-center py-3 px-3">
+                                    <div className="flex-1">
+                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                                    </div>
+                                    <div className="flex-shrink-0 ml-4">
+                                      {criterion.matched ? (
+                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                          <Check className="h-4 w-4 text-white" />
+                                        </div>
+                                      ) : (
+                                        <div className="w-7 h-7 bg-red-400 flex items-center justify-center">
+                                          <X className="h-4 w-4 text-white" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        )}
+
+                        {/* Optional Preferences Section */}
+                        {yourMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter").length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                              <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">Nice to Have</span>
+                            </div>
+                            <div className="divide-y divide-gray-200">
+                              {yourMatchScore.criteria
+                                .filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+                                .map((criterion, index) => (
+                                  <div key={index} className="flex justify-between items-center py-3 px-1">
+                                    <div className="flex-1">
+                                      <div className="text-gray-900 text-sm font-semibold">{criterion.name}</div>
+                                      <div className="text-gray-600 text-sm mt-0.5">{criterion.seekerPref}</div>
+                                    </div>
+                                    <div className="flex-shrink-0 ml-4">
+                                      {criterion.matched ? (
+                                        <div className="w-7 h-7 bg-green-500 flex items-center justify-center">
+                                          <Check className="h-4 w-4 text-white" />
+                                        </div>
+                                      ) : (
+                                        <div className="w-7 h-7 bg-gray-200 flex items-center justify-center">
+                                          <span className="text-gray-500 text-lg">-</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     </div>
                   </div>
                 )}

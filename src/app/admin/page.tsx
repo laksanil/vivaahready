@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Users, UserCheck, Heart, Clock, Ban, AlertTriangle,
-  ShieldCheck, ShieldOff, ArrowRight, Loader2, ExternalLink
+  Users, UserCheck, Heart, Clock, Ban, AlertTriangle, Trash2,
+  ShieldCheck, ShieldOff, ArrowRight, Loader2, ExternalLink, UserPlus
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 
@@ -20,11 +20,79 @@ interface Stats {
   pendingApproval: number
   suspended: number
   pendingReports: number
+  pendingDeletions: number
   verified: number
   unverified: number
+  usersWithoutProfile: number
   recentProfiles: any[]
   // Referral stats
   referralStats?: Record<string, number>
+}
+
+// Referral source labels and colors
+const REFERRAL_CONFIG: Record<string, { label: string; color: string }> = {
+  whatsapp: { label: 'WhatsApp', color: '#25D366' },
+  instagram: { label: 'Instagram', color: '#E4405F' },
+  facebook: { label: 'Facebook', color: '#1877F2' },
+  linkedin: { label: 'LinkedIn', color: '#0A66C2' },
+  youtube: { label: 'YouTube', color: '#FF0000' },
+  google: { label: 'Google Search', color: '#4285F4' },
+  friend: { label: 'Friend', color: '#8B5CF6' },
+  family: { label: 'Family', color: '#EC4899' },
+  temple: { label: 'Temple/Religious', color: '#F59E0B' },
+  community_event: { label: 'Community Event', color: '#10B981' },
+  organization: { label: 'Organization', color: '#6366F1' },
+  advertisement: { label: 'Advertisement', color: '#EF4444' },
+  other: { label: 'Other', color: '#6B7280' },
+  unknown: { label: 'Not specified', color: '#9CA3AF' },
+}
+
+// Simple SVG Pie Chart component
+function PieChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0)
+  if (total === 0) return null
+
+  let cumulativePercent = 0
+  const size = 200
+  const center = size / 2
+  const radius = 80
+
+  const getCoordinatesForPercent = (percent: number) => {
+    const x = Math.cos(2 * Math.PI * percent)
+    const y = Math.sin(2 * Math.PI * percent)
+    return [center + x * radius, center + y * radius]
+  }
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      {data.map((item, index) => {
+        if (item.value === 0) return null
+        const percent = item.value / total
+        const [startX, startY] = getCoordinatesForPercent(cumulativePercent)
+        cumulativePercent += percent
+        const [endX, endY] = getCoordinatesForPercent(cumulativePercent)
+        const largeArcFlag = percent > 0.5 ? 1 : 0
+
+        const pathData = [
+          `M ${center} ${center}`,
+          `L ${startX} ${startY}`,
+          `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+          'Z',
+        ].join(' ')
+
+        return (
+          <path
+            key={index}
+            d={pathData}
+            fill={item.color}
+            className="hover:opacity-80 transition-opacity cursor-pointer"
+          >
+            <title>{`${item.label}: ${item.value} (${(percent * 100).toFixed(1)}%)`}</title>
+          </path>
+        )
+      })}
+    </svg>
+  )
 }
 
 export default function AdminDashboard() {
@@ -61,7 +129,7 @@ export default function AdminDashboard() {
       count: stats?.pendingApproval || 0,
       icon: Clock,
       color: 'yellow',
-      href: '/admin/profiles?tab=pending',
+      href: '/admin/approvals',
       description: 'Profiles waiting for approval',
     },
     {
@@ -73,12 +141,12 @@ export default function AdminDashboard() {
       description: 'User reports to review',
     },
     {
-      label: 'Suspended Profiles',
-      count: stats?.suspended || 0,
-      icon: Ban,
+      label: 'Deletion Requests',
+      count: stats?.pendingDeletions || 0,
+      icon: Trash2,
       color: 'red',
-      href: '/admin/profiles?tab=suspended',
-      description: 'Currently suspended',
+      href: '/admin/profiles?tab=deletions',
+      description: 'Account deletions pending',
     },
   ]
 
@@ -138,7 +206,7 @@ export default function AdminDashboard() {
     gray: { bg: 'bg-gray-50', text: 'text-gray-700', iconBg: 'bg-gray-100' },
   }
 
-  const totalAttention = (stats?.pendingApproval || 0) + (stats?.pendingReports || 0)
+  const totalAttention = (stats?.pendingApproval || 0) + (stats?.pendingReports || 0) + (stats?.pendingDeletions || 0)
 
   return (
     <div>
@@ -215,7 +283,7 @@ export default function AdminDashboard() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link
-            href="/admin/profiles?tab=pending"
+            href="/admin/approvals"
             className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3"
           >
             <Clock className="h-5 w-5 text-yellow-600" />
@@ -229,11 +297,11 @@ export default function AdminDashboard() {
             <span className="font-medium text-gray-700">View Reports</span>
           </Link>
           <Link
-            href="/admin/profiles?tab=verified"
+            href="/admin/profiles/create"
             className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3"
           >
-            <ShieldCheck className="h-5 w-5 text-green-600" />
-            <span className="font-medium text-gray-700">Verified Profiles</span>
+            <UserPlus className="h-5 w-5 text-primary-600" />
+            <span className="font-medium text-gray-700">Create Profile</span>
           </Link>
           <Link
             href="/admin/profiles?tab=suspended"
@@ -245,38 +313,60 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Referral Sources */}
-      {stats?.referralStats && Object.keys(stats.referralStats).length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Referral Sources</h2>
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              {Object.entries(stats.referralStats).map(([source, count]) => {
-                const label = source === 'whatsapp' ? 'WhatsApp' :
-                              source === 'instagram' ? 'Instagram' :
-                              source === 'facebook' ? 'Facebook' :
-                              source === 'linkedin' ? 'LinkedIn' :
-                              source === 'youtube' ? 'YouTube' :
-                              source === 'google' ? 'Google Search' :
-                              source === 'friend' ? 'Friend' :
-                              source === 'family' ? 'Family/Relative' :
-                              source === 'temple' ? 'Temple/Religious' :
-                              source === 'community_event' ? 'Community Event' :
-                              source === 'organization' ? 'Organization' :
-                              source === 'advertisement' ? 'Advertisement' :
-                              source === 'other' ? 'Other' :
-                              source === 'unknown' ? 'Not specified' : source
-                return (
-                  <div key={source} className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-900">{count}</p>
-                    <p className="text-xs text-gray-500 capitalize">{label}</p>
+      {/* Referral Sources with Pie Chart */}
+      {stats?.referralStats && Object.keys(stats.referralStats).length > 0 && (() => {
+        // Prepare data for pie chart
+        const pieData = Object.entries(stats.referralStats)
+          .map(([source, count]) => ({
+            source,
+            label: REFERRAL_CONFIG[source]?.label || source,
+            value: count,
+            color: REFERRAL_CONFIG[source]?.color || '#9CA3AF',
+          }))
+          .sort((a, b) => b.value - a.value)
+
+        const total = pieData.reduce((sum, item) => sum + item.value, 0)
+
+        return (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Referral Sources</h2>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                {/* Pie Chart */}
+                <div className="flex-shrink-0">
+                  <PieChart data={pieData} />
+                </div>
+
+                {/* Legend */}
+                <div className="flex-1 w-full">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {pieData.map(({ source, label, value, color }) => {
+                      const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0'
+                      return (
+                        <div key={source} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50">
+                          <div
+                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{label}</p>
+                            <p className="text-xs text-gray-500">{value} ({percent}%)</p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                )
-              })}
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-semibold">{total}</span> total profiles with referral data
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Recent Profiles */}
       <div className="bg-white rounded-xl shadow-sm">
@@ -306,7 +396,7 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <a
-                      href={adminLinks.profile(profile.id, profile.user?.id)}
+                      href={adminLinks.editProfile(profile.user?.id)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"

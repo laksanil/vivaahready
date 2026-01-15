@@ -5,13 +5,22 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  Search, Download, RefreshCw, Loader2,
-  ChevronLeft, ChevronRight, Inbox, Send,
+  Download, RefreshCw, Loader2,
+  Inbox, Send,
   Heart, AlertTriangle, Clock, TrendingUp,
-  ArrowUpDown, Filter, Users, XCircle, Flag, Eye,
+  ArrowUpDown, Users, XCircle, Flag, Eye,
   ExternalLink,
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
+import {
+  AdminPageHeader,
+  AdminTabs,
+  AdminSearchFilter,
+  AdminStatCard,
+  AdminPagination,
+  AdminEmptyState,
+  AdminButton,
+} from '@/components/admin/AdminComponents'
 
 interface ProfileStats {
   id: string
@@ -185,144 +194,95 @@ export default function AdminMatchesPage() {
     a.click()
   }
 
+  const tabs = filters.map(f => ({ id: f.id, label: f.label }))
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Matches & Activity</h1>
-          <p className="text-sm text-gray-500 mt-1">Monitor engagement and identify profiles needing attention</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchMatches}
-            className="flex items-center px-4 py-2 text-gray-600 bg-white border rounded-lg hover:bg-gray-50"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </button>
-          <button
-            onClick={exportToCSV}
-            className="flex items-center px-4 py-2 text-gray-600 bg-white border rounded-lg hover:bg-gray-50"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Matches & Activity"
+        description="Monitor engagement and identify profiles needing attention"
+        actions={
+          <>
+            <AdminButton variant="secondary" onClick={fetchMatches}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </AdminButton>
+            <AdminButton variant="secondary" onClick={exportToCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </AdminButton>
+          </>
+        }
+      />
 
       {/* Summary Cards */}
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{summary.activeThisWeek}</p>
-                <p className="text-xs text-gray-500">Active this week</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <Clock className="h-5 w-5 text-red-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{summary.inactive}</p>
-                <p className="text-xs text-gray-500">Inactive (7+ days)</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{summary.noInterestsReceived}</p>
-                <p className="text-xs text-gray-500">No interests received</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-pink-100 rounded-lg">
-                <Heart className="h-5 w-5 text-pink-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{summary.totalMutualMatches}</p>
-                <p className="text-xs text-gray-500">Total mutual matches</p>
-              </div>
-            </div>
-          </div>
+          <AdminStatCard
+            label="Active this week"
+            value={summary.activeThisWeek}
+            icon={<TrendingUp className="h-5 w-5" />}
+            color="green"
+          />
+          <AdminStatCard
+            label="Inactive (7+ days)"
+            value={summary.inactive}
+            icon={<Clock className="h-5 w-5" />}
+            color="red"
+          />
+          <AdminStatCard
+            label="No interests received"
+            value={summary.noInterestsReceived}
+            icon={<AlertTriangle className="h-5 w-5" />}
+            color="yellow"
+          />
+          <AdminStatCard
+            label="Total mutual matches"
+            value={summary.totalMutualMatches}
+            icon={<Heart className="h-5 w-5" />}
+            color="pink"
+          />
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm mb-6">
-        <div className="p-4 border-b">
-          <div className="flex flex-wrap gap-2">
-            {filters.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => { setActiveFilter(filter.id); setPage(1); }}
-                className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                  activeFilter === filter.id
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                title={filter.description}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Search and Gender Filter */}
-        <div className="p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <form onSubmit={handleSearch} className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by name, email, VR ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-            </form>
-
-            <select
-              value={genderFilter}
-              onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
-              className="border rounded-lg px-3 py-2"
-            >
-              <option value="">All Types</option>
-              <option value="female">Brides</option>
-              <option value="male">Grooms</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <AdminTabs
+        tabs={tabs}
+        activeTab={activeFilter}
+        onTabChange={(id) => { setActiveFilter(id as FilterType); setPage(1); }}
+      >
+        <AdminSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSearchSubmit={handleSearch}
+          placeholder="Search by name, email, VR ID..."
+        >
+          <select
+            value={genderFilter}
+            onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
+            className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="">All Types</option>
+            <option value="female">Brides</option>
+            <option value="male">Grooms</option>
+          </select>
+        </AdminSearchFilter>
+      </AdminTabs>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-          </div>
-        ) : profiles.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No profiles found</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
+      {loading ? (
+        <div className="bg-white rounded-xl shadow-sm flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        </div>
+      ) : profiles.length === 0 ? (
+        <AdminEmptyState
+          icon={<Heart className="h-12 w-12" />}
+          title="No Profiles Found"
+          description={activeFilter === 'all' ? 'No profiles match your search criteria.' : `No profiles found for the "${activeFilter}" filter.`}
+        />
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -404,7 +364,7 @@ export default function AdminMatchesPage() {
                             </span>
                           </div>
                           <a
-                            href={adminLinks.profile(profile.id, profile.user.id)}
+                            href={adminLinks.editProfile(profile.user.id)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
@@ -534,34 +494,16 @@ export default function AdminMatchesPage() {
               </table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <div className="text-sm text-gray-500">
-                Showing {profiles.length} of {totalCount} profiles
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  className="p-2 border rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <span className="text-sm text-gray-600">
-                  Page {page} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 border rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+          <AdminPagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            itemsShown={profiles.length}
+            itemLabel="profiles"
+            onPageChange={setPage}
+          />
+        </div>
+      )}
 
       {/* Legend */}
       <div className="mt-4 bg-white rounded-xl p-4 shadow-sm">

@@ -8,7 +8,6 @@ import Link from 'next/link'
 import {
   AlertTriangle,
   Loader2,
-  ArrowLeft,
   Clock,
   CheckCircle,
   XCircle,
@@ -16,11 +15,11 @@ import {
   Ban,
   RefreshCw,
   User,
-  Filter,
   ExternalLink,
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { useToast } from '@/components/Toast'
+import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminModal } from '@/components/admin/AdminComponents'
 
 interface Report {
   id: string
@@ -212,48 +211,32 @@ export default function AdminReportsPage() {
     )
   }
 
+  const tabs = [
+    { id: 'all', label: 'All' },
+    { id: 'pending', label: 'Pending' },
+    { id: 'reviewed', label: 'Reviewed' },
+    { id: 'resolved', label: 'Resolved' },
+    { id: 'dismissed', label: 'Dismissed' },
+  ]
+
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <AlertTriangle className="h-8 w-8 text-orange-500" />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Reported Problems</h1>
-            <p className="text-gray-600">Review and manage user reports</p>
-          </div>
-        </div>
-        <button
-          onClick={fetchReports}
-          className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 bg-white border rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </button>
-      </div>
+      <AdminPageHeader
+        title="Reported Problems"
+        description="Review and manage user reports"
+        actions={
+          <AdminButton variant="secondary" onClick={fetchReports}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </AdminButton>
+        }
+      />
 
-        {/* Filter */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">Filter by status:</span>
-            <div className="flex gap-2">
-              {['all', 'pending', 'reviewed', 'resolved', 'dismissed'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                    statusFilter === status
-                      ? 'bg-primary-100 text-primary-700 font-medium'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+      <AdminTabs
+        tabs={tabs}
+        activeTab={statusFilter}
+        onTabChange={setStatusFilter}
+      />
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-red-600">
@@ -263,15 +246,11 @@ export default function AdminReportsPage() {
 
         {/* Reports List */}
         {reports.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <AlertTriangle className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reports Found</h3>
-            <p className="text-gray-600">
-              {statusFilter === 'all'
-                ? 'No user reports have been submitted yet.'
-                : `No ${statusFilter} reports found.`}
-            </p>
-          </div>
+          <AdminEmptyState
+            icon={<AlertTriangle className="h-12 w-12" />}
+            title="No Reports Found"
+            description={statusFilter === 'all' ? 'No user reports have been submitted yet.' : `No ${statusFilter} reports found.`}
+          />
         ) : (
           <div className="space-y-4">
             {reports.map((report) => (
@@ -298,7 +277,15 @@ export default function AdminReportsPage() {
                           <User className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{report.reporter.name}</p>
+                          <a
+                            href={adminLinks.editProfile(report.reporter.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                          >
+                            {report.reporter.name}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
                           <p className="text-sm text-gray-500">{report.reporter.email}</p>
                         </div>
                       </div>
@@ -312,7 +299,15 @@ export default function AdminReportsPage() {
                           <User className="w-5 h-5 text-orange-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{report.reportedUser.name}</p>
+                          <a
+                            href={adminLinks.editProfile(report.reportedUser.id)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                          >
+                            {report.reportedUser.name}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
                           <p className="text-sm text-gray-500">{report.reportedUser.email}</p>
                         </div>
                         {report.reportedUser.profile && (
@@ -400,97 +395,87 @@ export default function AdminReportsPage() {
         )}
 
       {/* Action Modal */}
-      {actionModal && selectedReport && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full shadow-xl">
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold text-gray-900">Review Report</h2>
-              <p className="text-sm text-gray-500">Update the status and add notes for this report</p>
+      <AdminModal
+        isOpen={actionModal && !!selectedReport}
+        onClose={() => { setActionModal(false); setSelectedReport(null); }}
+        title="Review Report"
+        icon={<Eye className="h-5 w-5 text-primary-500" />}
+        maxWidth="lg"
+        footer={
+          <>
+            <AdminButton
+              variant="secondary"
+              onClick={() => { setActionModal(false); setSelectedReport(null); }}
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              Cancel
+            </AdminButton>
+            <AdminButton
+              variant="primary"
+              onClick={handleUpdateReport}
+              loading={isSubmitting}
+              className="flex-1"
+            >
+              Save Changes
+            </AdminButton>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={newStatus}
+              onChange={(e) => setNewStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="pending">Pending</option>
+              <option value="reviewed">Reviewed</option>
+              <option value="resolved">Resolved</option>
+              <option value="dismissed">Dismissed</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Action Taken</label>
+            <select
+              value={actionTaken}
+              onChange={(e) => setActionTaken(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="">No action</option>
+              <option value="warned">Warned user</option>
+              <option value="suspended">Suspended profile</option>
+              <option value="dismissed">Dismissed - no issue found</option>
+            </select>
+          </div>
+
+          {actionTaken === 'suspended' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
+              <input
+                type="text"
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                placeholder="Reason for suspension..."
+              />
             </div>
+          )}
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="reviewed">Reviewed</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="dismissed">Dismissed</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Action Taken</label>
-                <select
-                  value={actionTaken}
-                  onChange={(e) => setActionTaken(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="">No action</option>
-                  <option value="warned">Warned user</option>
-                  <option value="suspended">Suspended profile</option>
-                  <option value="dismissed">Dismissed - no issue found</option>
-                </select>
-              </div>
-
-              {actionTaken === 'suspended' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
-                  <input
-                    type="text"
-                    value={suspendReason}
-                    onChange={(e) => setSuspendReason(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                    placeholder="Reason for suspension..."
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label>
-                <textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 resize-none"
-                  rows={3}
-                  placeholder="Add notes about this report..."
-                />
-              </div>
-            </div>
-
-            <div className="p-6 border-t bg-gray-50 flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  setActionModal(false)
-                  setSelectedReport(null)
-                }}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateReport}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
-              </button>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label>
+            <textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 resize-none"
+              rows={3}
+              placeholder="Add notes about this report..."
+            />
           </div>
         </div>
-      )}
+      </AdminModal>
     </div>
   )
 }

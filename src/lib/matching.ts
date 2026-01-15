@@ -1207,7 +1207,7 @@ function isPrefSet(pref: string | null | undefined): boolean {
 /**
  * Calculate match score between seeker and candidate
  * Returns a score object with total percentage and individual criteria scores
- * Shows ALL criteria for transparency
+ * Shows ALL criteria for transparency with deal-breaker information
  */
 export function calculateMatchScore(
   seeker: ProfileForMatching,
@@ -1221,6 +1221,7 @@ export function calculateMatchScore(
     matched: boolean
     seekerPref: string | null
     candidateValue: string | null
+    isDealbreaker: boolean
   }[]
 } {
   const criteria: {
@@ -1228,6 +1229,7 @@ export function calculateMatchScore(
     matched: boolean
     seekerPref: string | null
     candidateValue: string | null
+    isDealbreaker: boolean
   }[] = []
 
   let matchedCount = 0
@@ -1238,35 +1240,70 @@ export function calculateMatchScore(
 
   // 1. Age match
   let ageMatched = true
-  if (isPrefSet(seeker.prefAgeDiff)) {
+  const hasAgePref = isPrefSet(seeker.prefAgeMin) || isPrefSet(seeker.prefAgeMax) || isPrefSet(seeker.prefAgeDiff)
+  if (hasAgePref) {
     totalCriteria++
-    const ageRange = parseAgePreference(seeker.prefAgeDiff, seekerAge)
-    if (candidateAge !== null && ageRange !== null) {
-      ageMatched = candidateAge >= ageRange.min && candidateAge <= ageRange.max
+    if (candidateAge !== null) {
+      if (isPrefSet(seeker.prefAgeMin)) {
+        const minAge = parseInt(seeker.prefAgeMin || '18')
+        if (candidateAge < minAge) ageMatched = false
+      }
+      if (isPrefSet(seeker.prefAgeMax)) {
+        const maxAge = parseInt(seeker.prefAgeMax || '99')
+        if (candidateAge > maxAge) ageMatched = false
+      }
+      if (!isPrefSet(seeker.prefAgeMin) && !isPrefSet(seeker.prefAgeMax) && isPrefSet(seeker.prefAgeDiff)) {
+        const ageRange = parseAgePreference(seeker.prefAgeDiff, seekerAge)
+        if (ageRange) {
+          ageMatched = candidateAge >= ageRange.min && candidateAge <= ageRange.max
+        }
+      }
     }
     if (ageMatched) matchedCount++
+  }
+
+  // Format age preference display
+  let agePrefDisplay = "Doesn't matter"
+  if (isPrefSet(seeker.prefAgeMin) || isPrefSet(seeker.prefAgeMax)) {
+    const minAge = seeker.prefAgeMin || '18'
+    const maxAge = seeker.prefAgeMax || '99'
+    agePrefDisplay = `${minAge} - ${maxAge} years`
+  } else if (isPrefSet(seeker.prefAgeDiff)) {
+    agePrefDisplay = seeker.prefAgeDiff!
   }
 
   criteria.push({
     name: 'Age',
     matched: ageMatched,
-    seekerPref: seeker.prefAgeDiff || "Doesn't matter",
-    candidateValue: candidateAge ? `${candidateAge} years` : 'Not specified'
+    seekerPref: agePrefDisplay,
+    candidateValue: candidateAge ? `${candidateAge} years` : 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefAgeIsDealbreaker)
   })
 
   // 2. Height match
   let heightMatched = true
-  if (isPrefSet(seeker.prefHeight)) {
+  const hasHeightPref = isPrefSet(seeker.prefHeightMin) || isPrefSet(seeker.prefHeightMax) || isPrefSet(seeker.prefHeight)
+  if (hasHeightPref) {
     totalCriteria++
     heightMatched = !!candidate.height
     if (heightMatched) matchedCount++
   }
 
+  let heightPrefDisplay = "Doesn't matter"
+  if (isPrefSet(seeker.prefHeightMin) || isPrefSet(seeker.prefHeightMax)) {
+    const minH = seeker.prefHeightMin || ''
+    const maxH = seeker.prefHeightMax || ''
+    heightPrefDisplay = minH && maxH ? `${minH} - ${maxH}` : (minH ? `Min ${minH}` : `Max ${maxH}`)
+  } else if (isPrefSet(seeker.prefHeight)) {
+    heightPrefDisplay = seeker.prefHeight!
+  }
+
   criteria.push({
     name: 'Height',
     matched: heightMatched,
-    seekerPref: seeker.prefHeight || "Doesn't matter",
-    candidateValue: candidate.height || 'Not specified'
+    seekerPref: heightPrefDisplay,
+    candidateValue: candidate.height || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefHeightIsDealbreaker)
   })
 
   // 3. Location match
@@ -1281,22 +1318,24 @@ export function calculateMatchScore(
     name: 'Location',
     matched: locationMatched,
     seekerPref: seeker.prefLocation || "Doesn't matter",
-    candidateValue: candidate.currentLocation || 'Not specified'
+    candidateValue: candidate.currentLocation || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefLocationIsDealbreaker)
   })
 
-  // 4. Caste match
-  let casteMatched = true
-  if (isPrefSet(seeker.prefCaste)) {
+  // 4. Community match
+  let communityMatched = true
+  if (isPrefSet(seeker.prefCommunity)) {
     totalCriteria++
-    casteMatched = isCasteMatch(seeker.caste, seeker.prefCaste, candidate.caste)
-    if (casteMatched) matchedCount++
+    communityMatched = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community)
+    if (communityMatched) matchedCount++
   }
 
   criteria.push({
-    name: 'Caste',
-    matched: casteMatched,
-    seekerPref: seeker.prefCaste || "Doesn't matter",
-    candidateValue: candidate.caste || 'Not specified'
+    name: 'Community',
+    matched: communityMatched,
+    seekerPref: seeker.prefCommunity || "Doesn't matter",
+    candidateValue: candidate.community || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefCommunityIsDealbreaker)
   })
 
   // 5. Gotra match
@@ -1311,7 +1350,8 @@ export function calculateMatchScore(
     name: 'Gotra',
     matched: gotraMatched,
     seekerPref: seeker.prefGotra || "Doesn't matter",
-    candidateValue: candidate.gotra || 'Not specified'
+    candidateValue: candidate.gotra || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefGotraIsDealbreaker)
   })
 
   // 6. Diet match
@@ -1326,7 +1366,8 @@ export function calculateMatchScore(
     name: 'Diet',
     matched: dietMatched,
     seekerPref: seeker.prefDiet || "Doesn't matter",
-    candidateValue: candidate.dietaryPreference || 'Not specified'
+    candidateValue: candidate.dietaryPreference || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefDietIsDealbreaker)
   })
 
   // 7. Qualification/Education match
@@ -1341,7 +1382,8 @@ export function calculateMatchScore(
     name: 'Education',
     matched: qualMatched,
     seekerPref: seeker.prefQualification || "Doesn't matter",
-    candidateValue: candidate.qualification || 'Not specified'
+    candidateValue: candidate.qualification || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefEducationIsDealbreaker)
   })
 
   // 8. Marital Status match
@@ -1356,7 +1398,8 @@ export function calculateMatchScore(
     name: 'Marital Status',
     matched: maritalMatched,
     seekerPref: seeker.prefMaritalStatus || "Doesn't matter",
-    candidateValue: candidate.maritalStatus || 'Not specified'
+    candidateValue: candidate.maritalStatus || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefMaritalStatusIsDealbreaker)
   })
 
   // 9. Smoking match
@@ -1371,7 +1414,8 @@ export function calculateMatchScore(
     name: 'Smoking',
     matched: smokingMatched,
     seekerPref: seeker.prefSmoking || "Doesn't matter",
-    candidateValue: candidate.smoking || 'Not specified'
+    candidateValue: candidate.smoking || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefSmokingIsDealbreaker)
   })
 
   // 10. Drinking match
@@ -1386,25 +1430,11 @@ export function calculateMatchScore(
     name: 'Drinking',
     matched: drinkingMatched,
     seekerPref: seeker.prefDrinking || "Doesn't matter",
-    candidateValue: candidate.drinking || 'Not specified'
+    candidateValue: candidate.drinking || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefDrinkingIsDealbreaker)
   })
 
-  // 11. Community match
-  let communityMatched = true
-  if (isPrefSet(seeker.prefCommunity)) {
-    totalCriteria++
-    communityMatched = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community)
-    if (communityMatched) matchedCount++
-  }
-
-  criteria.push({
-    name: 'Community',
-    matched: communityMatched,
-    seekerPref: seeker.prefCommunity || "Doesn't matter",
-    candidateValue: candidate.community || 'Not specified'
-  })
-
-  // 12. Income match
+  // 11. Income match
   let incomeMatched = true
   if (isPrefSet(seeker.prefIncome)) {
     totalCriteria++
@@ -1416,10 +1446,11 @@ export function calculateMatchScore(
     name: 'Income',
     matched: incomeMatched,
     seekerPref: seeker.prefIncome || "Doesn't matter",
-    candidateValue: candidate.annualIncome || 'Not specified'
+    candidateValue: candidate.annualIncome || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefIncomeIsDealbreaker)
   })
 
-  // 13. Family Values match
+  // 12. Family Values match
   let familyValuesMatched = true
   if (isPrefSet(seeker.prefFamilyValues)) {
     totalCriteria++
@@ -1431,10 +1462,11 @@ export function calculateMatchScore(
     name: 'Family Values',
     matched: familyValuesMatched,
     seekerPref: seeker.prefFamilyValues || "Doesn't matter",
-    candidateValue: candidate.familyValues || 'Not specified'
+    candidateValue: candidate.familyValues || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefFamilyValuesIsDealbreaker)
   })
 
-  // 14. Family Location match
+  // 13. Family Location match
   let familyLocationMatched = true
   if (isPrefSet(seeker.prefFamilyLocation)) {
     totalCriteria++
@@ -1446,10 +1478,11 @@ export function calculateMatchScore(
     name: 'Family Location',
     matched: familyLocationMatched,
     seekerPref: seeker.prefFamilyLocation || "Doesn't matter",
-    candidateValue: candidate.familyLocation || 'Not specified'
+    candidateValue: candidate.familyLocation || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefFamilyLocationIsDealbreaker)
   })
 
-  // 15. Mother Tongue match
+  // 14. Mother Tongue match
   let motherTongueMatched = true
   if (isPrefSet(seeker.prefMotherTongue)) {
     totalCriteria++
@@ -1461,10 +1494,11 @@ export function calculateMatchScore(
     name: 'Mother Tongue',
     matched: motherTongueMatched,
     seekerPref: seeker.prefMotherTongue || "Doesn't matter",
-    candidateValue: candidate.motherTongue || 'Not specified'
+    candidateValue: candidate.motherTongue || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefMotherTongueIsDealbreaker)
   })
 
-  // 16. Sub-Community match
+  // 15. Sub-Community match
   let subCommunityMatched = true
   if (isPrefSet(seeker.prefSubCommunity)) {
     totalCriteria++
@@ -1476,7 +1510,8 @@ export function calculateMatchScore(
     name: 'Sub-Community',
     matched: subCommunityMatched,
     seekerPref: seeker.prefSubCommunity || "Doesn't matter",
-    candidateValue: candidate.subCommunity || 'Not specified'
+    candidateValue: candidate.subCommunity || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefSubCommunityIsDealbreaker)
   })
 
   // Calculate percentage (only from criteria where preference was set)

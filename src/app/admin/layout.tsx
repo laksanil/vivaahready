@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
-  UserPlus, Trash2, UserCog
+  UserPlus
 } from 'lucide-react'
 import { ToastProvider } from '@/components/Toast'
 
@@ -103,6 +103,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Dashboard
             </Link>
             <Link
+              href="/admin/profiles"
+              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/profiles' || pathname.startsWith('/admin/profiles/') && pathname !== '/admin/profiles/create' ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <Users className="h-5 w-5 mr-3" />
+              Profiles
+            </Link>
+            <Link
               href="/admin/approvals"
               className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/approvals' ? 'bg-gray-800 text-white' : ''
@@ -110,33 +119,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <ClipboardCheck className="h-5 w-5 mr-3" />
               Approvals
-            </Link>
-            <Link
-              href="/admin/users"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname.startsWith('/admin/users') ? 'bg-gray-800 text-white' : ''
-              }`}
-            >
-              <UserCog className="h-5 w-5 mr-3" />
-              Users
-            </Link>
-            <Link
-              href="/admin/profiles"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/profiles' ? 'bg-gray-800 text-white' : ''
-              }`}
-            >
-              <Users className="h-5 w-5 mr-3" />
-              Profiles
-            </Link>
-            <Link
-              href="/admin/matches"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/matches' ? 'bg-gray-800 text-white' : ''
-              }`}
-            >
-              <Heart className="h-5 w-5 mr-3" />
-              Matches
             </Link>
             <Link
               href="/admin/reports"
@@ -148,13 +130,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Reports
             </Link>
             <Link
-              href="/admin/deletions"
+              href="/admin/matches"
               className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-                pathname === '/admin/deletions' ? 'bg-gray-800 text-white' : ''
+                pathname === '/admin/matches' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <Trash2 className="h-5 w-5 mr-3" />
-              Deletion Requests
+              <Heart className="h-5 w-5 mr-3" />
+              Matches
             </Link>
 
             <div className="mt-4 mx-4 border-t border-gray-700 pt-4">
