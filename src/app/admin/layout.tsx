@@ -8,6 +8,7 @@ import {
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
   UserPlus, Trash2, UserCog
 } from 'lucide-react'
+import { ToastProvider } from '@/components/Toast'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -53,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Show login page without layout
   if (isLoginPage) {
-    return <>{children}</>
+    return <ToastProvider>{children}</ToastProvider>
   }
 
   // Show loading state while checking auth
@@ -190,7 +191,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Main Content */}
         <main className="flex-1 ml-64 p-8">
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </main>
       </div>
     </div>

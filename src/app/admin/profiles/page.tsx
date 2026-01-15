@@ -11,6 +11,7 @@ import {
   Loader2, RefreshCw, Ban, UserCheck, Clock, ShieldCheck, ImageOff, ExternalLink, Eye
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
+import { useToast } from '@/components/Toast'
 
 interface Profile {
   id: string
@@ -47,6 +48,7 @@ const tabs: { id: TabType; label: string }[] = [
 function AdminProfilesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { showToast } = useToast()
   const initialTab = (searchParams.get('tab') as TabType) || 'all'
 
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -110,14 +112,21 @@ function AdminProfilesContent() {
   const handleVerify = async (profileId: string, verified: boolean) => {
     setActionLoading(profileId)
     try {
-      await fetch(`/api/admin/profiles/${profileId}`, {
+      const res = await fetch(`/api/admin/profiles/${profileId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isVerified: verified }),
       })
-      fetchProfiles()
+      if (res.ok) {
+        fetchProfiles()
+        showToast(verified ? 'Profile verified' : 'Verification removed', 'success')
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to update profile', 'error')
+      }
     } catch (err) {
       console.error('Failed to update profile:', err)
+      showToast('Failed to update profile', 'error')
     } finally {
       setActionLoading(null)
     }
@@ -128,12 +137,19 @@ function AdminProfilesContent() {
 
     setActionLoading(profileId)
     try {
-      await fetch(`/api/admin/profiles/${profileId}`, {
+      const res = await fetch(`/api/admin/profiles/${profileId}`, {
         method: 'DELETE',
       })
-      fetchProfiles()
+      if (res.ok) {
+        fetchProfiles()
+        showToast('Profile deleted', 'success')
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to delete profile', 'error')
+      }
     } catch (err) {
       console.error('Failed to delete profile:', err)
+      showToast('Failed to delete profile', 'error')
     } finally {
       setActionLoading(null)
     }
@@ -157,13 +173,14 @@ function AdminProfilesContent() {
       if (response.ok) {
         fetchProfiles()
         setSuspendModal({ isOpen: false, profile: null, reason: '' })
+        showToast('Profile suspended', 'success')
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to suspend profile')
+        showToast(data.error || 'Failed to suspend profile', 'error')
       }
     } catch (err) {
       console.error('Failed to suspend profile:', err)
-      alert('Failed to suspend profile')
+      showToast('Failed to suspend profile', 'error')
     } finally {
       setActionLoading(null)
     }
@@ -174,7 +191,7 @@ function AdminProfilesContent() {
 
     setActionLoading(profile.id)
     try {
-      await fetch('/api/admin/suspend', {
+      const res = await fetch('/api/admin/suspend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,9 +199,16 @@ function AdminProfilesContent() {
           action: 'unsuspend',
         }),
       })
-      fetchProfiles()
+      if (res.ok) {
+        fetchProfiles()
+        showToast('Profile unsuspended', 'success')
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to unsuspend profile', 'error')
+      }
     } catch (err) {
       console.error('Failed to unsuspend profile:', err)
+      showToast('Failed to unsuspend profile', 'error')
     } finally {
       setActionLoading(null)
     }

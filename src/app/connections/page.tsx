@@ -69,8 +69,6 @@ function ConnectionsPageContent() {
 
   const [connections, setConnections] = useState<ConnectionProfile[]>([])
   const [loading, setLoading] = useState(true)
-  const [isAdminDataView, setIsAdminDataView] = useState(false)
-  const [viewingUserName, setViewingUserName] = useState<string | null>(null)
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
     recipientId: string
@@ -108,13 +106,7 @@ function ConnectionsPageContent() {
     try {
       const response = await fetch(buildApiUrl('/api/matches/auto'))
       const data = await response.json()
-
       setConnections(data.mutualMatches || [])
-
-      if (data.isAdminView) {
-        setIsAdminDataView(true)
-        setViewingUserName(data.viewingUserName || null)
-      }
     } catch (error) {
       console.error('Error fetching connections:', error)
     } finally {
@@ -169,34 +161,9 @@ function ConnectionsPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Admin View Banner */}
-        {isAdminDataView && viewingUserName && (
-          <div className="mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-5 shadow-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-xl">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">ADMIN VIEW MODE</h3>
-                  <p className="text-purple-100">
-                    Viewing as <span className="font-bold text-white">{viewingUserName}</span>
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/admin/matches"
-                className="px-4 py-2 text-sm bg-white/20 text-white rounded-lg hover:bg-white/30"
-              >
-                ← Back to Admin
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Connections</h1>
           <p className="text-gray-600 mt-1">People who liked you back - you can now message them!</p>
@@ -271,15 +238,15 @@ function ConnectionsPageContent() {
       </div>
 
       {/* Message Modal */}
-      <MessageModal
-        isOpen={messageModal.isOpen}
-        onClose={closeMessageModal}
-        recipientId={messageModal.recipientId}
-        recipientName={messageModal.recipientName}
-        recipientPhoto={messageModal.recipientPhoto}
-        recipientPhotoUrls={messageModal.recipientPhotoUrls}
-      />
-    </div>
+        <MessageModal
+          isOpen={messageModal.isOpen}
+          onClose={closeMessageModal}
+          recipientId={messageModal.recipientId}
+          recipientName={messageModal.recipientName}
+          recipientPhoto={messageModal.recipientPhoto}
+          recipientPhotoUrls={messageModal.recipientPhotoUrls}
+        />
+      </div>
   )
 }
 

@@ -14,7 +14,6 @@ import {
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
-import AdminViewBanner from '@/components/AdminViewBanner'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface FeedProfile extends ProfileData {
@@ -24,7 +23,7 @@ interface FeedProfile extends ProfileData {
 function FeedPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const { viewAsUser, buildApiUrl, buildUrl, isImpersonating } = useImpersonation()
+  const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
   const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
 
   const [profiles, setProfiles] = useState<FeedProfile[]>([])
@@ -163,11 +162,7 @@ function FeedPageContent() {
   }
 
   return (
-    <>
-      {/* Admin View Banner - shows when admin is impersonating */}
-      {isImpersonating && <AdminViewBanner />}
-
-      <div className={`min-h-screen bg-gray-50 py-6 ${isImpersonating ? 'pt-20' : ''}`}>
+      <div className="min-h-screen bg-gray-50 py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Header */}
         <div className="mb-6">
@@ -317,7 +312,6 @@ function FeedPageContent() {
         </div>
       )}
       </div>
-    </>
   )
 }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Loader2, Trash2, Check, X, AlertTriangle, Heart, User, Mail, Phone, MapPin } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 interface DeletionRequest {
   id: string
@@ -37,6 +38,7 @@ const REASON_LABELS: Record<string, string> = {
 }
 
 export default function AdminDeletionsPage() {
+  const { showToast } = useToast()
   const [requests, setRequests] = useState<DeletionRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('pending')
@@ -72,9 +74,19 @@ export default function AdminDeletionsPage() {
       if (response.ok) {
         fetchRequests()
         setConfirmDelete(null)
+        const actionMessages: Record<string, string> = {
+          approve: 'Deletion request approved',
+          reject: 'Deletion request rejected',
+          complete: 'User account deleted',
+        }
+        showToast(actionMessages[action] || 'Request processed', 'success')
+      } else {
+        const error = await response.json()
+        showToast(error.error || 'Failed to process request', 'error')
       }
     } catch (error) {
       console.error('Failed to process request:', error)
+      showToast('Failed to process request', 'error')
     } finally {
       setProcessingId(null)
     }

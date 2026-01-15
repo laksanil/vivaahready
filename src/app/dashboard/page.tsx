@@ -21,7 +21,6 @@ import {
 } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
-import AdminViewBanner from '@/components/AdminViewBanner'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface DashboardStats {
@@ -35,7 +34,7 @@ function DashboardContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { viewAsUser, buildUrl, buildApiUrl, isImpersonating } = useImpersonation()
+  const { viewAsUser, buildUrl, buildApiUrl } = useImpersonation()
   const { isAdminView, isAdmin: isAdminAccess, adminChecked } = useAdminViewAccess()
   const [stats, setStats] = useState<DashboardStats>({
     interestsReceived: 0,
@@ -242,11 +241,7 @@ function DashboardContent() {
   }
 
   return (
-    <>
-      {/* Admin View Banner - shows when admin is impersonating */}
-      {isImpersonating && <AdminViewBanner />}
-
-      <div className={`min-h-screen bg-gray-50 py-8 ${isImpersonating ? 'pt-20' : ''}`}>
+      <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Welcome Section */}
         <div className="mb-8">
@@ -663,7 +658,6 @@ function DashboardContent() {
         onClose={() => setShowCreateProfileModal(false)}
       />
       </div>
-    </>
   )
 }
 

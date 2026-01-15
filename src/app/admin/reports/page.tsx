@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
+import { useToast } from '@/components/Toast'
 
 interface Report {
   id: string
@@ -57,6 +58,7 @@ interface Report {
 
 export default function AdminReportsPage() {
   const router = useRouter()
+  const { showToast } = useToast()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -144,9 +146,10 @@ export default function AdminReportsPage() {
       setNewStatus('')
       setSuspendReason('')
       fetchReports()
+      showToast('Report updated successfully', 'success')
     } catch (err) {
       console.error(err)
-      alert('Failed to update report')
+      showToast('Failed to update report', 'error')
     } finally {
       setIsSubmitting(false)
     }
@@ -169,9 +172,10 @@ export default function AdminReportsPage() {
       if (!response.ok) throw new Error(`Failed to ${action} profile`)
 
       fetchReports()
+      showToast(`Profile ${action === 'suspend' ? 'suspended' : 'unsuspended'}`, 'success')
     } catch (err) {
       console.error(err)
-      alert(`Failed to ${action} profile`)
+      showToast(`Failed to ${action} profile`, 'error')
     }
   }
 

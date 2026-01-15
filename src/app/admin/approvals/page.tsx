@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
+import { useToast } from '@/components/Toast'
 
 interface PendingProfile {
   id: string
@@ -35,6 +36,7 @@ interface PendingProfile {
 type TabType = 'pending' | 'rejected'
 
 export default function AdminApprovalsPage() {
+  const { showToast } = useToast()
   const [activeTab, setActiveTab] = useState<TabType>('pending')
   const [pendingProfiles, setPendingProfiles] = useState<PendingProfile[]>([])
   const [rejectedProfiles, setRejectedProfiles] = useState<PendingProfile[]>([])
@@ -118,9 +120,14 @@ export default function AdminApprovalsPage() {
         // Remove from whichever list it's in
         setPendingProfiles(prev => prev.filter(p => p.id !== profileId))
         setRejectedProfiles(prev => prev.filter(p => p.id !== profileId))
+        showToast('Profile approved successfully', 'success')
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to approve profile', 'error')
       }
     } catch (error) {
       console.error('Error approving profile:', error)
+      showToast('Failed to approve profile', 'error')
     } finally {
       setActionLoading(null)
     }
@@ -150,9 +157,14 @@ export default function AdminApprovalsPage() {
         }
         setSelectedProfile(null)
         setRejectionReason('')
+        showToast('Profile rejected', 'success')
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to reject profile', 'error')
       }
     } catch (error) {
       console.error('Error rejecting profile:', error)
+      showToast('Failed to reject profile', 'error')
     } finally {
       setActionLoading(null)
     }
