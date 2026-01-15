@@ -1281,7 +1281,7 @@ function ProfileCard({
                       {(() => {
                         const theirDealbreakers = theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
                         const yourDealbreakers = yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const allCriteriaNames = [...new Set([...theirDealbreakers.map(c => c.name), ...yourDealbreakers.map(c => c.name)])]
+                        const allCriteriaNames = Array.from(new Set([...theirDealbreakers.map(c => c.name), ...yourDealbreakers.map(c => c.name)]))
 
                         if (allCriteriaNames.length === 0) return null
 
@@ -1342,7 +1342,7 @@ function ProfileCard({
                       {(() => {
                         const theirOptional = theirMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
                         const yourOptional = yourMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const allCriteriaNames = [...new Set([...theirOptional.map(c => c.name), ...yourOptional.map(c => c.name)])]
+                        const allCriteriaNames = Array.from(new Set([...theirOptional.map(c => c.name), ...yourOptional.map(c => c.name)]))
 
                         if (allCriteriaNames.length === 0) return null
 
