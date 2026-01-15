@@ -1724,8 +1724,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   // Count deal-breakers
   const dealBreakerCount = [
     'prefAge', 'prefHeight', 'prefMaritalStatus', 'prefReligion',
-    'prefDiet', 'prefSmoking', 'prefDrinking', 'prefLocation',
-    'prefEducation', 'prefIncome', 'prefMotherTongue'
+    'prefCommunity', 'prefGotra', 'prefDiet', 'prefSmoking', 'prefDrinking',
+    'prefLocation', 'prefCitizenship', 'prefGrewUpIn', 'prefRelocation',
+    'prefEducation', 'prefIncome', 'prefOccupation', 'prefFamilyValues',
+    'prefFamilyLocation', 'prefMotherTongue', 'prefSubCommunity', 'prefPets'
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
