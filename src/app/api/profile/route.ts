@@ -274,6 +274,37 @@ export async function PUT(request: Request) {
     if (body.livesWithFamily !== undefined) updateData.livesWithFamily = body.livesWithFamily
     if (body.createdBy !== undefined) updateData.createdBy = body.createdBy
 
+    // Additional preference fields
+    if (body.prefReligion !== undefined) updateData.prefReligion = body.prefReligion
+    if (body.prefFamilyValues !== undefined) updateData.prefFamilyValues = body.prefFamilyValues
+    if (body.prefFamilyLocation !== undefined) updateData.prefFamilyLocation = body.prefFamilyLocation
+    if (body.prefFamilyLocationCountry !== undefined) updateData.prefFamilyLocationCountry = body.prefFamilyLocationCountry
+    if (body.prefLocationList !== undefined) updateData.prefLocationList = body.prefLocationList
+
+    // Deal-breaker flags
+    if (body.prefAgeIsDealbreaker !== undefined) updateData.prefAgeIsDealbreaker = body.prefAgeIsDealbreaker === true || body.prefAgeIsDealbreaker === 'true'
+    if (body.prefHeightIsDealbreaker !== undefined) updateData.prefHeightIsDealbreaker = body.prefHeightIsDealbreaker === true || body.prefHeightIsDealbreaker === 'true'
+    if (body.prefMaritalStatusIsDealbreaker !== undefined) updateData.prefMaritalStatusIsDealbreaker = body.prefMaritalStatusIsDealbreaker === true || body.prefMaritalStatusIsDealbreaker === 'true'
+    if (body.prefCommunityIsDealbreaker !== undefined) updateData.prefCommunityIsDealbreaker = body.prefCommunityIsDealbreaker === true || body.prefCommunityIsDealbreaker === 'true'
+    if (body.prefGotraIsDealbreaker !== undefined) updateData.prefGotraIsDealbreaker = body.prefGotraIsDealbreaker === true || body.prefGotraIsDealbreaker === 'true'
+    if (body.prefDietIsDealbreaker !== undefined) updateData.prefDietIsDealbreaker = body.prefDietIsDealbreaker === true || body.prefDietIsDealbreaker === 'true'
+    if (body.prefSmokingIsDealbreaker !== undefined) updateData.prefSmokingIsDealbreaker = body.prefSmokingIsDealbreaker === true || body.prefSmokingIsDealbreaker === 'true'
+    if (body.prefDrinkingIsDealbreaker !== undefined) updateData.prefDrinkingIsDealbreaker = body.prefDrinkingIsDealbreaker === true || body.prefDrinkingIsDealbreaker === 'true'
+    if (body.prefLocationIsDealbreaker !== undefined) updateData.prefLocationIsDealbreaker = body.prefLocationIsDealbreaker === true || body.prefLocationIsDealbreaker === 'true'
+    if (body.prefCitizenshipIsDealbreaker !== undefined) updateData.prefCitizenshipIsDealbreaker = body.prefCitizenshipIsDealbreaker === true || body.prefCitizenshipIsDealbreaker === 'true'
+    if (body.prefGrewUpInIsDealbreaker !== undefined) updateData.prefGrewUpInIsDealbreaker = body.prefGrewUpInIsDealbreaker === true || body.prefGrewUpInIsDealbreaker === 'true'
+    if (body.prefRelocationIsDealbreaker !== undefined) updateData.prefRelocationIsDealbreaker = body.prefRelocationIsDealbreaker === true || body.prefRelocationIsDealbreaker === 'true'
+    if (body.prefEducationIsDealbreaker !== undefined) updateData.prefEducationIsDealbreaker = body.prefEducationIsDealbreaker === true || body.prefEducationIsDealbreaker === 'true'
+    if (body.prefWorkAreaIsDealbreaker !== undefined) updateData.prefWorkAreaIsDealbreaker = body.prefWorkAreaIsDealbreaker === true || body.prefWorkAreaIsDealbreaker === 'true'
+    if (body.prefIncomeIsDealbreaker !== undefined) updateData.prefIncomeIsDealbreaker = body.prefIncomeIsDealbreaker === true || body.prefIncomeIsDealbreaker === 'true'
+    if (body.prefOccupationIsDealbreaker !== undefined) updateData.prefOccupationIsDealbreaker = body.prefOccupationIsDealbreaker === true || body.prefOccupationIsDealbreaker === 'true'
+    if (body.prefFamilyValuesIsDealbreaker !== undefined) updateData.prefFamilyValuesIsDealbreaker = body.prefFamilyValuesIsDealbreaker === true || body.prefFamilyValuesIsDealbreaker === 'true'
+    if (body.prefFamilyLocationIsDealbreaker !== undefined) updateData.prefFamilyLocationIsDealbreaker = body.prefFamilyLocationIsDealbreaker === true || body.prefFamilyLocationIsDealbreaker === 'true'
+    if (body.prefMotherTongueIsDealbreaker !== undefined) updateData.prefMotherTongueIsDealbreaker = body.prefMotherTongueIsDealbreaker === true || body.prefMotherTongueIsDealbreaker === 'true'
+    if (body.prefSubCommunityIsDealbreaker !== undefined) updateData.prefSubCommunityIsDealbreaker = body.prefSubCommunityIsDealbreaker === true || body.prefSubCommunityIsDealbreaker === 'true'
+    if (body.prefPetsIsDealbreaker !== undefined) updateData.prefPetsIsDealbreaker = body.prefPetsIsDealbreaker === true || body.prefPetsIsDealbreaker === 'true'
+    if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker === true || body.prefReligionIsDealbreaker === 'true'
+
     // Update User's name if firstName or lastName changed
     if (body.firstName !== undefined || body.lastName !== undefined) {
       // Get current user to preserve existing name parts

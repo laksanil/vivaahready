@@ -373,7 +373,7 @@ export default function AdminUserDetailPage() {
                   )}
 
                   <Link
-                    href={`/admin/profiles/${user.profile.id}/edit`}
+                    href={adminLinks.editProfile(user.id)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200"
                   >
                     <Edit className="h-4 w-4" />

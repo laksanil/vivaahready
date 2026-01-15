@@ -647,11 +647,11 @@ function AdminProfilesContent() {
                   )
                 )}
 
-                {/* Edit Profile */}
+                {/* Edit Profile - Uses same edit flow as user */}
                 {profile.hasProfile && profile.id && (
                   <AdminIconButton
                     icon={<Edit className="h-4 w-4" />}
-                    href={`/admin/profiles/${profile.id}/edit`}
+                    href={adminLinks.editProfile(profile.user.id)}
                     title="Edit profile"
                     variant="gray"
                   />

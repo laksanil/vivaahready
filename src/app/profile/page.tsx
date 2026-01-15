@@ -106,6 +106,47 @@ interface Profile {
   pets: string
   allergiesOrMedical: string
   emailVerified: boolean
+  // Additional preference fields
+  prefReligion: string
+  prefFamilyValues: string
+  prefFamilyLocation: string
+  prefFamilyLocationCountry: string
+  prefLocationList: string
+  prefMaritalStatus: string
+  prefSmoking: string
+  prefDrinking: string
+  prefGrewUpIn: string
+  prefRelocation: string
+  prefCommunity: string
+  prefSubCommunity: string
+  prefMotherTongue: string
+  prefPets: string
+  prefWorkArea: string
+  prefOccupation: string
+  prefCitizenship: string
+  // Deal-breaker flags
+  prefAgeIsDealbreaker: boolean
+  prefHeightIsDealbreaker: boolean
+  prefMaritalStatusIsDealbreaker: boolean
+  prefCommunityIsDealbreaker: boolean
+  prefGotraIsDealbreaker: boolean
+  prefDietIsDealbreaker: boolean
+  prefSmokingIsDealbreaker: boolean
+  prefDrinkingIsDealbreaker: boolean
+  prefLocationIsDealbreaker: boolean
+  prefCitizenshipIsDealbreaker: boolean
+  prefGrewUpInIsDealbreaker: boolean
+  prefRelocationIsDealbreaker: boolean
+  prefEducationIsDealbreaker: boolean
+  prefWorkAreaIsDealbreaker: boolean
+  prefIncomeIsDealbreaker: boolean
+  prefOccupationIsDealbreaker: boolean
+  prefFamilyValuesIsDealbreaker: boolean
+  prefFamilyLocationIsDealbreaker: boolean
+  prefMotherTongueIsDealbreaker: boolean
+  prefSubCommunityIsDealbreaker: boolean
+  prefPetsIsDealbreaker: boolean
+  prefReligionIsDealbreaker: boolean
 }
 
 function ViewProfilePageContent() {

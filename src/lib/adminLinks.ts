@@ -3,6 +3,10 @@
  *
  * When admins click on user-related links, they should see the app
  * exactly as that user would see it, with a purple admin banner.
+ *
+ * IMPORTANT: Admin and user should use the SAME edit functionality.
+ * All edit links go to /profile?viewAsUser={userId} which opens the
+ * same ProfileEditModal used by regular users.
  */
 
 /**
@@ -23,11 +27,13 @@ export const adminLinks = {
   // View user's profile page
   profile: (profileId: string, userId: string) => adminViewLink(`/profile/${profileId}`, userId),
 
-  // View user's own profile (settings page)
+  // View/Edit user's own profile (same page - uses modal for editing)
+  // This is the same experience for both admin and user
   myProfile: (userId: string) => adminViewLink('/profile', userId),
 
-  // Edit user's profile (admin clicking on user name goes here)
-  editProfile: (userId: string) => adminViewLink('/profile/edit', userId),
+  // Edit user's profile - goes to their profile page where they can open edit modal
+  // Admin uses the same edit flow as users for consistency
+  editProfile: (userId: string) => adminViewLink('/profile', userId),
 
   // View user's dashboard
   dashboard: (userId: string) => adminViewLink('/dashboard', userId),
@@ -46,9 +52,6 @@ export const adminLinks = {
 
   // Admin user detail page
   userDetail: (userId: string) => `/admin/users/${userId}`,
-
-  // Admin user edit page
-  userEdit: (userId: string) => `/admin/users/${userId}/edit`,
 }
 
 /**

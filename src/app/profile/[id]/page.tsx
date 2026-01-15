@@ -312,28 +312,27 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const canExpressInterest = userStatus?.canExpressInterest ?? false
 
   return (
-    <div className="min-h-screen bg-white py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6 font-medium"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </button>
-
-        {/* Admin Edit Link */}
-        {isAdmin && (
-          <div className="mb-4">
+    <div className="min-h-screen bg-gray-50 py-4">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Top Bar */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center text-gray-600 hover:text-primary-600 font-medium text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back
+          </button>
+          {/* Admin Edit Link */}
+          {isAdmin && (
             <Link
               href={`/admin/profiles/${profile.id}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-800 hover:bg-amber-200 text-sm"
             >
-              <span className="font-medium">Admin: Edit This Profile</span>
+              Admin: Edit
             </Link>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Profile Card - Same as MatchingProfileCard */}
         <ProfileCard
@@ -423,13 +422,9 @@ function ProfileCard({
   const carouselPhotos = extractPhotoUrls(profile.photoUrls)
   const photoUrl = profile.profileImageUrl || null
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'details' | 'preferences'>('details')
-
   // Gender-specific text
   const pronoun = profile.gender === 'male' ? 'He' : 'She'
   const possessivePronoun = profile.gender === 'male' ? 'His' : 'Her'
-  const possessive = profile.gender === 'male' ? 'His' : 'Her'
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index)
@@ -448,21 +443,27 @@ function ProfileCard({
     setLightboxIndex((prev) => (prev - 1 + thumbnails.length) % thumbnails.length)
   }
 
+  // Helper to format field values
+  const formatValue = (val: string | null | undefined) => {
+    if (!val) return null
+    return val.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
   return (
     <div className="bg-white border border-gray-200 overflow-hidden shadow-sm">
-      {/* Two Column Layout */}
-      <div className="flex flex-col lg:flex-row">
-        {/* Left Column - Photo & Compact Info */}
-        <div className="lg:w-[320px] flex-shrink-0 flex flex-col">
-          {/* Photo Carousel - Taller */}
-          <div className="relative bg-gray-100 h-[400px]">
-            {(carouselPhotos.length > 0 || photoUrl) && !imageError ? (
-              <>
+      {/* Compact Header with Photo and Key Info */}
+      <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4">
+        <div className="flex gap-4">
+          {/* Small Photo */}
+          <div className="relative flex-shrink-0">
+            <div className="w-24 h-24 bg-gray-200 overflow-hidden border-2 border-white shadow-lg">
+              {(carouselPhotos.length > 0 || photoUrl) && !imageError ? (
                 <img
                   src={carouselPhotos.length > 0 ? carouselPhotos[photoIndex] : (photoUrl || '')}
                   alt={profile.user.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover cursor-pointer"
                   referrerPolicy="no-referrer"
+                  onClick={() => openLightbox(photoIndex)}
                   onError={(e) => {
                     if (photoUrl && e.currentTarget.src !== photoUrl) {
                       e.currentTarget.src = photoUrl
@@ -471,1033 +472,318 @@ function ProfileCard({
                     }
                   }}
                 />
-                {/* Zoom Button */}
-                <button
-                  onClick={() => openLightbox(photoIndex)}
-                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 text-white transition-colors"
-                  title="View full size"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </button>
-                {/* Photo Counter & Navigation */}
-                {carouselPhotos.length > 1 && (
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2 bg-black/60 text-white px-2 py-1 text-xs">
-                    <button
-                      onClick={() => setPhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length)}
-                      className="hover:text-gray-300"
-                    >
-                      <ChevronLeft className="h-3 w-3" />
-                    </button>
-                    <span>{photoIndex + 1}/{carouselPhotos.length}</span>
-                    <button
-                      onClick={() => setPhotoIndex((prev) => (prev + 1) % carouselPhotos.length)}
-                      className="hover:text-gray-300"
-                    >
-                      <ChevronRight className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-primary-50">
-                <span className="text-5xl font-semibold text-primary-600">
-                  {getInitials(profile.user.name)}
-                </span>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary-100">
+                  <span className="text-2xl font-semibold text-primary-600">
+                    {getInitials(profile.user.name)}
+                  </span>
+                </div>
+              )}
+            </div>
+            {/* Photo navigation dots */}
+            {carouselPhotos.length > 1 && (
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
+                {carouselPhotos.slice(0, 5).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setPhotoIndex(idx)}
+                    className={`w-1.5 h-1.5 rounded-full ${idx === photoIndex ? 'bg-white' : 'bg-white/50'}`}
+                  />
+                ))}
               </div>
             )}
           </div>
 
-          {/* Compact Verification Badges */}
-          <div className="flex items-center justify-center gap-1 py-2 px-2 bg-gray-50 border-t border-gray-200">
-            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.approvalStatus === 'approved' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-              {profile.approvalStatus === 'approved' ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-              <span>Verified</span>
-            </div>
-            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.user.emailVerified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-              {profile.user.emailVerified ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-              <span>Email</span>
-            </div>
-            <div className={`flex items-center gap-1 px-2 py-0.5 text-xs ${profile.user.phoneVerified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-              {profile.user.phoneVerified ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-              <span>Phone</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Details */}
-        <div className="flex-1 bg-white border-l border-gray-200 flex flex-col">
-          {/* Compact Header */}
-          <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-white">
-            <div className="flex items-center justify-between gap-4">
-              {/* Name and Key Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-gray-900 truncate">{profile.user.name}</h2>
-                  <span className="text-sm text-gray-600 flex-shrink-0">{age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}</span>
-                </div>
-                {/* Quick Info Row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-600">
-                  <span>{profile.currentLocation}</span>
-                  <span>{profile.occupation?.replace(/_/g, ' ')}</span>
-                  <span>{profile.community ? `${profile.religion || 'Hindu'}, ${profile.community}` : (profile.religion || 'Hindu')}</span>
+          {/* Name and Key Info */}
+          <div className="flex-1 min-w-0 text-white">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-xl font-bold truncate">{profile.user.name}</h2>
+                <div className="text-sm text-white/90 mt-0.5">
+                  {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
               </div>
-
-              {/* Action Buttons - Horizontal */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 {isMutual ? (
                   <>
-                    <div className="w-10 h-10 bg-green-600 flex items-center justify-center" title="Connected">
-                      <Check className="h-5 w-5 text-white" />
+                    <div className="w-8 h-8 bg-green-500 flex items-center justify-center" title="Connected">
+                      <Check className="h-4 w-4 text-white" />
                     </div>
-                    <div className="w-10 h-10 border-2 border-primary-300 flex items-center justify-center hover:border-primary-400 hover:bg-primary-50 cursor-pointer transition-colors" title="Message">
-                      <MessageCircle className="h-5 w-5 text-primary-600" />
+                    <div className="w-8 h-8 bg-white/20 flex items-center justify-center hover:bg-white/30 cursor-pointer" title="Message">
+                      <MessageCircle className="h-4 w-4 text-white" />
                     </div>
                   </>
                 ) : interestSent ? (
-                  <div className="w-10 h-10 bg-yellow-500 flex items-center justify-center" title="Interest Sent">
-                    <Clock className="h-5 w-5 text-white" />
+                  <div className="w-8 h-8 bg-yellow-500 flex items-center justify-center" title="Interest Sent">
+                    <Clock className="h-4 w-4 text-white" />
                   </div>
                 ) : interestReceived ? (
                   <button
                     onClick={onSendInterest}
                     disabled={isSending || !canExpressInterest}
-                    className="w-10 h-10 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors"
-                    title="Likes You - Accept"
+                    className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
+                    title="Accept Interest"
                   >
-                    {isSending ? (
-                      <Loader2 className="h-5 w-5 text-white animate-spin" />
-                    ) : (
-                      <Heart className="h-5 w-5 text-white" />
-                    )}
+                    {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
                   </button>
                 ) : !canExpressInterest ? (
-                  <Link href={buildUrl('/profile')} className="w-10 h-10 bg-gray-400 hover:bg-gray-500 flex items-center justify-center transition-colors" title="Get Verified to Like">
-                    <Lock className="h-5 w-5 text-white" />
+                  <Link href={buildUrl('/profile')} className="w-8 h-8 bg-white/20 flex items-center justify-center" title="Get Verified to Like">
+                    <Lock className="h-4 w-4 text-white" />
                   </Link>
                 ) : (
                   <button
                     onClick={onSendInterest}
                     disabled={isSending}
-                    className="w-10 h-10 bg-primary-600 hover:bg-primary-700 flex items-center justify-center transition-colors"
+                    className="w-8 h-8 bg-white/20 hover:bg-white/30 flex items-center justify-center"
                     title="Like"
                   >
-                    {isSending ? (
-                      <Loader2 className="h-5 w-5 text-white animate-spin" />
-                    ) : (
-                      <Heart className="h-5 w-5 text-white" />
-                    )}
+                    {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
                   </button>
                 )}
-                <button
-                  onClick={onReport}
-                  className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:border-orange-400 hover:bg-orange-50 transition-colors"
-                  title="Report this profile"
-                >
-                  <Flag className="h-3.5 w-3.5 text-gray-400" />
+                <button onClick={onReport} className="w-8 h-8 bg-white/10 hover:bg-white/20 flex items-center justify-center" title="Report">
+                  <Flag className="h-3.5 w-3.5 text-white/70" />
                 </button>
               </div>
             </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 bg-gray-50">
-            <button
-              onClick={() => setActiveTab('details')}
-              className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                activeTab === 'details'
-                  ? 'text-white bg-primary-600'
-                  : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
-              }`}
-            >
-              Details
-            </button>
-            <button
-              onClick={() => setActiveTab('preferences')}
-              className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                activeTab === 'preferences'
-                  ? 'text-white bg-primary-600'
-                  : 'text-gray-600 hover:text-primary-600 hover:bg-gray-100'
-              }`}
-            >
-              Partner Preferences
-            </button>
-          </div>
-
-          {/* Tab Content - Full height with scroll */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            {activeTab === 'details' ? (
-              /* Detailed Profile Tab */
-              <div className="space-y-4">
-                {/* About Section */}
-                {profile.aboutMe && (
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/>
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900 mb-1">About</h3>
-                      <p className="text-sm text-gray-700 leading-relaxed">{profile.aboutMe}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Personal Details Section */}
-                <div className="flex gap-3">
-                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Personal Details</h3>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                      {profile.height && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Height:</span>
-                          <span className="text-gray-800">{profile.height}</span>
-                        </div>
-                      )}
-                      {profile.weight && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Weight:</span>
-                          <span className="text-gray-800">{profile.weight}</span>
-                        </div>
-                      )}
-                      {profile.maritalStatus && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Marital:</span>
-                          <span className="text-gray-800">{profile.maritalStatus.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.hasChildren && profile.maritalStatus !== 'never_married' && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Children:</span>
-                          <span className="text-gray-800">{profile.hasChildren.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.bloodGroup && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Blood:</span>
-                          <span className="text-gray-800">{profile.bloodGroup}</span>
-                        </div>
-                      )}
-                      {profile.dietaryPreference && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Diet:</span>
-                          <span className="text-gray-800">{profile.dietaryPreference}</span>
-                        </div>
-                      )}
-                      {profile.healthInfo && (
-                        <div className="flex items-center gap-1 col-span-2">
-                          <span className="text-gray-500">Health:</span>
-                          <span className="text-gray-800">{profile.healthInfo}</span>
-                        </div>
-                      )}
-                      {profile.anyDisability && profile.anyDisability !== 'none' && (
-                        <div className="flex items-center gap-1 col-span-2">
-                          <span className="text-gray-500">Disability:</span>
-                          <span className="text-gray-800">{profile.disabilityDetails || profile.anyDisability}</span>
-                        </div>
-                      )}
-                      {profile.allergiesOrMedical && (
-                        <div className="flex items-start gap-1 col-span-2">
-                          <span className="text-gray-500 flex-shrink-0">Allergies:</span>
-                          <span className="text-gray-800">{profile.allergiesOrMedical}</span>
-                        </div>
-                      )}
-                      {profile.createdBy && (
-                        <div className="flex items-center gap-1 col-span-2">
-                          <span className="text-gray-500">Created By:</span>
-                          <span className="text-gray-800">{profile.createdBy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Religion & Background Section */}
-                <div className="flex gap-3">
-                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Religion & Background</h3>
-                    <div className="space-y-2 text-sm">
-                      {profile.religion && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Religion</span>
-                          <span className="text-gray-800">{profile.religion}</span>
-                        </div>
-                      )}
-                      {profile.community && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Community</span>
-                          <span className="text-gray-800">{profile.community}</span>
-                        </div>
-                      )}
-                      {profile.subCommunity && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Sub-Community</span>
-                          <span className="text-gray-800">{profile.subCommunity}</span>
-                        </div>
-                      )}
-
-                      {/* Hindu/Jain specific: Gotra */}
-                      {(profile.religion === 'Hindu' || profile.religion === 'Jain') && profile.gotra && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Gotra</span>
-                          <span className="text-gray-800">{profile.gotra}</span>
-                        </div>
-                      )}
-
-                      {/* Muslim specific fields */}
-                      {profile.religion === 'Muslim' && (
-                        <>
-                          {profile.maslak && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Maslak</span>
-                              <span className="text-gray-800">{profile.maslak.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                          {profile.namazPractice && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Namaz</span>
-                              <span className="text-gray-800">{profile.namazPractice.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {/* Sikh specific fields */}
-                      {profile.religion === 'Sikh' && (
-                        <>
-                          {profile.amritdhari && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Amritdhari</span>
-                              <span className="text-gray-800">{profile.amritdhari.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                          {profile.turban && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Turban</span>
-                              <span className="text-gray-800">{profile.turban === 'yes' ? 'Yes, wears turban' : 'No'}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {/* Christian specific fields */}
-                      {profile.religion === 'Christian' && (
-                        <>
-                          {profile.churchAttendance && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Church</span>
-                              <span className="text-gray-800">{profile.churchAttendance.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                          {profile.baptized && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Baptized</span>
-                              <span className="text-gray-800">{profile.baptized === 'yes' ? 'Yes' : 'No'}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {/* Birth place - shown for all */}
-                      {profile.placeOfBirthCountry && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Birth Country</span>
-                          <span className="text-gray-800">{profile.placeOfBirthCountry}</span>
-                        </div>
-                      )}
-                      {profile.placeOfBirthState && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Birth State</span>
-                          <span className="text-gray-800">{profile.placeOfBirthState}</span>
-                        </div>
-                      )}
-                      {profile.placeOfBirthCity && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Birth City</span>
-                          <span className="text-gray-800">{profile.placeOfBirthCity}</span>
-                        </div>
-                      )}
-
-                      {/* Hindu-specific astrology fields */}
-                      {profile.religion === 'Hindu' && (
-                        <>
-                          {profile.manglik && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Manglik</span>
-                              <span className="text-gray-800">
-                                {profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}
-                              </span>
-                            </div>
-                          )}
-                          {profile.raasi && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Raasi</span>
-                              <span className="text-gray-800">{profile.raasi.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                          {profile.nakshatra && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Nakshatra</span>
-                              <span className="text-gray-800">{profile.nakshatra.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                          {profile.doshas && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500 w-32">Doshas</span>
-                              <span className="text-gray-800">{profile.doshas.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Education & Career Section */}
-                <div className="flex gap-3">
-                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                    <GraduationCap className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Education & Career</h3>
-                    <div className="space-y-2 text-sm">
-                      {profile.qualification && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Qualification</span>
-                          <span className="text-gray-800">{profile.qualification}</span>
-                        </div>
-                      )}
-                      {profile.university && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">University</span>
-                          <span className="text-gray-800">{profile.university}</span>
-                        </div>
-                      )}
-                      {profile.occupation && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Occupation</span>
-                          <span className="text-gray-800">{profile.occupation.replace(/_/g, ' ')}</span>
-                        </div>
-                      )}
-                      {profile.workingAs && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Working As</span>
-                          <span className="text-gray-800">{profile.workingAs}</span>
-                        </div>
-                      )}
-                      {profile.employerName && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Employer</span>
-                          <span className="text-gray-800">{profile.employerName}</span>
-                        </div>
-                      )}
-                      {profile.annualIncome && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Annual Income</span>
-                          <span className="text-gray-800">{profile.annualIncome}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Family Details Section */}
-                <div className="flex gap-3">
-                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Family Details</h3>
-                    <div className="space-y-2 text-sm">
-                      {profile.fatherName && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Father's Name</span>
-                          <span className="text-gray-800">{profile.fatherName}</span>
-                        </div>
-                      )}
-                      {profile.fatherOccupation && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Father's Occupation</span>
-                          <span className="text-gray-800">{profile.fatherOccupation}</span>
-                        </div>
-                      )}
-                      {profile.motherName && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Mother's Name</span>
-                          <span className="text-gray-800">{profile.motherName}</span>
-                        </div>
-                      )}
-                      {profile.motherOccupation && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Mother's Occupation</span>
-                          <span className="text-gray-800">{profile.motherOccupation}</span>
-                        </div>
-                      )}
-                      {(profile.numberOfBrothers || profile.numberOfSisters) && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Siblings</span>
-                          <span className="text-gray-800">
-                            {profile.numberOfBrothers && `${profile.numberOfBrothers} Brother(s)`}
-                            {profile.numberOfBrothers && profile.numberOfSisters && ', '}
-                            {profile.numberOfSisters && `${profile.numberOfSisters} Sister(s)`}
-                          </span>
-                        </div>
-                      )}
-                      {profile.siblingDetails && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Sibling Details</span>
-                          <span className="text-gray-800">{profile.siblingDetails}</span>
-                        </div>
-                      )}
-                      {profile.familyType && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Family Type</span>
-                          <span className="text-gray-800">{profile.familyType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.familyValues && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Family Values</span>
-                          <span className="text-gray-800">{profile.familyValues.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.familyLocation && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Family Location</span>
-                          <span className="text-gray-800">{profile.familyLocation}</span>
-                        </div>
-                      )}
-                      {profile.familyLocationCountry && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Family Country</span>
-                          <span className="text-gray-800">{profile.familyLocationCountry}</span>
-                        </div>
-                      )}
-                      {profile.livesWithFamily && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Lives With Family</span>
-                          <span className="text-gray-800">{profile.livesWithFamily === 'yes' ? 'Yes' : 'No'}</span>
-                        </div>
-                      )}
-                      {profile.familyDetails && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-gray-500 w-32 flex-shrink-0">Family Details</span>
-                          <span className="text-gray-800">{profile.familyDetails}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Location & Background Section */}
-                <div className="flex gap-3">
-                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Location & Background</h3>
-                    <div className="space-y-2 text-sm">
-                      {profile.currentLocation && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-primary-500" />
-                          <span className="text-gray-800">{profile.currentLocation}{profile.country ? `, ${profile.country}` : ''}</span>
-                        </div>
-                      )}
-                      {profile.grewUpIn && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Grew Up In</span>
-                          <span className="text-gray-800">{profile.grewUpIn}</span>
-                        </div>
-                      )}
-                      {profile.citizenship && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Citizenship</span>
-                          <span className="text-gray-800">{profile.citizenship}</span>
-                        </div>
-                      )}
-                      {profile.residencyStatus && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Residency Status</span>
-                          <span className="text-gray-800">{profile.residencyStatus}</span>
-                        </div>
-                      )}
-                      {profile.openToRelocation && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Open to Relocate</span>
-                          <span className="text-gray-800">{profile.openToRelocation.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                        </div>
-                      )}
-                      {profile.motherTongue && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Mother Tongue</span>
-                          <span className="text-gray-800">{profile.motherTongue}</span>
-                        </div>
-                      )}
-                      {profile.languagesKnown && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Languages Known</span>
-                          <span className="text-gray-800">{profile.languagesKnown}</span>
-                        </div>
-                      )}
-                      {profile.linkedinProfile && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">LinkedIn</span>
-                          <a href={profile.linkedinProfile.startsWith('http') ? profile.linkedinProfile : `https://${profile.linkedinProfile}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">View Profile</a>
-                        </div>
-                      )}
-                      {profile.instagram && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Instagram</span>
-                          <a href={profile.instagram.startsWith('http') ? profile.instagram : `https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">@{profile.instagram.replace('@', '').replace('https://instagram.com/', '')}</a>
-                        </div>
-                      )}
-                      {profile.facebook && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500 w-32">Facebook</span>
-                          <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline font-medium">View Profile</a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Lifestyle Section */}
-                {(profile.smoking || profile.drinking || profile.hobbies || profile.fitness || profile.interests || profile.pets) && (
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900 mb-2">Lifestyle</h3>
-                      <div className="space-y-4 text-sm">
-                        {/* Smoking & Drinking Row */}
-                        {(profile.smoking || profile.drinking) && (
-                          <div className="flex flex-wrap gap-4">
-                            {profile.smoking && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">Smoking:</span>
-                                <span className="text-gray-800">{profile.smoking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                              </div>
-                            )}
-                            {profile.drinking && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-500">Drinking:</span>
-                                <span className="text-gray-800">{profile.drinking.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {/* Hobbies as pills */}
-                        {profile.hobbies && (
-                          <div>
-                            <span className="text-gray-500 block mb-2">Hobbies</span>
-                            <div className="flex flex-wrap gap-2">
-                              {profile.hobbies.split(', ').map((hobby, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-primary-50 text-primary-700 text-sm border border-primary-200">
-                                  {hobby}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {/* Fitness as pills */}
-                        {profile.fitness && (
-                          <div>
-                            <span className="text-gray-500 block mb-2">Fitness & Sports</span>
-                            <div className="flex flex-wrap gap-2">
-                              {profile.fitness.split(', ').map((fit, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 text-sm border border-green-200">
-                                  {fit}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {/* Interests as pills */}
-                        {profile.interests && (
-                          <div>
-                            <span className="text-gray-500 block mb-2">Interests</span>
-                            <div className="flex flex-wrap gap-2">
-                              {profile.interests.split(', ').map((interest, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 text-sm border border-purple-200">
-                                  {interest}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {/* Pets */}
-                        {profile.pets && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500">Pets:</span>
-                            <span className="text-gray-800">{profile.pets.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact Info (only for mutual matches) */}
-                {isMutual && profile.user.email && (
-                  <div className="flex gap-3">
-                    <div className="w-7 h-7 bg-green-600 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1 bg-green-50 p-3 -ml-1">
-                      <h3 className="text-sm font-bold text-green-700 mb-2">Contact Information</h3>
-                      <p className="text-green-600 text-sm mb-3 font-medium">You both expressed interest - connect now!</p>
-                      <div className="space-y-2 text-sm">
-                        {profile.user.email && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-600 w-32">Email</span>
-                            <span className="text-gray-900 font-medium">{profile.user.email}</span>
-                          </div>
-                        )}
-                        {profile.user.phone && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-600 w-32">Phone</span>
-                            <span className="text-gray-900 font-medium">{profile.user.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Partner Preferences Tab - Professional Combined View */
-              <div className="space-y-6">
-                {/* Combined Match Comparison Card */}
-                {theirMatchScore && yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
-                  <div className="bg-white border border-gray-200 overflow-hidden">
-                    {/* Header with Both Profiles */}
-                    <div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        {/* Their Profile */}
-                        <div className="flex flex-col items-center">
-                          <div className="relative group">
-                            <div className="w-20 h-20 overflow-hidden border-3 border-white shadow-lg">
-                              {matchProfiles.theirProfile.profileImageUrl ? (
-                                <img
-                                  src={matchProfiles.theirProfile.profileImageUrl}
-                                  alt={matchProfiles.theirProfile.name || 'Profile'}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-10 w-10 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => openLightbox(0)}
-                              className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-                            >
-                              <ZoomIn className="h-5 w-5 text-white" />
-                            </button>
-                          </div>
-                          <span className="text-sm text-white mt-2 font-semibold">{matchProfiles.theirProfile.name?.split(' ')[0]}</span>
-                          {/* Verification Badges */}
-                          <div className="flex gap-1 mt-1">
-                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.approvalStatus === 'approved' ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
-                              {profile.approvalStatus === 'approved' ? 'Verified' : 'Pending'}
-                            </span>
-                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.emailVerified ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
-                              Email
-                            </span>
-                            <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.phoneVerified ? 'bg-green-400 text-green-900' : 'bg-white/30 text-white/70'}`}>
-                              Phone
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Match Scores in Center */}
-                        <div className="flex-1 flex flex-col items-center gap-2 px-4">
-                          <div className="text-center">
-                            <div className="text-white/80 text-xs uppercase tracking-wider mb-1">Compatibility</div>
-                            <div className="flex items-center gap-3">
-                              <div className="bg-white/20 backdrop-blur px-3 py-2">
-                                <div className="text-2xl font-bold text-white">{theirMatchScore.totalScore}/{theirMatchScore.maxScore}</div>
-                                <div className="text-[10px] text-white/80 uppercase">You match {possessivePronoun.toLowerCase()}</div>
-                              </div>
-                              <div className="text-white/60 text-lg">&</div>
-                              <div className="bg-white/20 backdrop-blur px-3 py-2">
-                                <div className="text-2xl font-bold text-white">{yourMatchScore.totalScore}/{yourMatchScore.maxScore}</div>
-                                <div className="text-[10px] text-white/80 uppercase">{pronoun} matches yours</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Your Profile */}
-                        <div className="flex flex-col items-center">
-                          <div className="relative group">
-                            <div className="w-20 h-20 overflow-hidden border-3 border-white shadow-lg">
-                              {matchProfiles.myProfile.profileImageUrl ? (
-                                <img
-                                  src={matchProfiles.myProfile.profileImageUrl}
-                                  alt="You"
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                                  <User className="h-10 w-10 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <span className="text-sm text-white mt-2 font-semibold">You</span>
-                          <div className="flex gap-1 mt-1">
-                            <span className="text-[10px] px-1.5 py-0.5 bg-green-400 text-green-900">Verified</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Combined Comparison Table */}
-                    <div className="p-4">
-                      {/* Table Header */}
-                      <div className="grid grid-cols-12 gap-2 pb-3 border-b-2 border-gray-200 mb-4">
-                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Criteria</div>
-                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">{possessivePronoun} Preference</div>
-                        <div className="col-span-2 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">You Match</div>
-                        <div className="col-span-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Your Preference</div>
-                        <div className="col-span-1 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">{pronoun}</div>
-                      </div>
-
-                      {/* Deal Breakers Section */}
-                      {(() => {
-                        const theirDealbreakers = theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const yourDealbreakers = yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const allCriteriaNames = Array.from(new Set([...theirDealbreakers.map(c => c.name), ...yourDealbreakers.map(c => c.name)]))
-
-                        if (allCriteriaNames.length === 0) return null
-
-                        return (
-                          <div className="mb-6">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-3 h-3 bg-red-500"></div>
-                              <span className="text-sm font-bold text-red-600 uppercase tracking-wider">Must Have (Deal Breakers)</span>
-                            </div>
-                            <div className="bg-red-50/50 border border-red-100">
-                              {allCriteriaNames.map((name, idx) => {
-                                const theirCrit = theirDealbreakers.find(c => c.name === name)
-                                const yourCrit = yourDealbreakers.find(c => c.name === name)
-                                return (
-                                  <div key={idx} className={`grid grid-cols-12 gap-2 py-3 px-3 ${idx !== allCriteriaNames.length - 1 ? 'border-b border-red-100' : ''}`}>
-                                    <div className="col-span-3 text-sm font-semibold text-gray-900">{name}</div>
-                                    <div className="col-span-3 text-sm text-gray-600 text-center">{theirCrit?.seekerPref || '-'}</div>
-                                    <div className="col-span-2 flex justify-center">
-                                      {theirCrit ? (
-                                        theirCrit.matched ? (
-                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white" />
-                                          </div>
-                                        ) : (
-                                          <div className="w-6 h-6 bg-red-400 flex items-center justify-center">
-                                            <X className="h-4 w-4 text-white" />
-                                          </div>
-                                        )
-                                      ) : (
-                                        <span className="text-gray-300">-</span>
-                                      )}
-                                    </div>
-                                    <div className="col-span-3 text-sm text-gray-600 text-center">{yourCrit?.seekerPref || '-'}</div>
-                                    <div className="col-span-1 flex justify-center">
-                                      {yourCrit ? (
-                                        yourCrit.matched ? (
-                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white" />
-                                          </div>
-                                        ) : (
-                                          <div className="w-6 h-6 bg-red-400 flex items-center justify-center">
-                                            <X className="h-4 w-4 text-white" />
-                                          </div>
-                                        )
-                                      ) : (
-                                        <span className="text-gray-300">-</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })()}
-
-                      {/* Nice to Have Section */}
-                      {(() => {
-                        const theirOptional = theirMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const yourOptional = yourMatchScore.criteria.filter(c => !c.isDealbreaker && c.seekerPref !== "Doesn't matter")
-                        const allCriteriaNames = Array.from(new Set([...theirOptional.map(c => c.name), ...yourOptional.map(c => c.name)]))
-
-                        if (allCriteriaNames.length === 0) return null
-
-                        return (
-                          <div>
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-3 h-3 bg-blue-500"></div>
-                              <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Nice to Have</span>
-                            </div>
-                            <div className="border border-gray-200">
-                              {allCriteriaNames.map((name, idx) => {
-                                const theirCrit = theirOptional.find(c => c.name === name)
-                                const yourCrit = yourOptional.find(c => c.name === name)
-                                return (
-                                  <div key={idx} className={`grid grid-cols-12 gap-2 py-3 px-3 ${idx !== allCriteriaNames.length - 1 ? 'border-b border-gray-100' : ''} ${idx % 2 === 0 ? 'bg-gray-50/50' : ''}`}>
-                                    <div className="col-span-3 text-sm font-semibold text-gray-900">{name}</div>
-                                    <div className="col-span-3 text-sm text-gray-600 text-center">{theirCrit?.seekerPref || '-'}</div>
-                                    <div className="col-span-2 flex justify-center">
-                                      {theirCrit ? (
-                                        theirCrit.matched ? (
-                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white" />
-                                          </div>
-                                        ) : (
-                                          <div className="w-6 h-6 bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-400 text-sm">-</span>
-                                          </div>
-                                        )
-                                      ) : (
-                                        <span className="text-gray-300">-</span>
-                                      )}
-                                    </div>
-                                    <div className="col-span-3 text-sm text-gray-600 text-center">{yourCrit?.seekerPref || '-'}</div>
-                                    <div className="col-span-1 flex justify-center">
-                                      {yourCrit ? (
-                                        yourCrit.matched ? (
-                                          <div className="w-6 h-6 bg-green-500 flex items-center justify-center">
-                                            <Check className="h-4 w-4 text-white" />
-                                          </div>
-                                        ) : (
-                                          <div className="w-6 h-6 bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-400 text-sm">-</span>
-                                          </div>
-                                        )
-                                      ) : (
-                                        <span className="text-gray-300">-</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                )}
-
-                {/* Fallback: Show basic preferences if no match scores */}
-                {(!theirMatchScore || !yourMatchScore || !isLoggedIn || profile.userId === viewerUserId) && (
-                  <div className="bg-white border border-gray-200 overflow-hidden">
-                    <div className="bg-primary-600 px-4 py-3">
-                      <h3 className="text-lg font-bold text-white">{possessivePronoun} Partner Preferences</h3>
-                    </div>
-                    <div className="p-4">
-                      <div className="divide-y divide-gray-200">
-                        {profile.prefAgeDiff && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Age</div>
-                            <div className="text-gray-800 text-sm">{profile.prefAgeDiff}</div>
-                          </div>
-                        )}
-                        {profile.prefHeight && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Height</div>
-                            <div className="text-gray-800 text-sm">{profile.prefHeight}</div>
-                          </div>
-                        )}
-                        {profile.prefLocation && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Location</div>
-                            <div className="text-gray-800 text-sm">{profile.prefLocation}</div>
-                          </div>
-                        )}
-                        {profile.prefCaste && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Caste</div>
-                            <div className="text-gray-800 text-sm">{profile.prefCaste}</div>
-                          </div>
-                        )}
-                        {profile.prefGotra && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Gotra</div>
-                            <div className="text-gray-800 text-sm">{profile.prefGotra}</div>
-                          </div>
-                        )}
-                        {profile.prefDiet && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Diet</div>
-                            <div className="text-gray-800 text-sm">{profile.prefDiet}</div>
-                          </div>
-                        )}
-                        {profile.prefQualification && (
-                          <div className="flex justify-between items-center py-3">
-                            <div className="text-gray-500 text-sm font-medium">Education</div>
-                            <div className="text-gray-800 text-sm">{profile.prefQualification}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Ideal Partner Description */}
-                {profile.idealPartnerDesc && (
-                  <div className="bg-white border border-gray-200 p-4">
-                    <div className="text-gray-900 text-sm font-bold mb-2">{possessivePronoun} Ideal Partner Description</div>
-                    <p className="text-gray-700 text-sm leading-relaxed">{profile.idealPartnerDesc}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Bottom Action Button */}
-            {!isMutual && !interestSent && (
-              <div className="p-4 border-t border-gray-200 bg-gray-50">
-                {canExpressInterest ? (
-                  <button
-                    onClick={onSendInterest}
-                    disabled={isSending}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-colors disabled:opacity-50"
-                  >
-                    {isSending ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Heart className="h-5 w-5" />
-                    )}
-                    {interestReceived ? 'Like Back' : 'Like'}
-                  </button>
-                ) : (
-                  <Link
-                    href={buildUrl('/profile')}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-colors"
-                  >
-                    <Lock className="h-5 w-5" />
-                    Get Verified to Like
-                  </Link>
-                )}
-              </div>
-            )}
+            {/* Quick Info Tags */}
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {profile.currentLocation && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />{profile.currentLocation}
+                </span>
+              )}
+              {profile.occupation && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 flex items-center gap-1">
+                  <Briefcase className="w-3 h-3" />{formatValue(profile.occupation)}
+                </span>
+              )}
+              {profile.qualification && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 flex items-center gap-1">
+                  <GraduationCap className="w-3 h-3" />{profile.qualification}
+                </span>
+              )}
+              {profile.community && (
+                <span className="text-xs bg-white/20 px-2 py-0.5">
+                  {profile.religion || 'Hindu'}, {profile.community}
+                </span>
+              )}
+            </div>
+            {/* Verification Badges */}
+            <div className="flex gap-1 mt-2">
+              <span className={`text-[10px] px-1.5 py-0.5 ${profile.approvalStatus === 'approved' ? 'bg-green-400 text-green-900' : 'bg-white/20 text-white/70'}`}>
+                {profile.approvalStatus === 'approved' ? '✓ Verified' : 'Pending'}
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.emailVerified ? 'bg-green-400 text-green-900' : 'bg-white/20 text-white/70'}`}>
+                {profile.user.emailVerified ? '✓ Email' : 'Email'}
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.5 ${profile.user.phoneVerified ? 'bg-green-400 text-green-900' : 'bg-white/20 text-white/70'}`}>
+                {profile.user.phoneVerified ? '✓ Phone' : 'Phone'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Main Content - Single Page Layout */}
+      <div className="p-4 space-y-4">
+        {/* Match Comparison - Compact */}
+        {theirMatchScore && yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && (
+          <div className="bg-gray-50 border border-gray-200 p-3">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold text-gray-700">Compatibility</span>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-primary-600 font-semibold">You match {possessivePronoun.toLowerCase()}: {theirMatchScore.totalScore}/{theirMatchScore.maxScore}</span>
+                <span className="text-gray-400">|</span>
+                <span className="text-primary-600 font-semibold">{pronoun} matches yours: {yourMatchScore.totalScore}/{yourMatchScore.maxScore}</span>
+              </div>
+            </div>
+            {/* Compact Criteria Table */}
+            {(() => {
+              const theirDealbreakers = theirMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+              const yourDealbreakers = yourMatchScore.criteria.filter(c => c.isDealbreaker && c.seekerPref !== "Doesn't matter")
+              const allCriteriaNames = Array.from(new Set([...theirDealbreakers.map(c => c.name), ...yourDealbreakers.map(c => c.name)]))
+              if (allCriteriaNames.length === 0) return null
+              return (
+                <div className="text-xs">
+                  <div className="grid grid-cols-12 gap-1 py-1 border-b border-gray-300 font-semibold text-gray-500">
+                    <div className="col-span-2">Criteria</div>
+                    <div className="col-span-3 text-center">{possessivePronoun} Pref</div>
+                    <div className="col-span-2 text-center">You</div>
+                    <div className="col-span-3 text-center">Your Pref</div>
+                    <div className="col-span-2 text-center">{pronoun}</div>
+                  </div>
+                  {allCriteriaNames.map((name, idx) => {
+                    const theirCrit = theirDealbreakers.find(c => c.name === name)
+                    const yourCrit = yourDealbreakers.find(c => c.name === name)
+                    return (
+                      <div key={idx} className={`grid grid-cols-12 gap-1 py-1.5 ${idx !== allCriteriaNames.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                        <div className="col-span-2 font-medium text-gray-700 truncate">{name}</div>
+                        <div className="col-span-3 text-center text-gray-600 truncate">{theirCrit?.seekerPref || '-'}</div>
+                        <div className="col-span-2 flex justify-center">
+                          {theirCrit ? (
+                            theirCrit.matched ? (
+                              <span className="w-5 h-5 bg-green-500 flex items-center justify-center"><Check className="h-3 w-3 text-white" /></span>
+                            ) : (
+                              <span className="w-5 h-5 bg-red-400 flex items-center justify-center"><X className="h-3 w-3 text-white" /></span>
+                            )
+                          ) : <span className="text-gray-300">-</span>}
+                        </div>
+                        <div className="col-span-3 text-center text-gray-600 truncate">{yourCrit?.seekerPref || '-'}</div>
+                        <div className="col-span-2 flex justify-center">
+                          {yourCrit ? (
+                            yourCrit.matched ? (
+                              <span className="w-5 h-5 bg-green-500 flex items-center justify-center"><Check className="h-3 w-3 text-white" /></span>
+                            ) : (
+                              <span className="w-5 h-5 bg-red-400 flex items-center justify-center"><X className="h-3 w-3 text-white" /></span>
+                            )
+                          ) : <span className="text-gray-300">-</span>}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+          </div>
+        )}
+
+        {/* About */}
+        {profile.aboutMe && (
+          <div className="border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-bold text-gray-800 mb-1">About</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{profile.aboutMe}</p>
+          </div>
+        )}
+
+        {/* Two Column Grid for Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Personal Details */}
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Personal</h3>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+              {profile.height && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.height}</span></>}
+              {profile.weight && <><span className="text-gray-500">Weight</span><span className="text-gray-800">{profile.weight}</span></>}
+              {profile.maritalStatus && <><span className="text-gray-500">Marital</span><span className="text-gray-800">{formatValue(profile.maritalStatus)}</span></>}
+              {profile.hasChildren && profile.maritalStatus !== 'never_married' && <><span className="text-gray-500">Children</span><span className="text-gray-800">{formatValue(profile.hasChildren)}</span></>}
+              {profile.dietaryPreference && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.dietaryPreference}</span></>}
+              {profile.bloodGroup && <><span className="text-gray-500">Blood</span><span className="text-gray-800">{profile.bloodGroup}</span></>}
+              {profile.smoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{formatValue(profile.smoking)}</span></>}
+              {profile.drinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{formatValue(profile.drinking)}</span></>}
+            </div>
+          </div>
+
+          {/* Religion & Background */}
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Background</h3>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+              {profile.religion && <><span className="text-gray-500">Religion</span><span className="text-gray-800">{profile.religion}</span></>}
+              {profile.community && <><span className="text-gray-500">Community</span><span className="text-gray-800">{profile.community}</span></>}
+              {profile.subCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.subCommunity}</span></>}
+              {profile.gotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.gotra}</span></>}
+              {profile.motherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.motherTongue}</span></>}
+              {profile.manglik && <><span className="text-gray-500">Manglik</span><span className="text-gray-800">{profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}</span></>}
+            </div>
+          </div>
+
+          {/* Education & Career */}
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Career</h3>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+              {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.qualification}</span></>}
+              {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
+              {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
+              {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}
+              {profile.annualIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.annualIncome}</span></>}
+            </div>
+          </div>
+
+          {/* Location */}
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Location</h3>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+              {profile.currentLocation && <><span className="text-gray-500">Current</span><span className="text-gray-800">{profile.currentLocation}</span></>}
+              {profile.grewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.grewUpIn}</span></>}
+              {profile.citizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.citizenship}</span></>}
+              {profile.residencyStatus && <><span className="text-gray-500">Residency</span><span className="text-gray-800">{profile.residencyStatus}</span></>}
+              {profile.openToRelocation && <><span className="text-gray-500">Relocate</span><span className="text-gray-800">{formatValue(profile.openToRelocation)}</span></>}
+            </div>
+          </div>
+        </div>
+
+        {/* Family Details */}
+        {(profile.fatherName || profile.motherName || profile.numberOfBrothers || profile.numberOfSisters || profile.familyType || profile.familyValues) && (
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Family</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
+              {profile.fatherName && <><span className="text-gray-500">Father</span><span className="text-gray-800">{profile.fatherName}</span></>}
+              {profile.fatherOccupation && <><span className="text-gray-500">Father's Work</span><span className="text-gray-800">{profile.fatherOccupation}</span></>}
+              {profile.motherName && <><span className="text-gray-500">Mother</span><span className="text-gray-800">{profile.motherName}</span></>}
+              {profile.motherOccupation && <><span className="text-gray-500">Mother's Work</span><span className="text-gray-800">{profile.motherOccupation}</span></>}
+              {(profile.numberOfBrothers || profile.numberOfSisters) && (
+                <><span className="text-gray-500">Siblings</span><span className="text-gray-800">{profile.numberOfBrothers ? `${profile.numberOfBrothers}B` : ''}{profile.numberOfBrothers && profile.numberOfSisters ? ', ' : ''}{profile.numberOfSisters ? `${profile.numberOfSisters}S` : ''}</span></>
+              )}
+              {profile.familyType && <><span className="text-gray-500">Family Type</span><span className="text-gray-800">{formatValue(profile.familyType)}</span></>}
+              {profile.familyValues && <><span className="text-gray-500">Values</span><span className="text-gray-800">{formatValue(profile.familyValues)}</span></>}
+              {profile.familyLocation && <><span className="text-gray-500">Family Location</span><span className="text-gray-800">{profile.familyLocation}</span></>}
+            </div>
+          </div>
+        )}
+
+        {/* Lifestyle - Hobbies, Interests */}
+        {(profile.hobbies || profile.interests || profile.fitness) && (
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Interests</h3>
+            <div className="flex flex-wrap gap-1">
+              {profile.hobbies?.split(', ').map((h, i) => (
+                <span key={i} className="text-xs px-2 py-0.5 bg-primary-50 text-primary-700 border border-primary-200">{h}</span>
+              ))}
+              {profile.interests?.split(', ').map((h, i) => (
+                <span key={i} className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200">{h}</span>
+              ))}
+              {profile.fitness?.split(', ').map((h, i) => (
+                <span key={i} className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border border-green-200">{h}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Partner Preferences - Compact */}
+        {(profile.prefAgeDiff || profile.prefHeight || profile.prefLocation || profile.prefCaste || profile.prefDiet || profile.prefQualification) && (
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">{possessivePronoun} Partner Preferences</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+              {profile.prefAgeDiff && <><span className="text-gray-500">Age</span><span className="text-gray-800">{profile.prefAgeDiff}</span></>}
+              {profile.prefHeight && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.prefHeight}</span></>}
+              {profile.prefLocation && <><span className="text-gray-500">Location</span><span className="text-gray-800">{profile.prefLocation}</span></>}
+              {profile.prefCaste && <><span className="text-gray-500">Caste</span><span className="text-gray-800">{profile.prefCaste}</span></>}
+              {profile.prefGotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.prefGotra}</span></>}
+              {profile.prefDiet && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.prefDiet}</span></>}
+              {profile.prefQualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.prefQualification}</span></>}
+              {profile.prefIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.prefIncome}</span></>}
+            </div>
+          </div>
+        )}
+
+        {/* Ideal Partner Description */}
+        {profile.idealPartnerDesc && (
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-1">{possessivePronoun} Ideal Partner</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">{profile.idealPartnerDesc}</p>
+          </div>
+        )}
+
+        {/* Contact Info (only for mutual matches) */}
+        {isMutual && profile.user.email && (
+          <div className="bg-green-50 border border-green-200 p-3 mt-2">
+            <h3 className="text-xs font-bold text-green-700 mb-1">Contact Information - You're Connected!</h3>
+            <div className="flex flex-wrap gap-4 text-xs">
+              {profile.user.email && <span><strong>Email:</strong> {profile.user.email}</span>}
+              {profile.user.phone && <span><strong>Phone:</strong> {profile.user.phone}</span>}
+            </div>
+          </div>
+        )}
+      </div>
       {/* Photo Lightbox Modal */}
       {lightboxOpen && thumbnails.length > 0 && (
         <div
