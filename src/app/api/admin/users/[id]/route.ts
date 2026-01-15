@@ -40,7 +40,8 @@ export async function GET(
     return NextResponse.json({ user })
   } catch (error) {
     console.error('Admin user detail error:', error)
-    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: `Failed to fetch user: ${errorMessage}` }, { status: 500 })
   }
 }
 
