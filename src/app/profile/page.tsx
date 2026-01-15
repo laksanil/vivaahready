@@ -830,7 +830,7 @@ function ViewProfilePageContent() {
                 <button onClick={() => setEditSection('preferences')} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
                   <span className="text-[#E91E63]">■</span> Edit Partner Preferences
                 </button>
-                <Link href={`/profile/${profile.id}`} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
+                <Link href={buildUrl(`/profile/${profile.id}`)} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
                   <span className="text-[#E91E63]">■</span> Preview Public Profile
                 </Link>
               </div>
