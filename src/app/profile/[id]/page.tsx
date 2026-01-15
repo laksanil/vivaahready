@@ -491,6 +491,41 @@ function ProfileCard({
     return val.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
+  // Helper to format education/qualification with proper labels
+  const formatEducation = (val: string | null | undefined) => {
+    if (!val) return null
+    const educationMap: Record<string, string> = {
+      'high_school': 'High School Diploma',
+      'associates': "Associate's Degree (AA, AS)",
+      'bachelors_arts': 'Bachelor of Arts (BA)',
+      'bachelors_science': 'Bachelor of Science (BS)',
+      'bachelors_eng': 'Bachelor of Engineering (BE, BSE)',
+      'bachelors_cs': 'Bachelor of Science - Computer Science (BS CS)',
+      'bba': 'Bachelor of Business Administration (BBA)',
+      'bfa': 'Bachelor of Fine Arts (BFA)',
+      'bsn': 'Bachelor of Science in Nursing (BSN)',
+      'masters_arts': 'Master of Arts (MA)',
+      'masters_science': 'Master of Science (MS)',
+      'masters_eng': 'Master of Engineering (MEng)',
+      'masters_cs': 'Master of Science - Computer Science (MS CS)',
+      'mba': 'Master of Business Administration (MBA)',
+      'mfa': 'Master of Fine Arts (MFA)',
+      'mph': 'Master of Public Health (MPH)',
+      'msw': 'Master of Social Work (MSW)',
+      'md': 'Doctor of Medicine (MD)',
+      'do': 'Doctor of Osteopathic Medicine (DO)',
+      'dds': 'Doctor of Dental Surgery (DDS, DMD)',
+      'pharmd': 'Doctor of Pharmacy (PharmD)',
+      'jd': 'Juris Doctor (JD) - Law',
+      'cpa': 'Certified Public Accountant (CPA)',
+      'phd': 'Doctor of Philosophy (PhD)',
+      'edd': 'Doctor of Education (EdD)',
+      'psyd': 'Doctor of Psychology (PsyD)',
+      'other': 'Other',
+    }
+    return educationMap[val] || formatValue(val)
+  }
+
   return (
     <div className="bg-white border border-gray-200 overflow-hidden shadow-sm">
       {/* Compact Header with Photo and Key Info */}
@@ -602,7 +637,7 @@ function ProfileCard({
               )}
               {profile.qualification && (
                 <span className="text-xs bg-white/20 px-2 py-0.5 flex items-center gap-1">
-                  <GraduationCap className="w-3 h-3" />{profile.qualification}
+                  <GraduationCap className="w-3 h-3" />{formatEducation(profile.qualification)}
                 </span>
               )}
               {profile.community && (
@@ -788,7 +823,7 @@ function ProfileCard({
           <div className="space-y-1">
             <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
-              {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.qualification}</span></>}
+              {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{formatEducation(profile.qualification)}</span></>}
               {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
               {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
               {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}
