@@ -726,15 +726,15 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
           </select>
         </div>
         <div>
-          <label className="form-label">Family Location Country <span className="text-red-500">*</span></label>
-          <select name="familyLocationCountry" value={formData.familyLocationCountry as string || ''} onChange={handleChange} className="input-field" required>
+          <label className="form-label">Family Location <span className="text-red-500">*</span></label>
+          <select name="familyLocation" value={formData.familyLocation as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select Country</option>
             {FAMILY_LOCATION_COUNTRIES.map(country => (
               <option key={country} value={country}>{country}</option>
             ))}
           </select>
-          {(formData.familyLocationCountry as string) === 'Other' && (
-            <input type="text" name="familyLocationCountryOther" value={formData.familyLocationCountryOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
+          {(formData.familyLocation as string) === 'Other' && (
+            <input type="text" name="familyLocationOther" value={formData.familyLocationOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify country" />
           )}
         </div>
         <div>

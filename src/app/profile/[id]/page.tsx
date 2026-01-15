@@ -110,7 +110,11 @@ interface ProfileData {
   residencyStatus: string | null
   approvalStatus: string
   prefAgeDiff: string | null
+  prefAgeMin: string | null
+  prefAgeMax: string | null
   prefHeight: string | null
+  prefHeightMin: string | null
+  prefHeightMax: string | null
   prefLocation: string | null
   prefCaste: string | null
   prefDiet: string | null
@@ -119,6 +123,21 @@ interface ProfileData {
   prefIncome: string | null
   prefLanguage: string | null
   prefCountry: string | null
+  prefCommunity: string | null
+  prefSubCommunity: string | null
+  prefMaritalStatus: string | null
+  prefSmoking: string | null
+  prefDrinking: string | null
+  prefReligion: string | null
+  prefMotherTongue: string | null
+  prefCitizenship: string | null
+  prefGrewUpIn: string | null
+  prefRelocation: string | null
+  prefWorkArea: string | null
+  prefOccupation: string | null
+  prefFamilyValues: string | null
+  prefFamilyLocation: string | null
+  prefPets: string | null
   user: {
     id: string
     name: string
@@ -682,9 +701,57 @@ function ProfileCard({
               {profile.subCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.subCommunity}</span></>}
               {profile.gotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.gotra}</span></>}
               {profile.motherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.motherTongue}</span></>}
-              {profile.manglik && <><span className="text-gray-500">Manglik</span><span className="text-gray-800">{profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}</span></>}
             </div>
           </div>
+
+          {/* Religion & Astro - Hindu specific */}
+          {profile.religion === 'Hindu' && (profile.manglik || profile.raasi || profile.nakshatra || profile.doshas || profile.placeOfBirth || profile.placeOfBirthCity) && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Astro Details</h3>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                {profile.manglik && <><span className="text-gray-500">Manglik</span><span className="text-gray-800">{profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}</span></>}
+                {profile.raasi && <><span className="text-gray-500">Raasi</span><span className="text-gray-800">{profile.raasi}</span></>}
+                {profile.nakshatra && <><span className="text-gray-500">Nakshatra</span><span className="text-gray-800">{profile.nakshatra}</span></>}
+                {profile.doshas && <><span className="text-gray-500">Doshas</span><span className="text-gray-800">{profile.doshas}</span></>}
+                {(profile.placeOfBirthCity || profile.placeOfBirthState || profile.placeOfBirth) && (
+                  <><span className="text-gray-500">Birth Place</span><span className="text-gray-800">{profile.placeOfBirthCity || profile.placeOfBirth}{profile.placeOfBirthState ? `, ${profile.placeOfBirthState}` : ''}</span></>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Muslim-specific fields */}
+          {profile.religion === 'Muslim' && (profile.maslak || profile.namazPractice) && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                {profile.maslak && <><span className="text-gray-500">Maslak</span><span className="text-gray-800">{profile.maslak}</span></>}
+                {profile.namazPractice && <><span className="text-gray-500">Namaz</span><span className="text-gray-800">{profile.namazPractice}</span></>}
+              </div>
+            </div>
+          )}
+
+          {/* Sikh-specific fields */}
+          {profile.religion === 'Sikh' && (profile.amritdhari || profile.turban) && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                {profile.amritdhari && <><span className="text-gray-500">Amritdhari</span><span className="text-gray-800">{profile.amritdhari}</span></>}
+                {profile.turban && <><span className="text-gray-500">Turban</span><span className="text-gray-800">{profile.turban}</span></>}
+              </div>
+            </div>
+          )}
+
+          {/* Christian-specific fields */}
+          {profile.religion === 'Christian' && (profile.churchAttendance || profile.baptized) && (
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                {profile.churchAttendance && <><span className="text-gray-500">Church Attendance</span><span className="text-gray-800">{profile.churchAttendance}</span></>}
+                {profile.baptized && <><span className="text-gray-500">Baptized</span><span className="text-gray-800">{profile.baptized}</span></>}
+              </div>
+            </div>
+          )}
 
           {/* Education & Career */}
           <div className="space-y-1">
@@ -748,22 +815,48 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Partner Preferences - Compact */}
-        {(profile.prefAgeDiff || profile.prefHeight || profile.prefLocation || profile.prefCaste || profile.prefDiet || profile.prefQualification) && (
-          <div className="border-t border-gray-100 pt-3">
-            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">{possessivePronoun} Partner Preferences</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">
-              {profile.prefAgeDiff && <><span className="text-gray-500">Age</span><span className="text-gray-800">{profile.prefAgeDiff}</span></>}
-              {profile.prefHeight && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.prefHeight}</span></>}
-              {profile.prefLocation && <><span className="text-gray-500">Location</span><span className="text-gray-800">{profile.prefLocation}</span></>}
-              {profile.prefCaste && <><span className="text-gray-500">Caste</span><span className="text-gray-800">{profile.prefCaste}</span></>}
-              {profile.prefGotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.prefGotra}</span></>}
-              {profile.prefDiet && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.prefDiet}</span></>}
-              {profile.prefQualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.prefQualification}</span></>}
-              {profile.prefIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.prefIncome}</span></>}
-            </div>
+        {/* Partner Preferences - Complete */}
+        <div className="border-t border-gray-100 pt-3">
+          <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">{possessivePronoun} Partner Preferences</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-xs">
+            {/* Age & Height */}
+            {(profile.prefAgeDiff || profile.prefAgeMin) && (
+              <><span className="text-gray-500">Age</span><span className="text-gray-800">{profile.prefAgeDiff || `${profile.prefAgeMin}-${profile.prefAgeMax} years`}</span></>
+            )}
+            {(profile.prefHeight || profile.prefHeightMin) && (
+              <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.prefHeight || `${profile.prefHeightMin}-${profile.prefHeightMax}`}</span></>
+            )}
+            {/* Marital & Religion */}
+            {profile.prefMaritalStatus && <><span className="text-gray-500">Marital Status</span><span className="text-gray-800">{profile.prefMaritalStatus}</span></>}
+            {profile.prefReligion && <><span className="text-gray-500">Religion</span><span className="text-gray-800">{profile.prefReligion}</span></>}
+            {/* Community */}
+            {profile.prefCommunity && <><span className="text-gray-500">Community</span><span className="text-gray-800">{profile.prefCommunity}</span></>}
+            {profile.prefSubCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.prefSubCommunity}</span></>}
+            {profile.prefCaste && <><span className="text-gray-500">Caste</span><span className="text-gray-800">{profile.prefCaste}</span></>}
+            {profile.prefGotra && <><span className="text-gray-500">Gotra</span><span className="text-gray-800">{profile.prefGotra}</span></>}
+            {/* Location */}
+            {profile.prefLocation && <><span className="text-gray-500">Location</span><span className="text-gray-800">{profile.prefLocation}</span></>}
+            {profile.prefCountry && <><span className="text-gray-500">Country</span><span className="text-gray-800">{profile.prefCountry}</span></>}
+            {profile.prefCitizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.prefCitizenship}</span></>}
+            {profile.prefGrewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.prefGrewUpIn}</span></>}
+            {profile.prefRelocation && <><span className="text-gray-500">Relocation</span><span className="text-gray-800">{profile.prefRelocation}</span></>}
+            {/* Education & Career */}
+            {profile.prefQualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{profile.prefQualification}</span></>}
+            {profile.prefWorkArea && <><span className="text-gray-500">Work Area</span><span className="text-gray-800">{profile.prefWorkArea}</span></>}
+            {profile.prefOccupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{profile.prefOccupation}</span></>}
+            {profile.prefIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.prefIncome}</span></>}
+            {/* Lifestyle */}
+            {profile.prefDiet && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.prefDiet}</span></>}
+            {profile.prefSmoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{profile.prefSmoking}</span></>}
+            {profile.prefDrinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{profile.prefDrinking}</span></>}
+            {profile.prefPets && <><span className="text-gray-500">Pets</span><span className="text-gray-800">{profile.prefPets}</span></>}
+            {/* Family & Language */}
+            {profile.prefFamilyValues && <><span className="text-gray-500">Family Values</span><span className="text-gray-800">{profile.prefFamilyValues}</span></>}
+            {profile.prefFamilyLocation && <><span className="text-gray-500">Family Location</span><span className="text-gray-800">{profile.prefFamilyLocation}</span></>}
+            {profile.prefMotherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.prefMotherTongue}</span></>}
+            {profile.prefLanguage && <><span className="text-gray-500">Languages</span><span className="text-gray-800">{profile.prefLanguage}</span></>}
           </div>
-        )}
+        </div>
 
         {/* Ideal Partner Description */}
         {profile.idealPartnerDesc && (

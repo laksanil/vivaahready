@@ -1155,8 +1155,8 @@ function ViewProfilePageContent() {
                   <div className="flex">
                     <span className="text-gray-500 w-36">Family Location</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    {(profile as unknown as Record<string, string>).familyLocationCountry ? (
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).familyLocationCountry}</span>
+                    {profile.familyLocation ? (
+                      <span className="text-gray-800">{profile.familyLocation}</span>
                     ) : (
                       <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
                     )}
