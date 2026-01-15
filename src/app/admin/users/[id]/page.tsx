@@ -78,6 +78,7 @@ export default function AdminUserDetailPage() {
   const [matchStats, setMatchStats] = useState<MatchStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (userId) {
@@ -90,10 +91,13 @@ export default function AdminUserDetailPage() {
     try {
       // Fetch user details
       const userRes = await fetch(`/api/admin/users/${userId}`)
-      if (!userRes.ok) {
-        throw new Error('User not found')
-      }
       const userData = await userRes.json()
+
+      if (!userRes.ok) {
+        console.error('Failed to fetch user:', userData.error || 'Unknown error', 'Status:', userRes.status)
+        throw new Error(userData.error || 'User not found')
+      }
+
       setUser(userData.user)
 
       // If user has approved profile, fetch their match stats
@@ -104,6 +108,7 @@ export default function AdminUserDetailPage() {
       }
     } catch (err) {
       console.error('Failed to fetch user:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch user')
     } finally {
       setLoading(false)
     }
@@ -190,6 +195,10 @@ export default function AdminUserDetailPage() {
       <div className="text-center py-12">
         <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">User Not Found</h2>
+        {error && (
+          <p className="text-gray-600 text-sm mb-4">Error: {error}</p>
+        )}
+        <p className="text-gray-500 text-xs mb-4">User ID: {userId}</p>
         <Link href="/admin/users" className="text-purple-600 hover:underline">
           Back to Users
         </Link>
