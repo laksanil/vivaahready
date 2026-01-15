@@ -720,11 +720,10 @@ function ProfileCard({
                   <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </div>
+                    </svg>
                   </div>
-                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Religion & Background</h3>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Religion & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.religion && (
                         <div className="flex items-center gap-2">
@@ -863,14 +862,12 @@ function ProfileCard({
                 </div>
 
                 {/* Education & Career Section */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                      <GraduationCap className="w-5 h-5 text-white" />
-                    </div>
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Education & Career</h3>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Education & Career</h3>
                     <div className="space-y-2 text-sm">
                       {profile.qualification && (
                         <div className="flex items-center gap-2">
@@ -913,14 +910,12 @@ function ProfileCard({
                 </div>
 
                 {/* Family Details Section */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-white" />
-                    </div>
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Family Details</h3>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Family Details</h3>
                     <div className="space-y-2 text-sm">
                       {profile.fatherName && (
                         <div className="flex items-center gap-2">
@@ -1003,14 +998,12 @@ function ProfileCard({
                 </div>
 
                 {/* Location & Background Section */}
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-white" />
-                    </div>
+                <div className="flex gap-3">
+                  <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Location & Background</h3>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Location & Background</h3>
                     <div className="space-y-2 text-sm">
                       {profile.currentLocation && (
                         <div className="flex items-center gap-2">
@@ -1078,16 +1071,14 @@ function ProfileCard({
 
                 {/* Lifestyle Section */}
                 {(profile.smoking || profile.drinking || profile.hobbies || profile.fitness || profile.interests || profile.pets) && (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-primary-600 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-primary-600 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                     </div>
-                    <div className="flex-1 border-l-2 border-primary-200 pl-4 -ml-1">
-                      <h3 className="text-lg font-bold text-gray-900 mb-3">Lifestyle</h3>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-gray-900 mb-2">Lifestyle</h3>
                       <div className="space-y-4 text-sm">
                         {/* Smoking & Drinking Row */}
                         {(profile.smoking || profile.drinking) && (
@@ -1159,14 +1150,12 @@ function ProfileCard({
 
                 {/* Contact Info (only for mutual matches) */}
                 {isMutual && profile.user.email && (
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-green-600 flex items-center justify-center">
-                        <Check className="w-5 h-5 text-white" />
-                      </div>
+                  <div className="flex gap-3">
+                    <div className="w-7 h-7 bg-green-600 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-4 h-4 text-white" />
                     </div>
-                    <div className="flex-1 border-l-2 border-green-300 pl-4 -ml-1 bg-green-50 py-3 -my-1">
-                      <h3 className="text-lg font-bold text-green-700 mb-2">Contact Information</h3>
+                    <div className="flex-1 bg-green-50 p-3 -ml-1">
+                      <h3 className="text-sm font-bold text-green-700 mb-2">Contact Information</h3>
                       <p className="text-green-600 text-sm mb-3 font-medium">You both expressed interest - connect now!</p>
                       <div className="space-y-2 text-sm">
                         {profile.user.email && (
