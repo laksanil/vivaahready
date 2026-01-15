@@ -146,6 +146,7 @@ model Profile {
   prefAgeMin        String?  // Minimum preferred age
   prefAgeMax        String?  // Maximum preferred age
   prefLocation      String?
+  prefLocationList  String?  // Comma-separated list of preferred US states
   prefDiet          String?
   prefSmoking       String?  // doesnt_matter, no, occasionally_ok
   prefDrinking      String?  // doesnt_matter, no, social_ok

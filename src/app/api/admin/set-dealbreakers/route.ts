@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 
+// POST - Set all deal-breakers to TRUE for all profiles
 export async function POST() {
   try {
     const isAdmin = await isAdminAuthenticated()

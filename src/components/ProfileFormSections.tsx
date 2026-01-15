@@ -1758,12 +1758,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
-  // Count deal-breakers
+  // Count deal-breakers - matches schema fields (20 fields total after removing occupation)
   const dealBreakerCount = [
-    'prefAge', 'prefHeight', 'prefMaritalStatus', 'prefReligion',
+    'prefAge', 'prefHeight', 'prefMaritalStatus',
     'prefCommunity', 'prefGotra', 'prefDiet', 'prefSmoking', 'prefDrinking',
     'prefLocation', 'prefCitizenship', 'prefGrewUpIn', 'prefRelocation',
-    'prefEducation', 'prefIncome', 'prefOccupation', 'prefFamilyValues',
+    'prefEducation', 'prefWorkArea', 'prefIncome', 'prefFamilyValues',
     'prefFamilyLocation', 'prefMotherTongue', 'prefSubCommunity', 'prefPets'
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
@@ -2048,23 +2048,6 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </select>
               {isDealbreaker(formData, 'prefIncome') && !formData.prefIncome && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="form-label mb-0 text-sm">Preferred Occupations (select all that apply)</label>
-              <DealBreakerToggle field="prefOccupation" formData={formData} setFormData={setFormData} />
-            </div>
-            <div className="p-3 border rounded bg-gray-50 max-h-32 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-2">
-                {OCCUPATION_OPTIONS.map((opt) => (
-                  <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
-                    <input type="checkbox" checked={isChecked('prefOccupationList', opt.value)} onChange={(e) => handleCheckboxChange('prefOccupationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-                    <span className="truncate">{opt.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">{(formData.prefOccupationList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
           </div>
         </div>
       )}
