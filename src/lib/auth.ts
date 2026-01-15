@@ -106,7 +106,7 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user, account }) {
-      // On initial sign-in, fetch user from database
+      // On initial sign-in, set token.id
       if (account?.provider === 'google' && user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
@@ -124,6 +124,21 @@ export const authOptions: NextAuthOptions = {
         token.approvalStatus = (user as any).approvalStatus
         token.subscriptionPlan = (user as any).subscriptionPlan
       }
+
+      // Always refresh profile status from database to catch changes
+      // (e.g., profile creation, approval status updates)
+      if (token.id && typeof token.id === 'string') {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          include: { profile: true, subscription: true },
+        })
+        if (dbUser) {
+          token.hasProfile = !!dbUser.profile
+          token.approvalStatus = dbUser.profile?.approvalStatus || null
+          token.subscriptionPlan = dbUser.subscription?.plan || 'free'
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
