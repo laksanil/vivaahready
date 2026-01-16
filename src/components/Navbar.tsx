@@ -45,6 +45,12 @@ export function Navbar() {
     return null
   }
 
+  // Don't show navbar on photo upload page during signup flow
+  const fromSignup = searchParams.get('fromSignup') === 'true'
+  if (pathname === '/profile/photos' && fromSignup) {
+    return null
+  }
+
   const isAdminViewMode = !!viewAsUser
 
   return (

@@ -28,7 +28,9 @@ export default function RootLayout({
             <Navbar />
           </Suspense>
           <main className="flex-grow">{children}</main>
-          <Footer />
+          <Suspense fallback={null}>
+            <Footer />
+          </Suspense>
         </Providers>
       </body>
     </html>

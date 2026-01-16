@@ -1,14 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Heart, Mail, Phone, MapPin } from 'lucide-react'
 
 export function Footer() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   // Don't show footer on admin pages
   if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
+  // Don't show footer on photo upload page during signup flow
+  const fromSignup = searchParams.get('fromSignup') === 'true'
+  if (pathname === '/profile/photos' && fromSignup) {
     return null
   }
 
