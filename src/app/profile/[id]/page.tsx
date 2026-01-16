@@ -642,7 +642,7 @@ function ProfileCard({
               )}
               {profile.community && (
                 <span className="text-xs bg-white/20 px-2 py-0.5">
-                  {profile.religion || 'Hindu'}, {profile.community}
+                  {profile.religion || 'Hindu'}, {profile.community}{profile.subCommunity ? ` (${profile.subCommunity})` : ''}
                 </span>
               )}
             </div>

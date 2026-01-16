@@ -26,6 +26,8 @@ interface Profile {
   height: string | null
   currentLocation: string | null
   caste: string | null
+  community: string | null
+  subCommunity: string | null
   qualification: string | null
   occupation: string | null
   dietaryPreference: string | null
@@ -420,10 +422,10 @@ function ProfileCard({
               {profile.qualification}
             </div>
           )}
-          {profile.caste && (
+          {(profile.community || profile.caste) && (
             <div className="flex items-center">
               <User className="h-4 w-4 mr-2 text-gray-400" />
-              {profile.caste}
+              {profile.community || profile.caste}{profile.subCommunity ? ` (${profile.subCommunity})` : ''}
             </div>
           )}
         </div>

@@ -167,7 +167,9 @@ function FeedPageContent() {
       p.currentLocation?.toLowerCase().includes(query) ||
       p.occupation?.toLowerCase().includes(query) ||
       p.qualification?.toLowerCase().includes(query) ||
-      p.caste?.toLowerCase().includes(query)
+      p.caste?.toLowerCase().includes(query) ||
+      p.community?.toLowerCase().includes(query) ||
+      p.subCommunity?.toLowerCase().includes(query)
     )
   })
 

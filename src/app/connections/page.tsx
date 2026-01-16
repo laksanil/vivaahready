@@ -38,6 +38,8 @@ interface ConnectionProfile {
   occupation: string | null
   qualification: string | null
   caste: string | null
+  community: string | null
+  subCommunity: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
   aboutMe: string | null

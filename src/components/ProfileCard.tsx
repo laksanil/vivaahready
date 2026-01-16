@@ -32,6 +32,8 @@ export interface ProfileData {
   occupation: string | null
   qualification: string | null
   caste: string | null
+  community: string | null
+  subCommunity: string | null
   gotra: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
@@ -252,10 +254,11 @@ export function ProfileCard({
               </div>
             )}
 
-            {/* Caste/Religion */}
-            {profile.caste && (
+            {/* Community/Religion */}
+            {(profile.community || profile.caste) && (
               <div className="text-gray-600 text-xs bg-gray-100 px-2 py-1 rounded-full inline-block">
-                {profile.religion || 'Hindu'} • {profile.caste}
+                {profile.religion || 'Hindu'} • {profile.community || profile.caste}
+                {profile.subCommunity && ` (${profile.subCommunity})`}
                 {profile.gotra && ` • ${profile.gotra}`}
               </div>
             )}
