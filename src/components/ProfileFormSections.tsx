@@ -1758,13 +1758,17 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
-  // Count deal-breakers - matches schema fields (20 fields total after removing occupation)
+  // Count deal-breakers - only fields in Must-Have section (8 categories)
+  // Each preference category counts as ONE deal-breaker, not per value selected
   const dealBreakerCount = [
-    'prefAge', 'prefHeight', 'prefMaritalStatus',
-    'prefCommunity', 'prefGotra', 'prefDiet', 'prefSmoking', 'prefDrinking',
-    'prefLocation', 'prefCitizenship', 'prefGrewUpIn', 'prefRelocation',
-    'prefEducation', 'prefWorkArea', 'prefIncome', 'prefFamilyValues',
-    'prefFamilyLocation', 'prefMotherTongue', 'prefSubCommunity', 'prefPets'
+    'prefAge',           // Age Range
+    'prefHeight',        // Height Range
+    'prefMaritalStatus', // Marital Status
+    'prefCommunity',     // Community
+    'prefGotra',         // Gotra (Hindu/Jain only)
+    'prefDiet',          // Diet
+    'prefSmoking',       // Smoking
+    'prefDrinking',      // Drinking
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
