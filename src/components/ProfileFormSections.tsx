@@ -1805,6 +1805,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
 
   // Count deal-breakers - all preference categories that can be deal-breakers
   // Each preference category counts as ONE deal-breaker, not per value selected
+  // Note: Hobbies, Interests, and Fitness do NOT have deal-breaker options
   const dealBreakerCount = [
     'prefAge',           // Age Range
     'prefHeight',        // Height Range
@@ -1818,6 +1819,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     'prefLocation',      // Location
     'prefEducation',     // Education & Career
     'prefFamily',        // Family Preferences
+    'prefOther',         // Other Preferences (Mother Tongue, Sub-Community)
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
@@ -2131,10 +2133,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Other Preferences - Nice-to-Have (no deal-breaker toggles) */}
+      {/* Other Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
+            <DealBreakerToggle field="prefOther" formData={formData} setFormData={setFormData} />
+          </div>
           {/* Mother Tongue - Multi-select */}
           <div>
             <label className="form-label mb-1">Mother Tongue (select all that apply)</label>
