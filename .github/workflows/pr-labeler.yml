@@ -1,0 +1,105 @@
+name: PR Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label-pr:
+    name: Label PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Add labels based on files changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFiles = `${{ steps.changed-files.outputs.all_changed_files }}`.split(' ');
+            const labels = new Set();
+
+            // Always add needs-claude-review for new PRs
+            labels.add('needs-claude-review');
+
+            // High-conflict file patterns
+            const highConflictPatterns = [
+              { pattern: /^prisma\/schema\.prisma$/, label: 'high-conflict:schema' },
+              { pattern: /^src\/lib\/auth\.ts$/, label: 'high-conflict:auth' },
+              { pattern: /^tailwind\.config\.ts$/, label: 'high-conflict:config' },
+              { pattern: /^package\.json$/, label: 'high-conflict:deps' },
+              { pattern: /^\.env/, label: 'high-conflict:env' },
+            ];
+
+            // Area labels based on paths
+            const areaPatterns = [
+              { pattern: /^src\/app\/api\//, label: 'area:api' },
+              { pattern: /^src\/app\/admin\//, label: 'area:admin' },
+              { pattern: /^src\/components\//, label: 'area:components' },
+              { pattern: /^src\/lib\//, label: 'area:lib' },
+              { pattern: /^prisma\//, label: 'area:database' },
+              { pattern: /^tests\//, label: 'area:tests' },
+              { pattern: /^scripts\//, label: 'area:scripts' },
+              { pattern: /^\.github\//, label: 'area:ci' },
+            ];
+
+            // Developer identification from branch name
+            const branchName = context.payload.pull_request.head.ref;
+            if (branchName.includes('dev-a') || branchName.includes('dev_a')) {
+              labels.add('author:dev-a');
+            } else if (branchName.includes('dev-b') || branchName.includes('dev_b')) {
+              labels.add('author:dev-b');
+            }
+
+            // Check each changed file
+            for (const file of changedFiles) {
+              if (!file) continue;
+
+              // Check high-conflict patterns
+              for (const { pattern, label } of highConflictPatterns) {
+                if (pattern.test(file)) {
+                  labels.add(label);
+                  labels.add('high-conflict');
+                }
+              }
+
+              // Check area patterns
+              for (const { pattern, label } of areaPatterns) {
+                if (pattern.test(file)) {
+                  labels.add(label);
+                }
+              }
+            }
+
+            // Size labels based on number of files changed
+            const fileCount = changedFiles.filter(f => f).length;
+            if (fileCount <= 3) {
+              labels.add('size:small');
+            } else if (fileCount <= 10) {
+              labels.add('size:medium');
+            } else {
+              labels.add('size:large');
+            }
+
+            // Add labels to PR
+            const labelsArray = Array.from(labels);
+            if (labelsArray.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelsArray
+              });
+            }
+
+            console.log(`Added labels: ${labelsArray.join(', ')}`);

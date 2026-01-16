@@ -60,47 +60,150 @@ Developer IDs:
 - **DEV_A** - First Claude instance
 - **DEV_B** - Second Claude instance
 
-### 4. Branching Strategy
+### 4. PR-Based Workflow (Required)
 
-**For small changes (< 3 files):**
-- Work directly on `main`
-- Sync frequently (pull before commit, push after commit)
+**CRITICAL: No direct pushes to main. All changes must go through PRs.**
 
-**For larger features:**
-- Create a feature branch: `git checkout -b feature/[name]-[dev_id]`
-- Example: `feature/profile-filters-dev_a`
-- Merge via PR or direct merge after completion
+```
+DEV_A works on branch → Creates PR → GitHub Actions runs tests
+                                            ↓
+DEV_B works on branch → Creates PR →  Claude reviews PRs
+                                            ↓
+                                     Claude merges (squash)
+                                            ↓
+                                          main
+                                            ↓
+                                      Vercel deploys
+```
 
-### 5. Commit Protocol
+**Branch Naming Convention:**
+```
+work/{dev-id}-{description}
+```
+Examples:
+- `work/dev-a-add-user-auth`
+- `work/dev-b-fix-profile-bug`
 
-**Before committing:**
+### 5. Creating a PR
+
+**Option A: Use the helper script (recommended):**
 ```bash
-git pull origin main --rebase
+./scripts/claude-create-pr.sh dev-a feat "add user authentication"
 ```
 
-**Commit message format:**
-```
-[DEV_A/DEV_B] type: brief description
+**Option B: Manual process:**
+```bash
+# 1. Create and switch to branch
+git checkout -b work/dev-a-feature-name
 
-- Detail 1
-- Detail 2
+# 2. Make changes and commit
+git add .
+git commit -m "[DEV_A] feat: description
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 3. Push branch
+git push -u origin work/dev-a-feature-name
+
+# 4. Create PR
+gh pr create --title "[DEV_A] feat: description" --body "$(cat <<'EOF'
+## Summary
+Brief description of changes
+
+## Test plan
+- [ ] Tests pass locally
+- [ ] Verified functionality
 
 Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)" --base main
 ```
 
-Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
+### 6. Reviewing and Merging PRs
 
-**After committing:**
+**Either Claude can merge the other's PRs. Always review before merging.**
+
 ```bash
-git push origin main
+# 1. List PRs ready for review
+gh pr list --label "tests-passing" --state open
+
+# Or use the helper script:
+./scripts/claude-review-prs.sh
+
+# 2. ALWAYS review the diff before merging
+gh pr diff 123
+
+# 3. Check CI status
+gh pr checks 123
+
+# 4. Run pre-merge validation
+./scripts/claude-merge-check.sh 123
+
+# 5. If everything looks good, merge
+gh pr merge 123 --squash --delete-branch
 ```
 
-### 6. Update Work Log on Completion
+**IMPORTANT: Never use `--auto` merge. Always review diffs manually.**
+
+### 7. Merge Decision Tree
+
+```
+1. gh pr list --label "tests-passing" --state open
+   └─ Find PRs ready to review
+
+2. gh pr diff 123
+   └─ ALWAYS review the changes first
+
+3. gh pr checks 123
+   └─ All tests pass? → Continue
+   └─ Tests failing? → WAIT (do not merge)
+
+4. gh pr view 123 --json mergeable
+   └─ No conflicts? → Continue
+   └─ Has conflicts? → Help rebase, resolve conflicts
+
+5. Review the changes:
+   - Do the changes make sense?
+   - Are there any bugs or issues?
+   - Does this conflict with other open PRs?
+
+6. Check for overlapping PRs
+   └─ No overlap? → Safe to merge
+   └─ Overlap detected? → Merge older PR first, rebase newer
+
+7. Make merge decision
+   └─ APPROVE: gh pr merge 123 --squash --delete-branch
+   └─ REQUEST CHANGES: gh pr review 123 --request-changes --body "reason"
+```
+
+### 8. Conflict Resolution in PRs
+
+| Scenario | Action |
+|----------|--------|
+| Changes in different sections | Keep both |
+| Both add new code (functions, imports) | Keep both |
+| Same lines, same intent | Accept main, re-apply changes |
+| Logical conflict | Request human review |
+| Prisma schema conflict | Accept main, add changes, run `prisma format` |
+| package.json conflict | Accept both deps, run `npm install` |
+
+**To rebase a PR with conflicts:**
+```bash
+git fetch origin main
+git rebase origin/main
+# Resolve conflicts in each file
+git add <resolved-file>
+git rebase --continue
+git push --force-with-lease
+```
+
+### 9. Update Work Log on Completion
 
 Update your entry in `.claude/worklog.md`:
 ```markdown
 **Status:** COMPLETED
-**Commit:** [commit hash]
+**PR:** #123
+**Merged:** [commit hash]
 ```
 
 ---
@@ -254,14 +357,28 @@ npx prisma db push       # Push schema to database
 npx prisma studio        # Open database GUI
 
 # Testing
-npm run test             # Run tests
+npm run test             # Run unit tests
+npm run test:e2e         # Run Playwright E2E tests
+npm run test:all         # Run all tests
 npm run lint             # Run linter
 
-# Git workflow
-git pull origin main     # Sync before work
-git add .
-git commit -m "message"
-git push origin main     # Push after commit
+# PR Workflow (Primary)
+./scripts/claude-create-pr.sh dev-a feat "description"  # Create PR
+./scripts/claude-review-prs.sh                          # Review all open PRs
+./scripts/claude-merge-check.sh 123                     # Pre-merge validation
+
+# PR Commands (gh CLI)
+gh pr list --state open                    # List open PRs
+gh pr diff 123                             # View PR diff (ALWAYS do before merge)
+gh pr checks 123                           # Check CI status
+gh pr view 123 --json mergeable            # Check for conflicts
+gh pr merge 123 --squash --delete-branch   # Merge after review
+gh pr review 123 --request-changes --body "reason"  # Request changes
+
+# Git Workflow (for branches)
+git checkout -b work/dev-a-feature         # Create feature branch
+git push -u origin work/dev-a-feature      # Push branch
+git fetch origin main && git rebase origin/main  # Rebase on main
 ```
 
 ---
@@ -305,14 +422,22 @@ Use detailed commit messages to communicate changes.
 ## Quick Start Checklist
 
 When starting a session:
-- [ ] `git pull origin main`
+- [ ] `git fetch origin && git checkout main && git pull`
 - [ ] Read `.claude/worklog.md`
+- [ ] Run `./scripts/claude-review-prs.sh` to check for PRs to review
 - [ ] Check for any TODO/FIXME comments from other dev
 - [ ] Claim your task in worklog
-- [ ] Start working
+- [ ] Create feature branch: `git checkout -b work/dev-X-description`
 
 When ending a session:
-- [ ] Commit all changes
-- [ ] Push to origin
-- [ ] Update worklog status to COMPLETED
+- [ ] Commit all changes to your feature branch
+- [ ] Create PR: `./scripts/claude-create-pr.sh dev-X type "description"`
+- [ ] Update worklog status and add PR number
+- [ ] Check if any other PRs are ready to merge
 - [ ] Add any notes for the other dev
+
+Review workflow for other's PRs:
+- [ ] Run `./scripts/claude-review-prs.sh --ready-only`
+- [ ] For each ready PR: `gh pr diff <number>` - review the changes
+- [ ] Run `./scripts/claude-merge-check.sh <number>`
+- [ ] If approved: `gh pr merge <number> --squash --delete-branch`

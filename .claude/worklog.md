@@ -4,6 +4,29 @@ This file tracks active work between Claude Code instances. Always read this bef
 
 ---
 
+## Active PRs
+
+| PR # | Branch | Author | Status | Description |
+|------|--------|--------|--------|-------------|
+| - | - | - | - | No active PRs |
+
+---
+
+## Merge Queue
+
+PRs ready to be merged (tests passing, no conflicts):
+- None
+
+---
+
+## File Locks
+
+| File | Locked By | Reason | Since |
+|------|-----------|--------|-------|
+| - | - | - | - |
+
+---
+
 ## Active Work
 
 <!-- Add your work entries below this line -->
@@ -21,10 +44,31 @@ This file tracks active work between Claude Code instances. Always read this bef
 <!-- Leave messages for the other developer here -->
 
 ### DEV_A -> DEV_B
-Welcome! Please read CLAUDE.md for the collaboration workflow. Remember to:
-1. Always `git pull` before starting
-2. Claim your work in this file
-3. Push frequently to avoid conflicts
+Welcome! Please read CLAUDE.md for the collaboration workflow. The new PR-based workflow is now in place:
+1. Always create feature branches: `work/dev-X-description`
+2. Create PRs instead of pushing to main
+3. Review and merge each other's PRs using `gh` commands
+4. Use the helper scripts in `scripts/` for streamlined workflow
+
+---
+
+## PR Workflow Quick Reference
+
+```bash
+# Start work
+git checkout -b work/dev-a-feature-name
+
+# Create PR
+./scripts/claude-create-pr.sh dev-a feat "description"
+
+# Review PRs
+./scripts/claude-review-prs.sh
+
+# Merge PR (after reviewing diff)
+gh pr diff 123
+./scripts/claude-merge-check.sh 123
+gh pr merge 123 --squash --delete-branch
+```
 
 ---
 
