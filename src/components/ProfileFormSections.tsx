@@ -2179,8 +2179,29 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
                     <span className="truncate">{opt.label}</span>
                   </label>
                 ))}
+                {/* Other option */}
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer hover:bg-white px-1.5 py-1 rounded">
+                  <input
+                    type="checkbox"
+                    checked={isChecked('prefMotherTongueList', 'Other')}
+                    onChange={(e) => handleCheckboxChange('prefMotherTongueList', 'Other', e.target.checked)}
+                    className="rounded text-primary-600 focus:ring-primary-500 h-3.5 w-3.5"
+                  />
+                  <span className="truncate">Other</span>
+                </label>
               </div>
             </div>
+            {/* Text box for specifying other language when "Other" is selected */}
+            {isChecked('prefMotherTongueList', 'Other') && (
+              <input
+                type="text"
+                name="prefMotherTongueOther"
+                value={formData.prefMotherTongueOther as string || ''}
+                onChange={handleChange}
+                className="input-field mt-2"
+                placeholder="Specify other language(s)"
+              />
+            )}
             <p className="text-xs text-gray-500 mt-1">{(formData.prefMotherTongueList as string || '').split(', ').filter(v => v).length || 0} selected (leave empty for any)</p>
           </div>
           {/* Sub-Community - Multi-select based on selected religion/community */}

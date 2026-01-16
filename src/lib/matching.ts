@@ -66,6 +66,9 @@ interface ProfileForMatching {
   prefFamilyValues?: string | null
   prefFamilyLocation?: string | null
   prefMotherTongue?: string | null
+  prefMotherTongueList?: string | null
+  prefMotherTongueOther?: string | null
+  motherTongueOther?: string | null
   prefSubCommunity?: string | null
   prefPets?: string | null
   prefCaste?: string | null
@@ -952,25 +955,109 @@ function isFamilyLocationMatch(seekerPref: string | null | undefined, seekerFami
 
 /**
  * Check if mother tongue preferences match
+ * Handles multiple languages (comma-separated list) and "Other" with custom text
+ * @param seekerPrefList - comma-separated list of preferred languages or single language
+ * @param seekerPrefOther - custom text when "Other" is selected in preferences
+ * @param seekerMotherTongue - seeker's own mother tongue (for "same_as_mine")
+ * @param seekerMotherTongueOther - seeker's custom mother tongue if "Other"
+ * @param candidateMotherTongue - candidate's mother tongue
+ * @param candidateMotherTongueOther - candidate's custom mother tongue if "Other"
  * @param strict - if true, missing candidate data returns false (for deal-breakers)
  */
-function isMotherTongueMatch(seekerPref: string | null | undefined, seekerMotherTongue: string | null | undefined, candidateMotherTongue: string | null | undefined, strict: boolean = false): boolean {
-  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+function isMotherTongueMatch(
+  seekerPrefList: string | null | undefined,
+  seekerPrefOther: string | null | undefined,
+  seekerMotherTongue: string | null | undefined,
+  seekerMotherTongueOther: string | null | undefined,
+  candidateMotherTongue: string | null | undefined,
+  candidateMotherTongueOther: string | null | undefined,
+  strict: boolean = false
+): boolean {
+  if (!seekerPrefList || seekerPrefList.toLowerCase() === "doesn't matter" || seekerPrefList.toLowerCase() === 'doesnt_matter') {
     return true
   }
   if (!candidateMotherTongue) return !strict // If strict (deal-breaker), missing data = no match
 
-  const pref = seekerPref.toLowerCase()
-  const cand = candidateMotherTongue.toLowerCase()
+  // Parse the preference list (comma-separated)
+  const prefList = seekerPrefList.split(',').map(p => p.trim().toLowerCase()).filter(p => p)
+  const candidateLang = candidateMotherTongue.toLowerCase()
+  const candidateOtherLang = candidateMotherTongueOther?.toLowerCase() || ''
 
-  // "same_as_mine" - match if same mother tongue
-  if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerMotherTongue) return !strict
-    return seekerMotherTongue.toLowerCase() === cand
+  // Check each preferred language
+  for (const pref of prefList) {
+    // "same_as_mine" - match if same mother tongue
+    if (pref === 'same_as_mine' || pref === 'same as mine') {
+      if (!seekerMotherTongue) continue
+      const seekerLang = seekerMotherTongue.toLowerCase()
+      const seekerOtherLang = seekerMotherTongueOther?.toLowerCase() || ''
+
+      // If both are "Other", compare the custom text intelligently
+      if (seekerLang === 'other' && candidateLang === 'other') {
+        if (intelligentTextMatch(seekerOtherLang, candidateOtherLang)) return true
+      }
+      // If seeker is "Other", check if candidate matches the custom text
+      else if (seekerLang === 'other') {
+        if (intelligentTextMatch(seekerOtherLang, candidateLang)) return true
+      }
+      // If candidate is "Other", check if seeker matches the custom text
+      else if (candidateLang === 'other') {
+        if (intelligentTextMatch(seekerLang, candidateOtherLang)) return true
+      }
+      // Direct match
+      else if (seekerLang === candidateLang) return true
+    }
+    // "Other" in preferences - use custom text for matching
+    else if (pref === 'other') {
+      if (seekerPrefOther) {
+        // If candidate is also "Other", compare custom texts
+        if (candidateLang === 'other') {
+          if (intelligentTextMatch(seekerPrefOther.toLowerCase(), candidateOtherLang)) return true
+        }
+        // Otherwise, check if candidate's language matches the custom text
+        else {
+          if (intelligentTextMatch(seekerPrefOther.toLowerCase(), candidateLang)) return true
+        }
+      }
+    }
+    // Direct match
+    else if (pref === candidateLang) return true
+    // If candidate is "Other", check if their custom text matches the preference
+    else if (candidateLang === 'other' && candidateOtherLang) {
+      if (intelligentTextMatch(pref, candidateOtherLang)) return true
+    }
   }
 
-  // Direct match
-  return pref === cand
+  return false
+}
+
+/**
+ * Intelligent text matching for languages
+ * Handles partial matches, common abbreviations, and variations
+ */
+function intelligentTextMatch(text1: string, text2: string): boolean {
+  if (!text1 || !text2) return false
+
+  const t1 = text1.toLowerCase().trim()
+  const t2 = text2.toLowerCase().trim()
+
+  // Exact match
+  if (t1 === t2) return true
+
+  // One contains the other
+  if (t1.includes(t2) || t2.includes(t1)) return true
+
+  // Split by common delimiters and check for any word match
+  const words1 = t1.split(/[\s,\/\-]+/).filter(w => w.length > 2)
+  const words2 = t2.split(/[\s,\/\-]+/).filter(w => w.length > 2)
+
+  for (const w1 of words1) {
+    for (const w2 of words2) {
+      // Word match or one starts with the other
+      if (w1 === w2 || w1.startsWith(w2) || w2.startsWith(w1)) return true
+    }
+  }
+
+  return false
 }
 
 /**
@@ -1362,9 +1449,18 @@ export function matchesSeekerPreferences(
   }
 
   // 15. Mother Tongue check
-  if (isPrefSet(seeker.prefMotherTongue)) {
+  if (isPrefSet(seeker.prefMotherTongue) || isPrefSet(seeker.prefMotherTongueList)) {
     const isDB = isDealbreaker(seeker.prefMotherTongueIsDealbreaker)
-    const matches = isMotherTongueMatch(seeker.prefMotherTongue, seeker.motherTongue, candidate.motherTongue, isDB)
+    const prefList = seeker.prefMotherTongueList || seeker.prefMotherTongue
+    const matches = isMotherTongueMatch(
+      prefList,
+      seeker.prefMotherTongueOther,
+      seeker.motherTongue,
+      seeker.motherTongueOther,
+      candidate.motherTongue,
+      candidate.motherTongueOther,
+      isDB
+    )
     if (!matches && isDB) {
       return false
     }
@@ -1708,17 +1804,26 @@ export function calculateMatchScore(
 
   // 14. Mother Tongue match
   let motherTongueMatched = true
-  if (isPrefSet(seeker.prefMotherTongue)) {
+  const hasMTPref = isPrefSet(seeker.prefMotherTongue) || isPrefSet(seeker.prefMotherTongueList)
+  if (hasMTPref) {
     totalCriteria++
-    motherTongueMatched = isMotherTongueMatch(seeker.prefMotherTongue, seeker.motherTongue, candidate.motherTongue)
+    const prefList = seeker.prefMotherTongueList || seeker.prefMotherTongue
+    motherTongueMatched = isMotherTongueMatch(
+      prefList,
+      seeker.prefMotherTongueOther,
+      seeker.motherTongue,
+      seeker.motherTongueOther,
+      candidate.motherTongue,
+      candidate.motherTongueOther
+    )
     if (motherTongueMatched) matchedCount++
   }
 
   criteria.push({
     name: 'Mother Tongue',
     matched: motherTongueMatched,
-    seekerPref: seeker.prefMotherTongue || "Doesn't matter",
-    candidateValue: candidate.motherTongue || 'Not specified',
+    seekerPref: seeker.prefMotherTongueList || seeker.prefMotherTongue || "Doesn't matter",
+    candidateValue: candidate.motherTongue === 'Other' ? (candidate.motherTongueOther || 'Other') : (candidate.motherTongue || 'Not specified'),
     isDealbreaker: isDealbreaker(seeker.prefMotherTongueIsDealbreaker)
   })
 

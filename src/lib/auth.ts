@@ -4,6 +4,19 @@ import GoogleProvider from 'next-auth/providers/google'
 import { compare } from 'bcryptjs'
 import { prisma } from './prisma'
 
+/**
+ * Format full name to "Firstname L." format for privacy
+ * E.g., "Lakshmi Nagasamudra" -> "Lakshmi N."
+ */
+function formatDisplayName(fullName: string | null | undefined): string {
+  if (!fullName) return 'User'
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase()
+  return `${firstName} ${lastInitial}.`
+}
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
@@ -80,7 +93,7 @@ export const authOptions: NextAuthOptions = {
             existingUser = await prisma.user.create({
               data: {
                 email,
-                name: user.name || 'User',
+                name: formatDisplayName(user.name), // Format as "Firstname L." for privacy
                 emailVerified: new Date(), // Google emails are verified
                 lastLogin: new Date(),
               },
