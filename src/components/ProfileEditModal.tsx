@@ -12,6 +12,7 @@ import {
   AboutMeSection,
   PreferencesPage1Section,
   PreferencesPage2Section,
+  ContactSection,
 } from './ProfileFormSections'
 
 interface ProfileEditModalProps {
@@ -80,6 +81,7 @@ export default function ProfileEditModal({
   // Section titles matching the create profile flow (9 slides)
   const sectionTitles: Record<string, string> = {
     basics: 'Basic Info',
+    contact: 'Contact Details',
     location_education: 'Education & Career',
     religion: 'Religion & Astro',
     family: 'Family Details',
@@ -108,6 +110,7 @@ export default function ProfileEditModal({
 
           {/* Sections matching the create profile flow */}
           {section === 'basics' && <BasicsSection {...sectionProps} />}
+          {section === 'contact' && <ContactSection {...sectionProps} />}
           {section === 'location_education' && (
             <>
               <LocationSection {...sectionProps} />

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
-import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft } from 'lucide-react'
+import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft, Phone, Shield, Clock, Users } from 'lucide-react'
 import Link from 'next/link'
 
 function PhotosUploadContent() {
@@ -16,7 +16,7 @@ function PhotosUploadContent() {
   const fromSignup = searchParams.get('fromSignup') === 'true'
 
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([])
-  const [photoVisibility, setPhotoVisibility] = useState('verified_only')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [error, setError] = useState('')
@@ -41,7 +41,7 @@ function PhotosUploadContent() {
 
     const newPhotos: { file: File; preview: string }[] = []
     Array.from(files).forEach((file) => {
-      if (photos.length + newPhotos.length < 6) {
+      if (photos.length + newPhotos.length < 3) {
         newPhotos.push({
           file,
           preview: URL.createObjectURL(file),
@@ -66,6 +66,11 @@ function PhotosUploadContent() {
       return
     }
 
+    if (!phoneNumber.trim()) {
+      setError('Please enter your phone number to continue.')
+      return
+    }
+
     if (photos.length === 0) {
       setError('Please upload at least one photo to continue.')
       return
@@ -76,6 +81,13 @@ function PhotosUploadContent() {
     setUploadingPhotos(true)
 
     try {
+      // Save phone number to user profile
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber.trim() }),
+      })
+
       // Upload photos
       for (const photo of photos) {
         const photoFormData = new FormData()
@@ -88,20 +100,10 @@ function PhotosUploadContent() {
         })
       }
 
-      // Update photo visibility setting
-      await fetch('/api/profile/update-visibility', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profileId,
-          photoVisibility,
-        }),
-      })
-
       // Redirect to dashboard with success message
       router.push('/dashboard?status=pending')
     } catch {
-      setError('Failed to upload photos. Please try again.')
+      setError('Failed to save. Please try again.')
     } finally {
       setLoading(false)
       setUploadingPhotos(false)
@@ -144,20 +146,48 @@ function PhotosUploadContent() {
 
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          {/* Phone Number Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                <Phone className="h-5 w-5 text-primary-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Contact Number</h3>
+                <p className="text-sm text-gray-500">Required for profile verification</p>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+1 (xxx) xxx-xxxx"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-lg"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-sm font-medium">Required *</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Your phone number will only be shared with verified matches</p>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-6"></div>
+
+          {/* Photo Upload Section */}
           <div className="text-center mb-6">
-            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Camera className="h-10 w-10 text-primary-500" />
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Camera className="h-8 w-8 text-primary-500" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Upload Your Photo
+              Upload Your Photos
             </h3>
             <p className="text-gray-600">
-              Add up to 6 photos. Your first photo will be your primary profile picture.
+              Add up to 3 photos. Your first photo will be your primary profile picture.
             </p>
           </div>
 
-          {/* Photo Grid */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          {/* Photo Grid - 3 slots */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
             {/* Uploaded Photos */}
             {photos.map((photo, index) => (
               <div key={index} className="relative aspect-square overflow-hidden border-2 border-primary-500 bg-gray-100 rounded-lg">
@@ -181,8 +211,8 @@ function PhotosUploadContent() {
               </div>
             ))}
 
-            {/* Add Photo Buttons */}
-            {Array.from({ length: Math.max(0, 6 - photos.length) }).map((_, index) => (
+            {/* Add Photo Buttons - up to 3 total */}
+            {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, index) => (
               <button
                 key={`empty-${index}`}
                 onClick={() => fileInputRef.current?.click()}
@@ -218,54 +248,36 @@ function PhotosUploadContent() {
             Upload from Device
           </button>
 
-          {/* Photo Visibility Options */}
-          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-900 mb-3">Photo Privacy Settings</h4>
-            <p className="text-sm text-gray-500 mb-4">Choose who can view your photos:</p>
-            <div className="space-y-3">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="photoVisibility"
-                  value="verified_only"
-                  checked={photoVisibility === 'verified_only'}
-                  onChange={(e) => setPhotoVisibility(e.target.value)}
-                  className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                />
-                <div>
-                  <span className="font-medium text-gray-900">Verified Members Only</span>
-                  <p className="text-sm text-gray-500">Your photos will only be visible to members with verified profiles</p>
-                </div>
-              </label>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="photoVisibility"
-                  value="matching_preferences"
-                  checked={photoVisibility === 'matching_preferences'}
-                  onChange={(e) => setPhotoVisibility(e.target.value)}
-                  className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                />
-                <div>
-                  <span className="font-medium text-gray-900">Matching Profiles Only</span>
-                  <p className="text-sm text-gray-500">Your photos will be visible to members whose preferences align with your profile</p>
-                </div>
-              </label>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="photoVisibility"
-                  value="mutual_interest"
-                  checked={photoVisibility === 'mutual_interest'}
-                  onChange={(e) => setPhotoVisibility(e.target.value)}
-                  className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                />
-                <div>
-                  <span className="font-medium text-gray-900">After Mutual Interest</span>
-                  <p className="text-sm text-gray-500">Your photos will only be revealed after both parties express interest</p>
-                </div>
-              </label>
+          {/* Photo Privacy Announcement */}
+          <div className="mt-6 bg-gradient-to-r from-primary-50 to-blue-50 p-5 rounded-lg border border-primary-100">
+            <div className="flex items-start gap-3 mb-3">
+              <Shield className="h-6 w-6 text-primary-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-gray-900 text-lg">Your Photos Are Protected</h4>
+                <p className="text-sm text-gray-700 mt-1">
+                  Your photos will <strong>only be visible to admin-verified profiles</strong>. At VivaahReady, we prioritize your privacy and security to ensure a safe and genuine matrimonial experience.
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* Why Photos Matter */}
+          <div className="mt-4 bg-amber-50 p-4 rounded-lg border border-amber-100">
+            <h4 className="font-semibold text-gray-900 mb-3">Why Photos Are Essential</h4>
+            <ul className="text-sm text-gray-700 space-y-2">
+              <li className="flex items-start gap-3">
+                <Clock className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Saves time</strong> — Clear photos help potential matches make informed decisions quickly, reducing unnecessary back-and-forth</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Users className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Builds trust</strong> — A recent photograph establishes credibility and shows you&apos;re serious about finding a life partner</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <CheckCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <span><strong>Better matches</strong> — Profiles with photos receive significantly more interest and faster responses</span>
+              </li>
+            </ul>
           </div>
 
           {/* Photo Guidelines */}
@@ -287,13 +299,23 @@ function PhotosUploadContent() {
             </ul>
           </div>
 
+          {/* Privacy Commitment */}
+          <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex items-start gap-2">
+              <Shield className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-gray-600">
+                <strong>Our Privacy Commitment:</strong> Your photos are stored securely and are never shared with third parties. Access is strictly limited to verified members of our platform. We employ industry-standard encryption and security measures to protect your personal images. By uploading photos, you confirm they are recent photographs of yourself and consent to their display to verified members only.
+              </p>
+            </div>
+          </div>
+
           {/* Submit Button */}
           <div className="mt-6">
             <button
               onClick={handlePhotoSubmit}
-              disabled={loading || photos.length === 0}
+              disabled={loading || photos.length === 0 || !phoneNumber.trim()}
               className={`w-full py-3.5 rounded-lg font-semibold text-lg shadow-lg transition-all ${
-                !loading && photos.length > 0
+                !loading && photos.length > 0 && phoneNumber.trim()
                   ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
@@ -307,9 +329,13 @@ function PhotosUploadContent() {
                 'Complete Registration'
               )}
             </button>
-            {photos.length === 0 && (
+            {(photos.length === 0 || !phoneNumber.trim()) && (
               <p className="text-center text-sm text-gray-500 mt-2">
-                Please upload at least one photo to complete your registration
+                {!phoneNumber.trim() && photos.length === 0
+                  ? 'Please enter your phone number and upload at least one photo'
+                  : !phoneNumber.trim()
+                  ? 'Please enter your phone number'
+                  : 'Please upload at least one photo'}
               </p>
             )}
           </div>

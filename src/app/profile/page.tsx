@@ -33,6 +33,8 @@ import { useImpersonation } from '@/hooks/useImpersonation'
 interface Profile {
   id: string
   odNumber: string
+  firstName: string
+  lastName: string
   gender: string
   dateOfBirth: string
   age: string
@@ -147,6 +149,10 @@ interface Profile {
   prefSubCommunityIsDealbreaker: boolean
   prefPetsIsDealbreaker: boolean
   prefReligionIsDealbreaker: boolean
+  // Contact info
+  email: string
+  phone: string
+  phoneVerified: boolean
 }
 
 function ViewProfilePageContent() {
@@ -927,6 +933,48 @@ function ViewProfilePageContent() {
         <div className="bg-white rounded-lg shadow-sm">
           {activeTab === 'about' ? (
             <div className="divide-y divide-gray-100">
+              {/* Contact Details Section - At the top */}
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-[#E91E63] font-semibold text-lg">Contact Details</h2>
+                  <button onClick={() => setEditSection('contact')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                    Edit <span className="text-xs">▶</span>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Email</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800 flex items-center gap-2">
+                      {profile.email || 'Not specified'}
+                      {profile.emailVerified && <span className="text-green-600 text-xs">(Verified)</span>}
+                    </span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Phone</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800 flex items-center gap-2">
+                      {profile.phone || 'Not specified'}
+                      {profile.phoneVerified && <span className="text-green-600 text-xs">(Verified)</span>}
+                    </span>
+                  </div>
+                  {profile.linkedinProfile && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-36">LinkedIn</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">View Profile</a>
+                    </div>
+                  )}
+                  {(profile.instagram || profile.facebookInstagram) && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-36">Instagram</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800">{profile.instagram || profile.facebookInstagram}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* 1. Basic Info - matches BasicsSection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -936,6 +984,16 @@ function ViewProfilePageContent() {
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">First Name</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.firstName || 'Not specified'}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-36">Last Name</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.lastName || 'Not specified'}</span>
+                  </div>
                   <div className="flex">
                     <span className="text-gray-500 w-36">Posted by</span>
                     <span className="text-gray-400 mr-2">:</span>

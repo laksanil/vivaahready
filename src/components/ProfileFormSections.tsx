@@ -2365,3 +2365,77 @@ export function ReferralSection({ formData, handleChange }: SectionProps) {
     </>
   )
 }
+
+// Contact Details Section - for editing email, phone, and social profiles
+export function ContactSection({ formData, handleChange }: SectionProps) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Email <span className="text-red-500">*</span></label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="your@email.com"
+            required
+          />
+          <p className="text-xs text-gray-500 mt-1">This will be used for account login and notifications</p>
+        </div>
+        <div>
+          <label className="form-label">Phone</label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone as string || ''}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="+1 (xxx) xxx-xxxx"
+          />
+          <p className="text-xs text-gray-500 mt-1">Optional - for direct contact</p>
+        </div>
+      </div>
+
+      <div className="border-t pt-4 mt-4">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Social Profiles (Optional)</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="form-label">LinkedIn Profile</label>
+            <input
+              type="url"
+              name="linkedinProfile"
+              value={formData.linkedinProfile as string || ''}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="https://linkedin.com/in/yourprofile"
+            />
+          </div>
+          <div>
+            <label className="form-label">Instagram Handle</label>
+            <input
+              type="text"
+              name="instagram"
+              value={formData.instagram as string || ''}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="@yourhandle"
+            />
+          </div>
+          <div>
+            <label className="form-label">Facebook Profile</label>
+            <input
+              type="url"
+              name="facebook"
+              value={formData.facebook as string || ''}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="https://facebook.com/yourprofile"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -698,6 +698,75 @@ function ProfileCard({
           </div>
         )}
 
+        {/* Contact Details Section - Blurred for non-verified profiles unless viewing own profile */}
+        {(() => {
+          const isOwnProfile = viewerUserId === profile.userId
+          const isVerified = profile.approvalStatus === 'approved'
+          // Show contact details without blur if: viewing own profile OR profile is verified
+          const showClear = isOwnProfile || isVerified
+
+          return (
+            <div className="border-b border-gray-100 pb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base font-bold text-gray-800">Contact Details</h3>
+                {!isVerified && !isOwnProfile && (
+                  <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    Pending Verification
+                  </span>
+                )}
+              </div>
+              <div className={`relative ${!showClear ? 'select-none' : ''}`}>
+                {/* Blur overlay for non-verified profiles (unless own profile) */}
+                {!showClear && (
+                  <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10 flex items-center justify-center rounded">
+                    <div className="text-center p-4">
+                      <Lock className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Contact details will be visible after admin verification</p>
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="flex">
+                    <span className="text-gray-500 w-24">Email</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800 flex items-center gap-1">
+                      {profile.user.email || 'Not specified'}
+                      {profile.user.emailVerified && <span className="text-green-600 text-xs">(Verified)</span>}
+                    </span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-24">Phone</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800 flex items-center gap-1">
+                      {profile.user.phone || 'Not specified'}
+                      {profile.user.phoneVerified && <span className="text-green-600 text-xs">(Verified)</span>}
+                    </span>
+                  </div>
+                  {profile.linkedinProfile && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-24">LinkedIn</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      {showClear ? (
+                        <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">View Profile</a>
+                      ) : (
+                        <span className="text-gray-800">View Profile</span>
+                      )}
+                    </div>
+                  )}
+                  {(profile.instagram || profile.facebookInstagram) && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-24">Instagram</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800">{profile.instagram || profile.facebookInstagram}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Two Column Grid for Details - Organized to match Edit Profile sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* BASIC INFO Section */}

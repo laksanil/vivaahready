@@ -122,7 +122,7 @@ export async function GET(request: Request) {
 
     const profile = await prisma.profile.findUnique({
       where: { userId: targetUser.userId },
-      include: { user: { select: { name: true, emailVerified: true } } },
+      include: { user: { select: { name: true, email: true, phone: true, emailVerified: true, phoneVerified: true } } },
     })
 
     if (!profile) {
@@ -134,13 +134,16 @@ export async function GET(request: Request) {
     const firstName = nameParts[0] || ''
     const lastName = nameParts.slice(1).join(' ') || ''
 
-    // Return profile with firstName, lastName, and verification status
+    // Return profile with firstName, lastName, contact info, and verification status
     const { user, ...profileData } = profile
     return NextResponse.json({
       ...profileData,
       firstName,
       lastName,
+      email: user.email,
+      phone: user.phone,
       emailVerified: !!user.emailVerified,
+      phoneVerified: !!user.phoneVerified,
     })
   } catch (error) {
     console.error('Profile fetch error:', error)
@@ -320,8 +323,10 @@ export async function PUT(request: Request) {
     if (body.prefPetsIsDealbreaker !== undefined) updateData.prefPetsIsDealbreaker = body.prefPetsIsDealbreaker === true || body.prefPetsIsDealbreaker === 'true'
     if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker === true || body.prefReligionIsDealbreaker === 'true'
 
-    // Update User's name if firstName or lastName changed
-    // Format as "Firstname L." for privacy
+    // Update User model fields (name, email, phone)
+    const userUpdateData: Record<string, unknown> = {}
+
+    // Update name if firstName or lastName changed (format as "Firstname L." for privacy)
     if (body.firstName !== undefined || body.lastName !== undefined) {
       // Get current user to preserve existing name parts
       const currentUser = await prisma.user.findUnique({
@@ -350,11 +355,24 @@ export async function PUT(request: Request) {
       const newLastName = body.lastName !== undefined ? body.lastName : currentLastName
 
       // Format as "Firstname L." for display
-      const formattedName = formatDisplayName(newFirstName, newLastName)
+      userUpdateData.name = formatDisplayName(newFirstName, newLastName)
+    }
 
+    // Update email if provided (note: changing email may affect login)
+    if (body.email !== undefined && body.email.trim() !== '') {
+      userUpdateData.email = body.email.trim()
+    }
+
+    // Update phone if provided
+    if (body.phone !== undefined) {
+      userUpdateData.phone = body.phone.trim() || null
+    }
+
+    // Apply user updates if any
+    if (Object.keys(userUpdateData).length > 0) {
       await prisma.user.update({
         where: { id: targetUser.userId },
-        data: { name: formattedName },
+        data: userUpdateData,
       })
     }
 
