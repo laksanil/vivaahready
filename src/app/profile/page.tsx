@@ -68,7 +68,11 @@ interface Profile {
   languagesKnown: string
   aboutMe: string
   prefHeight: string
+  prefHeightMin: string
+  prefHeightMax: string
   prefAgeDiff: string
+  prefAgeMin: string
+  prefAgeMax: string
   prefLocation: string
   prefCountry: string
   prefDiet: string
@@ -107,14 +111,44 @@ interface Profile {
   interests: string
   pets: string
   allergiesOrMedical: string
+  fitness: string
+  community: string
+  subCommunity: string
+  timeOfBirth: string
+  // Religion-specific fields
+  maslak: string
+  namazPractice: string
+  amritdhari: string
+  turban: string
+  churchAttendance: string
+  baptized: string
+  // Metadata
+  zipCode: string
+  openToRelocation: string
+  drivePhotosLink: string
+  photoVisibility: string
+  referralSource: string
+  promoCode: string
+  isVerified: boolean
+  isActive: boolean
+  isSuspended: boolean
+  profileScore: number
   emailVerified: boolean
   // Additional preference fields
+  prefLanguage: string
+  prefHobbies: string
+  prefSpecificHobbies: string
+  prefFitness: string
+  prefSpecificFitness: string
+  prefInterests: string
+  prefSpecificInterests: string
   prefReligion: string
   prefFamilyValues: string
   prefFamilyLocation: string
   prefFamilyLocationCountry: string
   prefLocationList: string
   prefMaritalStatus: string
+  prefHasChildren: string
   prefSmoking: string
   prefDrinking: string
   prefGrewUpIn: string
@@ -130,6 +164,7 @@ interface Profile {
   prefAgeIsDealbreaker: boolean
   prefHeightIsDealbreaker: boolean
   prefMaritalStatusIsDealbreaker: boolean
+  prefHasChildrenIsDealbreaker: boolean
   prefCommunityIsDealbreaker: boolean
   prefGotraIsDealbreaker: boolean
   prefDietIsDealbreaker: boolean
@@ -971,7 +1006,7 @@ function ViewProfilePageContent() {
                       {profile.phoneVerified && <span className="text-green-600 text-xs">(Verified)</span>}
                     </span>
                   </div>
-                  {profile.linkedinProfile && (
+                  {profile.linkedinProfile && profile.linkedinProfile.trim() !== '' && profile.linkedinProfile !== 'no_linkedin' && (
                     <div className="flex">
                       <span className="text-gray-500 w-36">LinkedIn</span>
                       <span className="text-gray-400 mr-2">:</span>
@@ -1037,6 +1072,13 @@ function ViewProfilePageContent() {
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.maritalStatus)}</span>
                   </div>
+                  {profile.maritalStatus !== 'never_married' && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-36">Children</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800">{formatValue(profile.hasChildren) || 'Not specified'}</span>
+                    </div>
+                  )}
                   <div className="flex">
                     <span className="text-gray-500 w-36">Mother Tongue</span>
                     <span className="text-gray-400 mr-2">:</span>
@@ -1400,7 +1442,7 @@ function ViewProfilePageContent() {
                     <span className="text-gray-500 w-36">LinkedIn</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
-                      {profile.linkedinProfile ? (
+                      {profile.linkedinProfile && profile.linkedinProfile.trim() !== '' ? (
                         profile.linkedinProfile === 'no_linkedin' ? 'No LinkedIn' : (
                           <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">{profile.linkedinProfile.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '').replace(/\/$/, '') || 'View Profile'}</a>
                         )
@@ -1449,8 +1491,8 @@ function ViewProfilePageContent() {
                       <span className="text-gray-500 w-36">Age Range</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">
-                        {(profile as unknown as Record<string, string>).prefAgeMin && (profile as unknown as Record<string, string>).prefAgeMax
-                          ? `${(profile as unknown as Record<string, string>).prefAgeMin} - ${(profile as unknown as Record<string, string>).prefAgeMax} years`
+                        {profile.prefAgeMin && profile.prefAgeMax
+                          ? `${profile.prefAgeMin} - ${profile.prefAgeMax} years`
                           : profile.prefAgeDiff || "Doesn't matter"}
                       </span>
                     </div>
@@ -1458,8 +1500,8 @@ function ViewProfilePageContent() {
                       <span className="text-gray-500 w-36">Height Range</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">
-                        {(profile as unknown as Record<string, string>).prefHeightMin && (profile as unknown as Record<string, string>).prefHeightMax
-                          ? `${(profile as unknown as Record<string, string>).prefHeightMin} - ${(profile as unknown as Record<string, string>).prefHeightMax}`
+                        {profile.prefHeightMin && profile.prefHeightMax
+                          ? `${profile.prefHeightMin} - ${profile.prefHeightMax}`
                           : profile.prefHeight || "Doesn't matter"}
                       </span>
                     </div>
@@ -1472,8 +1514,15 @@ function ViewProfilePageContent() {
                     <div className="flex">
                       <span className="text-gray-500 w-36">Marital Status</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefMaritalStatus) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefMaritalStatus ? formatValue(profile.prefMaritalStatus) : "Doesn't matter"}</span>
                     </div>
+                    {profile.prefHasChildren && (
+                      <div className="flex">
+                        <span className="text-gray-500 w-36">Partner&apos;s Children</span>
+                        <span className="text-gray-400 mr-2">:</span>
+                        <span className="text-gray-800">{formatValue(profile.prefHasChildren)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Religion & Community */}
@@ -1483,17 +1532,17 @@ function ViewProfilePageContent() {
                     <div className="flex">
                       <span className="text-gray-500 w-36">Religion</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefReligion) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefReligion ? formatValue(profile.prefReligion) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
                       <span className="text-gray-500 w-36">Community</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefCommunity) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefCommunity ? formatValue(profile.prefCommunity) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
                       <span className="text-gray-500 w-36">Gotra Preference</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefGotra || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefGotra ? formatValue(profile.prefGotra) : "Doesn't matter"}</span>
                     </div>
                   </div>
                 </div>
@@ -1504,17 +1553,17 @@ function ViewProfilePageContent() {
                     <div className="flex">
                       <span className="text-gray-500 w-36">Diet</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue(profile.prefDiet) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefDiet ? formatValue(profile.prefDiet) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
                       <span className="text-gray-500 w-36">Smoking</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefSmoking) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefSmoking ? formatValue(profile.prefSmoking) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
                       <span className="text-gray-500 w-36">Drinking</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefDrinking) || "Doesn't matter"}</span>
+                      <span className="text-gray-800">{profile.prefDrinking ? formatValue(profile.prefDrinking) : "Doesn't matter"}</span>
                     </div>
                   </div>
                 </div>

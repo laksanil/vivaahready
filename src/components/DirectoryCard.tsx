@@ -228,6 +228,11 @@ export function DirectoryCard({
                 {profile.maritalStatus}
               </span>
             )}
+            {profile.hasChildren && profile.maritalStatus && profile.maritalStatus !== 'Never Married' && (
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded">
+                Children: {profile.hasChildren.replace(/_/g, ' ')}
+              </span>
+            )}
           </div>
         </div>
 

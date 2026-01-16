@@ -37,6 +37,7 @@ export interface ProfileData {
   gotra: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
+  hasChildren: string | null
   aboutMe: string | null
   photoUrls: string | null
   profileImageUrl: string | null

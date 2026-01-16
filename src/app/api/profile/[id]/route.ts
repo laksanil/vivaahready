@@ -67,14 +67,17 @@ export async function GET(
       }
     }
 
-    // Only show contact info if mutual interest
+    // Show contact info if: viewing own profile OR mutual interest
+    const isOwnProfile = viewerUserId === profile.userId
+    const canSeeContact = isOwnProfile || interestStatus.mutual
+
     const responseData = {
       ...profile,
       user: {
         id: profile.user.id,
         name: profile.user.name,
-        email: interestStatus.mutual ? profile.user.email : undefined,
-        phone: interestStatus.mutual ? profile.user.phone : undefined,
+        email: canSeeContact ? profile.user.email : undefined,
+        phone: canSeeContact ? profile.user.phone : undefined,
         emailVerified: profile.user.emailVerified,
         phoneVerified: profile.user.phoneVerified,
       },

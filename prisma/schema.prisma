@@ -38,6 +38,10 @@ model Profile {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Name fields (stored separately from user.name which is auto-formatted as "Firstname L.")
+  firstName         String?  // Full first name as entered by user
+  lastName          String?  // Full last name as entered by user
+
   // Basic Info (from Google Form)
   gender            String   // male, female
   dateOfBirth       String?  // MM/DD/YYYY format
@@ -169,9 +173,14 @@ model Profile {
   prefSpecificInterests String? // Comma-separated specific interests if prefInterests = specific
   prefGrewUpIn      String?  // doesnt_matter, same_as_mine, specific country
   prefMaritalStatus String?  // never_married, doesnt_matter, divorced_ok, widowed_ok
+  prefHasChildren   String?  // doesnt_matter, no_children, ok_with_children, must_have_children
   prefRelocation    String?  // doesnt_matter, willing, not_required
   prefMotherTongue  String?  // doesnt_matter, same_as_mine, specific language
   prefPets          String?  // doesnt_matter, must_love, no_pets, open_to_pets
+  prefReligion      String?  // doesnt_matter, Hindu, Muslim, Christian, Sikh, Jain, Buddhist, etc.
+  prefFamilyValues  String?  // doesnt_matter, traditional, moderate, liberal
+  prefFamilyLocation String?  // doesnt_matter, same_country, specific_country
+  prefFamilyLocationCountry String?  // Specific country name if prefFamilyLocation is specific
   idealPartnerDesc  String?  // Free text description
 
   // Deal-breaker flags for partner preferences
@@ -180,6 +189,7 @@ model Profile {
   prefAgeIsDealbreaker          Boolean @default(false)
   prefHeightIsDealbreaker       Boolean @default(false)
   prefMaritalStatusIsDealbreaker Boolean @default(false)
+  prefHasChildrenIsDealbreaker  Boolean @default(false)
   prefCommunityIsDealbreaker    Boolean @default(false)
   prefGotraIsDealbreaker        Boolean @default(false)
   prefDietIsDealbreaker         Boolean @default(false)
@@ -198,6 +208,7 @@ model Profile {
   prefMotherTongueIsDealbreaker Boolean @default(false)
   prefSubCommunityIsDealbreaker Boolean @default(false)
   prefPetsIsDealbreaker         Boolean @default(false)
+  prefReligionIsDealbreaker     Boolean @default(false)
 
   // Metadata
   citizenship       String?

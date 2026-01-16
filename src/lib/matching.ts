@@ -36,6 +36,7 @@ interface ProfileForMatching {
   familyValues: string | null
   familyLocation: string | null
   maritalStatus: string | null
+  hasChildren: string | null
   annualIncome: string | null
 
   // Preferences - Core (Page 1)
@@ -46,6 +47,7 @@ interface ProfileForMatching {
   prefHeightMin?: string | null
   prefHeightMax?: string | null
   prefMaritalStatus?: string | null
+  prefHasChildren?: string | null
   prefReligion?: string | null
   prefCommunity?: string | null
   prefGotra?: string | null
@@ -80,6 +82,7 @@ interface ProfileForMatching {
   prefAgeIsDealbreaker?: boolean | string
   prefHeightIsDealbreaker?: boolean | string
   prefMaritalStatusIsDealbreaker?: boolean | string
+  prefHasChildrenIsDealbreaker?: boolean | string
   prefReligionIsDealbreaker?: boolean | string
   prefCommunityIsDealbreaker?: boolean | string
   prefGotraIsDealbreaker?: boolean | string
@@ -901,6 +904,44 @@ function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMa
 }
 
 /**
+ * Check if partner's children preferences match
+ * Preferences: doesnt_matter, no_children, ok_not_living, ok_living, ok_any
+ * Candidate values: no, yes_living_with_me, yes_not_living_with_me
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isHasChildrenMatch(seekerPref: string | null | undefined, candidateHasChildren: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateHasChildren) return !strict // If strict (deal-breaker), missing data = no match
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateHasChildren.toLowerCase()
+
+  // no_children - candidate must not have children
+  if (pref === 'no_children') {
+    return cand === 'no'
+  }
+
+  // ok_not_living - OK if no children OR children not living with them
+  if (pref === 'ok_not_living') {
+    return cand === 'no' || cand === 'yes_not_living_with_me' || cand.includes('not_living')
+  }
+
+  // ok_living - OK if no children OR children living with them
+  if (pref === 'ok_living') {
+    return cand === 'no' || cand === 'yes_living_with_me' || cand.includes('living_with')
+  }
+
+  // ok_any - OK with any situation (has children or not)
+  if (pref === 'ok_any') {
+    return true
+  }
+
+  return true // Default: accept
+}
+
+/**
  * Check if family values preferences match
  * @param strict - if true, missing candidate data returns false (for deal-breakers)
  */
@@ -1351,6 +1392,15 @@ export function matchesSeekerPreferences(
     }
   }
 
+  // 3.5. Has Children check (only relevant when candidate's marital status is not never_married)
+  if (isPrefSet(seeker.prefHasChildren) && candidate.maritalStatus && candidate.maritalStatus !== 'never_married') {
+    const isDB = isDealbreaker(seeker.prefHasChildrenIsDealbreaker)
+    const matches = isHasChildrenMatch(seeker.prefHasChildren, candidate.hasChildren, isDB)
+    if (!matches && isDB) {
+      return false
+    }
+  }
+
   // 4. Diet check
   if (isPrefSet(seeker.prefDiet)) {
     const isDB = isDealbreaker(seeker.prefDietIsDealbreaker)
@@ -1721,6 +1771,26 @@ export function calculateMatchScore(
     candidateValue: candidate.maritalStatus || 'Not specified',
     isDealbreaker: isDealbreaker(seeker.prefMaritalStatusIsDealbreaker)
   })
+
+  // 8.5. Has Children match (only relevant when candidate's marital status is not never_married)
+  let hasChildrenMatched = true
+  const candidateNotNeverMarried = candidate.maritalStatus && candidate.maritalStatus !== 'never_married'
+  if (isPrefSet(seeker.prefHasChildren) && candidateNotNeverMarried) {
+    totalCriteria++
+    hasChildrenMatched = isHasChildrenMatch(seeker.prefHasChildren, candidate.hasChildren)
+    if (hasChildrenMatched) matchedCount++
+  }
+
+  // Only show criteria if relevant (candidate is not never married)
+  if (candidateNotNeverMarried) {
+    criteria.push({
+      name: 'Partner\'s Children',
+      matched: hasChildrenMatched,
+      seekerPref: seeker.prefHasChildren || "Doesn't matter",
+      candidateValue: candidate.hasChildren || 'Not specified',
+      isDealbreaker: isDealbreaker(seeker.prefHasChildrenIsDealbreaker)
+    })
+  }
 
   // 9. Smoking match
   let smokingMatched = true

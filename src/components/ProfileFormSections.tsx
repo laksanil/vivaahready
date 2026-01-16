@@ -1655,6 +1655,7 @@ function DealBreakerToggle({
       'prefFamilyLocation': ['prefFamilyLocationCountry'],
       'prefPets': ['prefPets'],
       'prefMaritalStatus': ['prefMaritalStatus'],
+      'prefHasChildren': ['prefHasChildren'],
       'prefReligion': ['prefReligion'],
       'prefCommunity': ['prefCommunity'],
       'prefRelocation': ['prefRelocation'],
@@ -1810,6 +1811,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     'prefAge',                    // Age Range
     'prefHeight',                 // Height Range
     'prefMaritalStatus',          // Marital Status
+    'prefHasChildren',            // Partner's Children
     'prefReligion',               // Religion
     'prefCommunity',              // Community
     'prefGotra',                  // Gotra (Hindu/Jain only)
@@ -1929,6 +1931,33 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           {isDealbreaker(formData, 'prefMaritalStatus') && (!(formData.prefMaritalStatus as string) || (formData.prefMaritalStatus as string).includes('doesnt_matter')) && !(formData.prefMaritalStatus as string || '').split(', ').filter(v => v && v !== 'doesnt_matter').length && <p className="text-xs text-red-500">Deal-breaker: Must select at least one specific status</p>}
         </div>
       )}
+
+      {/* Partner's Children Preference - Only show if they accept non-never-married */}
+      {!showOnlyOptional && (() => {
+        const prefMaritalStatusValue = (formData.prefMaritalStatus as string) || ''
+        const acceptsNonNeverMarried = prefMaritalStatusValue.includes('divorced') ||
+                                        prefMaritalStatusValue.includes('separated') ||
+                                        prefMaritalStatusValue.includes('widowed') ||
+                                        prefMaritalStatusValue.includes('doesnt_matter')
+        return acceptsNonNeverMarried ? (
+          <div className="space-y-3 p-3 rounded-lg border bg-white">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-800">Partner&apos;s Children</h4>
+              <DealBreakerToggle field="prefHasChildren" formData={formData} setFormData={setFormData} />
+            </div>
+            <div>
+              <select name="prefHasChildren" value={formData.prefHasChildren as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+                {!isDealbreaker(formData, 'prefHasChildren') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
+                <option value="no_children">No Children (Must not have children)</option>
+                <option value="ok_not_living">OK with Children (Not living with them)</option>
+                <option value="ok_living">OK with Children (Living with them too)</option>
+                <option value="ok_any">OK with Children (Any situation)</option>
+              </select>
+              {isDealbreaker(formData, 'prefHasChildren') && (!formData.prefHasChildren || formData.prefHasChildren === 'doesnt_matter') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
+            </div>
+          </div>
+        ) : null
+      })()}
 
       {/* Religion & Community */}
       {!showOnlyOptional && (

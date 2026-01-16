@@ -6,8 +6,9 @@ import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 
 /**
- * Format full name to "Firstname L." format for privacy
- * E.g., "Lakshmi Nagasamudra" -> "Lakshmi N."
+ * Format display name as "Firstname L." for privacy
+ * This is used for user.name (public display in navbar, etc.)
+ * The full firstName and lastName are stored separately in the Profile model
  */
 function formatDisplayName(firstName: string, lastName: string): string {
   const first = firstName?.trim() || ''
@@ -129,10 +130,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Parse user's name into firstName and lastName
-    const nameParts = (profile.user.name || '').trim().split(' ')
-    const firstName = nameParts[0] || ''
-    const lastName = nameParts.slice(1).join(' ') || ''
+    // Use stored firstName/lastName from Profile, fallback to parsing user.name for legacy data
+    let firstName = profile.firstName || ''
+    let lastName = profile.lastName || ''
+
+    // Fallback for legacy profiles that don't have firstName/lastName stored
+    if (!firstName && profile.user.name) {
+      const nameParts = profile.user.name.trim().split(' ')
+      firstName = nameParts[0] || ''
+      // Don't use parsed lastName from "Firstname L." format - it would just be "L."
+    }
 
     // Return profile with firstName, lastName, contact info, and verification status
     const { user, ...profileData } = profile
@@ -172,6 +179,10 @@ export async function PUT(request: Request) {
 
     // Build update data - only include fields that are in the schema
     const updateData: Record<string, unknown> = {}
+
+    // Store firstName and lastName in Profile model (full names)
+    if (body.firstName !== undefined) updateData.firstName = body.firstName
+    if (body.lastName !== undefined) updateData.lastName = body.lastName
 
     // Map incoming fields to database fields
     if (body.gender !== undefined) updateData.gender = body.gender
@@ -238,10 +249,14 @@ export async function PUT(request: Request) {
     if (body.prefIncome !== undefined) updateData.prefIncome = body.prefIncome
     if (body.prefLanguage !== undefined) updateData.prefLanguage = body.prefLanguage
     if (body.prefHobbies !== undefined) updateData.prefHobbies = body.prefHobbies
+    if (body.prefSpecificHobbies !== undefined) updateData.prefSpecificHobbies = body.prefSpecificHobbies
     if (body.prefFitness !== undefined) updateData.prefFitness = body.prefFitness
+    if (body.prefSpecificFitness !== undefined) updateData.prefSpecificFitness = body.prefSpecificFitness
     if (body.prefInterests !== undefined) updateData.prefInterests = body.prefInterests
+    if (body.prefSpecificInterests !== undefined) updateData.prefSpecificInterests = body.prefSpecificInterests
     if (body.prefGrewUpIn !== undefined) updateData.prefGrewUpIn = body.prefGrewUpIn
     if (body.prefMaritalStatus !== undefined) updateData.prefMaritalStatus = body.prefMaritalStatus
+    if (body.prefHasChildren !== undefined) updateData.prefHasChildren = body.prefHasChildren
     if (body.prefRelocation !== undefined) updateData.prefRelocation = body.prefRelocation
     if (body.prefMotherTongue !== undefined) updateData.prefMotherTongue = body.prefMotherTongue
     if (body.prefPets !== undefined) updateData.prefPets = body.prefPets
@@ -291,6 +306,9 @@ export async function PUT(request: Request) {
     if (body.workingAs !== undefined) updateData.workingAs = body.workingAs
     if (body.livesWithFamily !== undefined) updateData.livesWithFamily = body.livesWithFamily
     if (body.createdBy !== undefined) updateData.createdBy = body.createdBy
+    if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
+    if (body.drivePhotosLink !== undefined) updateData.drivePhotosLink = body.drivePhotosLink
+    if (body.photoVisibility !== undefined) updateData.photoVisibility = body.photoVisibility
 
     // Additional preference fields
     if (body.prefReligion !== undefined) updateData.prefReligion = body.prefReligion
@@ -303,6 +321,7 @@ export async function PUT(request: Request) {
     if (body.prefAgeIsDealbreaker !== undefined) updateData.prefAgeIsDealbreaker = body.prefAgeIsDealbreaker === true || body.prefAgeIsDealbreaker === 'true'
     if (body.prefHeightIsDealbreaker !== undefined) updateData.prefHeightIsDealbreaker = body.prefHeightIsDealbreaker === true || body.prefHeightIsDealbreaker === 'true'
     if (body.prefMaritalStatusIsDealbreaker !== undefined) updateData.prefMaritalStatusIsDealbreaker = body.prefMaritalStatusIsDealbreaker === true || body.prefMaritalStatusIsDealbreaker === 'true'
+    if (body.prefHasChildrenIsDealbreaker !== undefined) updateData.prefHasChildrenIsDealbreaker = body.prefHasChildrenIsDealbreaker === true || body.prefHasChildrenIsDealbreaker === 'true'
     if (body.prefCommunityIsDealbreaker !== undefined) updateData.prefCommunityIsDealbreaker = body.prefCommunityIsDealbreaker === true || body.prefCommunityIsDealbreaker === 'true'
     if (body.prefGotraIsDealbreaker !== undefined) updateData.prefGotraIsDealbreaker = body.prefGotraIsDealbreaker === true || body.prefGotraIsDealbreaker === 'true'
     if (body.prefDietIsDealbreaker !== undefined) updateData.prefDietIsDealbreaker = body.prefDietIsDealbreaker === true || body.prefDietIsDealbreaker === 'true'
@@ -326,35 +345,19 @@ export async function PUT(request: Request) {
     // Update User model fields (name, email, phone)
     const userUpdateData: Record<string, unknown> = {}
 
-    // Update name if firstName or lastName changed (format as "Firstname L." for privacy)
+    // Update user.name as "Firstname L." format (auto-generated display name for navbar/public)
+    // Full firstName and lastName are stored in Profile model separately
     if (body.firstName !== undefined || body.lastName !== undefined) {
-      // Get current user to preserve existing name parts
-      const currentUser = await prisma.user.findUnique({
-        where: { id: targetUser.userId },
-        select: { name: true },
+      // Get current profile to preserve existing names if not provided
+      const currentProfile = await prisma.profile.findUnique({
+        where: { userId: targetUser.userId },
+        select: { firstName: true, lastName: true },
       })
 
-      // Parse current name - handle "Firstname L." format
-      const currentName = currentUser?.name || ''
-      let currentFirstName = ''
-      let currentLastName = ''
+      const newFirstName = body.firstName !== undefined ? body.firstName : (currentProfile?.firstName || '')
+      const newLastName = body.lastName !== undefined ? body.lastName : (currentProfile?.lastName || '')
 
-      // Check if already in "Firstname L." format
-      const formatMatch = currentName.match(/^(.+)\s([A-Z])\.$/)
-      if (formatMatch) {
-        currentFirstName = formatMatch[1]
-        // We don't know the full last name, just the initial
-        currentLastName = ''
-      } else {
-        const parts = currentName.trim().split(' ')
-        currentFirstName = parts[0] || ''
-        currentLastName = parts.slice(1).join(' ') || ''
-      }
-
-      const newFirstName = body.firstName !== undefined ? body.firstName : currentFirstName
-      const newLastName = body.lastName !== undefined ? body.lastName : currentLastName
-
-      // Format as "Firstname L." for display
+      // Auto-generate display name as "Firstname L." for user.name (used in navbar, public display)
       userUpdateData.name = formatDisplayName(newFirstName, newLastName)
     }
 

@@ -27,6 +27,7 @@ import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImage
 import MessageModal from '@/components/MessageModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
+import AdminViewBanner from '@/components/AdminViewBanner'
 
 interface ConnectionProfile {
   id: string
@@ -249,7 +250,9 @@ function ConnectionsPageContent() {
   }
 
   return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <>
+      {isAdminView && <AdminViewBanner />}
+      <div className={`min-h-screen bg-gray-50 py-8 ${isAdminView ? 'pt-20' : ''}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
         <div className="mb-8">
@@ -447,6 +450,7 @@ function ConnectionsPageContent() {
         </div>
       )}
       </div>
+      </>
   )
 }
 
