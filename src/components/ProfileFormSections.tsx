@@ -801,37 +801,82 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     return (formData[field] as string || '').split(', ').includes(value)
   }
 
+  // Normalize diet value for dropdown matching
+  const normalizeDiet = (val: string | null | undefined): string => {
+    if (!val) return ''
+    const lower = val.toLowerCase().trim()
+    if (lower.includes('non') && lower.includes('veg')) return 'Non-Vegetarian'
+    if (lower.includes('egg') || lower === 'eggetarian') return 'Eggetarian'
+    if (lower.includes('vegan')) return 'Vegan'
+    if (lower.includes('jain')) return 'Jain'
+    if (lower.includes('occasionally')) return 'Occasionally Non-Veg'
+    if (lower.includes('veg')) return 'Vegetarian'
+    return val
+  }
+
+  // Normalize smoking/drinking values
+  const normalizeYesNo = (val: string | null | undefined): string => {
+    if (!val) return ''
+    const lower = val.toLowerCase().trim()
+    if (lower === 'no' || lower === 'never') return 'No'
+    if (lower === 'yes' || lower === 'regularly') return 'Yes'
+    if (lower === 'occasionally' || lower === 'social') return 'Occasionally'
+    return val
+  }
+
+  const dietValue = normalizeDiet(formData.dietaryPreference as string)
+  const smokingValue = normalizeYesNo(formData.smoking as string)
+  const drinkingValue = normalizeYesNo(formData.drinking as string)
+
   return (
     <>
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="form-label">Diet <span className="text-red-500">*</span></label>
-          <select name="dietaryPreference" value={formData.dietaryPreference as string || ''} onChange={handleChange} className="input-field" required>
+          <select
+            name="dietaryPreference"
+            value={dietValue}
+            onChange={handleChange}
+            className="input-field"
+            required
+          >
             <option value="">Select</option>
-            <option value="veg">Vegetarian</option>
-            <option value="non_veg">Non-Vegetarian</option>
-            <option value="occasionally_non_veg">Occasionally Non-Veg</option>
-            <option value="eggetarian">Eggetarian</option>
-            <option value="vegan">Vegan</option>
-            <option value="jain">Jain</option>
+            <option value="Vegetarian">Vegetarian</option>
+            <option value="Non-Vegetarian">Non-Vegetarian</option>
+            <option value="Occasionally Non-Veg">Occasionally Non-Veg</option>
+            <option value="Eggetarian">Eggetarian</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Jain">Jain</option>
           </select>
         </div>
         <div>
           <label className="form-label">Smoking <span className="text-red-500">*</span></label>
-          <select name="smoking" value={formData.smoking as string || ''} onChange={handleChange} className="input-field" required>
+          <select
+            name="smoking"
+            value={smokingValue}
+            onChange={handleChange}
+            className="input-field"
+            required
+          >
             <option value="">Select</option>
-            <option value="no">No</option>
-            <option value="occasionally">Occasionally</option>
-            <option value="yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Occasionally">Occasionally</option>
+            <option value="Yes">Yes</option>
           </select>
         </div>
         <div>
           <label className="form-label">Drinking <span className="text-red-500">*</span></label>
-          <select name="drinking" value={formData.drinking as string || ''} onChange={handleChange} className="input-field" required>
+          <select
+            name="drinking"
+            value={drinkingValue}
+            onChange={handleChange}
+            className="input-field"
+            required
+          >
             <option value="">Select</option>
-            <option value="no">No</option>
-            <option value="social">Social Drinker</option>
-            <option value="yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Occasionally">Occasionally / Social</option>
+            <option value="Yes">Yes</option>
           </select>
         </div>
       </div>
