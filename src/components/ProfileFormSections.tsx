@@ -1819,7 +1819,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     'prefLocation',      // Location
     'prefEducation',     // Education & Career
     'prefFamily',        // Family Preferences
-    'prefOther',         // Other Preferences (Mother Tongue, Sub-Community)
+    'prefMotherTongue',  // Mother Tongue
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
@@ -2133,16 +2133,15 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Other Preferences */}
+      {/* Mother Tongue & Sub-Community */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">Other Preferences</h4>
-            <DealBreakerToggle field="prefOther" formData={formData} setFormData={setFormData} />
-          </div>
           {/* Mother Tongue - Multi-select */}
           <div>
-            <label className="form-label mb-1">Mother Tongue (select all that apply)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0">Mother Tongue (select all that apply)</label>
+              <DealBreakerToggle field="prefMotherTongue" formData={formData} setFormData={setFormData} />
+            </div>
             <div className="p-2 border rounded bg-gray-50 max-h-28 overflow-y-auto">
               <div className="grid grid-cols-4 gap-1">
                 {PREF_MOTHER_TONGUE_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (
