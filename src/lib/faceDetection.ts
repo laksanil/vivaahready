@@ -109,10 +109,36 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
     }
   }
 
-  // Skip face detection for now - just validate file type and size
-  // Face detection was causing upload failures
-  return {
-    isValid: true,
-    message: 'Photo accepted'
+  // Perform face detection
+  try {
+    const faceResult = await detectFacesInImage(imageFile)
+
+    if (faceResult.error) {
+      // If face detection is unavailable, allow the upload
+      console.log('Face detection unavailable, allowing upload')
+      return {
+        isValid: true,
+        message: 'Photo accepted'
+      }
+    }
+
+    if (!faceResult.hasFace) {
+      return {
+        isValid: false,
+        message: 'No face detected in the photo. Please upload a clear photo showing your face.'
+      }
+    }
+
+    return {
+      isValid: true,
+      message: 'Photo accepted'
+    }
+  } catch (error) {
+    console.error('Face detection error during validation:', error)
+    // Allow upload if face detection fails unexpectedly
+    return {
+      isValid: true,
+      message: 'Photo accepted'
+    }
   }
 }
