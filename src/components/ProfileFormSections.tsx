@@ -1803,7 +1803,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
-  // Count deal-breakers - only fields in Must-Have section (9 categories)
+  // Count deal-breakers - all preference categories that can be deal-breakers
   // Each preference category counts as ONE deal-breaker, not per value selected
   const dealBreakerCount = [
     'prefAge',           // Age Range
@@ -1815,6 +1815,9 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     'prefDiet',          // Diet
     'prefSmoking',       // Smoking
     'prefDrinking',      // Drinking
+    'prefLocation',      // Location
+    'prefEducation',     // Education & Career
+    'prefFamily',        // Family Preferences
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
@@ -1834,12 +1837,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Nice-to-Have Info Banner */}
+      {/* More Preferences Info Banner */}
       {showOnlyOptional && (
         <div className="bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-lg border border-gray-200">
           <p className="text-sm text-gray-700">
-            <strong>Nice-to-Have Preferences:</strong> These are optional preferences that help rank your matches.
-            They won&apos;t filter out profiles but will boost matches that meet these criteria.
+            <strong>More Preferences:</strong> Set additional preferences for location, education, and family.
+            Check <span className="text-red-600 font-medium">&quot;Deal-breaker&quot;</span> for must-haves, or leave unchecked to use as ranking factors.
           </p>
         </div>
       )}
@@ -2015,10 +2018,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Location Preferences - Nice-to-Have (no deal-breaker toggles) */}
+      {/* Location Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <h4 className="text-sm font-semibold text-gray-800">Location</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">Location</h4>
+            <DealBreakerToggle field="prefLocation" formData={formData} setFormData={setFormData} />
+          </div>
           <div>
             <label className="form-label mb-1 text-sm">Preferred Locations (select all that apply)</label>
             <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
@@ -2067,10 +2073,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Education & Career - Nice-to-Have (no deal-breaker toggles) */}
+      {/* Education & Career */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
+            <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="form-label mb-1">Minimum Education</label>
@@ -2090,10 +2099,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         </div>
       )}
 
-      {/* Family Preferences - Nice-to-Have (no deal-breaker toggles) */}
+      {/* Family Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
+            <DealBreakerToggle field="prefFamily" formData={formData} setFormData={setFormData} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="form-label mb-1">Family Values</label>
