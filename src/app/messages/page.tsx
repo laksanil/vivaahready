@@ -136,7 +136,7 @@ function MessagesPageContent() {
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <Link
-                href={buildUrl('/feed')}
+                href={buildUrl('/matches')}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -177,7 +177,7 @@ function MessagesPageContent() {
                 : 'Start messaging your matches to see conversations here'}
             </p>
             {!searchQuery && (
-              <Link href={buildUrl('/feed')} className="btn-primary inline-block">
+              <Link href={buildUrl('/matches')} className="btn-primary inline-block">
                 Browse Matches
               </Link>
             )}

@@ -18,6 +18,10 @@ import {
   X,
   Check,
   Sparkles,
+  Flag,
+  AlertTriangle,
+  Lock,
+  Clock,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import MessageModal from '@/components/MessageModal'
@@ -69,6 +73,7 @@ function ConnectionsPageContent() {
 
   const [connections, setConnections] = useState<ConnectionProfile[]>([])
   const [loading, setLoading] = useState(true)
+  const [isApproved, setIsApproved] = useState(true) // Default to true, will be updated from API
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
     recipientId: string
@@ -81,6 +86,23 @@ function ConnectionsPageContent() {
     recipientName: '',
     recipientPhoto: null,
     recipientPhotoUrls: null,
+  })
+  const [reportModal, setReportModal] = useState<{
+    isOpen: boolean
+    userId: string
+    userName: string
+    reason: string
+    submitting: boolean
+    error: string | null
+    success: boolean
+  }>({
+    isOpen: false,
+    userId: '',
+    userName: '',
+    reason: '',
+    submitting: false,
+    error: null,
+    success: false,
   })
 
   const canAccess = !!session || (isAdminView && isAdmin)
@@ -107,6 +129,8 @@ function ConnectionsPageContent() {
       const response = await fetch(buildApiUrl('/api/matches/auto'))
       const data = await response.json()
       setConnections(data.mutualMatches || [])
+      // Track user's approval status
+      setIsApproved(data.userStatus?.isApproved ?? true)
     } catch (error) {
       console.error('Error fetching connections:', error)
     } finally {
@@ -132,6 +156,68 @@ function ConnectionsPageContent() {
       recipientPhoto: null,
       recipientPhotoUrls: null,
     })
+  }
+
+  const openReportModal = (profile: ConnectionProfile) => {
+    setReportModal({
+      isOpen: true,
+      userId: profile.user.id,
+      userName: profile.user.name,
+      reason: '',
+      submitting: false,
+      error: null,
+      success: false,
+    })
+  }
+
+  const closeReportModal = () => {
+    setReportModal({
+      isOpen: false,
+      userId: '',
+      userName: '',
+      reason: '',
+      submitting: false,
+      error: null,
+      success: false,
+    })
+  }
+
+  const handleSubmitReport = async () => {
+    if (!reportModal.reason.trim()) {
+      setReportModal(prev => ({ ...prev, error: 'Please provide a reason for reporting' }))
+      return
+    }
+
+    setReportModal(prev => ({ ...prev, submitting: true, error: null }))
+
+    try {
+      const response = await fetch(buildApiUrl('/api/report'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportedUserId: reportModal.userId,
+          reason: reportModal.reason,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to submit report')
+      }
+
+      setReportModal(prev => ({ ...prev, submitting: false, success: true }))
+
+      // Auto-close after success
+      setTimeout(() => {
+        closeReportModal()
+      }, 2000)
+    } catch (error) {
+      setReportModal(prev => ({
+        ...prev,
+        submitting: false,
+        error: error instanceof Error ? error.message : 'Failed to submit report',
+      }))
+    }
   }
 
   // Separate new matches (last 7 days) from existing
@@ -169,6 +255,34 @@ function ConnectionsPageContent() {
           <p className="text-gray-600 mt-1">People who liked you back - you can now message them!</p>
         </div>
 
+        {/* Pending Verification Banner */}
+        {!isApproved && connections.length > 0 && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Lock className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-800">Profile Pending Verification</h3>
+                <p className="text-sm text-amber-700 mt-1">
+                  Complete your profile verification ($50) to unlock full access to your connections.
+                  Once verified, you&apos;ll be able to see photos, names, and contact information of your matches.
+                </p>
+                <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Photos, names, and contact details are blurred until verification</span>
+                </div>
+                <Link
+                  href={buildUrl('/profile/verify')}
+                  className="mt-3 inline-flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                >
+                  Verify Now - $50
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* No Connections Message */}
         {connections.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
@@ -178,8 +292,8 @@ function ConnectionsPageContent() {
               When you and another member both like each other,
               you&apos;ll see them here with their contact information.
             </p>
-            <Link href={buildUrl('/feed')} className="btn-primary inline-block">
-              Browse Feed
+            <Link href={buildUrl('/matches')} className="btn-primary inline-block">
+              Browse Matches
             </Link>
           </div>
         ) : (
@@ -200,7 +314,9 @@ function ConnectionsPageContent() {
                       key={profile.id}
                       profile={profile}
                       onMessage={() => openMessageModal(profile)}
+                      onReport={() => openReportModal(profile)}
                       isNew
+                      isApproved={isApproved}
                       buildUrl={buildUrl}
                     />
                   ))}
@@ -220,6 +336,8 @@ function ConnectionsPageContent() {
                       key={profile.id}
                       profile={profile}
                       onMessage={() => openMessageModal(profile)}
+                      onReport={() => openReportModal(profile)}
+                      isApproved={isApproved}
                       buildUrl={buildUrl}
                     />
                   ))}
@@ -246,6 +364,86 @@ function ConnectionsPageContent() {
           recipientPhoto={messageModal.recipientPhoto}
           recipientPhotoUrls={messageModal.recipientPhotoUrls}
         />
+
+      {/* Report Modal */}
+      {reportModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <h3 className="text-lg font-semibold text-gray-900">Report User</h3>
+              </div>
+              <button
+                onClick={closeReportModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {reportModal.success ? (
+              <div className="text-center py-6">
+                <Check className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                <p className="text-gray-900 font-medium">Report Submitted</p>
+                <p className="text-gray-500 text-sm mt-1">Our team will review this report.</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-gray-600 text-sm mb-4">
+                  Report a problem with <span className="font-medium">{reportModal.userName}</span>.
+                  Our team will review your report and take appropriate action.
+                </p>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for reporting
+                  </label>
+                  <textarea
+                    value={reportModal.reason}
+                    onChange={(e) => setReportModal(prev => ({ ...prev, reason: e.target.value, error: null }))}
+                    placeholder="Please describe the issue..."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                  />
+                </div>
+
+                {reportModal.error && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                    {reportModal.error}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={closeReportModal}
+                    className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitReport}
+                    disabled={reportModal.submitting}
+                    className="flex-1 py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {reportModal.submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Flag className="h-4 w-4" />
+                        Submit Report
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       </div>
   )
 }
@@ -266,11 +464,13 @@ export default function ConnectionsPage() {
 interface ConnectionCardProps {
   profile: ConnectionProfile
   onMessage: () => void
+  onReport: () => void
   isNew?: boolean
+  isApproved?: boolean
   buildUrl: (path: string) => string
 }
 
-function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardProps) {
+function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true, buildUrl }: ConnectionCardProps) {
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
   const [photoIndex, setPhotoIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
@@ -281,6 +481,21 @@ function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardP
   const allPhotos = extractedPhotos.length > 0
     ? extractedPhotos
     : (validProfileImageUrl ? [validProfileImageUrl] : [])
+
+  // Helper to blur text for unapproved users
+  const blurText = (text: string | null | undefined) => {
+    if (!text) return null
+    if (isApproved) return text
+    // Return blurred placeholder
+    return '••••••••'
+  }
+
+  // Helper to get blurred name (show first letter only)
+  const getDisplayName = () => {
+    if (isApproved) return profile.user.name
+    const firstName = profile.user.name?.split(' ')[0] || ''
+    return `${firstName.charAt(0)}${'•'.repeat(5)}`
+  }
 
   return (
     <div className={`bg-white rounded-xl shadow-sm overflow-hidden ${isNew ? 'ring-2 ring-pink-500' : ''}`}>
@@ -297,16 +512,24 @@ function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardP
           {allPhotos.length > 0 && !imageError ? (
             <img
               src={allPhotos[photoIndex]}
-              alt={profile.user.name}
-              className="w-full h-full object-cover"
+              alt={isApproved ? profile.user.name : 'Connection'}
+              className={`w-full h-full object-cover ${!isApproved ? 'blur-lg' : ''}`}
               referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-primary-100">
+            <div className={`w-full h-full flex items-center justify-center bg-primary-100 ${!isApproved ? 'blur-lg' : ''}`}>
               <span className="text-2xl font-semibold text-primary-600">
                 {getInitials(profile.user.name)}
               </span>
+            </div>
+          )}
+          {/* Lock overlay for unverified */}
+          {!isApproved && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <div className="bg-white/90 p-2 rounded-full">
+                <Lock className="h-5 w-5 text-gray-600" />
+              </div>
             </div>
           )}
         </div>
@@ -315,12 +538,16 @@ function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardP
         <div className="flex-1 p-4">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-semibold text-gray-900">{profile.user.name}</h3>
+              <h3 className={`font-semibold text-gray-900 ${!isApproved ? 'blur-sm select-none' : ''}`}>
+                {getDisplayName()}
+              </h3>
               <p className="text-sm text-gray-600">
                 {age ? `${age} yrs` : ''}{profile.height ? `, ${formatHeight(profile.height)}` : ''}
               </p>
-              <p className="text-sm text-gray-500">{profile.currentLocation}</p>
-              {(profile.grewUpIn || profile.citizenship) && (
+              <p className={`text-sm text-gray-500 ${!isApproved ? 'blur-sm select-none' : ''}`}>
+                {isApproved ? profile.currentLocation : '••••••••'}
+              </p>
+              {isApproved && (profile.grewUpIn || profile.citizenship) && (
                 <p className="text-xs text-gray-400 mt-1">
                   {profile.grewUpIn && `Grew up in ${profile.grewUpIn}`}
                   {profile.grewUpIn && profile.citizenship && ' • '}
@@ -334,42 +561,71 @@ function ConnectionCard({ profile, onMessage, isNew, buildUrl }: ConnectionCardP
             </div>
           </div>
 
-          {/* Contact Info */}
-          <div className="mt-3 space-y-1">
-            {profile.user.email && (
-              <div className="flex items-center gap-2 text-sm">
-                <Mail className="h-4 w-4 text-gray-400" />
-                <a href={`mailto:${profile.user.email}`} className="text-primary-600 hover:underline">
-                  {profile.user.email}
-                </a>
+          {/* Contact Info - Hidden for unverified users */}
+          {isApproved ? (
+            <div className="mt-3 space-y-1">
+              {profile.user.email && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 text-gray-400" />
+                  <a href={`mailto:${profile.user.email}`} className="text-primary-600 hover:underline">
+                    {profile.user.email}
+                  </a>
+                </div>
+              )}
+              {profile.user.phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-4 w-4 text-gray-400" />
+                  <a href={`tel:${profile.user.phone}`} className="text-primary-600 hover:underline">
+                    {profile.user.phone}
+                  </a>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Lock className="h-4 w-4" />
+                <span className="blur-sm select-none">email@hidden.com</span>
               </div>
-            )}
-            {profile.user.phone && (
-              <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4 text-gray-400" />
-                <a href={`tel:${profile.user.phone}`} className="text-primary-600 hover:underline">
-                  {profile.user.phone}
-                </a>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Lock className="h-4 w-4" />
+                <span className="blur-sm select-none">+1 XXX-XXX-XXXX</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="mt-3 flex gap-2">
-            <button
-              onClick={onMessage}
-              className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Message
-            </button>
-            <Link
-              href={buildUrl(`/profile/${profile.id}`)}
-              className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              <User className="h-4 w-4" />
-              Profile
-            </Link>
+            {isApproved ? (
+              <>
+                <button
+                  onClick={onMessage}
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Message
+                </button>
+                <Link
+                  href={buildUrl(`/profile/${profile.id}`)}
+                  className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  Profile
+                </Link>
+                <button
+                  onClick={onReport}
+                  className="flex items-center justify-center p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Report user"
+                >
+                  <Flag className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 py-2 px-3 rounded-lg text-sm">
+                <Lock className="h-4 w-4" />
+                Verify to unlock
+              </div>
+            )}
           </div>
         </div>
       </div>

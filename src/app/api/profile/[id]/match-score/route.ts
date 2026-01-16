@@ -69,6 +69,9 @@ export async function GET(
         profileImageUrl: myProfile.profileImageUrl,
         gender: myProfile.gender,
         name: formatProfileName(myProfile.user?.name),
+        hobbies: myProfile.hobbies,
+        fitness: myProfile.fitness,
+        interests: myProfile.interests,
       },
       theirProfile: {
         profileImageUrl: viewedProfile.profileImageUrl,

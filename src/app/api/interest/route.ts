@@ -131,7 +131,8 @@ export async function GET(request: Request) {
     }
 
     if (type === 'sent') {
-      // Get all interests sent
+      // Get all interests sent - show ALL with their status
+      // Status can be: pending, accepted, rejected
       const allSentInterests = await prisma.match.findMany({
         where: { senderId: currentUserId },
         orderBy: { createdAt: 'desc' },
@@ -155,26 +156,11 @@ export async function GET(request: Request) {
         }
       })
 
-      // Filter out mutual matches - only show non-mutual sent interests
-      const interests = []
-      for (const interest of allSentInterests) {
-        // Check if they also sent interest to me (making it mutual)
-        const theirSentInterest = await prisma.match.findUnique({
-          where: {
-            senderId_receiverId: {
-              senderId: interest.receiverId,
-              receiverId: currentUserId,
-            }
-          }
-        })
-
-        // Only include if NOT mutual (they haven't sent interest back)
-        if (!theirSentInterest) {
-          interests.push(interest)
-        }
-      }
-
-      return NextResponse.json({ interests })
+      // Return all sent interests - the status field tells the story:
+      // - 'pending': Waiting for their response
+      // - 'accepted': They accepted (mutual match - also in connections)
+      // - 'rejected': They declined your interest
+      return NextResponse.json({ interests: allSentInterests })
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })

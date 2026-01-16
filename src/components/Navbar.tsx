@@ -85,7 +85,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             {session && (
               <>
-                <Link href={buildUrl('/feed')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link href={buildUrl('/matches')} className="text-gray-600 hover:text-primary-600 transition-colors">
                   My Matches
                 </Link>
                 <Link href={buildUrl('/connections')} className="text-gray-600 hover:text-primary-600 transition-colors">
@@ -145,7 +145,7 @@ export function Navbar() {
                       My Profile
                     </Link>
                     <Link
-                      href={buildUrl('/feed')}
+                      href={buildUrl('/matches')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -219,7 +219,7 @@ export function Navbar() {
             {session && (
               <>
                 <Link
-                  href={buildUrl('/feed')}
+                  href={buildUrl('/matches')}
                   className="block text-gray-600 hover:text-primary-600"
                   onClick={() => setIsMenuOpen(false)}
                 >

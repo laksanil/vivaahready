@@ -446,7 +446,7 @@ export default function AdminUserDetailPage() {
                   <span className="text-sm font-medium">Dashboard</span>
                 </Link>
                 <Link
-                  href={adminLinks.feed(user.id)}
+                  href={adminLinks.matches(user.id)}
                   className="flex flex-col items-center gap-2 p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
                 >
                   <Heart className="h-6 w-6" />

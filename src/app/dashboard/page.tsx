@@ -357,7 +357,7 @@ function DashboardContent() {
                       Your profile has been approved. You can now view your matches and start connecting!
                     </p>
                     <Link
-                      href={buildUrl('/feed')}
+                      href={buildUrl('/matches')}
                       className="inline-flex items-center mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
                     >
                       View Your Matches
@@ -445,7 +445,7 @@ function DashboardContent() {
                     </div>
                   </div>
                   <Link
-                    href={buildUrl('/feed')}
+                    href={buildUrl('/matches')}
                     className="btn-primary text-sm"
                   >
                     My Matches
@@ -464,7 +464,7 @@ function DashboardContent() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Link
-                  href={buildUrl('/feed')}
+                  href={buildUrl('/matches')}
                   className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!isApproved ? 'opacity-60 pointer-events-none' : ''}`}
                 >
                   <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
@@ -507,7 +507,7 @@ function DashboardContent() {
                 {isApproved && (
                   <>
                     <Link
-                      href={buildUrl('/feed')}
+                      href={buildUrl('/matches')}
                       className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center mr-4">

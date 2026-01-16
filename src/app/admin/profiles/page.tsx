@@ -588,7 +588,7 @@ function AdminProfilesContent() {
                     />
                     <AdminIconButton
                       icon={<Heart className="h-4 w-4" />}
-                      href={adminLinks.feed(profile.user.id)}
+                      href={adminLinks.matches(profile.user.id)}
                       title="View Matches"
                       variant="pink"
                     />
@@ -611,7 +611,7 @@ function AdminProfilesContent() {
                 {profile.hasProfile && (
                   <AdminIconButton
                     icon={<Eye className="h-4 w-4" />}
-                    href={adminLinks.feed(profile.user.id)}
+                    href={adminLinks.matches(profile.user.id)}
                     target="_blank"
                     title="View as this user"
                     variant="purple"

@@ -65,7 +65,7 @@ export default function AdminViewBanner({ userName, userId }: AdminViewBannerPro
   // Navigation items for quick access
   const navItems = [
     { label: 'Dashboard', href: buildUrl('/dashboard'), icon: LayoutDashboard },
-    { label: 'My Matches', href: buildUrl('/feed'), icon: Heart },
+    { label: 'My Matches', href: buildUrl('/matches'), icon: Heart },
     { label: 'Connections', href: buildUrl('/connections'), icon: Users },
     { label: 'Profile', href: buildUrl('/profile'), icon: User },
     { label: 'Reconsider', href: buildUrl('/reconsider'), icon: RotateCcw },

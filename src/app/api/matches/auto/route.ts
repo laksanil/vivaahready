@@ -99,6 +99,14 @@ export async function GET(request: Request) {
     })
     const declinedUserIds = new Set(myDeclinedProfiles.map(d => d.declinedUserId))
 
+    // Get all profiles that have declined this user (two-way filtering)
+    // If someone declined me, I shouldn't see them either
+    const declinedByOthers = await prisma.declinedProfile.findMany({
+      where: { declinedUserId: targetUserId },
+      select: { userId: true }
+    })
+    const declinedByOthersIds = new Set(declinedByOthers.map(d => d.userId))
+
     // Get all interests sent by this user
     const myInterestsSent = await prisma.match.findMany({
       where: { senderId: targetUserId },
@@ -130,11 +138,13 @@ export async function GET(request: Request) {
     // - Include profiles with NO relationship (fresh)
     // - Include profiles that liked me (pending received) - they go to top of feed
     // - Exclude profiles I've already liked/acted on (sent interests)
-    // - Exclude declined profiles
+    // - Exclude profiles I've declined
+    // - Exclude profiles that have declined me (two-way filtering)
     // - Exclude mutual matches (accepted interests)
     const freshProfiles = matchingProfiles.filter(match =>
       !sentToUserIds.has(match.userId) &&
       !declinedUserIds.has(match.userId) &&
+      !declinedByOthersIds.has(match.userId) &&
       !acceptedSentUserIds.has(match.userId) &&
       !acceptedReceivedUserIds.has(match.userId)
     )

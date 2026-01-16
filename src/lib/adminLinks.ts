@@ -11,7 +11,7 @@
 
 /**
  * Generate a link that opens the user's view with admin impersonation
- * @param path - The base path (e.g., '/feed', '/dashboard', '/connections')
+ * @param path - The base path (e.g., '/matches', '/dashboard', '/connections')
  * @param userId - The user's ID to impersonate
  * @returns The full URL with viewAsUser parameter
  */
@@ -38,8 +38,8 @@ export const adminLinks = {
   // View user's dashboard
   dashboard: (userId: string) => adminViewLink('/dashboard', userId),
 
-  // View user's matches/feed
-  feed: (userId: string) => adminViewLink('/feed', userId),
+  // View user's matches
+  matches: (userId: string) => adminViewLink('/matches', userId),
 
   // View user's connections
   connections: (userId: string) => adminViewLink('/connections', userId),
@@ -59,7 +59,7 @@ export const adminLinks = {
  */
 export const IMPERSONATION_PAGES = [
   '/dashboard',
-  '/feed',
+  '/matches',
   '/connections',
   '/messages',
   '/reconsider',

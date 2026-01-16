@@ -2139,6 +2139,39 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {PREF_PETS_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
             </select>
           </div>
+          {/* Hobbies */}
+          <div>
+            <label className="form-label mb-1">Hobbies</label>
+            <select name="prefHobbies" value={formData.prefHobbies as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+            </select>
+            {(formData.prefHobbies as string) === 'same_as_mine' && (formData.hobbies as string) ? (
+              <p className="text-xs text-gray-500 mt-1">Your hobbies: {formData.hobbies as string}</p>
+            ) : null}
+          </div>
+          {/* Fitness */}
+          <div>
+            <label className="form-label mb-1">Fitness & Sports</label>
+            <select name="prefFitness" value={formData.prefFitness as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+            </select>
+            {(formData.prefFitness as string) === 'same_as_mine' && (formData.fitness as string) ? (
+              <p className="text-xs text-gray-500 mt-1">Your fitness: {formData.fitness as string}</p>
+            ) : null}
+          </div>
+          {/* Interests */}
+          <div>
+            <label className="form-label mb-1">Interests</label>
+            <select name="prefInterests" value={formData.prefInterests as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
+              <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <option value="same_as_mine">Same as Mine</option>
+            </select>
+            {(formData.prefInterests as string) === 'same_as_mine' && (formData.interests as string) ? (
+              <p className="text-xs text-gray-500 mt-1">Your interests: {formData.interests as string}</p>
+            ) : null}
+          </div>
         </div>
       )}
 

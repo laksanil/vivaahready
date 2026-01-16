@@ -378,7 +378,7 @@ export default function AdminMatchesPage() {
                       {/* Potential Matches */}
                       <td className="px-4 py-3">
                         <a
-                          href={adminLinks.feed(profile.user.id)}
+                          href={adminLinks.matches(profile.user.id)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:underline"
@@ -391,7 +391,7 @@ export default function AdminMatchesPage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <a
-                            href={adminLinks.feed(profile.user.id)}
+                            href={adminLinks.matches(profile.user.id)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
@@ -409,7 +409,7 @@ export default function AdminMatchesPage() {
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <a
-                            href={adminLinks.feed(profile.user.id)}
+                            href={adminLinks.matches(profile.user.id)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-semibold text-gray-900 hover:text-primary-600 hover:underline"
@@ -469,7 +469,7 @@ export default function AdminMatchesPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <a
-                            href={adminLinks.feed(profile.user.id)}
+                            href={adminLinks.matches(profile.user.id)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-1.5 text-purple-500 hover:text-purple-600 hover:bg-purple-50 rounded"

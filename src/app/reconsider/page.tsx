@@ -115,18 +115,18 @@ function ReconsiderPageContent() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Link */}
         <Link
-          href={buildUrl('/feed')}
+          href={buildUrl('/matches')}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Feed
+          Back to Matches
         </Link>
 
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Passed Profiles</h1>
           <p className="text-gray-600 mt-1">
-            Changed your mind? Bring these profiles back to your feed.
+            Changed your mind? Bring these profiles back to your matches.
           </p>
         </div>
 
@@ -139,8 +139,8 @@ function ReconsiderPageContent() {
               You haven&apos;t passed on any profiles yet.
               When you do, they&apos;ll appear here for reconsideration.
             </p>
-            <Link href={buildUrl('/feed')} className="btn-primary inline-block">
-              Browse Feed
+            <Link href={buildUrl('/matches')} className="btn-primary inline-block">
+              Browse Matches
             </Link>
           </div>
         ) : (

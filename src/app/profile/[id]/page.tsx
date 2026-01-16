@@ -216,7 +216,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     }[]
   } | null>(null)
   const [matchProfiles, setMatchProfiles] = useState<{
-    myProfile: { profileImageUrl: string | null; gender: string; name: string }
+    myProfile: { profileImageUrl: string | null; gender: string; name: string; hobbies?: string | null; fitness?: string | null; interests?: string | null }
     theirProfile: { profileImageUrl: string | null; gender: string; name: string }
   } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
@@ -343,7 +343,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">{error || 'Profile not found'}</h2>
-          <Link href={buildUrl('/feed')} className="text-primary-600 hover:underline">
+          <Link href={buildUrl('/matches')} className="text-primary-600 hover:underline">
             Back to Matches
           </Link>
         </div>
@@ -417,7 +417,7 @@ interface MatchScoreData {
 }
 
 interface MatchProfilesData {
-  myProfile: { profileImageUrl: string | null; gender: string; name: string }
+  myProfile: { profileImageUrl: string | null; gender: string; name: string; hobbies?: string | null; fitness?: string | null; interests?: string | null }
   theirProfile: { profileImageUrl: string | null; gender: string; name: string }
 }
 
@@ -862,8 +862,103 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Lifestyle - Hobbies, Interests */}
-        {(profile.hobbies || profile.interests || profile.fitness) && (
+        {/* Lifestyle - Hobbies, Interests, Fitness Comparison */}
+        {(profile.hobbies || profile.interests || profile.fitness || matchProfiles?.myProfile?.hobbies || matchProfiles?.myProfile?.interests || matchProfiles?.myProfile?.fitness) && isLoggedIn && profile.userId !== viewerUserId && matchProfiles && (
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Interests & Hobbies Comparison</h3>
+            <div className="bg-gray-50 border border-gray-200 p-3">
+              <div className="grid grid-cols-12 gap-2 text-xs">
+                <div className="col-span-2 font-semibold text-gray-500"></div>
+                <div className="col-span-5 font-semibold text-gray-500 text-center">You</div>
+                <div className="col-span-5 font-semibold text-gray-500 text-center">{pronoun}</div>
+              </div>
+              {/* Hobbies Row */}
+              <div className="grid grid-cols-12 gap-2 text-xs py-2 border-t border-gray-200 mt-2">
+                <div className="col-span-2 font-medium text-gray-700">Hobbies</div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {matchProfiles.myProfile?.hobbies?.split(', ').filter((h: string) => h).map((h: string, i: number) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        profile.hobbies?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {profile.hobbies?.split(', ').filter(h => h).map((h, i) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        matchProfiles.myProfile?.hobbies?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+              </div>
+              {/* Fitness Row */}
+              <div className="grid grid-cols-12 gap-2 text-xs py-2 border-t border-gray-200">
+                <div className="col-span-2 font-medium text-gray-700">Fitness</div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {matchProfiles.myProfile?.fitness?.split(', ').filter((h: string) => h).map((h: string, i: number) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        profile.fitness?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {profile.fitness?.split(', ').filter(h => h).map((h, i) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        matchProfiles.myProfile?.fitness?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+              </div>
+              {/* Interests Row */}
+              <div className="grid grid-cols-12 gap-2 text-xs py-2 border-t border-gray-200">
+                <div className="col-span-2 font-medium text-gray-700">Interests</div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {matchProfiles.myProfile?.interests?.split(', ').filter((h: string) => h).map((h: string, i: number) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        profile.interests?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+                <div className="col-span-5">
+                  <div className="flex flex-wrap gap-1">
+                    {profile.interests?.split(', ').filter(h => h).map((h, i) => (
+                      <span key={i} className={`px-1.5 py-0.5 rounded text-xs ${
+                        matchProfiles.myProfile?.interests?.toLowerCase().includes(h.toLowerCase())
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>{h}</span>
+                    )) || <span className="text-gray-400">Not specified</span>}
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 bg-green-300 rounded"></span> Common interests</span>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Lifestyle - Hobbies, Interests (for own profile or when not logged in) */}
+        {(profile.hobbies || profile.interests || profile.fitness) && (!isLoggedIn || profile.userId === viewerUserId) && (
           <div className="border-t border-gray-100 pt-3">
             <h3 className="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Interests</h3>
             <div className="flex flex-wrap gap-1">
