@@ -16,6 +16,7 @@ export function Navbar() {
   const searchParams = useSearchParams()
   const viewAsUser = searchParams.get('viewAsUser')
   const [viewedUserName, setViewedUserName] = useState<string | null>(null)
+  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(null)
 
   // Helper to build URLs with viewAsUser preserved
   const buildUrl = useCallback((path: string) => {
@@ -39,6 +40,23 @@ export function Navbar() {
       setViewedUserName(null)
     }
   }, [viewAsUser])
+
+  // Fetch user's profile to get the correct display name (firstName from profile)
+  useEffect(() => {
+    if (session?.user && !viewAsUser) {
+      fetch('/api/profile')
+        .then(res => {
+          if (res.ok) return res.json()
+          return null
+        })
+        .then(data => {
+          if (data?.firstName) {
+            setProfileDisplayName(data.firstName)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [session, viewAsUser])
 
   // Don't show navbar on admin pages
   if (pathname?.startsWith('/admin')) {
@@ -124,7 +142,7 @@ export function Navbar() {
                   <span className="font-medium">
                     {isAdminViewMode
                       ? (viewedUserName?.split(' ')[0] || 'Loading...')
-                      : session.user.name?.split(' ')[0]
+                      : (profileDisplayName || session.user.name?.split(' ')[0])
                     }
                   </span>
                   {isAdminViewMode && (
