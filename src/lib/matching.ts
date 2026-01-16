@@ -69,6 +69,9 @@ interface ProfileForMatching {
   prefSubCommunity?: string | null
   prefPets?: string | null
   prefCaste?: string | null
+  prefHobbies?: string | null
+  prefFitness?: string | null
+  prefInterests?: string | null
 
   // Deal-breaker flags
   prefAgeIsDealbreaker?: boolean | string
@@ -90,9 +93,23 @@ interface ProfileForMatching {
   prefOccupationIsDealbreaker?: boolean | string
   prefFamilyValuesIsDealbreaker?: boolean | string
   prefFamilyLocationIsDealbreaker?: boolean | string
+  prefFamilyLocationCountryIsDealbreaker?: boolean | string
   prefMotherTongueIsDealbreaker?: boolean | string
   prefSubCommunityIsDealbreaker?: boolean | string
   prefPetsIsDealbreaker?: boolean | string
+  prefHobbiesIsDealbreaker?: boolean | string
+  prefFitnessIsDealbreaker?: boolean | string
+  prefInterestsIsDealbreaker?: boolean | string
+
+  // Additional candidate profile fields
+  religion?: string | null
+  citizenship?: string | null
+  grewUpIn?: string | null
+  openToRelocation?: string | null
+  pets?: string | null
+  hobbies?: string | null
+  fitness?: string | null
+  interests?: string | null
 }
 
 /**
@@ -1014,6 +1031,185 @@ function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCom
 }
 
 /**
+ * Check if religion preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isReligionMatch(seekerPref: string | null | undefined, candidateReligion: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateReligion) return !strict
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateReligion.toLowerCase()
+
+  return pref === cand || pref.includes(cand) || cand.includes(pref)
+}
+
+/**
+ * Check if citizenship preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isCitizenshipMatch(seekerPref: string | null | undefined, seekerCitizenship: string | null | undefined, candidateCitizenship: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateCitizenship) return !strict
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateCitizenship.toLowerCase()
+
+  // "same_as_mine" - match if same citizenship
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerCitizenship) return !strict
+    return seekerCitizenship.toLowerCase() === cand
+  }
+
+  return pref === cand || pref.includes(cand) || cand.includes(pref)
+}
+
+/**
+ * Check if grew up in preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isGrewUpInMatch(seekerPref: string | null | undefined, seekerGrewUpIn: string | null | undefined, candidateGrewUpIn: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateGrewUpIn) return !strict
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateGrewUpIn.toLowerCase()
+
+  // "same_as_mine" - match if same grew up location
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerGrewUpIn) return !strict
+    return seekerGrewUpIn.toLowerCase() === cand
+  }
+
+  return pref === cand || pref.includes(cand) || cand.includes(pref)
+}
+
+/**
+ * Check if relocation preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isRelocationMatch(seekerPref: string | null | undefined, candidateRelocation: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateRelocation) return !strict
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidateRelocation.toLowerCase()
+
+  // "yes" pref - candidate must be open to relocation
+  if (pref === 'yes' || pref === 'open') {
+    return cand === 'yes' || cand === 'open' || cand.includes('yes')
+  }
+
+  return true
+}
+
+/**
+ * Check if pets preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isPetsMatch(seekerPref: string | null | undefined, candidatePets: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidatePets) return !strict
+
+  const pref = seekerPref.toLowerCase()
+  const cand = candidatePets.toLowerCase()
+
+  // "no_pets" - candidate must not have pets
+  if (pref === 'no_pets' || pref === 'no pets' || pref === 'no') {
+    return cand === 'no' || cand === 'no_pets' || cand === 'none'
+  }
+
+  // "has_pets" or "love_pets" - candidate should have or be okay with pets
+  if (pref === 'has_pets' || pref === 'love_pets' || pref === 'yes') {
+    return cand !== 'no' && cand !== 'no_pets'
+  }
+
+  return true
+}
+
+/**
+ * Check if hobbies preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: string | null | undefined, candidateHobbies: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateHobbies) return !strict
+
+  const pref = seekerPref.toLowerCase()
+
+  // "same_as_mine" - check for overlap in hobbies
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerHobbies) return !strict
+    const seekerList = seekerHobbies.toLowerCase().split(',').map(h => h.trim())
+    const candList = candidateHobbies.toLowerCase().split(',').map(h => h.trim())
+    // At least one common hobby
+    return seekerList.some(h => candList.some(c => c.includes(h) || h.includes(c)))
+  }
+
+  return true
+}
+
+/**
+ * Check if fitness preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: string | null | undefined, candidateFitness: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateFitness) return !strict
+
+  const pref = seekerPref.toLowerCase()
+
+  // "same_as_mine" - check for overlap in fitness activities
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerFitness) return !strict
+    const seekerList = seekerFitness.toLowerCase().split(',').map(f => f.trim())
+    const candList = candidateFitness.toLowerCase().split(',').map(f => f.trim())
+    // At least one common fitness activity
+    return seekerList.some(f => candList.some(c => c.includes(f) || f.includes(c)))
+  }
+
+  return true
+}
+
+/**
+ * Check if interests preferences match
+ * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ */
+function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests: string | null | undefined, candidateInterests: string | null | undefined, strict: boolean = false): boolean {
+  if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'doesnt_matter') {
+    return true
+  }
+  if (!candidateInterests) return !strict
+
+  const pref = seekerPref.toLowerCase()
+
+  // "same_as_mine" - check for overlap in interests
+  if (pref === 'same_as_mine' || pref === 'same as mine') {
+    if (!seekerInterests) return !strict
+    const seekerList = seekerInterests.toLowerCase().split(',').map(i => i.trim())
+    const candList = candidateInterests.toLowerCase().split(',').map(i => i.trim())
+    // At least one common interest
+    return seekerList.some(i => candList.some(c => c.includes(i) || i.includes(c)))
+  }
+
+  return true
+}
+
+/**
  * Check if a candidate matches the seeker's preferences
  * Uses deal-breaker flags to determine hard filters vs soft preferences
  * Returns true if candidate passes all deal-breaker criteria
@@ -1540,6 +1736,134 @@ export function calculateMatchScore(
     seekerPref: seeker.prefSubCommunity || "Doesn't matter",
     candidateValue: candidate.subCommunity || 'Not specified',
     isDealbreaker: isDealbreaker(seeker.prefSubCommunityIsDealbreaker)
+  })
+
+  // 16. Religion match
+  let religionMatched = true
+  if (isPrefSet(seeker.prefReligion)) {
+    totalCriteria++
+    religionMatched = isReligionMatch(seeker.prefReligion, candidate.religion)
+    if (religionMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Religion',
+    matched: religionMatched,
+    seekerPref: seeker.prefReligion || "Doesn't matter",
+    candidateValue: candidate.religion || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefReligionIsDealbreaker)
+  })
+
+  // 17. Citizenship match
+  let citizenshipMatched = true
+  if (isPrefSet(seeker.prefCitizenship)) {
+    totalCriteria++
+    citizenshipMatched = isCitizenshipMatch(seeker.prefCitizenship, seeker.citizenship, candidate.citizenship)
+    if (citizenshipMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Citizenship',
+    matched: citizenshipMatched,
+    seekerPref: seeker.prefCitizenship || "Doesn't matter",
+    candidateValue: candidate.citizenship || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefCitizenshipIsDealbreaker)
+  })
+
+  // 18. Grew Up In match
+  let grewUpInMatched = true
+  if (isPrefSet(seeker.prefGrewUpIn)) {
+    totalCriteria++
+    grewUpInMatched = isGrewUpInMatch(seeker.prefGrewUpIn, seeker.grewUpIn, candidate.grewUpIn)
+    if (grewUpInMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Grew Up In',
+    matched: grewUpInMatched,
+    seekerPref: seeker.prefGrewUpIn || "Doesn't matter",
+    candidateValue: candidate.grewUpIn || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefGrewUpInIsDealbreaker)
+  })
+
+  // 19. Relocation match
+  let relocationMatched = true
+  if (isPrefSet(seeker.prefRelocation)) {
+    totalCriteria++
+    relocationMatched = isRelocationMatch(seeker.prefRelocation, candidate.openToRelocation)
+    if (relocationMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Relocation',
+    matched: relocationMatched,
+    seekerPref: seeker.prefRelocation || "Doesn't matter",
+    candidateValue: candidate.openToRelocation || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefRelocationIsDealbreaker)
+  })
+
+  // 20. Pets match
+  let petsMatched = true
+  if (isPrefSet(seeker.prefPets)) {
+    totalCriteria++
+    petsMatched = isPetsMatch(seeker.prefPets, candidate.pets)
+    if (petsMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Pets',
+    matched: petsMatched,
+    seekerPref: seeker.prefPets || "Doesn't matter",
+    candidateValue: candidate.pets || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefPetsIsDealbreaker)
+  })
+
+  // 21. Hobbies match
+  let hobbiesMatched = true
+  if (isPrefSet(seeker.prefHobbies)) {
+    totalCriteria++
+    hobbiesMatched = isHobbiesMatch(seeker.prefHobbies, seeker.hobbies, candidate.hobbies)
+    if (hobbiesMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Hobbies',
+    matched: hobbiesMatched,
+    seekerPref: seeker.prefHobbies || "Doesn't matter",
+    candidateValue: candidate.hobbies ? 'Has hobbies' : 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefHobbiesIsDealbreaker)
+  })
+
+  // 22. Fitness match
+  let fitnessMatched = true
+  if (isPrefSet(seeker.prefFitness)) {
+    totalCriteria++
+    fitnessMatched = isFitnessMatch(seeker.prefFitness, seeker.fitness, candidate.fitness)
+    if (fitnessMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Fitness',
+    matched: fitnessMatched,
+    seekerPref: seeker.prefFitness || "Doesn't matter",
+    candidateValue: candidate.fitness ? 'Has fitness activities' : 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefFitnessIsDealbreaker)
+  })
+
+  // 23. Interests match
+  let interestsMatched = true
+  if (isPrefSet(seeker.prefInterests)) {
+    totalCriteria++
+    interestsMatched = isInterestsMatch(seeker.prefInterests, seeker.interests, candidate.interests)
+    if (interestsMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Interests',
+    matched: interestsMatched,
+    seekerPref: seeker.prefInterests || "Doesn't matter",
+    candidateValue: candidate.interests ? 'Has interests' : 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefInterestsIsDealbreaker)
   })
 
   // Calculate percentage (only from criteria where preference was set)

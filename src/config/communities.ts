@@ -10,6 +10,8 @@ export const RELIGIONS = [
   'Buddhist',
   'Parsi',
   'Jewish',
+  'Agnostic',
+  'Atheist',
   'Other',
 ] as const;
 
@@ -565,6 +567,26 @@ export const RELIGION_COMMUNITIES: Record<string, CommunityData> = {
       'Bene Israel': [
         'Bene Israel',
         'Other Bene Israel',
+      ],
+      'Other': [
+        'Other',
+      ],
+    },
+  },
+  Agnostic: {
+    communities: {
+      'Agnostic': [
+        'Agnostic',
+      ],
+      'Other': [
+        'Other',
+      ],
+    },
+  },
+  Atheist: {
+    communities: {
+      'Atheist': [
+        'Atheist',
       ],
       'Other': [
         'Other',

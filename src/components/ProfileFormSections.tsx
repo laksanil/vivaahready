@@ -1804,22 +1804,27 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
   // Count deal-breakers - all preference categories that can be deal-breakers
-  // Each preference category counts as ONE deal-breaker, not per value selected
-  // Note: Hobbies, Interests, and Fitness do NOT have deal-breaker options
+  // Each preference field counts as ONE deal-breaker
+  // Note: SubCommunity, Pets, Hobbies, Fitness, and Interests do NOT have deal-breaker toggles
   const dealBreakerCount = [
-    'prefAge',           // Age Range
-    'prefHeight',        // Height Range
-    'prefMaritalStatus', // Marital Status
-    'prefReligion',      // Religion
-    'prefCommunity',     // Community
-    'prefGotra',         // Gotra (Hindu/Jain only)
-    'prefDiet',          // Diet
-    'prefSmoking',       // Smoking
-    'prefDrinking',      // Drinking
-    'prefLocation',      // Location
-    'prefEducation',     // Education & Career
-    'prefFamily',        // Family Preferences
-    'prefMotherTongue',  // Mother Tongue
+    'prefAge',                    // Age Range
+    'prefHeight',                 // Height Range
+    'prefMaritalStatus',          // Marital Status
+    'prefReligion',               // Religion
+    'prefCommunity',              // Community
+    'prefGotra',                  // Gotra (Hindu/Jain only)
+    'prefDiet',                   // Diet
+    'prefSmoking',                // Smoking
+    'prefDrinking',               // Drinking
+    'prefLocation',               // Preferred Locations
+    'prefCitizenship',            // Citizenship
+    'prefGrewUpIn',               // Grew Up In
+    'prefRelocation',             // Relocation
+    'prefEducation',              // Minimum Education
+    'prefIncome',                 // Minimum Income
+    'prefFamilyValues',           // Family Values
+    'prefFamilyLocationCountry',  // Family Location Country
+    'prefMotherTongue',           // Mother Tongue
   ].filter(f => formData[`${f}IsDealbreaker`] === true || formData[`${f}IsDealbreaker`] === 'true').length
 
   return (
@@ -2023,12 +2028,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Location Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">Location</h4>
-            <DealBreakerToggle field="prefLocation" formData={formData} setFormData={setFormData} />
-          </div>
+          <h4 className="text-sm font-semibold text-gray-800">Location</h4>
           <div>
-            <label className="form-label mb-1 text-sm">Preferred Locations (select all that apply)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="form-label mb-0 text-sm">Preferred Locations (select all that apply)</label>
+              <DealBreakerToggle field="prefLocation" formData={formData} setFormData={setFormData} />
+            </div>
             <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
               <div className="grid grid-cols-3 gap-2">
                 {PREF_LOCATION_OPTIONS.map((opt) => (
@@ -2043,7 +2048,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="relative">
-              <label className="form-label mb-1">Citizenship</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Citizenship</label>
+                <DealBreakerToggle field="prefCitizenship" formData={formData} setFormData={setFormData} />
+              </div>
               <input type="text" value={prefCitizenshipSearch || (formData.prefCitizenship as string) || ''} onChange={(e) => { setPrefCitizenshipSearch(e.target.value); setShowPrefCitizenshipDropdown(true) }} onFocus={() => { setPrefCitizenshipSearch(''); setShowPrefCitizenshipDropdown(true) }} className="input-field" placeholder="Any citizenship" />
               {showPrefCitizenshipDropdown && (
                 <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-40 overflow-y-auto">
@@ -2054,7 +2062,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {showPrefCitizenshipDropdown && (<div className="fixed inset-0 z-40" onClick={() => setShowPrefCitizenshipDropdown(false)} />)}
             </div>
             <div>
-              <label className="form-label mb-1">Grew Up In</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Grew Up In</label>
+                <DealBreakerToggle field="prefGrewUpIn" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefGrewUpIn" value={formData.prefGrewUpIn as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
                 <option value="doesnt_matter">Doesn&apos;t Matter</option>
                 <option value="same_as_mine">Same as Mine</option>
@@ -2065,7 +2076,10 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </select>
             </div>
             <div>
-              <label className="form-label mb-1">Add profiles open to relocation?</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Open to relocation?</label>
+                <DealBreakerToggle field="prefRelocation" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefRelocation" value={formData.prefRelocation as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Doesn&apos;t Matter</option>
                 {PREF_RELOCATION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
@@ -2078,20 +2092,23 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Education & Career */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
-            <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
-          </div>
+          <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label mb-1">Minimum Education</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Minimum Education</label>
+                <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Doesn&apos;t Matter</option>
                 {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
             </div>
             <div>
-              <label className="form-label mb-1">Minimum Income</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Minimum Income</label>
+                <DealBreakerToggle field="prefIncome" formData={formData} setFormData={setFormData} />
+              </div>
               <select name="prefIncome" value={formData.prefIncome as string || ''} onChange={handleChange} className="input-field">
                 <option value="">Doesn&apos;t Matter</option>
                 {PREF_INCOME_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
@@ -2104,30 +2121,37 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Family Preferences */}
       {!showOnlyRequired && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
-            <DealBreakerToggle field="prefFamily" formData={formData} setFormData={setFormData} />
-          </div>
+          <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label mb-1">Family Values</label>
-              <select name="prefFamilyValues" value={formData.prefFamilyValues as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Family Values</label>
+                <DealBreakerToggle field="prefFamilyValues" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefFamilyValues" value={formData.prefFamilyValues as string || (isDealbreaker(formData, 'prefFamilyValues') ? '' : 'doesnt_matter')} onChange={handleChange} className="input-field">
+                {!isDealbreaker(formData, 'prefFamilyValues') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
+                {isDealbreaker(formData, 'prefFamilyValues') && <option value="">Select</option>}
                 <option value="same_as_mine">Same as Mine</option>
                 <option value="traditional">Traditional</option>
                 <option value="moderate">Moderate</option>
                 <option value="liberal">Liberal</option>
               </select>
+              {isDealbreaker(formData, 'prefFamilyValues') && !(formData.prefFamilyValues as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
-              <label className="form-label mb-1">Family Location Country</label>
-              <select name="prefFamilyLocationCountry" value={formData.prefFamilyLocationCountry as string || 'doesnt_matter'} onChange={handleChange} className="input-field">
-                <option value="doesnt_matter">Doesn&apos;t Matter</option>
+              <div className="flex items-center justify-between mb-1">
+                <label className="form-label mb-0">Family Location Country</label>
+                <DealBreakerToggle field="prefFamilyLocationCountry" formData={formData} setFormData={setFormData} />
+              </div>
+              <select name="prefFamilyLocationCountry" value={formData.prefFamilyLocationCountry as string || (isDealbreaker(formData, 'prefFamilyLocationCountry') ? '' : 'doesnt_matter')} onChange={handleChange} className="input-field">
+                {!isDealbreaker(formData, 'prefFamilyLocationCountry') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
+                {isDealbreaker(formData, 'prefFamilyLocationCountry') && <option value="">Select</option>}
                 <option value="same_as_mine">Same as Mine</option>
                 {FAMILY_LOCATION_COUNTRIES.filter(c => c !== 'Other').map((country) => (
                   <option key={country} value={country}>{country}</option>
                 ))}
               </select>
+              {isDealbreaker(formData, 'prefFamilyLocationCountry') && !(formData.prefFamilyLocationCountry as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
           </div>
         </div>
