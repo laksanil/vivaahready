@@ -3,6 +3,21 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateVrId } from '@/lib/vrId'
 
+/**
+ * Format full name to "Firstname L." format for privacy
+ * E.g., "Test Female" -> "Test F."
+ */
+function formatDisplayName(firstName: string, lastName: string): string {
+  const first = firstName?.trim() || ''
+  const last = lastName?.trim() || ''
+
+  if (!first && !last) return 'User'
+  if (!last) return first
+
+  const lastInitial = last.charAt(0).toUpperCase()
+  return `${first} ${lastInitial}.`
+}
+
 const profileSchema = z.object({
   email: z.string().email(),
   gender: z.string(),
@@ -315,6 +330,15 @@ export async function POST(request: Request) {
         approvalStatus: 'pending',
       },
     })
+
+    // Update user's display name if firstName/lastName provided
+    if (data.firstName || data.lastName) {
+      const formattedName = formatDisplayName(data.firstName || '', data.lastName || '')
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: formattedName },
+      })
+    }
 
     return NextResponse.json(
       {

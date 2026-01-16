@@ -5,6 +5,21 @@ import { prisma } from '@/lib/prisma'
 import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 
+/**
+ * Format full name to "Firstname L." format for privacy
+ * E.g., "Lakshmi Nagasamudra" -> "Lakshmi N."
+ */
+function formatDisplayName(firstName: string, lastName: string): string {
+  const first = firstName?.trim() || ''
+  const last = lastName?.trim() || ''
+
+  if (!first && !last) return 'User'
+  if (!last) return first
+
+  const lastInitial = last.charAt(0).toUpperCase()
+  return `${first} ${lastInitial}.`
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -306,6 +321,7 @@ export async function PUT(request: Request) {
     if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker === true || body.prefReligionIsDealbreaker === 'true'
 
     // Update User's name if firstName or lastName changed
+    // Format as "Firstname L." for privacy
     if (body.firstName !== undefined || body.lastName !== undefined) {
       // Get current user to preserve existing name parts
       const currentUser = await prisma.user.findUnique({
@@ -313,17 +329,32 @@ export async function PUT(request: Request) {
         select: { name: true },
       })
 
-      const currentNameParts = (currentUser?.name || '').trim().split(' ')
-      const currentFirstName = currentNameParts[0] || ''
-      const currentLastName = currentNameParts.slice(1).join(' ') || ''
+      // Parse current name - handle "Firstname L." format
+      const currentName = currentUser?.name || ''
+      let currentFirstName = ''
+      let currentLastName = ''
+
+      // Check if already in "Firstname L." format
+      const formatMatch = currentName.match(/^(.+)\s([A-Z])\.$/)
+      if (formatMatch) {
+        currentFirstName = formatMatch[1]
+        // We don't know the full last name, just the initial
+        currentLastName = ''
+      } else {
+        const parts = currentName.trim().split(' ')
+        currentFirstName = parts[0] || ''
+        currentLastName = parts.slice(1).join(' ') || ''
+      }
 
       const newFirstName = body.firstName !== undefined ? body.firstName : currentFirstName
       const newLastName = body.lastName !== undefined ? body.lastName : currentLastName
-      const fullName = `${newFirstName} ${newLastName}`.trim()
+
+      // Format as "Firstname L." for display
+      const formattedName = formatDisplayName(newFirstName, newLastName)
 
       await prisma.user.update({
         where: { id: targetUser.userId },
-        data: { name: fullName },
+        data: { name: formattedName },
       })
     }
 
