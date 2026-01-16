@@ -686,10 +686,23 @@ function ViewProfilePageContent() {
 
   const aboutMeText = profile.aboutMe || generateAboutMeSummary()
 
-  // Determine the display name - use profileUserName for admin/impersonation mode
-  const displayName = (isAdminMode || isImpersonationMode)
-    ? (profileUserName || 'User')
-    : (session?.user?.name || 'User')
+  // Determine the display name - use profile firstName + lastName initial
+  // This ensures we show the name from the profile, not the Google Auth name
+  const getProfileDisplayName = () => {
+    if (profile?.firstName) {
+      const lastName = profile.lastName || ''
+      if (lastName) {
+        return `${profile.firstName} ${lastName.charAt(0).toUpperCase()}.`
+      }
+      return profile.firstName
+    }
+    // Fallback to session/admin name if profile name not set
+    if (isAdminMode || isImpersonationMode) {
+      return profileUserName || 'User'
+    }
+    return session?.user?.name || 'User'
+  }
+  const displayName = getProfileDisplayName()
 
   return (
     <div className="min-h-screen bg-gray-100">
