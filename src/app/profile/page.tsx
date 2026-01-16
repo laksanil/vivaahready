@@ -1362,10 +1362,10 @@ function ViewProfilePageContent() {
           ) : (
             /* Partner Preferences Tab - Split into 2 sections */
             <div className="divide-y divide-gray-100">
-              {/* 8. Partner Preferences (Page 1) - matches PreferencesPage1Section fields */}
+              {/* 8. Must-Have Preferences (Deal-breakers) - matches PreferencesPage1Section fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Partner Preferences</h2>
+                  <h2 className="text-[#E91E63] font-semibold text-lg">Must-Have Preferences (Deal-breakers)</h2>
                   <button onClick={() => setEditSection('preferences_1')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
@@ -1449,10 +1449,10 @@ function ViewProfilePageContent() {
                 </div>
               </div>
 
-              {/* 9. More Preferences (Page 2) - matches PreferencesPage2Section fields */}
+              {/* 9. Nice-to-Have Preferences (Optional) - matches PreferencesPage2Section fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">More Preferences</h2>
+                  <h2 className="text-[#E91E63] font-semibold text-lg">Nice-to-Have Preferences (Optional)</h2>
                   <button onClick={() => setEditSection('preferences_2')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>

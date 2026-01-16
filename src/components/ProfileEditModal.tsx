@@ -84,8 +84,8 @@ export default function ProfileEditModal({
     family: 'Family Details',
     lifestyle: 'Lifestyle',
     aboutme: 'About Me',
-    preferences_1: 'Partner Preferences',
-    preferences_2: 'More Preferences',
+    preferences_1: 'Must-Have Preferences (Deal-breakers)',
+    preferences_2: 'Nice-to-Have Preferences (Optional)',
   }
 
   const sectionProps = { formData, handleChange, setFormData }
