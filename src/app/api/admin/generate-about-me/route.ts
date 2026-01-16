@@ -4,7 +4,8 @@ import { isAdminAuthenticated } from '@/lib/admin'
 
 function formatValue(value: string | null | undefined): string {
   if (!value) return ''
-  return value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  // Return exact value, only replace underscores for legacy data
+  return value.replace(/_/g, ' ')
 }
 
 function generateAboutMeSummary(profile: any, userName: string): string {

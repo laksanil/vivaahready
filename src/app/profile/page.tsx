@@ -554,7 +554,8 @@ function ViewProfilePageContent() {
 
   const formatValue = (value: string | null | undefined) => {
     if (!value) return 'Not specified'
-    return value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    // Return the exact value stored in DB, only replace underscores for legacy data
+    return value.replace(/_/g, ' ')
   }
 
   const age = calculateAge(profile.dateOfBirth)

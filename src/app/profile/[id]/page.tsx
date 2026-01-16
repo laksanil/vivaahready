@@ -490,10 +490,10 @@ function ProfileCard({
     setLightboxIndex((prev) => (prev - 1 + thumbnails.length) % thumbnails.length)
   }
 
-  // Helper to format field values
+  // Helper to format field values - return exact DB value, only replace underscores for legacy data
   const formatValue = (val: string | null | undefined) => {
     if (!val) return null
-    return val.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    return val.replace(/_/g, ' ')
   }
 
   // Helper to format education/qualification with proper labels
