@@ -130,12 +130,92 @@ These files are frequently edited - extra caution required:
 
 ### Merge Conflict Resolution
 
-If you encounter a merge conflict:
-1. Read both versions carefully
-2. Understand the intent of both changes
-3. Merge intelligently (don't just pick one side)
-4. Test after resolving
-5. Document the resolution in commit message
+**CRITICAL: This is how conflicts are resolved when two Claudes push conflicting code.**
+
+When `git push` is rejected:
+```bash
+git pull origin main --rebase
+```
+
+If conflicts occur during rebase/merge:
+
+1. **Identify conflicting files:**
+   ```bash
+   git status
+   ```
+
+2. **For each conflicting file, read the full file and conflict markers:**
+   ```
+   <<<<<<< HEAD
+   [Your changes]
+   =======
+   [Other Claude's changes]
+   >>>>>>> origin/main
+   ```
+
+3. **Resolution strategy (in order of preference):**
+
+   a. **Both changes are additive/independent** → Keep both
+      - If changes are in different parts of the file, include all changes
+      - Example: Both added different functions → keep all functions
+
+   b. **Changes overlap but complement** → Merge intelligently
+      - Combine the logic from both changes
+      - Example: Both added different fields to same object → include all fields
+
+   c. **Changes conflict logically** → Preserve the more complete version
+      - Keep the version with more functionality
+      - Add a TODO comment: `// TODO: Verify merge - kept [X], overwrote [Y]`
+      - Log in worklog for human review
+
+   d. **Cannot determine safely** → Keep incoming and re-apply yours
+      ```bash
+      git checkout --theirs <file>
+      ```
+      - Then manually re-add your specific changes
+      - This is safest as it preserves the other Claude's complete work
+
+4. **After resolving each file:**
+   ```bash
+   git add <resolved-file>
+   ```
+
+5. **Complete the rebase:**
+   ```bash
+   git rebase --continue
+   ```
+
+6. **Document in worklog:**
+   ```markdown
+   ## CONFLICT RESOLVED - [TIMESTAMP] - [DEV_ID]
+   **Files:** [list of conflicted files]
+   **Resolution:** [brief description of what was kept/merged]
+   **Needs Human Review:** [yes/no - yes if logic was overwritten]
+   ```
+
+7. **Push immediately:**
+   ```bash
+   git push origin main
+   ```
+
+---
+
+## File Locking System
+
+To prevent conflicts on critical files, use explicit locks in the worklog:
+
+```markdown
+## LOCK - [TIMESTAMP] - [DEV_ID]
+**File:** prisma/schema.prisma
+**Reason:** Adding new model
+**Expected Duration:** This session
+```
+
+**Rules:**
+- Check for locks before editing any file
+- If a file is locked, DO NOT edit it
+- Release locks when done: change `LOCK` to `UNLOCKED`
+- Locks expire after 2 hours if not released (assume stale)
 
 ---
 

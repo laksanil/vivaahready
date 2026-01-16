@@ -1,0 +1,25 @@
+#!/bin/bash
+# Pre-push hook: Fetch and check for remote changes before pushing
+
+echo "Checking for remote changes..."
+
+# Fetch latest from remote
+git fetch origin main --quiet
+
+# Get the local and remote commit hashes
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/main)
+BASE=$(git merge-base HEAD origin/main)
+
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "Up to date with remote."
+elif [ "$LOCAL" = "$BASE" ]; then
+    echo "ERROR: Your branch is behind remote. Run 'git pull origin main --rebase' first."
+    exit 1
+elif [ "$REMOTE" = "$BASE" ]; then
+    echo "Ahead of remote. Proceeding with push."
+else
+    echo "WARNING: Local and remote have diverged!"
+    echo "Run 'git pull origin main --rebase' to sync before pushing."
+    exit 1
+fi
