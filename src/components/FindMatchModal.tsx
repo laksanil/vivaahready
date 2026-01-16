@@ -125,10 +125,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     formData.openToRelocation // relocation is now required
   )
 
-  // Family section validation - Family Location Country and Family Values are required
-  const familyLocationCountryValue = formData.familyLocationCountry as string || ''
+  // Family section validation - Family Location and Family Values are required
+  const familyLocationValue = formData.familyLocation as string || ''
   const familyValuesValue = formData.familyValues as string || ''
-  const isFamilyComplete = familyLocationCountryValue !== '' && familyValuesValue !== ''
+  const isFamilyComplete = familyLocationValue !== '' && familyValuesValue !== ''
 
   // Lifestyle section validation - Diet, Smoking, Drinking, Pets are required
   const dietValue = formData.dietaryPreference as string || ''
