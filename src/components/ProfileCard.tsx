@@ -263,6 +263,13 @@ export function ProfileCard({
               </div>
             )}
 
+            {/* Languages Known */}
+            {profile.languagesKnown && (
+              <div className="text-gray-600 text-xs">
+                <span className="text-gray-400">Languages:</span> {profile.languagesKnown}
+              </div>
+            )}
+
             {/* About Me Preview */}
             {profile.aboutMe && (
               <p className="text-gray-500 text-xs line-clamp-2 mt-2 leading-relaxed">
