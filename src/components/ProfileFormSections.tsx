@@ -1803,12 +1803,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
 
-  // Count deal-breakers - only fields in Must-Have section (8 categories)
+  // Count deal-breakers - only fields in Must-Have section (9 categories)
   // Each preference category counts as ONE deal-breaker, not per value selected
   const dealBreakerCount = [
     'prefAge',           // Age Range
     'prefHeight',        // Height Range
     'prefMaritalStatus', // Marital Status
+    'prefReligion',      // Religion
     'prefCommunity',     // Community
     'prefGotra',         // Gotra (Hindu/Jain only)
     'prefDiet',          // Diet
@@ -1986,7 +1987,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
                 <option value="veg_eggetarian">Veg / Eggetarian</option>
                 <option value="non_veg_ok">Non-Veg OK</option>
               </select>
-              {isDealbreaker(formData, 'prefDiet') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
+              {isDealbreaker(formData, 'prefDiet') && !(formData.prefDiet as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -1997,7 +1998,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
                 <option value="">Select</option>
                 {PREF_SMOKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefSmoking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
-              {isDealbreaker(formData, 'prefSmoking') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
+              {isDealbreaker(formData, 'prefSmoking') && !(formData.prefSmoking as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -2008,7 +2009,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
                 <option value="">Select</option>
                 {PREF_DRINKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefDrinking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
-              {isDealbreaker(formData, 'prefDrinking') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
+              {isDealbreaker(formData, 'prefDrinking') && !(formData.prefDrinking as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
           </div>
         </div>
