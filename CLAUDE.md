@@ -147,6 +147,8 @@ gh pr merge 123 --squash --delete-branch
 
 ### 7. Merge Decision Tree
 
+**Every PR must be fully resolved and working before merge. No exceptions.**
+
 ```
 1. gh pr list --label "tests-passing" --state open
    └─ Find PRs ready to review
@@ -156,11 +158,11 @@ gh pr merge 123 --squash --delete-branch
 
 3. gh pr checks 123
    └─ All tests pass? → Continue
-   └─ Tests failing? → WAIT (do not merge)
+   └─ Tests failing? → Fix issues, re-run tests, then continue
 
 4. gh pr view 123 --json mergeable
    └─ No conflicts? → Continue
-   └─ Has conflicts? → Help rebase, resolve conflicts
+   └─ Has conflicts? → Resolve them (see conflict resolution below)
 
 5. Review the changes:
    - Do the changes make sense?
@@ -169,31 +171,70 @@ gh pr merge 123 --squash --delete-branch
 
 6. Check for overlapping PRs
    └─ No overlap? → Safe to merge
-   └─ Overlap detected? → Merge older PR first, rebase newer
+   └─ Overlap detected? → Merge older PR first, rebase newer, resolve conflicts
 
-7. Make merge decision
-   └─ APPROVE: gh pr merge 123 --squash --delete-branch
-   └─ REQUEST CHANGES: gh pr review 123 --request-changes --body "reason"
+7. If issues found:
+   └─ Fix the code directly on the branch
+   └─ Run tests: npm run test
+   └─ Push fixes, wait for CI
+   └─ Then merge
+
+8. Merge when everything passes:
+   └─ gh pr merge 123 --squash --delete-branch
 ```
 
+**Key principle:** Claude always resolves issues before merging. Never leave broken code.
+
 ### 8. Conflict Resolution in PRs
+
+**All conflicts MUST be resolved before merging. Code must always work after merge.**
 
 | Scenario | Action |
 |----------|--------|
 | Changes in different sections | Keep both |
 | Both add new code (functions, imports) | Keep both |
 | Same lines, same intent | Accept main, re-apply changes |
-| Logical conflict | Request human review |
+| Logical conflict | Ask user OR use Claude's best judgment (see below) |
 | Prisma schema conflict | Accept main, add changes, run `prisma format` |
 | package.json conflict | Accept both deps, run `npm install` |
+
+**When Claude encounters a logical conflict:**
+
+1. **Ask the user directly in the terminal:**
+   ```
+   I found a conflict I need your input on:
+
+   File: src/lib/auth.ts
+
+   Option A (main): Session timeout is 24 hours
+   Option B (this PR): Session timeout is 1 hour
+
+   Which should I keep?
+   1. Keep A (24 hours)
+   2. Keep B (1 hour)
+   3. Let Claude decide (recommended)
+   ```
+
+2. **If user chooses "Let Claude decide":** Claude uses best judgment based on:
+   - Which version is more complete/functional
+   - Which aligns with existing patterns in the codebase
+   - Which is safer/more conservative
+   - Recent commit messages explaining intent
+
+3. **Claude always resolves and verifies:**
+   - Apply the resolution
+   - Run tests to ensure code works
+   - Only push when everything passes
 
 **To rebase a PR with conflicts:**
 ```bash
 git fetch origin main
 git rebase origin/main
-# Resolve conflicts in each file
+# Resolve conflicts in each file (Claude handles this)
 git add <resolved-file>
 git rebase --continue
+# Run tests before pushing
+npm run test
 git push --force-with-lease
 ```
 
@@ -266,39 +307,42 @@ If conflicts occur during rebase/merge:
       - Combine the logic from both changes
       - Example: Both added different fields to same object → include all fields
 
-   c. **Changes conflict logically** → Preserve the more complete version
-      - Keep the version with more functionality
-      - Add a TODO comment: `// TODO: Verify merge - kept [X], overwrote [Y]`
-      - Log in worklog for human review
+   c. **Changes conflict logically** → Ask user or use Claude's best judgment
+      - Present options to user: "Which should I keep? A, B, or let me decide?"
+      - If user says "let Claude decide": choose based on completeness, safety, and codebase patterns
+      - Apply resolution and verify with tests
 
-   d. **Cannot determine safely** → Keep incoming and re-apply yours
-      ```bash
-      git checkout --theirs <file>
-      ```
-      - Then manually re-add your specific changes
-      - This is safest as it preserves the other Claude's complete work
+   d. **Any uncertainty** → Claude makes the call
+      - Prefer the more complete/functional version
+      - Prefer the safer/more conservative option
+      - Run tests to verify the resolution works
 
 4. **After resolving each file:**
    ```bash
    git add <resolved-file>
    ```
 
-5. **Complete the rebase:**
+5. **Run tests to verify resolution:**
+   ```bash
+   npm run test
+   ```
+
+6. **Complete the rebase:**
    ```bash
    git rebase --continue
    ```
 
-6. **Document in worklog:**
+7. **Document in worklog:**
    ```markdown
    ## CONFLICT RESOLVED - [TIMESTAMP] - [DEV_ID]
    **Files:** [list of conflicted files]
    **Resolution:** [brief description of what was kept/merged]
-   **Needs Human Review:** [yes/no - yes if logic was overwritten]
+   **Decision:** [user choice / Claude's judgment]
    ```
 
-7. **Push immediately:**
+8. **Push only after tests pass:**
    ```bash
-   git push origin main
+   npm run test && git push origin main
    ```
 
 ---
