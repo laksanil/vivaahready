@@ -5,6 +5,7 @@ import { X, Loader2 } from 'lucide-react'
 import {
   BasicsSection,
   LocationSection,
+  EducationSection,
   ReligionSection,
   FamilySection,
   LifestyleSection,
@@ -107,7 +108,14 @@ export default function ProfileEditModal({
 
           {/* Sections matching the create profile flow */}
           {section === 'basics' && <BasicsSection {...sectionProps} />}
-          {section === 'location_education' && <LocationSection {...sectionProps} />}
+          {section === 'location_education' && (
+            <>
+              <LocationSection {...sectionProps} />
+              <div className="border-t pt-4 mt-4">
+                <EducationSection {...sectionProps} />
+              </div>
+            </>
+          )}
           {section === 'religion' && <ReligionSection {...sectionProps} />}
           {section === 'family' && <FamilySection {...sectionProps} />}
           {section === 'lifestyle' && <LifestyleSection {...sectionProps} />}
