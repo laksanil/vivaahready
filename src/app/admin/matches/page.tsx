@@ -65,6 +65,7 @@ interface ProfileStats {
       interestsReceived: number
       interestsSent: number
       profileViews: number
+      matches: number
     }
   }
 }
@@ -183,7 +184,7 @@ export default function AdminMatchesPage() {
   }
 
   const exportToCSV = () => {
-    const headers = ['VR ID', 'Name', 'Email', 'Type', 'Received', 'Sent', 'Mutual', 'Lifetime Recv', 'Lifetime Sent', 'Lifetime Views', 'Last Login', 'Status']
+    const headers = ['VR ID', 'Name', 'Email', 'Type', 'Received', 'Sent', 'Mutual', 'Lifetime Recv', 'Lifetime Sent', 'Lifetime Views', 'Lifetime Matches', 'Last Login', 'Status']
     const rows = profiles.map(p => [
       p.odNumber || '-',
       p.user.name,
@@ -195,6 +196,7 @@ export default function AdminMatchesPage() {
       p.stats.lifetime?.interestsReceived || 0,
       p.stats.lifetime?.interestsSent || 0,
       p.stats.lifetime?.profileViews || 0,
+      p.stats.lifetime?.matches || 0,
       p.user.lastLogin ? new Date(p.user.lastLogin).toLocaleDateString() : 'Never',
       p.stats.daysSinceLastLogin === null ? 'Never logged in' : p.stats.daysSinceLastLogin <= 7 ? 'Active' : 'Inactive'
     ])
@@ -366,7 +368,7 @@ export default function AdminMatchesPage() {
                         Reports
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase bg-amber-50" colSpan={3}>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase bg-amber-50" colSpan={4}>
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-3.5 w-3.5 fill-amber-500" />
                         Lifetime Stats
@@ -401,6 +403,12 @@ export default function AdminMatchesPage() {
                       <div className="flex items-center justify-center gap-1">
                         <Eye className="h-3 w-3" />
                         Views
+                      </div>
+                    </th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
+                      <div className="flex items-center justify-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        Matches
                       </div>
                     </th>
                     <th colSpan={2}></th>
@@ -533,6 +541,12 @@ export default function AdminMatchesPage() {
                       <td className="px-2 py-3 text-center bg-amber-50/30">
                         <span className={`font-semibold ${(profile.stats.lifetime?.profileViews || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
                           {profile.stats.lifetime?.profileViews || 0}
+                        </span>
+                      </td>
+                      {/* Lifetime Stats - Matches */}
+                      <td className="px-2 py-3 text-center bg-amber-50/30">
+                        <span className={`font-semibold ${(profile.stats.lifetime?.matches || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
+                          {profile.stats.lifetime?.matches || 0}
                         </span>
                       </td>
                       {/* Last Login */}

@@ -14,6 +14,7 @@ interface UserStats {
     interestsReceived: number
     interestsSent: number
     profileViews: number
+    matches: number
   }
 }
 
@@ -25,7 +26,7 @@ async function getStatsForUser(userId: string, baseUrl: string, cookieHeader: st
     interestsSent: { total: 0, pending: 0, accepted: 0, rejected: 0 },
     interestsReceived: { total: 0, pending: 0, accepted: 0, rejected: 0 },
     declined: 0,
-    lifetime: { interestsReceived: 0, interestsSent: 0, profileViews: 0 },
+    lifetime: { interestsReceived: 0, interestsSent: 0, profileViews: 0, matches: 0 },
   }
 
   try {

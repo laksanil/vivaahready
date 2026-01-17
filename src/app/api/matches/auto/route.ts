@@ -284,6 +284,7 @@ export async function GET(request: Request) {
           interestsReceived: lifetimeStats?.lifetimeInterestsReceived || 0,
           interestsSent: lifetimeStats?.lifetimeInterestsSent || 0,
           profileViews: lifetimeStats?.lifetimeProfileViews || 0,
+          matches: lifetimeStats?.lifetimeMatches || 0,
         },
       },
       userStatus: {

@@ -10,6 +10,7 @@ import { prisma } from './prisma'
  * - lifetimeInterestsReceived: Total interests ever received
  * - lifetimeInterestsSent: Total interests ever sent
  * - lifetimeProfileViews: Total profile views ever received
+ * - lifetimeMatches: Total mutual matches ever made
  */
 
 /**
@@ -86,19 +87,49 @@ export async function incrementInterestStats(
 }
 
 /**
+ * Increment the lifetime matches counter for both users in a mutual connection
+ * Called when a mutual match is created (either via accept or both expressing interest)
+ */
+export async function incrementMatchesForBoth(
+  userId1: string,
+  userId2: string
+): Promise<void> {
+  await prisma.$transaction([
+    prisma.profile.update({
+      where: { userId: userId1 },
+      data: {
+        lifetimeMatches: {
+          increment: 1
+        }
+      }
+    }),
+    prisma.profile.update({
+      where: { userId: userId2 },
+      data: {
+        lifetimeMatches: {
+          increment: 1
+        }
+      }
+    })
+  ])
+}
+
+/**
  * Get lifetime stats for a user
  */
 export async function getLifetimeStats(userId: string): Promise<{
   lifetimeInterestsReceived: number
   lifetimeInterestsSent: number
   lifetimeProfileViews: number
+  lifetimeMatches: number
 } | null> {
   const profile = await prisma.profile.findUnique({
     where: { userId },
     select: {
       lifetimeInterestsReceived: true,
       lifetimeInterestsSent: true,
-      lifetimeProfileViews: true
+      lifetimeProfileViews: true,
+      lifetimeMatches: true
     }
   })
 
