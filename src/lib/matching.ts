@@ -574,6 +574,10 @@ function extractUSState(location: string): string | null {
 const PREF_LOCATION_TO_STATE: Record<string, string | null> = {
   'doesnt_matter': null,
   'usa': null,  // Any US location
+  'within_50_miles': null,  // Proximity-based - treat as flexible (can't verify without geocoding)
+  'within_100_miles': null, // Proximity-based - treat as flexible
+  'same_city': null,        // City-based - treat as flexible (would need exact city matching)
+  'same_state': null,       // Will be handled by extracting seeker's state
   'bay_area': 'california',
   'southern_california': 'california',
   'california': 'california',
