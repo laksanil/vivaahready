@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Heart, Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, Phone, MapPin } from 'lucide-react'
 
 export function Footer() {
   const pathname = usePathname()
@@ -20,16 +21,19 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-gradient-to-b from-primary-900 to-primary-950 text-gray-300">
+    <footer className="bg-gradient-to-b from-primary-800 via-primary-900 to-primary-950 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <Heart className="h-8 w-8 text-primary-500" />
-              <span className="font-display text-2xl font-semibold text-white">
-                Vivaah<span className="text-primary-500">Ready</span>
-              </span>
+            <div className="flex items-center mb-4">
+              <Image
+                src="/logo-transparent.png"
+                alt="VivaahReady"
+                width={200}
+                height={56}
+                className="h-14 w-auto brightness-0 invert"
+              />
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
               Modern matchmaking with a traditional soul. We connect Indian singles in the US with

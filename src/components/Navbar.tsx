@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -72,7 +73,7 @@ export function Navbar() {
   const isAdminViewMode = !!viewAsUser
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-silver-200">
+    <nav className="bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-white/50">
       {/* Admin View Banner */}
       {isAdminViewMode && (
         <div className="bg-purple-600 text-white px-4 py-2">
@@ -97,11 +98,15 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center space-x-2">
-              <Heart className="h-8 w-8 text-primary-600" />
-              <span className="font-display text-2xl font-semibold text-gray-900">
-                Vivaah<span className="text-primary-600">Ready</span>
-              </span>
+            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center">
+              <Image
+                src="/logo-transparent.png"
+                alt="VivaahReady"
+                width={180}
+                height={50}
+                className="h-10 w-auto"
+                priority
+              />
             </Link>
           </div>
 

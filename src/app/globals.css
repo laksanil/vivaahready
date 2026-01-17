@@ -16,33 +16,51 @@
 }
 
 @layer components {
+  /* Shiny primary button with gradient and glow */
   .btn-primary {
-    @apply bg-primary-700 text-white px-6 py-3 font-semibold rounded-lg
-           hover:bg-primary-800 transition-colors duration-200
+    @apply bg-gradient-to-b from-primary-500 via-primary-600 to-primary-700
+           text-white px-6 py-3 font-semibold rounded-lg
+           shadow-lg shadow-primary-600/30
+           hover:from-primary-400 hover:via-primary-500 hover:to-primary-600
+           hover:shadow-xl hover:shadow-primary-500/40
+           active:from-primary-600 active:via-primary-700 active:to-primary-800
+           transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Secondary button with subtle shine */
   .btn-secondary {
-    @apply bg-white text-primary-700 px-6 py-3 font-semibold rounded-lg
-           border-2 border-primary-700 hover:bg-primary-50 transition-colors duration-200
+    @apply bg-gradient-to-b from-white to-silver-50
+           text-primary-600 px-6 py-3 font-semibold rounded-lg
+           border-2 border-primary-600
+           shadow-md hover:shadow-lg
+           hover:from-primary-50 hover:to-primary-100
+           transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
+  /* Outline button */
   .btn-outline {
-    @apply bg-transparent text-gray-700 px-6 py-3 font-semibold rounded-lg
-           border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50
-           transition-colors duration-200;
+    @apply bg-gradient-to-b from-white to-silver-50
+           text-gray-700 px-6 py-3 font-semibold rounded-lg
+           border-2 border-silver-300
+           shadow-sm hover:shadow-md
+           hover:border-silver-400 hover:from-silver-50 hover:to-silver-100
+           transition-all duration-200;
   }
 
+  /* Shiny input fields with inner glow on focus */
   .input-field {
-    @apply w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg
+    @apply w-full px-4 py-2.5 bg-white border border-silver-300 rounded-lg
            text-gray-900 text-sm font-medium
+           shadow-sm
            transition-all duration-200 ease-in-out
-           hover:border-gray-400
-           focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+           hover:border-silver-400 hover:shadow-md
+           focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500
+           focus:shadow-lg focus:shadow-primary-500/10
            placeholder:text-gray-400 placeholder:font-normal
-           disabled:bg-gray-100 disabled:cursor-not-allowed;
+           disabled:bg-silver-100 disabled:cursor-not-allowed;
   }
 
   /* Modern select styling */
@@ -60,7 +78,7 @@
   }
 
   select.input-field:focus {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a91e3f'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23E31C25'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   }
 
   /* Form label styling */
@@ -81,20 +99,24 @@
     @apply pl-10;
   }
 
+  /* Shiny card with glass effect */
   .card {
-    @apply bg-white shadow-lg p-6 rounded-xl;
+    @apply bg-white/95 backdrop-blur-sm shadow-xl
+           border border-white/50 rounded-xl p-6
+           hover:shadow-2xl transition-all duration-300;
   }
 
   .section-title {
     @apply font-display text-3xl md:text-4xl font-semibold text-gray-900;
   }
 
+  /* Gradient text with shine */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 bg-clip-text text-transparent;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with premium look */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -105,9 +127,30 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-silver-300 rounded-full;
+  @apply bg-gradient-to-b from-silver-300 to-silver-400 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-silver-400;
+  @apply from-silver-400 to-silver-500;
+}
+
+/* Shine animation for special elements */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shine-effect {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shine 3s ease-in-out infinite;
 }

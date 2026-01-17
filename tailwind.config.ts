@@ -9,21 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Burgundy red primary palette
+        // VivaahReady brand red palette (from logo #E31C25)
         primary: {
-          50: '#fdf2f4',
-          100: '#fce7ea',
-          200: '#f9d0d9',
-          300: '#f4a9b8',
-          400: '#ec7a93',
-          500: '#df4d6f',
-          600: '#c9294d',
-          700: '#a91e3f',  // Main burgundy
-          800: '#8b1b38',
-          900: '#771a34',
-          950: '#420a18',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#E31C25',  // Main brand red from logo
+          700: '#c81e1e',
+          800: '#991b1b',
+          900: '#7f1d1d',
+          950: '#450a0a',
         },
-        // Silver/gray palette
+        // Silver/gray palette for backgrounds
         silver: {
           50: '#fafafa',
           100: '#f5f5f5',
@@ -36,7 +36,7 @@ const config: Config = {
           800: '#262626',
           900: '#171717',
         },
-        // Accent - gold for elegance
+        // Gold accent for premium feel
         accent: {
           50: '#fffbeb',
           100: '#fff3c6',
@@ -53,6 +53,10 @@ const config: Config = {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Playfair Display', 'Georgia', 'serif'],
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(227, 28, 37, 0.3)',
+        'glow-lg': '0 0 40px rgba(227, 28, 37, 0.4)',
       },
     },
   },

@@ -241,7 +241,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
       {/* Language */}
       <div className="space-y-4">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Language</h4>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="form-label">Mother Tongue <span className="text-red-500">*</span></label>
             <select name="motherTongue" value={formData.motherTongue as string || ''} onChange={handleChange} className="input-field" required>
