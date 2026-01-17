@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, Loader2 } from 'lucide-react'
+import { X, Send, Loader2, AlertCircle } from 'lucide-react'
+import { Avatar } from '@/components/Avatar'
+import { formatMessageTime } from '@/lib/formatTime'
 import { useImpersonation } from '@/hooks/useImpersonation'
 
 interface Message {
@@ -29,17 +31,15 @@ export default function MessageModal({
   recipientId,
   recipientName,
   recipientPhoto,
-  recipientPhotoUrls,
 }: MessageModalProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { buildApiUrl } = useImpersonation()
-
-  const photoUrl = recipientPhoto || null
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -66,8 +66,8 @@ export default function MessageModal({
       } else {
         setError(data.error || 'Failed to load messages')
       }
-    } catch (error) {
-      console.error('Error fetching messages:', error)
+    } catch (err) {
+      console.error('Error fetching messages:', err)
       setError('Failed to load messages')
     } finally {
       setLoading(false)
@@ -85,7 +85,8 @@ export default function MessageModal({
 
     setSending(true)
     setError(null)
-    console.log('Sending message to:', recipientId, 'content:', newMessage.trim())
+    setUpgradeRequired(false)
+
     try {
       const response = await fetch(buildApiUrl('/api/messages'), {
         method: 'POST',
@@ -98,70 +99,55 @@ export default function MessageModal({
 
       const data = await response.json()
       if (response.ok) {
-        setMessages([...messages, {
-          id: data.id,
-          content: data.content,
-          senderId: data.senderId,
-          senderName: data.sender.name,
-          isFromMe: true,
-          createdAt: data.createdAt,
-          read: false,
-        }])
+        setMessages([
+          ...messages,
+          {
+            id: data.id,
+            content: data.content,
+            senderId: data.senderId,
+            senderName: data.sender.name,
+            isFromMe: true,
+            createdAt: data.createdAt,
+            read: false,
+          },
+        ])
         setNewMessage('')
       } else {
         setError(data.error || 'Failed to send message')
+        if (data.upgradeRequired) {
+          setUpgradeRequired(true)
+        }
       }
-    } catch (error) {
-      console.error('Error sending message:', error)
+    } catch (err) {
+      console.error('Error sending message:', err)
       setError('Failed to send message')
     } finally {
       setSending(false)
     }
   }
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) {
-      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    } else if (diffDays === 1) {
-      return 'Yesterday ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    }
-  }
-
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg h-[600px] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-          {photoUrl ? (
-            <img
-              src={photoUrl}
-              alt={recipientName}
-              className="w-10 h-10 rounded-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-              <span className="text-primary-600 font-semibold">
-                {recipientName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          <Avatar name={recipientName} photoUrl={recipientPhoto} size="md" />
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">{recipientName}</h3>
+            <h3 id="modal-title" className="font-semibold text-gray-900">
+              {recipientName}
+            </h3>
           </div>
           <button
             onClick={onClose}
             className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Close conversation"
           >
             <X className="h-5 w-5" />
           </button>
@@ -169,8 +155,19 @@ export default function MessageModal({
 
         {/* Error Display */}
         {error && (
-          <div className="px-4 py-2 bg-red-50 border-b border-red-200">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="px-4 py-3 bg-red-50 border-b border-red-200 flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-600">{error}</p>
+              {upgradeRequired && (
+                <a
+                  href="/pricing"
+                  className="text-sm text-red-700 font-medium hover:underline mt-1 inline-block"
+                >
+                  Upgrade to Premium
+                </a>
+              )}
+            </div>
           </div>
         )}
 
@@ -200,8 +197,12 @@ export default function MessageModal({
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                    <p className={`text-xs mt-1 ${message.isFromMe ? 'text-primary-200' : 'text-gray-400'}`}>
-                      {formatTime(message.createdAt)}
+                    <p
+                      className={`text-xs mt-1 ${
+                        message.isFromMe ? 'text-primary-200' : 'text-gray-400'
+                      }`}
+                    >
+                      {formatMessageTime(message.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -220,11 +221,13 @@ export default function MessageModal({
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              aria-label="Type a message"
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || sending}
               className="p-2 bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Send message"
             >
               {sending ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

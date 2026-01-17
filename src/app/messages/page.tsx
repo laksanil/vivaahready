@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { MessageCircle, Loader2, ChevronLeft, Search } from 'lucide-react'
+import { MessageCircle, Loader2, ChevronLeft, Search, RefreshCw } from 'lucide-react'
 import MessageModal from '@/components/MessageModal'
+import { Avatar } from '@/components/Avatar'
+import { formatTime } from '@/lib/formatTime'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
-import AdminViewBanner from '@/components/AdminViewBanner'
 
 interface Conversation {
   partnerId: string
@@ -21,27 +22,27 @@ interface Conversation {
   isLastMessageFromMe: boolean
 }
 
+type ModalState =
+  | { isOpen: false }
+  | {
+      isOpen: true
+      recipientId: string
+      recipientName: string
+      recipientPhoto: string | null
+      recipientPhotoUrls: string | null
+    }
+
 function MessagesPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { buildApiUrl, buildUrl, viewAsUser } = useImpersonation()
   const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
+
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [messageModal, setMessageModal] = useState<{
-    isOpen: boolean
-    recipientId: string
-    recipientName: string
-    recipientPhoto: string | null
-    recipientPhotoUrls: string | null
-  }>({
-    isOpen: false,
-    recipientId: '',
-    recipientName: '',
-    recipientPhoto: null,
-    recipientPhotoUrls: null,
-  })
+  const [modal, setModal] = useState<ModalState>({ isOpen: false })
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -63,21 +64,26 @@ function MessagesPageContent() {
 
   const fetchConversations = async () => {
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch(buildApiUrl('/api/messages'))
       if (response.ok) {
         const data = await response.json()
         setConversations(data.conversations || [])
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Failed to load conversations')
       }
-    } catch (error) {
-      console.error('Error fetching conversations:', error)
+    } catch (err) {
+      console.error('Error fetching conversations:', err)
+      setError('Failed to load conversations. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const openMessageModal = (conversation: Conversation) => {
-    setMessageModal({
+  const openModal = (conversation: Conversation) => {
+    setModal({
       isOpen: true,
       recipientId: conversation.partnerId,
       recipientName: conversation.partnerName,
@@ -86,32 +92,9 @@ function MessagesPageContent() {
     })
   }
 
-  const closeMessageModal = () => {
-    setMessageModal({
-      isOpen: false,
-      recipientId: '',
-      recipientName: '',
-      recipientPhoto: null,
-      recipientPhotoUrls: null,
-    })
-    // Refresh conversations to update unread counts
+  const closeModal = () => {
+    setModal({ isOpen: false })
     fetchConversations()
-  }
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 0) {
-      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    } else if (diffDays === 1) {
-      return 'Yesterday'
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' })
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    }
   }
 
   const filteredConversations = conversations.filter((c) =>
@@ -131,15 +114,13 @@ function MessagesPageContent() {
   }
 
   return (
-      <>
-      {isAdminView && <AdminViewBanner />}
-      <div className={`min-h-screen bg-gray-50 py-8 ${isAdminView ? 'pt-20' : ''}`}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
-              <Link
-                href={buildUrl('/matches')}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Link
+              href={buildUrl('/matches')}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -159,9 +140,24 @@ function MessagesPageContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              aria-label="Search conversations"
             />
           </div>
         </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-600 text-sm">{error}</p>
+            <button
+              onClick={fetchConversations}
+              className="mt-2 text-sm text-red-700 hover:text-red-800 font-medium flex items-center gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try again
+            </button>
+          </div>
+        )}
 
         {/* Conversations List */}
         {loading ? (
@@ -187,83 +183,85 @@ function MessagesPageContent() {
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
-            {filteredConversations.map((conversation) => {
-              const photoUrl = conversation.partnerPhoto || null
+            {filteredConversations.map((conversation) => (
+              <button
+                key={conversation.partnerId}
+                onClick={() => openModal(conversation)}
+                className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left"
+                aria-label={`Open conversation with ${conversation.partnerName}${
+                  conversation.unreadCount > 0 ? `, ${conversation.unreadCount} unread` : ''
+                }`}
+              >
+                <Avatar
+                  name={conversation.partnerName}
+                  photoUrl={conversation.partnerPhoto}
+                  size="lg"
+                />
 
-              return (
-                <button
-                  key={conversation.partnerId}
-                  onClick={() => openMessageModal(conversation)}
-                  className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left"
-                >
-                  {/* Avatar */}
-                  {photoUrl ? (
-                    <img
-                      src={photoUrl}
-                      alt={conversation.partnerName}
-                      className="w-14 h-14 rounded-full object-cover flex-shrink-0"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-semibold text-primary-600">
-                        {conversation.partnerName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className={`font-semibold truncate ${conversation.unreadCount > 0 ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {conversation.partnerName}
-                      </h3>
-                      <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                        {formatTime(conversation.lastMessageTime)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className={`text-sm truncate ${conversation.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
-                        {conversation.isLastMessageFromMe && (
-                          <span className="text-gray-400">You: </span>
-                        )}
-                        {conversation.lastMessage}
-                      </p>
-                      {conversation.unreadCount > 0 && (
-                        <span className="ml-2 flex-shrink-0 bg-primary-600 text-white text-xs font-medium px-2 py-0.5 rounded-full">
-                          {conversation.unreadCount}
-                        </span>
-                      )}
-                    </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3
+                      className={`font-semibold truncate ${
+                        conversation.unreadCount > 0 ? 'text-gray-900' : 'text-gray-700'
+                      }`}
+                    >
+                      {conversation.partnerName}
+                    </h3>
+                    <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                      {formatTime(conversation.lastMessageTime)}
+                    </span>
                   </div>
-                </button>
-              )
-            })}
+                  <div className="flex items-center justify-between">
+                    <p
+                      className={`text-sm truncate ${
+                        conversation.unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'
+                      }`}
+                    >
+                      {conversation.isLastMessageFromMe && (
+                        <span className="text-gray-400">You: </span>
+                      )}
+                      {conversation.lastMessage}
+                    </p>
+                    {conversation.unreadCount > 0 && (
+                      <span
+                        className="ml-2 flex-shrink-0 bg-primary-600 text-white text-xs font-medium px-2 py-0.5 rounded-full"
+                        aria-label={`${conversation.unreadCount} unread messages`}
+                      >
+                        {conversation.unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         )}
-        </div>
-
-        {/* Message Modal */}
-        <MessageModal
-          isOpen={messageModal.isOpen}
-          onClose={closeMessageModal}
-          recipientId={messageModal.recipientId}
-          recipientName={messageModal.recipientName}
-          recipientPhoto={messageModal.recipientPhoto}
-          recipientPhotoUrls={messageModal.recipientPhotoUrls}
-        />
       </div>
-      </>
+
+      {/* Message Modal */}
+      {modal.isOpen && (
+        <MessageModal
+          isOpen={true}
+          onClose={closeModal}
+          recipientId={modal.recipientId}
+          recipientName={modal.recipientName}
+          recipientPhoto={modal.recipientPhoto}
+          recipientPhotoUrls={modal.recipientPhotoUrls}
+        />
+      )}
+    </div>
   )
 }
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        </div>
+      }
+    >
       <MessagesPageContent />
     </Suspense>
   )

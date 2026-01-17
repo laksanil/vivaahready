@@ -19,7 +19,16 @@ import {
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { useToast } from '@/components/Toast'
-import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminModal } from '@/components/admin/AdminComponents'
+import {
+  AdminTabs,
+  AdminPageHeader,
+  AdminEmptyState,
+  AdminButton,
+  AdminModal,
+  AdminSearchFilter,
+  AdminTableSkeleton,
+  AdminConfirmModal,
+} from '@/components/admin/AdminComponents'
 
 interface Report {
   id: string
@@ -69,6 +78,18 @@ export default function AdminReportsPage() {
   const [newStatus, setNewStatus] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [suspendReason, setSuspendReason] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [suspendConfirmModal, setSuspendConfirmModal] = useState<{
+    isOpen: boolean
+    profileId: string | null
+    action: 'suspend' | 'unsuspend'
+    userName: string
+  }>({
+    isOpen: false,
+    profileId: null,
+    action: 'suspend',
+    userName: '',
+  })
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -99,8 +120,10 @@ export default function AdminReportsPage() {
 
       const data = await response.json()
       setReports(data)
+      setError('')
     } catch (err) {
       setError('Failed to load reports')
+      showToast('Failed to load reports. Please refresh the page.', 'error')
       console.error(err)
     } finally {
       setLoading(false)
@@ -154,8 +177,9 @@ export default function AdminReportsPage() {
     }
   }
 
-  const handleSuspendProfile = async (profileId: string, action: 'suspend' | 'unsuspend') => {
-    if (!confirm(`Are you sure you want to ${action} this profile?`)) return
+  const handleSuspendConfirm = async () => {
+    const { profileId, action } = suspendConfirmModal
+    if (!profileId) return
 
     try {
       const response = await fetch('/api/admin/suspend', {
@@ -175,6 +199,8 @@ export default function AdminReportsPage() {
     } catch (err) {
       console.error(err)
       showToast(`Failed to ${action} profile`, 'error')
+    } finally {
+      setSuspendConfirmModal({ isOpen: false, profileId: null, action: 'suspend', userName: '' })
     }
   }
 
@@ -203,13 +229,25 @@ export default function AdminReportsPage() {
     })
   }
 
-  if (loading) {
+  // Filter reports by search query
+  const filteredReports = reports.filter((report) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
+      report.reporter.name.toLowerCase().includes(query) ||
+      report.reporter.email.toLowerCase().includes(query) ||
+      report.reportedUser.name.toLowerCase().includes(query) ||
+      report.reportedUser.email.toLowerCase().includes(query) ||
+      report.reason.toLowerCase().includes(query)
     )
+  })
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Search is handled client-side via filteredReports
   }
+
+  // Moved loading check inside the return
 
   const tabs = [
     { id: 'all', label: 'All' },
@@ -236,7 +274,14 @@ export default function AdminReportsPage() {
         tabs={tabs}
         activeTab={statusFilter}
         onTabChange={setStatusFilter}
-      />
+      >
+        <AdminSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSearchSubmit={handleSearch}
+          placeholder="Search by reporter, reported user, or reason..."
+        />
+      </AdminTabs>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-red-600">
@@ -245,7 +290,9 @@ export default function AdminReportsPage() {
         )}
 
         {/* Reports List */}
-        {reports.length === 0 ? (
+        {loading ? (
+          <AdminTableSkeleton rows={5} columns={4} />
+        ) : filteredReports.length === 0 ? (
           <AdminEmptyState
             icon={<AlertTriangle className="h-12 w-12" />}
             title="No Reports Found"
@@ -253,7 +300,7 @@ export default function AdminReportsPage() {
           />
         ) : (
           <div className="space-y-4">
-            {reports.map((report) => (
+            {filteredReports.map((report) => (
               <div key={report.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -371,7 +418,12 @@ export default function AdminReportsPage() {
                     {report.reportedUser.profile && (
                       report.reportedUser.profile.isSuspended ? (
                         <button
-                          onClick={() => handleSuspendProfile(report.reportedUser.profile!.id, 'unsuspend')}
+                          onClick={() => setSuspendConfirmModal({
+                            isOpen: true,
+                            profileId: report.reportedUser.profile!.id,
+                            action: 'unsuspend',
+                            userName: report.reportedUser.name,
+                          })}
                           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center gap-2"
                         >
                           <RefreshCw className="h-4 w-4" />
@@ -379,7 +431,12 @@ export default function AdminReportsPage() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleSuspendProfile(report.reportedUser.profile!.id, 'suspend')}
+                          onClick={() => setSuspendConfirmModal({
+                            isOpen: true,
+                            profileId: report.reportedUser.profile!.id,
+                            action: 'suspend',
+                            userName: report.reportedUser.name,
+                          })}
                           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm flex items-center gap-2"
                         >
                           <Ban className="h-4 w-4" />
@@ -476,6 +533,21 @@ export default function AdminReportsPage() {
           </div>
         </div>
       </AdminModal>
+
+      {/* Suspend/Unsuspend Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={suspendConfirmModal.isOpen}
+        onClose={() => setSuspendConfirmModal({ isOpen: false, profileId: null, action: 'suspend', userName: '' })}
+        onConfirm={handleSuspendConfirm}
+        title={suspendConfirmModal.action === 'suspend' ? 'Suspend Profile' : 'Unsuspend Profile'}
+        message={`Are you sure you want to ${suspendConfirmModal.action} ${suspendConfirmModal.userName}'s profile?`}
+        confirmText={suspendConfirmModal.action === 'suspend' ? 'Suspend' : 'Unsuspend'}
+        confirmVariant={suspendConfirmModal.action === 'suspend' ? 'danger' : 'primary'}
+        icon={suspendConfirmModal.action === 'suspend'
+          ? <Ban className="h-5 w-5 text-red-500" />
+          : <RefreshCw className="h-5 w-5 text-green-500" />
+        }
+      />
     </div>
   )
 }

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
-  UserPlus
+  UserPlus, Menu, X
 } from 'lucide-react'
 import { ToastProvider } from '@/components/Toast'
 
@@ -15,6 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Skip auth check for login page
   const isLoginPage = pathname === '/admin/login'
@@ -41,6 +42,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     checkAuth()
   }, [pathname, router, isLoginPage])
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -84,58 +90,98 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 px-4 py-3 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-white">VivaahReady</h1>
+          <p className="text-gray-400 text-xs">Admin Panel</p>
+        </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMobileMenuOpen}
+        >
+          {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-gray-900 min-h-screen fixed left-0 top-0">
-          <div className="p-6">
+        <aside
+          className={`fixed left-0 top-0 z-40 h-screen bg-gray-900 transition-transform duration-300 ease-in-out
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            md:translate-x-0 w-64`}
+          role="navigation"
+          aria-label="Admin navigation"
+        >
+          {/* Desktop Header */}
+          <div className="hidden md:block p-6">
             <h1 className="text-xl font-bold text-white">VivaahReady</h1>
             <p className="text-gray-400 text-sm">Admin Panel</p>
           </div>
 
-          <nav className="mt-6">
+          {/* Mobile: Add padding for header */}
+          <div className="md:hidden h-16" />
+
+          <nav className="mt-6" role="menubar">
             <Link
               href="/admin"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <LayoutDashboard className="h-5 w-5 mr-3" />
+              <LayoutDashboard className="h-5 w-5 mr-3" aria-hidden="true" />
               Dashboard
             </Link>
             <Link
               href="/admin/profiles"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/profiles' || pathname.startsWith('/admin/profiles/') && pathname !== '/admin/profiles/create' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <Users className="h-5 w-5 mr-3" />
+              <Users className="h-5 w-5 mr-3" aria-hidden="true" />
               Profiles
             </Link>
             <Link
               href="/admin/approvals"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/approvals' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <ClipboardCheck className="h-5 w-5 mr-3" />
+              <ClipboardCheck className="h-5 w-5 mr-3" aria-hidden="true" />
               Approvals
             </Link>
             <Link
               href="/admin/reports"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/reports' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <AlertTriangle className="h-5 w-5 mr-3" />
+              <AlertTriangle className="h-5 w-5 mr-3" aria-hidden="true" />
               Reports
             </Link>
             <Link
               href="/admin/matches"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/matches' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <Heart className="h-5 w-5 mr-3" />
+              <Heart className="h-5 w-5 mr-3" aria-hidden="true" />
               Matches
             </Link>
 
@@ -144,11 +190,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <Link
               href="/admin/profiles/create"
-              className={`flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
                 pathname === '/admin/profiles/create' ? 'bg-gray-800 text-white' : ''
               }`}
             >
-              <UserPlus className="h-5 w-5 mr-3" />
+              <UserPlus className="h-5 w-5 mr-3" aria-hidden="true" />
               Create Profile
             </Link>
           </nav>
@@ -157,13 +204,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-colors"
+              aria-label="Logout from admin panel"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 hover:text-white transition-colors"
             >
               {isLoggingOut ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
               ) : (
                 <>
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-5 w-5" aria-hidden="true" />
                   Logout
                 </>
               )}
@@ -172,7 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 ml-64 p-8">
+        <main className="flex-1 md:ml-64 p-4 md:p-8 mt-16 md:mt-0">
           <ToastProvider>
             {children}
           </ToastProvider>

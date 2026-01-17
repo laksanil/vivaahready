@@ -240,58 +240,61 @@ export async function GET(request: Request) {
       prisma.profile.count({ where })
     ])
 
-    // Get interest stats for each profile
-    const profilesWithStats = await Promise.all(
-      profiles.map(async (profile) => {
-        const [interestsReceived, interestsSent] = await Promise.all([
-          // Interests received by this profile's user
-          prisma.match.groupBy({
-            by: ['status'],
-            where: { receiverId: profile.user.id },
-            _count: { status: true }
-          }),
-          // Interests sent by this profile's user
-          prisma.match.groupBy({
-            by: ['status'],
-            where: { senderId: profile.user.id },
-            _count: { status: true }
-          })
-        ])
+    // Get all user IDs to batch fetch interest stats
+    const userIds = profiles.map(p => p.user.id)
 
-        // Transform to counts
-        const receivedStats = {
-          total: 0,
-          pending: 0,
-          accepted: 0,
-          rejected: 0,
-        }
-        interestsReceived.forEach((item) => {
-          receivedStats[item.status as keyof typeof receivedStats] = item._count.status
-          receivedStats.total += item._count.status
-        })
+    // Single batched query for received interests
+    const receivedInterests = await prisma.match.groupBy({
+      by: ['receiverId', 'status'],
+      where: { receiverId: { in: userIds } },
+      _count: { status: true }
+    })
 
-        const sentStats = {
-          total: 0,
-          pending: 0,
-          accepted: 0,
-          rejected: 0,
-        }
-        interestsSent.forEach((item) => {
-          sentStats[item.status as keyof typeof sentStats] = item._count.status
-          sentStats.total += item._count.status
-        })
+    // Single batched query for sent interests
+    const sentInterests = await prisma.match.groupBy({
+      by: ['senderId', 'status'],
+      where: { senderId: { in: userIds } },
+      _count: { status: true }
+    })
 
-        return {
-          ...profile,
-          hasProfile: true,
-          deletionRequest: null,
-          interestStats: {
-            received: receivedStats,
-            sent: sentStats,
-          }
-        }
-      })
-    )
+    // Build maps for quick lookup
+    const receivedMap = new Map<string, { total: number; pending: number; accepted: number; rejected: number }>()
+    const sentMap = new Map<string, { total: number; pending: number; accepted: number; rejected: number }>()
+
+    // Initialize maps for all users
+    userIds.forEach(id => {
+      receivedMap.set(id, { total: 0, pending: 0, accepted: 0, rejected: 0 })
+      sentMap.set(id, { total: 0, pending: 0, accepted: 0, rejected: 0 })
+    })
+
+    // Populate received stats
+    receivedInterests.forEach((item) => {
+      const stats = receivedMap.get(item.receiverId)
+      if (stats) {
+        stats[item.status as keyof typeof stats] = item._count.status
+        stats.total += item._count.status
+      }
+    })
+
+    // Populate sent stats
+    sentInterests.forEach((item) => {
+      const stats = sentMap.get(item.senderId)
+      if (stats) {
+        stats[item.status as keyof typeof stats] = item._count.status
+        stats.total += item._count.status
+      }
+    })
+
+    // Map profiles with stats
+    const profilesWithStats = profiles.map(profile => ({
+      ...profile,
+      hasProfile: true,
+      deletionRequest: null,
+      interestStats: {
+        received: receivedMap.get(profile.user.id) || { total: 0, pending: 0, accepted: 0, rejected: 0 },
+        sent: sentMap.get(profile.user.id) || { total: 0, pending: 0, accepted: 0, rejected: 0 },
+      }
+    }))
 
     return NextResponse.json({
       profiles: profilesWithStats,

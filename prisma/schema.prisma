@@ -284,6 +284,8 @@ model Message {
   @@index([senderId])
   @@index([receiverId])
   @@index([senderId, receiverId])
+  @@index([receiverId, read, createdAt])  // Optimizes unread message queries
+  @@index([createdAt])                     // Optimizes sorting by time
 }
 
 model Report {

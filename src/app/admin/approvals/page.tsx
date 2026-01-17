@@ -8,7 +8,7 @@ import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, 
 import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
 import { useToast } from '@/components/Toast'
-import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminBadge, AdminModal } from '@/components/admin/AdminComponents'
+import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminBadge, AdminModal, AdminTableSkeleton } from '@/components/admin/AdminComponents'
 
 interface PendingProfile {
   id: string
@@ -99,6 +99,7 @@ export default function AdminApprovalsPage() {
       setRejectedProfiles(rejectedData.profiles || [])
     } catch (error) {
       console.error('Error fetching profiles:', error)
+      showToast('Failed to load profiles. Please refresh the page.', 'error')
     } finally {
       setLoading(false)
     }
@@ -171,13 +172,7 @@ export default function AdminApprovalsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    )
-  }
+  // Loading is now handled in the return below
 
   const tabs = [
     { id: 'pending', label: 'Pending', count: pendingProfiles.length },
@@ -203,7 +198,9 @@ export default function AdminApprovalsPage() {
         onTabChange={(tab) => setActiveTab(tab as TabType)}
       />
 
-      {profiles.length === 0 ? (
+      {loading ? (
+        <AdminTableSkeleton rows={5} columns={4} />
+      ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'pending' ? <Check className="h-12 w-12" /> : <X className="h-12 w-12" />}
           title={activeTab === 'pending' ? 'All Caught Up!' : 'No Rejected Profiles'}

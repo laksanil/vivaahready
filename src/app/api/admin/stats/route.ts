@@ -11,6 +11,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get yesterday's date for trend comparison
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    yesterday.setHours(0, 0, 0, 0)
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
     const [
       totalProfiles,
       brides,
@@ -25,7 +33,14 @@ export async function GET() {
       unverified,
       recentProfiles,
       referralSourceProfiles,
-      usersWithoutProfile
+      usersWithoutProfile,
+      // Trend data - yesterday's counts
+      yesterdayProfiles,
+      yesterdayMatches,
+      // Oldest pending items
+      oldestPendingApproval,
+      oldestPendingReport,
+      oldestPendingDeletion
     ] = await Promise.all([
       prisma.profile.count(),
       prisma.profile.count({ where: { gender: 'female' } }),
@@ -49,7 +64,7 @@ export async function GET() {
           approvalStatus: true,
           createdAt: true,
           user: {
-            select: { name: true, email: true }
+            select: { id: true, name: true, email: true }
           }
         }
       }),
@@ -57,8 +72,42 @@ export async function GET() {
         by: ['referralSource'],
         _count: { referralSource: true }
       }),
-      prisma.user.count({ where: { profile: null } })
+      prisma.user.count({ where: { profile: null } }),
+      // Yesterday's profile count
+      prisma.profile.count({
+        where: { createdAt: { lt: today, gte: yesterday } }
+      }),
+      // Yesterday's matches count
+      prisma.match.count({
+        where: { createdAt: { lt: today, gte: yesterday } }
+      }),
+      // Oldest pending approval
+      prisma.profile.findFirst({
+        where: { approvalStatus: 'pending' },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true }
+      }),
+      // Oldest pending report
+      prisma.report.findFirst({
+        where: { status: 'pending' },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true }
+      }),
+      // Oldest pending deletion
+      prisma.deletionRequest.findFirst({
+        where: { status: { in: ['pending', 'approved'] } },
+        orderBy: { createdAt: 'asc' },
+        select: { createdAt: true }
+      })
     ])
+
+    // Calculate today's new profiles and matches
+    const todayProfiles = await prisma.profile.count({
+      where: { createdAt: { gte: today } }
+    })
+    const todayMatches = await prisma.match.count({
+      where: { createdAt: { gte: today } }
+    })
 
     // Mapping to unify similar referral sources
     const unifySource = (source: string | null): string => {
@@ -122,6 +171,14 @@ export async function GET() {
       referralStats[unifiedSource] = (referralStats[unifiedSource] || 0) + item._count.referralSource
     })
 
+    // Calculate oldest pending days
+    const calculateDaysSince = (date: Date | null | undefined) => {
+      if (!date) return null
+      const now = new Date()
+      const diffMs = now.getTime() - new Date(date).getTime()
+      return Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    }
+
     return NextResponse.json({
       totalProfiles,
       brides,
@@ -136,7 +193,29 @@ export async function GET() {
       unverified,
       usersWithoutProfile,
       recentProfiles,
-      referralStats
+      referralStats,
+      // Trend data
+      trends: {
+        todayProfiles,
+        yesterdayProfiles,
+        todayMatches,
+        yesterdayMatches,
+      },
+      // Oldest pending info
+      oldestPending: {
+        approval: oldestPendingApproval ? {
+          date: oldestPendingApproval.createdAt,
+          daysSince: calculateDaysSince(oldestPendingApproval.createdAt)
+        } : null,
+        report: oldestPendingReport ? {
+          date: oldestPendingReport.createdAt,
+          daysSince: calculateDaysSince(oldestPendingReport.createdAt)
+        } : null,
+        deletion: oldestPendingDeletion ? {
+          date: oldestPendingDeletion.createdAt,
+          daysSince: calculateDaysSince(oldestPendingDeletion.createdAt)
+        } : null,
+      }
     })
   } catch (error) {
     console.error('Admin stats error:', error)

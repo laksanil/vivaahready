@@ -23,6 +23,8 @@ import {
   AdminButton,
   AdminPageHeader,
   AdminEmptyState,
+  AdminTableSkeleton,
+  AdminConfirmModal,
   formatRelativeDate,
   formatDate,
 } from '@/components/admin/AdminComponents'
@@ -99,6 +101,14 @@ function AdminProfilesContent() {
   })
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ isOpen: boolean; profile: Profile | null }>({
+    isOpen: false,
+    profile: null,
+  })
+  const [unsuspendConfirmModal, setUnsuspendConfirmModal] = useState<{ isOpen: boolean; profile: Profile | null }>({
+    isOpen: false,
+    profile: null,
+  })
 
   const tabs = [
     { id: 'all', label: 'All Profiles' },
@@ -137,6 +147,7 @@ function AdminProfilesContent() {
       setTotalCount(data.total || 0)
     } catch (err) {
       console.error('Failed to fetch profiles:', err)
+      showToast('Failed to load profiles. Please refresh the page.', 'error')
     } finally {
       setLoading(false)
     }
@@ -176,12 +187,13 @@ function AdminProfilesContent() {
     }
   }
 
-  const handleDelete = async (profileId: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete ${name}'s profile? This cannot be undone.`)) return
+  const handleDeleteConfirm = async () => {
+    const profile = deleteConfirmModal.profile
+    if (!profile || !profile.id) return
 
-    setActionLoading(profileId)
+    setActionLoading(profile.id)
     try {
-      const res = await fetch(`/api/admin/profiles/${profileId}`, {
+      const res = await fetch(`/api/admin/profiles/${profile.id}`, {
         method: 'DELETE',
       })
       if (res.ok) {
@@ -196,6 +208,7 @@ function AdminProfilesContent() {
       showToast('Failed to delete profile', 'error')
     } finally {
       setActionLoading(null)
+      setDeleteConfirmModal({ isOpen: false, profile: null })
     }
   }
 
@@ -230,8 +243,9 @@ function AdminProfilesContent() {
     }
   }
 
-  const handleUnsuspend = async (profile: Profile) => {
-    if (!confirm(`Unsuspend ${profile.user.name}?`)) return
+  const handleUnsuspendConfirm = async () => {
+    const profile = unsuspendConfirmModal.profile
+    if (!profile) return
 
     setActionLoading(profile.user.id)
     try {
@@ -255,6 +269,7 @@ function AdminProfilesContent() {
       showToast('Failed to unsuspend profile', 'error')
     } finally {
       setActionLoading(null)
+      setUnsuspendConfirmModal({ isOpen: false, profile: null })
     }
   }
 
@@ -633,7 +648,7 @@ function AdminProfilesContent() {
                   profile.isSuspended ? (
                     <AdminIconButton
                       icon={<UserCheck className="h-4 w-4" />}
-                      onClick={() => handleUnsuspend(profile)}
+                      onClick={() => setUnsuspendConfirmModal({ isOpen: true, profile })}
                       title="Unsuspend"
                       variant="green"
                     />
@@ -661,7 +676,7 @@ function AdminProfilesContent() {
                 {profile.hasProfile && profile.id && (
                   <AdminIconButton
                     icon={<Trash2 className="h-4 w-4" />}
-                    onClick={() => handleDelete(profile.id!, profile.user.name)}
+                    onClick={() => setDeleteConfirmModal({ isOpen: true, profile })}
                     title="Delete"
                     variant="red"
                   />
@@ -719,11 +734,7 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <div className="bg-white rounded-xl shadow-sm">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-          </div>
-        </div>
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : activeTab === 'no_profile' ? 5 : 7} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : <Users className="h-12 w-12" />}
@@ -792,6 +803,32 @@ function AdminProfilesContent() {
           </>
         )}
       </AdminModal>
+
+      {/* Delete Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => setDeleteConfirmModal({ isOpen: false, profile: null })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Profile"
+        message={`Are you sure you want to delete ${deleteConfirmModal.profile?.user.name}'s profile? This action cannot be undone.`}
+        confirmText="Delete"
+        confirmVariant="danger"
+        isLoading={actionLoading === deleteConfirmModal.profile?.id}
+        icon={<Trash2 className="h-5 w-5 text-red-500" />}
+      />
+
+      {/* Unsuspend Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={unsuspendConfirmModal.isOpen}
+        onClose={() => setUnsuspendConfirmModal({ isOpen: false, profile: null })}
+        onConfirm={handleUnsuspendConfirm}
+        title="Unsuspend Profile"
+        message={`Are you sure you want to unsuspend ${unsuspendConfirmModal.profile?.user.name}'s profile?`}
+        confirmText="Unsuspend"
+        confirmVariant="primary"
+        isLoading={actionLoading === unsuspendConfirmModal.profile?.user.id}
+        icon={<UserCheck className="h-5 w-5 text-green-500" />}
+      />
     </div>
   )
 }

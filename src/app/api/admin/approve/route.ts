@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST - Approve or reject a profile
+// POST - Approve or reject a profile (single or bulk)
 export async function POST(request: Request) {
   try {
     const isAdmin = await isAdminAuthenticated()
@@ -58,42 +58,64 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { profileId, action, rejectionReason } = body
+    const { profileId, profileIds, action, rejectionReason } = body
 
-    if (!profileId || !action) {
-      return NextResponse.json({ error: 'Missing profileId or action' }, { status: 400 })
+    // Determine if this is a bulk operation
+    const isBulk = Array.isArray(profileIds) && profileIds.length > 0
+    const idsToProcess = isBulk ? profileIds : (profileId ? [profileId] : [])
+
+    if (idsToProcess.length === 0 || !action) {
+      return NextResponse.json({ error: 'Missing profileId/profileIds or action' }, { status: 400 })
     }
 
     if (!['approve', 'reject'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action. Use "approve" or "reject"' }, { status: 400 })
     }
 
-    const profile = await prisma.profile.findUnique({
-      where: { id: profileId },
+    // Verify all profiles exist
+    const profiles = await prisma.profile.findMany({
+      where: { id: { in: idsToProcess } },
       include: { user: true }
     })
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    if (profiles.length !== idsToProcess.length) {
+      const foundIds = profiles.map(p => p.id)
+      const missingIds = idsToProcess.filter((id: string) => !foundIds.includes(id))
+      return NextResponse.json({
+        error: `Profiles not found: ${missingIds.join(', ')}`
+      }, { status: 404 })
     }
 
-    const updatedProfile = await prisma.profile.update({
-      where: { id: profileId },
+    // Bulk update all profiles
+    await prisma.profile.updateMany({
+      where: { id: { in: idsToProcess } },
       data: {
         approvalStatus: action === 'approve' ? 'approved' : 'rejected',
         approvalDate: new Date(),
         rejectionReason: action === 'reject' ? rejectionReason : null,
       },
-      include: {
-        user: {
-          select: { name: true, email: true }
-        }
-      }
     })
 
+    // For single profile, fetch and return the updated profile
+    if (!isBulk) {
+      const updatedProfile = await prisma.profile.findUnique({
+        where: { id: profileId },
+        include: {
+          user: {
+            select: { name: true, email: true }
+          }
+        }
+      })
+
+      return NextResponse.json({
+        message: `Profile ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+        profile: updatedProfile
+      })
+    }
+
     return NextResponse.json({
-      message: `Profile ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
-      profile: updatedProfile
+      message: `${idsToProcess.length} profiles ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+      count: idsToProcess.length
     })
   } catch (error) {
     console.error('Admin approve POST error:', error)

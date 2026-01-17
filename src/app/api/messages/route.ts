@@ -55,6 +55,14 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' },
     })
 
+    // Pre-calculate unread counts in single pass (O(n) instead of O(n²))
+    const unreadByPartner = new Map<string, number>()
+    for (const m of messages) {
+      if (m.receiverId === userId && !m.read) {
+        unreadByPartner.set(m.senderId, (unreadByPartner.get(m.senderId) ?? 0) + 1)
+      }
+    }
+
     // Group messages by conversation partner
     const conversationsMap = new Map<string, {
       partnerId: string
@@ -71,18 +79,13 @@ export async function GET(request: Request) {
       const partner = message.senderId === userId ? message.receiver : message.sender
 
       if (!conversationsMap.has(partnerId)) {
-        // Count unread messages from this partner
-        const unreadCount = messages.filter(
-          m => m.senderId === partnerId && m.receiverId === userId && !m.read
-        ).length
-
         conversationsMap.set(partnerId, {
           partnerId,
           partnerName: partner.name,
           partnerPhoto: partner.profile?.profileImageUrl || null,
           lastMessage: message.content,
           lastMessageTime: message.createdAt,
-          unreadCount,
+          unreadCount: unreadByPartner.get(partnerId) ?? 0,
           isLastMessageFromMe: message.senderId === userId,
         })
       }
@@ -111,14 +114,12 @@ export async function POST(request: Request) {
     // Get target user ID (supports admin impersonation)
     const targetUser = await getTargetUserId(request, session)
     if (!targetUser) {
-      return NextResponse.json({ error: 'User ID not found in session' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const senderId = targetUser.userId
 
     const body = await request.json()
     const { receiverId, content } = body
-
-    console.log('POST /api/messages - senderId:', senderId, 'receiverId:', receiverId, 'content length:', content?.length)
 
     if (!receiverId) {
       return NextResponse.json({ error: 'Receiver ID is required' }, { status: 400 })
@@ -131,10 +132,53 @@ export async function POST(request: Request) {
     // Check if receiver exists
     const receiver = await prisma.user.findUnique({
       where: { id: receiverId },
+      select: { id: true, name: true }
     })
 
     if (!receiver) {
-      return NextResponse.json({ error: `Receiver not found with ID: ${receiverId}` }, { status: 404 })
+      return NextResponse.json({ error: 'Receiver not found' }, { status: 404 })
+    }
+
+    // Check for mutual match - users must have accepted match to message
+    const mutualMatch = await prisma.match.findFirst({
+      where: {
+        status: 'accepted',
+        OR: [
+          { senderId: senderId, receiverId: receiverId },
+          { senderId: receiverId, receiverId: senderId }
+        ]
+      }
+    })
+
+    if (!mutualMatch) {
+      return NextResponse.json({
+        error: 'You must have a mutual match to send messages'
+      }, { status: 403 })
+    }
+
+    // Check sender's subscription for messaging privileges
+    const sender = await prisma.user.findUnique({
+      where: { id: senderId },
+      include: {
+        subscription: true,
+        profile: { select: { approvalStatus: true } }
+      }
+    })
+
+    // Require approved profile to send messages
+    if (sender?.profile?.approvalStatus !== 'approved') {
+      return NextResponse.json({
+        error: 'Your profile must be approved to send messages'
+      }, { status: 403 })
+    }
+
+    // Check subscription - free users cannot send messages (premium feature)
+    // Note: Admins impersonating users bypass this check for testing
+    if (!targetUser.isAdminView && sender?.subscription?.plan === 'free') {
+      return NextResponse.json({
+        error: 'Upgrade to premium to send messages',
+        upgradeRequired: true
+      }, { status: 403 })
     }
 
     // Create the message
@@ -161,10 +205,8 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(message, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error sending message:', error)
-    return NextResponse.json({
-      error: `Failed to send message: ${error?.message || 'Unknown error'}`
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
   }
 }

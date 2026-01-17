@@ -20,7 +20,9 @@ import {
   AdminPagination,
   AdminEmptyState,
   AdminButton,
+  AdminTableSkeleton,
 } from '@/components/admin/AdminComponents'
+import { useToast } from '@/components/Toast'
 
 interface ProfileStats {
   id: string
@@ -84,6 +86,7 @@ const filters: { id: FilterType; label: string; description: string }[] = [
 ]
 
 export default function AdminMatchesPage() {
+  const { showToast } = useToast()
   const [profiles, setProfiles] = useState<ProfileStats[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -120,6 +123,7 @@ export default function AdminMatchesPage() {
       setTotalCount(data.total || 0)
     } catch (err) {
       console.error('Failed to fetch matches:', err)
+      showToast('Failed to load matches data. Please refresh the page.', 'error')
     } finally {
       setLoading(false)
     }
@@ -271,9 +275,7 @@ export default function AdminMatchesPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="bg-white rounded-xl shadow-sm flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-        </div>
+        <AdminTableSkeleton rows={10} columns={9} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={<Heart className="h-12 w-12" />}

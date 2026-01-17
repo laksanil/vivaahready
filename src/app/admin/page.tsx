@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Users, UserCheck, Heart, Clock, Ban, AlertTriangle, Trash2,
-  ShieldCheck, ShieldOff, ArrowRight, Loader2, ExternalLink, UserPlus
+  ShieldCheck, ShieldOff, ArrowRight, Loader2, ExternalLink, UserPlus,
+  RefreshCw, TrendingUp, TrendingDown
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 
@@ -27,6 +28,19 @@ interface Stats {
   recentProfiles: any[]
   // Referral stats
   referralStats?: Record<string, number>
+  // Trend data
+  trends?: {
+    todayProfiles: number
+    yesterdayProfiles: number
+    todayMatches: number
+    yesterdayMatches: number
+  }
+  // Oldest pending info
+  oldestPending?: {
+    approval: { date: string; daysSince: number } | null
+    report: { date: string; daysSince: number } | null
+    deletion: { date: string; daysSince: number } | null
+  }
 }
 
 // Referral source labels and colors
@@ -98,21 +112,52 @@ function PieChart({ data }: { data: { label: string; value: number; color: strin
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     fetchStats()
   }, [])
 
-  const fetchStats = async () => {
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    if (!autoRefresh) return
+
+    const interval = setInterval(() => {
+      fetchStats(true)
+    }, 5 * 60 * 1000) // 5 minutes
+
+    return () => clearInterval(interval)
+  }, [autoRefresh])
+
+  const fetchStats = async (isAutoRefresh = false) => {
+    if (isAutoRefresh) {
+      setIsRefreshing(true)
+    }
     try {
       const res = await fetch('/api/admin/stats')
       const data = await res.json()
       setStats(data)
+      setLastUpdated(new Date())
     } catch (err) {
       console.error('Failed to fetch stats:', err)
     } finally {
       setLoading(false)
+      setIsRefreshing(false)
     }
+  }
+
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return ''
+    const now = new Date()
+    const diffMs = now.getTime() - lastUpdated.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+
+    if (diffMins < 1) return 'Updated just now'
+    if (diffMins === 1) return 'Updated 1 minute ago'
+    if (diffMins < 60) return `Updated ${diffMins} minutes ago`
+    return `Updated at ${lastUpdated.toLocaleTimeString()}`
   }
 
   if (loading) {
@@ -131,6 +176,7 @@ export default function AdminDashboard() {
       color: 'yellow',
       href: '/admin/approvals',
       description: 'Profiles waiting for approval',
+      oldestDays: stats?.oldestPending?.approval?.daysSince,
     },
     {
       label: 'Reported Problems',
@@ -139,6 +185,7 @@ export default function AdminDashboard() {
       color: 'orange',
       href: '/admin/reports',
       description: 'User reports to review',
+      oldestDays: stats?.oldestPending?.report?.daysSince,
     },
     {
       label: 'Deletion Requests',
@@ -147,6 +194,7 @@ export default function AdminDashboard() {
       color: 'red',
       href: '/admin/profiles?tab=deletions',
       description: 'Account deletions pending',
+      oldestDays: stats?.oldestPending?.deletion?.daysSince,
     },
   ]
 
@@ -210,7 +258,35 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          {lastUpdated && (
+            <p className="text-sm text-gray-500 mt-1">{formatLastUpdated()}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Auto-refresh toggle */}
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            Auto-refresh
+          </label>
+          {/* Manual refresh button */}
+          <button
+            onClick={() => fetchStats(true)}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+      </div>
 
       {/* Attention Required Section */}
       {totalAttention > 0 && (
@@ -241,6 +317,12 @@ export default function AdminDashboard() {
                       </div>
                       <p className={`font-medium ${colors.text} mt-2`}>{item.label}</p>
                       <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                      {/* Oldest pending badge */}
+                      {item.oldestDays !== null && item.oldestDays !== undefined && item.count > 0 && (
+                        <p className={`text-xs mt-2 ${item.oldestDays > 3 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                          Oldest: {item.oldestDays === 0 ? 'Today' : item.oldestDays === 1 ? '1 day' : `${item.oldestDays} days`}
+                        </p>
+                      )}
                     </div>
                     <ArrowRight className={`h-5 w-5 ${colors.text} opacity-0 group-hover:opacity-100 transition-opacity`} />
                   </div>
@@ -253,10 +335,42 @@ export default function AdminDashboard() {
 
       {/* Overview Stats */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Overview</h2>
+          {stats?.trends && (
+            <div className="flex items-center gap-4 text-sm">
+              {stats.trends.todayProfiles > 0 && (
+                <span className="flex items-center gap-1 text-green-600">
+                  <TrendingUp className="h-4 w-4" />
+                  {stats.trends.todayProfiles} new today
+                </span>
+              )}
+              {stats.trends.todayMatches > 0 && (
+                <span className="flex items-center gap-1 text-pink-600">
+                  <Heart className="h-4 w-4" />
+                  {stats.trends.todayMatches} matches today
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {overviewItems.map((item) => {
             const colors = colorClasses[item.color]
+            // Calculate trend for profiles and matches
+            let trend = null
+            if (item.label === 'Total Profiles' && stats?.trends) {
+              const diff = stats.trends.todayProfiles - stats.trends.yesterdayProfiles
+              if (diff !== 0) {
+                trend = { diff, isPositive: diff > 0 }
+              }
+            } else if (item.label === 'Total Matches' && stats?.trends) {
+              const diff = stats.trends.todayMatches - stats.trends.yesterdayMatches
+              if (diff !== 0) {
+                trend = { diff, isPositive: diff > 0 }
+              }
+            }
+
             return (
               <Link
                 key={item.label}
@@ -268,7 +382,15 @@ export default function AdminDashboard() {
                     <item.icon className={`h-4 w-4 ${colors.text}`} />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{item.count}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-bold text-gray-900">{item.count}</p>
+                      {trend && (
+                        <span className={`flex items-center text-xs font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                          {trend.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {trend.isPositive ? '+' : ''}{trend.diff}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500">{item.label}</p>
                   </div>
                 </div>

@@ -23,29 +23,36 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Get user details for each request
-    const requestsWithUsers = await Promise.all(
-      deletionRequests.map(async (req) => {
-        const user = await prisma.user.findUnique({
-          where: { id: req.userId },
+    // Get all user IDs from deletion requests
+    const userIds = deletionRequests.map(req => req.userId)
+
+    // Single batched query for all users
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        profile: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            phone: true,
-            profile: {
-              select: {
-                id: true,
-                odNumber: true,
-                gender: true,
-                currentLocation: true,
-              },
-            },
+            odNumber: true,
+            gender: true,
+            currentLocation: true,
           },
-        })
-        return { ...req, user }
-      })
-    )
+        },
+      },
+    })
+
+    // Build map for quick lookup
+    const userMap = new Map(users.map(u => [u.id, u]))
+
+    // Map requests with users
+    const requestsWithUsers = deletionRequests.map(req => ({
+      ...req,
+      user: userMap.get(req.userId) || null
+    }))
 
     return NextResponse.json({ requests: requestsWithUsers })
   } catch (error) {
