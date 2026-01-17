@@ -78,11 +78,12 @@ interface Summary {
   neverLoggedIn: number
   noInterestsReceived: number
   noMutualMatches: number
+  hasMutualMatches: number
   pendingResponses: number
   totalMutualMatches: number
 }
 
-type FilterType = 'all' | 'inactive' | 'no_interests' | 'no_matches' | 'pending_response'
+type FilterType = 'all' | 'inactive' | 'no_interests' | 'no_matches' | 'has_matches' | 'pending_response'
 type SortField = 'lastLogin' | 'interestsReceived' | 'interestsSent' | 'mutualMatches' | 'createdAt'
 type ApprovalFilter = 'all' | 'approved' | 'pending' | 'rejected'
 
@@ -91,6 +92,7 @@ const filters: { id: FilterType; label: string; description: string }[] = [
   { id: 'inactive', label: 'Inactive (7+ days)', description: 'Haven\'t logged in for a week' },
   { id: 'no_interests', label: 'No Interests Received', description: 'May need profile improvement' },
   { id: 'no_matches', label: 'No Mutual Matches', description: 'Haven\'t matched with anyone' },
+  { id: 'has_matches', label: 'Has Matches', description: 'Have at least one mutual match' },
   { id: 'pending_response', label: 'Pending Responses', description: 'Have interests waiting' },
 ]
 
@@ -253,6 +255,7 @@ export default function AdminMatchesPage() {
       case 'inactive': return summary.inactive
       case 'no_interests': return summary.noInterestsReceived
       case 'no_matches': return summary.noMutualMatches
+      case 'has_matches': return summary.hasMutualMatches
       case 'pending_response': return summary.pendingResponses
       default: return undefined
     }

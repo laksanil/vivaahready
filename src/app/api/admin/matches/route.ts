@@ -192,6 +192,11 @@ export async function GET(request: Request) {
       filteredProfiles = profilesWithStats.filter(p =>
         p.stats.mutualMatches === 0
       )
+    } else if (filter === 'has_matches') {
+      // Users with at least one mutual match
+      filteredProfiles = profilesWithStats.filter(p =>
+        p.stats.mutualMatches > 0
+      )
     } else if (filter === 'pending_response') {
       // Users with pending interests to respond to
       filteredProfiles = profilesWithStats.filter(p =>
@@ -242,6 +247,7 @@ export async function GET(request: Request) {
       neverLoggedIn: profilesWithStats.filter(p => p.stats.daysSinceLastLogin === null).length,
       noInterestsReceived: profilesWithStats.filter(p => p.stats.interestsReceived.total === 0).length,
       noMutualMatches: profilesWithStats.filter(p => p.stats.mutualMatches === 0).length,
+      hasMutualMatches: profilesWithStats.filter(p => p.stats.mutualMatches > 0).length,
       pendingResponses: profilesWithStats.filter(p => p.stats.interestsReceived.pending > 0).length,
       totalMutualMatches: profilesWithStats.reduce((sum, p) => sum + p.stats.mutualMatches, 0),
     }
