@@ -24,7 +24,7 @@ import {
   Flag,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
-import { calculateAge, getInitials, extractPhotoUrls } from '@/lib/utils'
+import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -727,7 +727,7 @@ function ProfileCard({
               <span className="text-gray-500 w-24">Phone</span>
               <span className="text-gray-400 mr-2">:</span>
               <span className="text-gray-800 flex items-center gap-1">
-                {showClear ? (profile.user.phone || 'Not specified') : 'XXX-XXX-XXXX'}
+                {showClear ? (profile.user.phone || 'Not specified') : maskPhone(profile.user.phone)}
                 {showClear && profile.user.phoneVerified && <span className="text-green-600 text-xs">(Verified)</span>}
               </span>
             </div>
@@ -758,11 +758,13 @@ function ProfileCard({
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Basic Info</h3>
             <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              {age && <><span className="text-gray-500">Age</span><span className="text-gray-800">{age} years</span></>}
               {profile.height && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.height}</span></>}
               {profile.maritalStatus && <><span className="text-gray-500">Marital Status</span><span className="text-gray-800">{formatValue(profile.maritalStatus)}</span></>}
               {profile.hasChildren && profile.maritalStatus !== 'never_married' && <><span className="text-gray-500">Children</span><span className="text-gray-800">{formatValue(profile.hasChildren)}</span></>}
               {profile.motherTongue && <><span className="text-gray-500">Mother Tongue</span><span className="text-gray-800">{profile.motherTongue}</span></>}
               {profile.languagesKnown && <><span className="text-gray-500">Languages</span><span className="text-gray-800">{profile.languagesKnown}</span></>}
+              {profile.createdBy && <><span className="text-gray-500">Profile By</span><span className="text-gray-800">{formatValue(profile.createdBy)}</span></>}
             </div>
           </div>
 
