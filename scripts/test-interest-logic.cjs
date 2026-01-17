@@ -269,6 +269,157 @@ function simulateRejectInterest(receiverId, interestId, interests) {
   };
 }
 
+// ============ DISPLAY RESTRICTION LOGIC ============
+
+/**
+ * Mask sensitive text (show first N characters, rest as X)
+ * Used for names, emails, phone numbers, etc.
+ */
+function maskText(text, showFirst = 1) {
+  if (!text) return 'XXXXXXXX';
+  if (text.length <= showFirst) return 'X'.repeat(8);
+  return text.substring(0, showFirst) + 'X'.repeat(Math.min(8, text.length - showFirst));
+}
+
+/**
+ * Mask email address
+ * "john@example.com" → "jXXXXXXX@XXX.XXX"
+ */
+function maskEmail(email) {
+  if (!email) return 'XXXXXXXX@XXX.XXX';
+  const [local, domain] = email.split('@');
+  if (!domain) return maskText(email);
+  return maskText(local, 1) + '@XXX.XXX';
+}
+
+/**
+ * Mask phone number - shows area code, hides rest
+ * "+1 (555) 123-4567" → "(555) XXX-XXXX"
+ * "555-123-4567" → "(555) XXX-XXXX"
+ */
+function maskPhone(phone) {
+  if (!phone) return '(XXX) XXX-XXXX';
+
+  // Extract digits only
+  const digits = phone.replace(/\D/g, '');
+
+  // Handle different formats
+  if (digits.length >= 10) {
+    // If 11+ digits, assume first digit is country code
+    const areaCode = digits.length > 10 ? digits.slice(1, 4) : digits.slice(0, 3);
+    return `(${areaCode}) XXX-XXXX`;
+  }
+
+  // Fallback for shorter numbers
+  return '(XXX) XXX-XXXX';
+}
+
+/**
+ * Mask social media URL/handle
+ * "linkedin.com/in/johndoe" → "XXXXXXXXXX"
+ */
+function maskSocialMedia(url) {
+  if (!url) return null; // Don't show if doesn't exist
+  return 'XXXXXXXXXX';
+}
+
+/**
+ * Determine if profile should be restricted (blurred/masked)
+ *
+ * Profile is RESTRICTED (blurred) if:
+ * - Viewing user is NOT verified (approval status != 'approved'), OR
+ * - NOT a mutual connection
+ *
+ * Profile is VISIBLE (full info) if:
+ * - Viewing user IS verified (approval status == 'approved'), AND
+ * - IS a mutual connection
+ */
+function shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus) {
+  // If viewer is not approved, full restriction:
+  // - Photos: BLURRED
+  // - Names (first, last): MASKED
+  // - Contact (phone, email): MASKED
+  // - Parent names (father, mother): MASKED
+  // - Social media: MASKED
+  if (!viewerProfile || viewerProfile.approvalStatus !== 'approved') {
+    return {
+      isRestricted: true,
+      reason: 'Viewer profile is not approved',
+      showBlurredPhotos: true,
+      showMaskedName: true,
+      showMaskedParentNames: true,
+      showMaskedContact: true,
+      showMaskedSocial: true,
+    };
+  }
+
+  // If viewer is approved but not mutual connection:
+  // - Photos: VISIBLE
+  // - Names: VISIBLE
+  // - Parent names: VISIBLE
+  // - Contact: MASKED (until mutual)
+  // - Social: MASKED (until mutual)
+  if (!connectionStatus.isMutualConnection) {
+    return {
+      isRestricted: true,
+      reason: 'Not a mutual connection',
+      showBlurredPhotos: false, // Can see photos if both are verified
+      showMaskedName: false, // Can see name if both are verified
+      showMaskedParentNames: false, // Can see parent names if both are verified
+      showMaskedContact: true, // Cannot see contact until mutual
+      showMaskedSocial: true, // Cannot see social until mutual
+    };
+  }
+
+  // Full access - mutual connection and both verified
+  return {
+    isRestricted: false,
+    reason: 'Mutual connection with verified profile',
+    showBlurredPhotos: false,
+    showMaskedName: false,
+    showMaskedParentNames: false,
+    showMaskedContact: false,
+    showMaskedSocial: false,
+  };
+}
+
+/**
+ * Get display data for a profile based on restriction level
+ */
+function getDisplayData(profile, restrictionStatus) {
+  const data = {
+    name: profile.name,
+    fatherName: profile.fatherName,
+    motherName: profile.motherName,
+    email: profile.email,
+    phone: profile.phone,
+    linkedIn: profile.linkedIn,
+    instagram: profile.instagram,
+    photoBlurred: false,
+  };
+
+  if (restrictionStatus.showMaskedName) {
+    data.name = maskText(profile.name, 2);
+  }
+  if (restrictionStatus.showMaskedParentNames) {
+    data.fatherName = profile.fatherName ? maskText(profile.fatherName, 2) : null;
+    data.motherName = profile.motherName ? maskText(profile.motherName, 2) : null;
+  }
+  if (restrictionStatus.showMaskedContact) {
+    data.email = profile.email ? maskEmail(profile.email) : null;
+    data.phone = profile.phone ? maskPhone(profile.phone) : null;
+  }
+  if (restrictionStatus.showMaskedSocial) {
+    data.linkedIn = profile.linkedIn ? maskSocialMedia(profile.linkedIn) : null;
+    data.instagram = profile.instagram ? maskSocialMedia(profile.instagram) : null;
+  }
+  if (restrictionStatus.showBlurredPhotos) {
+    data.photoBlurred = true;
+  }
+
+  return data;
+}
+
 // ============ TEST CASES ============
 
 const TEST_CASES = [
@@ -596,19 +747,418 @@ const TEST_CASES = [
     expected: { success: true, isMutualConnection: false },
     expectedReason: 'Rejected interest does not create mutual connection',
   },
+
+  // ===== DISPLAY RESTRICTION TESTS =====
+  {
+    name: 'Display: Non-approved viewer sees ALL info restricted (photos blurred, name/parent names masked)',
+    setup: {
+      viewerProfile: { userId: 'viewer', approvalStatus: 'pending', isActive: true },
+      targetProfile: {
+        userId: 'target',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Shwetha Lakshmi',
+        fatherName: 'Ramesh Kumar',
+        motherName: 'Lakshmi Devi',
+        email: 'shwetha@example.com',
+        phone: '+1 (555) 123-4567',
+        linkedIn: 'linkedin.com/in/shwetha',
+        instagram: '@shwetha_lakshmi',
+      },
+      connectionStatus: { isMutualConnection: false },
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, connectionStatus } = TEST_CASES[19].setup;
+      return shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+    },
+    expected: { isRestricted: true, showBlurredPhotos: true, showMaskedName: true, showMaskedParentNames: true, showMaskedContact: true, showMaskedSocial: true },
+    expectedReason: 'Non-approved viewer: photos blurred, name/parent names/contact/social all masked',
+  },
+  {
+    name: 'Display: Approved viewer, NO mutual connection → contact/social masked, photos/name/parent names visible',
+    setup: {
+      viewerProfile: { userId: 'viewer', approvalStatus: 'approved', isActive: true },
+      targetProfile: {
+        userId: 'target',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Jaidev Kumar',
+        fatherName: 'Suresh Kumar',
+        motherName: 'Kamla Devi',
+        email: 'jaidev@example.com',
+        phone: '+1 (555) 987-6543',
+        linkedIn: 'linkedin.com/in/jaidev',
+        instagram: '@jaidev_k',
+      },
+      connectionStatus: { isMutualConnection: false },
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, connectionStatus } = TEST_CASES[20].setup;
+      return shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+    },
+    expected: { isRestricted: true, showBlurredPhotos: false, showMaskedName: false, showMaskedParentNames: false, showMaskedContact: true, showMaskedSocial: true },
+    expectedReason: 'Approved viewer can see photos/name/parent names but not contact info without mutual connection',
+  },
+  {
+    name: 'Display: Approved viewer + mutual connection → ALL info visible',
+    setup: {
+      viewerProfile: { userId: 'viewer', approvalStatus: 'approved', isActive: true },
+      targetProfile: {
+        userId: 'target',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Rohith Sharma',
+        fatherName: 'Vijay Sharma',
+        motherName: 'Sunita Sharma',
+        email: 'rohith@example.com',
+        phone: '+1 (555) 111-2222',
+        linkedIn: 'linkedin.com/in/rohith',
+        instagram: '@rohith_s',
+      },
+      connectionStatus: { isMutualConnection: true },
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, connectionStatus } = TEST_CASES[21].setup;
+      return shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+    },
+    expected: { isRestricted: false, showBlurredPhotos: false, showMaskedName: false, showMaskedParentNames: false, showMaskedContact: false, showMaskedSocial: false },
+    expectedReason: 'Mutual connection with approved profile shows all info including parent names',
+  },
+
+  // ===== MASKING FUNCTION TESTS =====
+  {
+    name: 'Mask: Name "Shwetha Lakshmi" shows first 2 chars → "ShXXXXXXXX"',
+    setup: {},
+    action: () => {
+      return { masked: maskText('Shwetha Lakshmi', 2) };
+    },
+    expected: { masked: 'ShXXXXXXXX' },
+    expectedReason: 'Name masking shows first 2 chars + hidden indicator (user knows info exists but is locked)',
+  },
+  {
+    name: 'Mask: Father name "Ramesh Kumar" shows first 2 chars → "RaXXXXXXXX"',
+    setup: {},
+    action: () => {
+      return { masked: maskText('Ramesh Kumar', 2) };
+    },
+    expected: { masked: 'RaXXXXXXXX' },
+    expectedReason: 'Parent name masking indicates info exists but is locked',
+  },
+  {
+    name: 'Mask: Email "john@example.com" → "jXXX@XXX.XXX"',
+    setup: {},
+    action: () => {
+      return { masked: maskEmail('john@example.com') };
+    },
+    expected: { masked: 'jXXX@XXX.XXX' },
+    expectedReason: 'Email masking shows first char + masked domain (user knows email exists but is locked)',
+  },
+  {
+    name: 'Mask: Phone number shows area code "(555) XXX-XXXX"',
+    setup: {},
+    action: () => {
+      return { masked: maskPhone('+1 (555) 123-4567') };
+    },
+    expected: { masked: '(555) XXX-XXXX' },
+    expectedReason: 'Phone masked showing area code (user knows phone exists with area hint but rest is locked)',
+  },
+  {
+    name: 'Mask: Social media "linkedin.com/in/johndoe" → "XXXXXXXXXX"',
+    setup: {},
+    action: () => {
+      return { masked: maskSocialMedia('linkedin.com/in/johndoe') };
+    },
+    expected: { masked: 'XXXXXXXXXX' },
+    expectedReason: 'Social media masked (user knows profile exists but is locked)',
+  },
+  {
+    name: 'Mask: Null social media returns null (no placeholder shown)',
+    setup: {},
+    action: () => {
+      return { masked: maskSocialMedia(null) };
+    },
+    expected: { masked: null },
+    expectedReason: 'Missing social media shows nothing (field does not exist)',
+  },
+
+  // ===== DISPLAY DATA TRANSFORMATION TESTS =====
+  {
+    name: 'DisplayData: Full restriction (non-approved) applies all masks including parent names',
+    setup: {
+      profile: {
+        name: 'Priya Mehta',
+        fatherName: 'Raj Mehta',
+        motherName: 'Anita Mehta',
+        email: 'priya@example.com',
+        phone: '+1 (555) 333-4444',
+        linkedIn: 'linkedin.com/in/priya',
+        instagram: '@priya_m',
+      },
+      restrictionStatus: {
+        showBlurredPhotos: true,
+        showMaskedName: true,
+        showMaskedParentNames: true,
+        showMaskedContact: true,
+        showMaskedSocial: true,
+      },
+    },
+    action: () => {
+      const { profile, restrictionStatus } = TEST_CASES[28].setup;
+      return getDisplayData(profile, restrictionStatus);
+    },
+    expected: {
+      name: 'PrXXXXXXXX',
+      fatherName: 'RaXXXXXXX',  // "Raj Mehta" (9 chars) → "Ra" + min(8, 7) = "Ra" + 7 X's
+      motherName: 'AnXXXXXXXX', // "Anita Mehta" (11 chars) → "An" + min(8, 9) = "An" + 8 X's
+      email: 'pXXXX@XXX.XXX',
+      phone: '(555) XXX-XXXX',  // Shows area code
+      linkedIn: 'XXXXXXXXXX',
+      instagram: 'XXXXXXXXXX',
+      photoBlurred: true,
+    },
+    expectedReason: 'Full restriction (non-approved viewer): all fields masked, photos blurred - user sees info is locked',
+  },
+  {
+    name: 'DisplayData: Partial restriction (approved, no mutual) - contact only masked, name/parent names visible',
+    setup: {
+      profile: {
+        name: 'Amit Patel',
+        fatherName: 'Vijay Patel',
+        motherName: 'Meena Patel',
+        email: 'amit@example.com',
+        phone: '+1 (555) 555-5555',
+        linkedIn: 'linkedin.com/in/amit',
+        instagram: null,
+      },
+      restrictionStatus: {
+        showBlurredPhotos: false,
+        showMaskedName: false,
+        showMaskedParentNames: false,
+        showMaskedContact: true,
+        showMaskedSocial: true,
+      },
+    },
+    action: () => {
+      const { profile, restrictionStatus } = TEST_CASES[29].setup;
+      return getDisplayData(profile, restrictionStatus);
+    },
+    expected: {
+      name: 'Amit Patel',
+      fatherName: 'Vijay Patel',
+      motherName: 'Meena Patel',
+      email: 'aXXX@XXX.XXX',
+      phone: '(555) XXX-XXXX',  // Shows area code
+      linkedIn: 'XXXXXXXXXX',
+      instagram: null,
+      photoBlurred: false,
+    },
+    expectedReason: 'Partial restriction preserves name/parent names/photos, masks contact and social',
+  },
+  {
+    name: 'DisplayData: No restriction shows all real data including parent names',
+    setup: {
+      profile: {
+        name: 'Neha Singh',
+        fatherName: 'Raj Singh',
+        motherName: 'Priya Singh',
+        email: 'neha@example.com',
+        phone: '+1 (555) 666-7777',
+        linkedIn: 'linkedin.com/in/neha',
+        instagram: '@neha_singh',
+      },
+      restrictionStatus: {
+        showBlurredPhotos: false,
+        showMaskedName: false,
+        showMaskedParentNames: false,
+        showMaskedContact: false,
+        showMaskedSocial: false,
+      },
+    },
+    action: () => {
+      const { profile, restrictionStatus } = TEST_CASES[30].setup;
+      return getDisplayData(profile, restrictionStatus);
+    },
+    expected: {
+      name: 'Neha Singh',
+      fatherName: 'Raj Singh',
+      motherName: 'Priya Singh',
+      email: 'neha@example.com',
+      phone: '+1 (555) 666-7777',
+      linkedIn: 'linkedin.com/in/neha',
+      instagram: '@neha_singh',
+      photoBlurred: false,
+    },
+    expectedReason: 'No restriction shows all real data including parent names',
+  },
+
+  // ===== END-TO-END SCENARIO TESTS =====
+  {
+    name: 'E2E: Pending user views approved profile → everything restricted including parent names',
+    setup: {
+      viewerProfile: { userId: 'pending_user', approvalStatus: 'pending', isActive: true },
+      targetProfile: {
+        userId: 'approved_user',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Verified User',
+        fatherName: 'Father Name',
+        motherName: 'Mother Name',
+        email: 'verified@example.com',
+        phone: '+1 (555) 888-9999',
+        linkedIn: 'linkedin.com/in/verified',
+        instagram: '@verified',
+      },
+      interests: [], // No interests between them
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, interests } = TEST_CASES[31].setup;
+      const connectionStatus = getConnectionStatus(viewerProfile.userId, targetProfile.userId, interests);
+      const restriction = shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+      const display = getDisplayData(targetProfile, restriction);
+      return {
+        isRestricted: restriction.isRestricted,
+        photoBlurred: display.photoBlurred,
+        nameMasked: display.name !== targetProfile.name,
+        fatherNameMasked: display.fatherName !== targetProfile.fatherName,
+        motherNameMasked: display.motherName !== targetProfile.motherName,
+        emailMasked: display.email !== targetProfile.email,
+        phoneMasked: display.phone !== targetProfile.phone,
+      };
+    },
+    expected: { isRestricted: true, photoBlurred: true, nameMasked: true, fatherNameMasked: true, motherNameMasked: true, emailMasked: true, phoneMasked: true },
+    expectedReason: 'Pending viewer sees fully restricted profile including parent names',
+  },
+  {
+    name: 'E2E: Approved user views another approved (no connection) → contact masked, names/parent names visible',
+    setup: {
+      viewerProfile: { userId: 'approved_a', approvalStatus: 'approved', isActive: true },
+      targetProfile: {
+        userId: 'approved_b',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Other User',
+        fatherName: 'Other Father',
+        motherName: 'Other Mother',
+        email: 'other@example.com',
+        phone: '+1 (555) 000-1111',
+        linkedIn: 'linkedin.com/in/other',
+        instagram: '@other',
+      },
+      interests: [], // No interests between them
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, interests } = TEST_CASES[32].setup;
+      const connectionStatus = getConnectionStatus(viewerProfile.userId, targetProfile.userId, interests);
+      const restriction = shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+      const display = getDisplayData(targetProfile, restriction);
+      return {
+        isRestricted: restriction.isRestricted,
+        photoBlurred: display.photoBlurred,
+        nameMasked: display.name !== targetProfile.name,
+        fatherNameMasked: display.fatherName !== targetProfile.fatherName,
+        motherNameMasked: display.motherName !== targetProfile.motherName,
+        emailMasked: display.email !== targetProfile.email,
+        phoneMasked: display.phone !== targetProfile.phone,
+      };
+    },
+    expected: { isRestricted: true, photoBlurred: false, nameMasked: false, fatherNameMasked: false, motherNameMasked: false, emailMasked: true, phoneMasked: true },
+    expectedReason: 'Approved viewers can see names/parent names/photos but not contact without mutual',
+  },
+  {
+    name: 'E2E: Mutual connection via accepted interest → full access including parent names',
+    setup: {
+      viewerProfile: { userId: 'user_x', approvalStatus: 'approved', isActive: true },
+      targetProfile: {
+        userId: 'user_y',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'My Match',
+        fatherName: 'Match Father',
+        motherName: 'Match Mother',
+        email: 'match@example.com',
+        phone: '+1 (555) 222-3333',
+        linkedIn: 'linkedin.com/in/match',
+        instagram: '@my_match',
+      },
+      interests: [
+        { id: 'int_1', senderId: 'user_x', receiverId: 'user_y', status: 'accepted' },
+      ],
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, interests } = TEST_CASES[33].setup;
+      const connectionStatus = getConnectionStatus(viewerProfile.userId, targetProfile.userId, interests);
+      const restriction = shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+      const display = getDisplayData(targetProfile, restriction);
+      return {
+        isRestricted: restriction.isRestricted,
+        photoBlurred: display.photoBlurred,
+        nameMasked: display.name !== targetProfile.name,
+        fatherNameMasked: display.fatherName !== targetProfile.fatherName,
+        motherNameMasked: display.motherName !== targetProfile.motherName,
+        emailMasked: display.email !== targetProfile.email,
+        phoneMasked: display.phone !== targetProfile.phone,
+        canSeeFullEmail: display.email === targetProfile.email,
+        canSeeFullPhone: display.phone === targetProfile.phone,
+      };
+    },
+    expected: { isRestricted: false, photoBlurred: false, nameMasked: false, fatherNameMasked: false, motherNameMasked: false, emailMasked: false, phoneMasked: false, canSeeFullEmail: true, canSeeFullPhone: true },
+    expectedReason: 'Mutual connection via accepted interest reveals all info including parent names',
+  },
+  {
+    name: 'E2E: Mutual connection via both expressing interest → full access including parent names',
+    setup: {
+      viewerProfile: { userId: 'user_p', approvalStatus: 'approved', isActive: true },
+      targetProfile: {
+        userId: 'user_q',
+        approvalStatus: 'approved',
+        isActive: true,
+        name: 'Mutual Interest',
+        fatherName: 'Mutual Father',
+        motherName: 'Mutual Mother',
+        email: 'mutual@example.com',
+        phone: '+1 (555) 444-5555',
+        linkedIn: 'linkedin.com/in/mutual',
+        instagram: '@mutual_interest',
+      },
+      interests: [
+        { id: 'int_1', senderId: 'user_p', receiverId: 'user_q', status: 'pending' },
+        { id: 'int_2', senderId: 'user_q', receiverId: 'user_p', status: 'pending' },
+      ],
+    },
+    action: () => {
+      const { viewerProfile, targetProfile, interests } = TEST_CASES[34].setup;
+      const connectionStatus = getConnectionStatus(viewerProfile.userId, targetProfile.userId, interests);
+      const restriction = shouldRestrictProfile(viewerProfile, targetProfile, connectionStatus);
+      const display = getDisplayData(targetProfile, restriction);
+      return {
+        isRestricted: restriction.isRestricted,
+        isMutualViaDoubleInterest: connectionStatus.isMutualConnection,
+        canSeeFatherName: display.fatherName === targetProfile.fatherName,
+        canSeeMotherName: display.motherName === targetProfile.motherName,
+        canSeeEmail: display.email === targetProfile.email,
+        canSeePhone: display.phone === targetProfile.phone,
+        canSeeLinkedIn: display.linkedIn === targetProfile.linkedIn,
+      };
+    },
+    expected: { isRestricted: false, isMutualViaDoubleInterest: true, canSeeFatherName: true, canSeeMotherName: true, canSeeEmail: true, canSeePhone: true, canSeeLinkedIn: true },
+    expectedReason: 'Both expressing interest creates mutual, reveals all info including parent names',
+  },
 ];
 
 // ============ TEST RUNNER ============
 
 function runTests(filterName = null) {
   console.log('╔════════════════════════════════════════════════════════════════════╗');
-  console.log('║           INTEREST & CONNECTION LOGIC TEST SUITE                   ║');
+  console.log('║     INTEREST, CONNECTION & DISPLAY RESTRICTION TEST SUITE          ║');
   console.log('╠════════════════════════════════════════════════════════════════════╣');
   console.log('║ Rules:                                                             ║');
   console.log('║ 1. Only APPROVED profiles can express interest                     ║');
   console.log('║ 2. Mutual connection = accepted interest OR both sent interests    ║');
   console.log('║ 3. Contact info only revealed on mutual connection                 ║');
   console.log('║ 4. Receiver can accept/reject, sender can only send/withdraw       ║');
+  console.log('║ 5. Non-approved viewers: photos blurred, names/contact masked      ║');
+  console.log('║ 6. Approved viewers (no mutual): photos visible, contact masked    ║');
+  console.log('║ 7. Mutual connections: all info fully visible                      ║');
   console.log('╚════════════════════════════════════════════════════════════════════╝\n');
 
   let passed = 0;

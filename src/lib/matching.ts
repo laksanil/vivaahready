@@ -10,7 +10,7 @@
  * - Gender (required): Opposite gender
  * - Age: Within preferred age range (interpreted as relative age difference)
  * - Location: Matches preferred location
- * - Caste: Intelligent caste matching with sub-caste awareness
+ * - Community: Intelligent community matching with sub-community awareness
  * - Diet: Matches preferred diet
  * - Qualification: Meets minimum preferred education
  * - Gotra: Different gotra if required
@@ -407,10 +407,10 @@ function matchesEducationCategory(candidateQual: string | null | undefined, cate
 }
 
 /**
- * Known Brahmin sub-castes and their variations
- * This list helps identify that "Iyengar" and "Niyogi" are both Brahmin sub-castes
+ * Known Brahmin communities and their variations
+ * This list helps identify that "Iyengar" and "Niyogi" are both Brahmin communities
  */
-const BRAHMIN_CASTES = [
+const BRAHMIN_COMMUNITIES = [
   // General
   'brahmin', 'brahman', 'bramin',
   // South Indian
@@ -434,38 +434,39 @@ const BRAHMIN_CASTES = [
 ]
 
 /**
- * Check if a caste string indicates Brahmin
+ * Check if a community string indicates Brahmin
  */
-function isBrahmin(caste: string): boolean {
-  const lower = caste.toLowerCase()
-  return BRAHMIN_CASTES.some(bc => lower.includes(bc))
+function isBrahmin(community: string): boolean {
+  const lower = community.toLowerCase()
+  return BRAHMIN_COMMUNITIES.some((bc: string) => lower.includes(bc))
 }
 
 /**
- * Intelligent caste matching
- * - "Same Caste only" -> Match at broad level (e.g., both Brahmins)
- * - Specific caste -> Match if castes are compatible
+ * Intelligent community matching
+ * - "Same Community only" -> Match at broad level (e.g., both Brahmins)
+ * - Specific community -> Match if communities are compatible
  * @param strict - if true, missing candidate data returns false (for deal-breakers)
  */
-function isCasteMatch(seekerCaste: string | null | undefined, seekerPref: string | null | undefined, candidateCaste: string | null | undefined, strict: boolean = false): boolean {
+function isCommunityMatch(seekerCommunity: string | null | undefined, seekerPref: string | null | undefined, candidateCommunity: string | null | undefined, strict: boolean = false): boolean {
   // No preference or "doesn't matter"
   if (!seekerPref || seekerPref.toLowerCase() === "doesn't matter" || seekerPref.toLowerCase() === 'any') {
     return true
   }
 
-  // No candidate caste info - can't verify
-  if (!candidateCaste) {
+  // No candidate community info - can't verify
+  if (!candidateCommunity) {
     return !strict // If strict (deal-breaker), missing data = no match
   }
 
   const prefLower = seekerPref.toLowerCase()
-  const candidateLower = candidateCaste.toLowerCase()
+  const candidateLower = candidateCommunity.toLowerCase()
 
-  // "Same Caste only" logic
-  if (prefLower.includes('same caste') || prefLower.includes('same_caste')) {
-    if (!seekerCaste) return !strict // Can't compare
+  // "Same Community only" or legacy "Same Caste only" logic
+  if (prefLower.includes('same community') || prefLower.includes('same_community') ||
+      prefLower.includes('same caste') || prefLower.includes('same_caste')) {
+    if (!seekerCommunity) return !strict // Can't compare
 
-    const seekerLower = seekerCaste.toLowerCase()
+    const seekerLower = seekerCommunity.toLowerCase()
 
     // Both are Brahmins - consider them compatible at broad level
     if (isBrahmin(seekerLower) && isBrahmin(candidateLower)) {
@@ -483,7 +484,7 @@ function isCasteMatch(seekerCaste: string | null | undefined, seekerPref: string
     return hasMatch
   }
 
-  // Direct caste comparison
+  // Direct community comparison
   if (candidateLower.includes(prefLower) || prefLower.includes(candidateLower)) {
     return true
   }
@@ -1441,7 +1442,7 @@ export function matchesSeekerPreferences(
   // 8. Community check
   if (isPrefSet(seeker.prefCommunity)) {
     const isDB = isDealbreaker(seeker.prefCommunityIsDealbreaker)
-    const matches = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community, isDB)
+    const matches = isCommunityMatch(seeker.community, seeker.prefCommunity, candidate.community, isDB)
     if (!matches && isDB) {
       return false
     }
@@ -1700,7 +1701,7 @@ export function calculateMatchScore(
   let communityMatched = true
   if (isPrefSet(seeker.prefCommunity)) {
     totalCriteria++
-    communityMatched = isCasteMatch(seeker.community, seeker.prefCommunity, candidate.community)
+    communityMatched = isCommunityMatch(seeker.community, seeker.prefCommunity, candidate.community)
     if (communityMatched) matchedCount++
   }
 

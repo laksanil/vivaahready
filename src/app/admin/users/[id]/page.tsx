@@ -619,16 +619,10 @@ export default function AdminUserDetailPage() {
                       <span className="text-gray-900">{user.profile.religion}</span>
                     </div>
                   )}
-                  {user.profile.community && (
+                  {(user.profile.community || user.profile.caste) && (
                     <div className="flex items-center gap-3">
                       <Users className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-900">{user.profile.community}</span>
-                    </div>
-                  )}
-                  {user.profile.caste && (
-                    <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-900">{user.profile.caste}</span>
+                      <span className="text-gray-900">{user.profile.community || user.profile.caste}</span>
                     </div>
                   )}
                 </div>

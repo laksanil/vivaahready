@@ -334,6 +334,7 @@ function FeedPageContent() {
                           onPass={() => handlePass(profile)}
                           isLoading={loadingProfileId === profile.id}
                           canLike={userStatus?.canExpressInterest ?? false}
+                          isRestricted={!userStatus?.isApproved}
                         />
                       ))}
                     </div>
@@ -357,6 +358,7 @@ function FeedPageContent() {
                           onPass={() => handlePass(profile)}
                           isLoading={loadingProfileId === profile.id}
                           canLike={userStatus?.canExpressInterest ?? false}
+                          isRestricted={!userStatus?.isApproved}
                         />
                       ))}
                     </div>

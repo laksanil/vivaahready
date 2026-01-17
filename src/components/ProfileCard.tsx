@@ -69,6 +69,15 @@ interface ProfileCardProps {
   isLoading?: boolean
   canLike?: boolean
   showActions?: boolean
+  /** If true, photos are blurred and names/contact/social are masked */
+  isRestricted?: boolean
+}
+
+// Helper to mask sensitive text
+function maskText(text: string | null | undefined, showFirst: number = 1): string {
+  if (!text) return 'XXXXXXXX'
+  if (text.length <= showFirst) return 'X'.repeat(8)
+  return text.substring(0, showFirst) + 'X'.repeat(Math.min(8, text.length - showFirst))
 }
 
 export function ProfileCard({
@@ -78,6 +87,7 @@ export function ProfileCard({
   isLoading = false,
   canLike = true,
   showActions = true,
+  isRestricted = false,
 }: ProfileCardProps) {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
@@ -112,11 +122,21 @@ export function ProfileCard({
             <>
               <img
                 src={allPhotos[photoIndex]}
-                alt={profile.user.name}
-                className="w-full h-full object-cover"
+                alt={isRestricted ? 'Profile photo' : profile.user.name}
+                className={`w-full h-full object-cover ${isRestricted ? 'blur-lg' : ''}`}
                 referrerPolicy="no-referrer"
                 onError={() => setImageError(true)}
               />
+              {/* Lock overlay for restricted profiles */}
+              {isRestricted && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <div className="bg-white/95 rounded-xl p-4 text-center shadow-lg">
+                    <Lock className="h-8 w-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-700">Photo Restricted</p>
+                    <p className="text-xs text-gray-500">Verify profile to view</p>
+                  </div>
+                </div>
+              )}
 
               {/* Zoom button */}
               <button
@@ -160,10 +180,19 @@ export function ProfileCard({
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200">
+            <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200 ${isRestricted ? 'blur-sm' : ''}`}>
               <span className="text-4xl font-semibold text-primary-600">
                 {getInitials(profile.user.name)}
               </span>
+            </div>
+          )}
+          {/* Lock overlay for restricted profiles without photos */}
+          {isRestricted && !(allPhotos.length > 0 && !imageError) && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/95 rounded-xl p-4 text-center shadow-lg">
+                <Lock className="h-8 w-8 text-gray-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-700">Restricted</p>
+              </div>
             </div>
           )}
 
@@ -188,9 +217,15 @@ export function ProfileCard({
           {/* Name and Age */}
           <div className="mb-4">
             <h3 className="text-xl font-bold text-gray-900 leading-tight">
-              {profile.user.name}{age ? `, ${age}` : ''}
+              {isRestricted ? maskText(profile.user.name, 2) : profile.user.name}{age ? `, ${age}` : ''}
             </h3>
-            {profile.maritalStatus && profile.maritalStatus !== 'Never Married' && (
+            {isRestricted && (
+              <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                <Lock className="h-3 w-3" />
+                Verify to see full details
+              </p>
+            )}
+            {!isRestricted && profile.maritalStatus && profile.maritalStatus !== 'Never Married' && (
               <span className="text-sm text-gray-500">{profile.maritalStatus}</span>
             )}
           </div>
@@ -363,13 +398,23 @@ export function ProfileCard({
           >
             <X className="h-8 w-8" />
           </button>
-          <img
-            src={allPhotos[photoIndex]}
-            alt={profile.user.name}
-            className="max-w-full max-h-full object-contain"
-            referrerPolicy="no-referrer"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={allPhotos[photoIndex]}
+              alt={isRestricted ? 'Profile photo' : profile.user.name}
+              className={`max-w-full max-h-full object-contain ${isRestricted ? 'blur-xl' : ''}`}
+              referrerPolicy="no-referrer"
+            />
+            {isRestricted && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black/60 rounded-xl p-6 text-center">
+                  <Lock className="h-12 w-12 text-white mx-auto mb-3" />
+                  <p className="text-white font-semibold">Photo Restricted</p>
+                  <p className="text-white/70 text-sm">Verify your profile to view</p>
+                </div>
+              </div>
+            )}
+          </div>
           {allPhotos.length > 1 && (
             <>
               <button

@@ -70,7 +70,7 @@ export async function POST(request: Request) {
         languagesKnown: body.motherTongue || body.languagesKnown,
         currentLocation: currentLocation,
         zipCode: body.zipCode,
-        caste: body.caste,
+        community: body.community || body.caste, // community is primary, caste is legacy fallback
         gotra: body.gothra || body.gotra,
         qualification: body.education || body.qualification,
         university: body.educationDetail || body.university,
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
           : body.prefAgeDiff,
         prefLocation: body.preferredDistance || body.preferredLocation || body.prefLocation,
         prefDiet: body.prefDiet,
-        prefCaste: body.preferredCaste || body.prefCaste,
+        prefCommunity: body.prefCommunity || body.preferredCaste || body.prefCaste, // prefCommunity is primary, prefCaste is legacy fallback
         prefGotra: body.prefGotra,
         prefQualification: body.preferredEducation || body.prefQualification,
         prefIncome: body.prefIncome,

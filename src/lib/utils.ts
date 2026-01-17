@@ -91,3 +91,26 @@ export function isValidImageUrl(url: string | null | undefined): boolean {
   if (url.includes('googleusercontent.com')) return false
   return url.startsWith('http')
 }
+
+/**
+ * Mask phone number - shows area code, hides rest
+ * "+1 (555) 123-4567" → "(555) XXX-XXXX"
+ * "555-123-4567" → "(555) XXX-XXXX"
+ * Used to indicate phone exists but is locked for non-connected users
+ */
+export function maskPhone(phone: string | null | undefined): string {
+  if (!phone) return '(XXX) XXX-XXXX'
+
+  // Extract digits only
+  const digits = phone.replace(/\D/g, '')
+
+  // Handle different formats
+  if (digits.length >= 10) {
+    // If 11+ digits, assume first digit is country code
+    const areaCode = digits.length > 10 ? digits.slice(1, 4) : digits.slice(0, 3)
+    return `(${areaCode}) XXX-XXXX`
+  }
+
+  // Fallback for shorter numbers
+  return '(XXX) XXX-XXXX'
+}

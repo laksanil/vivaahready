@@ -53,8 +53,10 @@ function isCommunityMatch(seekerCommunity, seekerPref, candidateCommunity) {
   const pref = seekerPref.toLowerCase();
   const cand = candidateCommunity.toLowerCase();
 
-  if (pref.includes('same caste') || pref.includes('same_caste')) {
-    if (!seekerCommunity) return { match: false, reason: 'Same caste wanted but seeker has no caste defined' };
+  // Support both "same community" and legacy "same caste" preference values
+  if (pref.includes('same community') || pref.includes('same_community') ||
+      pref.includes('same caste') || pref.includes('same_caste')) {
+    if (!seekerCommunity) return { match: false, reason: 'Same community wanted but seeker has no community defined' };
     const seeker = seekerCommunity.toLowerCase();
 
     // Brahmin matching
@@ -67,7 +69,7 @@ function isCommunityMatch(seekerCommunity, seekerPref, candidateCommunity) {
       return { match: true, reason: 'Same community' };
     }
 
-    return { match: false, reason: `Same caste wanted: seeker is ${seekerCommunity}, candidate is ${candidateCommunity}` };
+    return { match: false, reason: `Same community wanted: seeker is ${seekerCommunity}, candidate is ${candidateCommunity}` };
   }
 
   // Specific community preference
@@ -392,11 +394,11 @@ const TEST_CASES = [
 
   // ===== COMMUNITY TESTS =====
   {
-    name: 'Community: Same caste (dealbreaker) rejects different community',
+    name: 'Community: Same community (dealbreaker) rejects different community',
     profileA: {
       name: 'Brahmin Seeker',
       community: 'Brahmin',
-      prefCommunity: 'Same Caste only',
+      prefCommunity: 'Same Community only',
       prefCommunityIsDealbreaker: true,
     },
     profileB: {
@@ -406,14 +408,14 @@ const TEST_CASES = [
       prefCommunityIsDealbreaker: false,
     },
     expectedMatch: false,
-    expectedReason: 'A wants same caste Brahmin (dealbreaker), B is Kapu',
+    expectedReason: 'A wants same community Brahmin (dealbreaker), B is Kapu',
   },
   {
-    name: 'Community: Same caste matches within Brahmin variants',
+    name: 'Community: Same community matches within Brahmin variants',
     profileA: {
       name: 'Iyer Seeker',
       community: 'Brahmin Iyer',
-      prefCommunity: 'Same Caste only',
+      prefCommunity: 'Same Community only',
       prefCommunityIsDealbreaker: true,
     },
     profileB: {

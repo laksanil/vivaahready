@@ -23,7 +23,7 @@ import {
   Lock,
   Clock,
 } from 'lucide-react'
-import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
+import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl, maskPhone } from '@/lib/utils'
 import MessageModal from '@/components/MessageModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
@@ -591,11 +591,11 @@ function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true
             <div className="mt-3 space-y-1">
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <Lock className="h-4 w-4" />
-                <span className="blur-sm select-none">email@hidden.com</span>
+                <span className="select-none">XXXXXX@XXX.XXX</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <Lock className="h-4 w-4" />
-                <span className="blur-sm select-none">+1 XXX-XXX-XXXX</span>
+                <span className="select-none">{maskPhone(profile.user.phone)}</span>
               </div>
             </div>
           )}

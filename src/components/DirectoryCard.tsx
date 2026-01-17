@@ -28,6 +28,15 @@ interface DirectoryCardProps {
   isLoading?: boolean
   canLike?: boolean
   showActions?: boolean
+  /** If true, photos are blurred and names/contact/social are masked */
+  isRestricted?: boolean
+}
+
+// Helper to mask sensitive text
+function maskText(text: string | null | undefined, showFirst: number = 1): string {
+  if (!text) return 'XXXXXXXX'
+  if (text.length <= showFirst) return 'X'.repeat(8)
+  return text.substring(0, showFirst) + 'X'.repeat(Math.min(8, text.length - showFirst))
 }
 
 export function DirectoryCard({
@@ -37,6 +46,7 @@ export function DirectoryCard({
   isLoading = false,
   canLike = true,
   showActions = true,
+  isRestricted = false,
 }: DirectoryCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
@@ -91,20 +101,28 @@ export function DirectoryCard({
           {/* Photo with Carousel */}
           <div className="flex-shrink-0 relative group">
             <Link href={buildUrl(`/profile/${profile.id}`)} className="block">
-              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 rounded-l-lg overflow-hidden">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-gray-100 rounded-l-lg overflow-hidden relative">
                 {currentPhoto && !hasError ? (
                   <img
                     src={currentPhoto}
-                    alt={profile.user.name}
-                    className="w-full h-full object-cover"
+                    alt={isRestricted ? 'Profile photo' : profile.user.name}
+                    className={`w-full h-full object-cover ${isRestricted ? 'blur-md' : ''}`}
                     referrerPolicy="no-referrer"
                     onError={() => handleImageError(currentPhotoIndex)}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200">
+                  <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-200 ${isRestricted ? 'blur-sm' : ''}`}>
                     <span className="text-2xl font-semibold text-primary-600">
                       {getInitials(profile.user.name)}
                     </span>
+                  </div>
+                )}
+                {/* Lock overlay for restricted profiles */}
+                {isRestricted && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="bg-white/90 rounded-full p-2">
+                      <Lock className="h-5 w-5 text-gray-600" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -167,9 +185,15 @@ export function DirectoryCard({
             <div className="min-w-0">
               <Link href={buildUrl(`/profile/${profile.id}`)} className="hover:text-primary-600">
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">
-                  {profile.user.name}{age ? `, ${age}` : ''}
+                  {isRestricted ? maskText(profile.user.name, 2) : profile.user.name}{age ? `, ${age}` : ''}
                 </h3>
               </Link>
+              {isRestricted && (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  Verify to see full profile
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {profile.theyLikedMeFirst && (
@@ -218,9 +242,9 @@ export function DirectoryCard({
 
           {/* Religion/Community & Marital Status */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            {(profile.religion || profile.caste) && (
+            {(profile.religion || profile.community || profile.caste) && (
               <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
-                {profile.religion || 'Hindu'}{profile.caste ? ` • ${profile.caste}` : ''}
+                {profile.religion || 'Hindu'}{(profile.community || profile.caste) ? ` • ${profile.community || profile.caste}` : ''}
               </span>
             )}
             {profile.maritalStatus && profile.maritalStatus !== 'Never Married' && (
@@ -331,15 +355,24 @@ export function DirectoryCard({
 
           {/* Image */}
           <div
-            className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+            className="max-w-[90vw] max-h-[90vh] flex items-center justify-center relative"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={allPhotos[currentPhotoIndex]}
-              alt={`${profile.user.name} - Photo ${currentPhotoIndex + 1}`}
-              className="max-w-full max-h-[90vh] object-contain"
+              alt={isRestricted ? 'Profile photo' : `${profile.user.name} - Photo ${currentPhotoIndex + 1}`}
+              className={`max-w-full max-h-[90vh] object-contain ${isRestricted ? 'blur-lg' : ''}`}
               referrerPolicy="no-referrer"
             />
+            {isRestricted && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-black/60 rounded-xl p-6 text-center">
+                  <Lock className="h-12 w-12 text-white mx-auto mb-3" />
+                  <p className="text-white font-semibold">Photo Restricted</p>
+                  <p className="text-white/70 text-sm">Verify your profile to view</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Photo counter */}

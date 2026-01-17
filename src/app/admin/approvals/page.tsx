@@ -16,6 +16,7 @@ interface PendingProfile {
   currentLocation: string | null
   occupation: string | null
   qualification: string | null
+  community: string | null
   caste: string | null
   aboutMe: string | null
   createdAt: string
@@ -298,10 +299,10 @@ export default function AdminApprovalsPage() {
                         {profile.qualification}
                       </div>
                     )}
-                    {profile.caste && (
+                    {(profile.community || profile.caste) && (
                       <div className="flex items-center gap-1">
                         <User className="h-4 w-4 text-gray-400" />
-                        {profile.caste}
+                        {profile.community || profile.caste}
                       </div>
                     )}
                   </div>
