@@ -85,7 +85,7 @@ export default function PaymentPage() {
 
   if (hasPaid) {
     return (
-      <div className="min-h-screen bg-lavender-50/50 py-12">
+      <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -111,7 +111,7 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-lavender-50/50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Link
           href="/matches"

@@ -12,7 +12,7 @@ export default function PreviewProfileRedirect() {
   }, [router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-silver-50 to-silver-100">
       <p className="text-gray-600">Redirecting to profile...</p>
     </div>
   )

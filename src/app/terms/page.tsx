@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function TermsAndPrivacyPage() {
   return (
-    <div className="min-h-screen bg-lavender-50/50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <Link
           href="/register"

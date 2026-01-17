@@ -22,12 +22,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="font-sans min-h-screen flex flex-col bg-lavender-50">
+      <body className="font-sans min-h-screen flex flex-col bg-white">
         <Providers>
           <Suspense fallback={<div className="h-16 bg-white/80 backdrop-blur-sm shadow-sm" />}>
             <Navbar />
           </Suspense>
-          <main className="flex-grow bg-gradient-to-b from-lavender-50 to-white">{children}</main>
+          <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">{children}</main>
           <Suspense fallback={null}>
             <Footer />
           </Suspense>

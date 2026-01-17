@@ -6,37 +6,37 @@
 
 @layer base {
   :root {
-    --background: 270 100% 99%;
-    --foreground: 270 10% 10%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
   }
 
   body {
-    @apply bg-lavender-50 text-gray-900 antialiased;
+    @apply bg-white text-gray-900 antialiased;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 text-white px-6 py-3 font-semibold
-           hover:bg-primary-700 transition-colors duration-200
+    @apply bg-primary-700 text-white px-6 py-3 font-semibold rounded-lg
+           hover:bg-primary-800 transition-colors duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply bg-white text-primary-600 px-6 py-3 font-semibold
-           border-2 border-primary-600 hover:bg-primary-50 transition-colors duration-200
+    @apply bg-white text-primary-700 px-6 py-3 font-semibold rounded-lg
+           border-2 border-primary-700 hover:bg-primary-50 transition-colors duration-200
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
   .btn-outline {
-    @apply bg-transparent text-gray-700 px-6 py-3 font-semibold
+    @apply bg-transparent text-gray-700 px-6 py-3 font-semibold rounded-lg
            border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50
            transition-colors duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 bg-white border border-gray-300
+    @apply w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg
            text-gray-900 text-sm font-medium
            transition-all duration-200 ease-in-out
            hover:border-gray-400
@@ -60,7 +60,7 @@
   }
 
   select.input-field:focus {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230284c7'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a91e3f'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   }
 
   /* Form label styling */
@@ -82,7 +82,7 @@
   }
 
   .card {
-    @apply bg-white shadow-lg p-6;
+    @apply bg-white shadow-lg p-6 rounded-xl;
   }
 
   .section-title {
@@ -90,7 +90,7 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent;
   }
 }
 
@@ -101,13 +101,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-lavender-100;
+  @apply bg-silver-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-lavender-300 rounded-full;
+  @apply bg-silver-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-lavender-400;
+  @apply bg-silver-400;
 }

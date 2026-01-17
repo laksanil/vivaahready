@@ -40,7 +40,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-lavender-100 via-lavender-50 to-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-white via-silver-50 to-silver-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -160,7 +160,7 @@ export default async function HomePage() {
 
       {/* Blurred Profiles Preview */}
       {previewProfiles.length > 0 && (
-        <section className="py-20 bg-lavender-50/50">
+        <section className="py-20 bg-gradient-to-b from-white via-silver-50 to-silver-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="section-title">Real Profiles Waiting for You</h2>
