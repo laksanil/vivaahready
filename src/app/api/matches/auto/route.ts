@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
 import { getTargetUserId } from '@/lib/admin'
+import { getLifetimeStats } from '@/lib/lifetimeStats'
 
 export const dynamic = 'force-dynamic'
 
@@ -243,7 +244,7 @@ export async function GET(request: Request) {
       targetUserName = targetUser?.name || 'Unknown'
     }
 
-    // Calculate interest stats for admin visibility
+    // Calculate interest stats for admin visibility (active/current stats)
     const interestsSentStats = {
       total: myInterestsSent.length,
       pending: myInterestsSent.filter(m => m.status === 'pending').length,
@@ -258,6 +259,9 @@ export async function GET(request: Request) {
       rejected: myInterestsReceived.filter(m => m.status === 'rejected').length,
     }
 
+    // Get lifetime stats (never decrease, show platform value)
+    const lifetimeStats = await getLifetimeStats(targetUserId)
+
     return NextResponse.json({
       matches: allMatches,
       freshMatches: sortedFreshMatches,
@@ -268,12 +272,19 @@ export async function GET(request: Request) {
       viewingUserName: isAdminView ? targetUserName : undefined,
       // Stats for admin to see exact same counts as user
       stats: {
+        // Active stats (current/dynamic - can change based on profile updates)
         potentialMatches: sortedFreshMatches.length,
         mutualMatches: sortedMutualMatches.length,
         likedYouCount: sortedFreshMatches.filter(m => m.theyLikedMeFirst).length,
         interestsSent: interestsSentStats,
         interestsReceived: interestsReceivedStats,
         declined: declinedUserIds.size,
+        // Lifetime stats (never decrease - show platform value)
+        lifetime: {
+          interestsReceived: lifetimeStats?.lifetimeInterestsReceived || 0,
+          interestsSent: lifetimeStats?.lifetimeInterestsSent || 0,
+          profileViews: lifetimeStats?.lifetimeProfileViews || 0,
+        },
       },
       userStatus: {
         isApproved,

@@ -220,6 +220,11 @@ model Profile {
   referralSource    String?
   isImported        Boolean  @default(false)
 
+  // Lifetime Stats (never decrease, used to showcase platform value)
+  lifetimeInterestsReceived  Int  @default(0)  // Total interests ever received
+  lifetimeInterestsSent      Int  @default(0)  // Total interests ever sent
+  lifetimeProfileViews       Int  @default(0)  // Total profile views ever received
+
   // Status
   approvalStatus    String @default("pending")
   approvalDate      DateTime?

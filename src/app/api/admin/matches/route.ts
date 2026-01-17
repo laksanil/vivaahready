@@ -9,6 +9,12 @@ interface UserStats {
   interestsSent: { total: number; pending: number; accepted: number; rejected: number }
   interestsReceived: { total: number; pending: number; accepted: number; rejected: number }
   declined: number
+  // Lifetime stats (never decrease - show platform value)
+  lifetime: {
+    interestsReceived: number
+    interestsSent: number
+    profileViews: number
+  }
 }
 
 // Helper to get all stats by calling the same API users use
@@ -19,6 +25,7 @@ async function getStatsForUser(userId: string, baseUrl: string, cookieHeader: st
     interestsSent: { total: 0, pending: 0, accepted: 0, rejected: 0 },
     interestsReceived: { total: 0, pending: 0, accepted: 0, rejected: 0 },
     declined: 0,
+    lifetime: { interestsReceived: 0, interestsSent: 0, profileViews: 0 },
   }
 
   try {
@@ -150,6 +157,8 @@ export async function GET(request: Request) {
             mutualMatches: userStats.mutualMatches,
             potentialMatches: userStats.potentialMatches,
             declined: userStats.declined,
+            // Lifetime stats from user API (never decrease - show platform value)
+            lifetime: userStats.lifetime,
             // These are admin-only stats
             reportsFiled,
             reportsReceived,
@@ -226,6 +235,7 @@ export async function GET(request: Request) {
       inactive: profilesWithStats.filter(p => p.stats.daysSinceLastLogin === null || p.stats.daysSinceLastLogin > 7).length,
       neverLoggedIn: profilesWithStats.filter(p => p.stats.daysSinceLastLogin === null).length,
       noInterestsReceived: profilesWithStats.filter(p => p.stats.interestsReceived.total === 0).length,
+      noMutualMatches: profilesWithStats.filter(p => p.stats.mutualMatches === 0).length,
       pendingResponses: profilesWithStats.filter(p => p.stats.interestsReceived.pending > 0).length,
       totalMutualMatches: profilesWithStats.reduce((sum, p) => sum + p.stats.mutualMatches, 0),
     }

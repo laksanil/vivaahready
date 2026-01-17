@@ -9,7 +9,7 @@ import {
   Inbox, Send,
   Heart, AlertTriangle, Clock, TrendingUp,
   ArrowUpDown, Users, XCircle, Flag, Eye,
-  ExternalLink,
+  ExternalLink, Star,
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import {
@@ -60,6 +60,12 @@ interface ProfileStats {
     reportsReceived: number
     daysSinceSignup: number
     daysSinceLastLogin: number | null
+    // Lifetime stats (never decrease - show platform value)
+    lifetime: {
+      interestsReceived: number
+      interestsSent: number
+      profileViews: number
+    }
   }
 }
 
@@ -70,6 +76,7 @@ interface Summary {
   inactive: number
   neverLoggedIn: number
   noInterestsReceived: number
+  noMutualMatches: number
   pendingResponses: number
   totalMutualMatches: number
 }
@@ -176,7 +183,7 @@ export default function AdminMatchesPage() {
   }
 
   const exportToCSV = () => {
-    const headers = ['VR ID', 'Name', 'Email', 'Type', 'Received', 'Sent', 'Mutual', 'Last Login', 'Status']
+    const headers = ['VR ID', 'Name', 'Email', 'Type', 'Received', 'Sent', 'Mutual', 'Lifetime Recv', 'Lifetime Sent', 'Lifetime Views', 'Last Login', 'Status']
     const rows = profiles.map(p => [
       p.odNumber || '-',
       p.user.name,
@@ -185,6 +192,9 @@ export default function AdminMatchesPage() {
       `${p.stats.interestsReceived.total} (${p.stats.interestsReceived.pending}P/${p.stats.interestsReceived.accepted}A/${p.stats.interestsReceived.rejected}R)`,
       `${p.stats.interestsSent.total} (${p.stats.interestsSent.pending}P/${p.stats.interestsSent.accepted}A/${p.stats.interestsSent.rejected}R)`,
       p.stats.mutualMatches,
+      p.stats.lifetime?.interestsReceived || 0,
+      p.stats.lifetime?.interestsSent || 0,
+      p.stats.lifetime?.profileViews || 0,
       p.user.lastLogin ? new Date(p.user.lastLogin).toLocaleDateString() : 'Never',
       p.stats.daysSinceLastLogin === null ? 'Never logged in' : p.stats.daysSinceLastLogin <= 7 ? 'Active' : 'Inactive'
     ])
@@ -198,7 +208,26 @@ export default function AdminMatchesPage() {
     a.click()
   }
 
-  const tabs = filters.map(f => ({ id: f.id, label: f.label }))
+  // Build tabs with counts from summary
+  const getFilterCount = (filterId: FilterType): number | undefined => {
+    if (!summary) return undefined
+    switch (filterId) {
+      case 'all': return summary.totalProfiles
+      case 'inactive': return summary.inactive
+      case 'no_interests': return summary.noInterestsReceived
+      case 'no_matches': return summary.noMutualMatches
+      case 'pending_response': return summary.pendingResponses
+      default: return undefined
+    }
+  }
+
+  const tabs = filters.map(f => {
+    const count = getFilterCount(f.id)
+    return {
+      id: f.id,
+      label: count !== undefined ? `${f.label} (${count})` : f.label
+    }
+  })
 
   return (
     <div>
@@ -337,6 +366,12 @@ export default function AdminMatchesPage() {
                         Reports
                       </div>
                     </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase bg-amber-50" colSpan={3}>
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="h-3.5 w-3.5 fill-amber-500" />
+                        Lifetime Stats
+                      </div>
+                    </th>
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('lastLogin')}
@@ -347,6 +382,28 @@ export default function AdminMatchesPage() {
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                  <tr className="bg-amber-50/50">
+                    <th colSpan={7}></th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
+                      <div className="flex items-center justify-center gap-1">
+                        <Inbox className="h-3 w-3" />
+                        Recv
+                      </div>
+                    </th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
+                      <div className="flex items-center justify-center gap-1">
+                        <Send className="h-3 w-3" />
+                        Sent
+                      </div>
+                    </th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
+                      <div className="flex items-center justify-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        Views
+                      </div>
+                    </th>
+                    <th colSpan={2}></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -460,6 +517,24 @@ export default function AdminMatchesPage() {
                           </Link>
                         </div>
                       </td>
+                      {/* Lifetime Stats - Received */}
+                      <td className="px-2 py-3 text-center bg-amber-50/30">
+                        <span className={`font-semibold ${(profile.stats.lifetime?.interestsReceived || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
+                          {profile.stats.lifetime?.interestsReceived || 0}
+                        </span>
+                      </td>
+                      {/* Lifetime Stats - Sent */}
+                      <td className="px-2 py-3 text-center bg-amber-50/30">
+                        <span className={`font-semibold ${(profile.stats.lifetime?.interestsSent || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
+                          {profile.stats.lifetime?.interestsSent || 0}
+                        </span>
+                      </td>
+                      {/* Lifetime Stats - Profile Views */}
+                      <td className="px-2 py-3 text-center bg-amber-50/30">
+                        <span className={`font-semibold ${(profile.stats.lifetime?.profileViews || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
+                          {profile.stats.lifetime?.profileViews || 0}
+                        </span>
+                      </td>
                       {/* Last Login */}
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
@@ -516,6 +591,12 @@ export default function AdminMatchesPage() {
           <span><strong>R</strong> = Rejected</span>
           <span><strong>B</strong> = Bride</span>
           <span><strong>G</strong> = Groom</span>
+        </div>
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-2 text-xs text-amber-700">
+            <Star className="h-3.5 w-3.5 fill-amber-500" />
+            <span><strong>Lifetime Stats</strong> = Total historical counts that never decrease (even when interests are withdrawn). Shows platform engagement value to users.</span>
+          </div>
         </div>
       </div>
     </div>

@@ -24,10 +24,17 @@ import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface DashboardStats {
+  // Active stats (current/dynamic)
   interestsReceived: number
   interestsSent: number
   mutualMatches: number
   matchesCount: number
+  // Lifetime stats (never decrease - show platform value)
+  lifetime: {
+    interestsReceived: number
+    interestsSent: number
+    profileViews: number
+  }
 }
 
 function DashboardContent() {
@@ -41,6 +48,11 @@ function DashboardContent() {
     interestsSent: 0,
     mutualMatches: 0,
     matchesCount: 0,
+    lifetime: {
+      interestsReceived: 0,
+      interestsSent: 0,
+      profileViews: 0,
+    },
   })
   const [loading, setLoading] = useState(true)
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false)
@@ -198,28 +210,26 @@ function DashboardContent() {
 
   const fetchStats = async () => {
     try {
-      // Fetch interests received (with viewAsUser support)
-      const receivedRes = await fetch(buildApiUrl('/api/interest?type=received'))
-      const receivedData = await receivedRes.json()
-
-      // Fetch interests sent (with viewAsUser support)
-      const sentRes = await fetch(buildApiUrl('/api/interest?type=sent'))
-      const sentData = await sentRes.json()
-
-      // Count mutual matches
-      const mutualCount = (receivedData.interests || []).filter(
-        (i: any) => i.status === 'accepted'
-      ).length
-
-      // Fetch matches count (with viewAsUser support)
+      // Fetch all stats from the single source of truth API
       const matchesRes = await fetch(buildApiUrl('/api/matches/auto'))
       const matchesData = await matchesRes.json()
 
+      // Extract stats from the API response
+      const apiStats = matchesData.stats || {}
+      const lifetimeStats = apiStats.lifetime || {}
+
       setStats({
-        interestsReceived: (receivedData.interests || []).length,
-        interestsSent: (sentData.interests || []).length,
-        mutualMatches: mutualCount,
-        matchesCount: matchesData.total || 0,
+        // Active stats (current/dynamic)
+        interestsReceived: apiStats.interestsReceived?.total || 0,
+        interestsSent: apiStats.interestsSent?.total || 0,
+        mutualMatches: apiStats.mutualMatches || 0,
+        matchesCount: apiStats.potentialMatches || 0,
+        // Lifetime stats (never decrease)
+        lifetime: {
+          interestsReceived: lifetimeStats.interestsReceived || 0,
+          interestsSent: lifetimeStats.interestsSent || 0,
+          profileViews: lifetimeStats.profileViews || 0,
+        },
       })
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -368,64 +378,120 @@ function DashboardContent() {
               </div>
             )}
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Your Matches</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {loading ? '...' : stats.matchesCount}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Users className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Interests Received</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {loading ? '...' : stats.interestsReceived}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center">
-                    <Heart className="h-6 w-6 text-pink-600" />
+            {/* Stats Grid - Active Stats */}
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Current Activity</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Your Matches</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                        {loading ? '...' : stats.matchesCount}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Interests Sent</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {loading ? '...' : stats.interestsSent}
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Eye className="h-6 w-6 text-purple-600" />
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Active Interests</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                        {loading ? '...' : stats.interestsReceived}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center">
+                      <Heart className="h-6 w-6 text-pink-600" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Mutual Matches</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {loading ? '...' : stats.mutualMatches}
-                    </p>
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Pending Sent</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                        {loading ? '...' : stats.interestsSent}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Eye className="h-6 w-6 text-purple-600" />
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Mutual Matches</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                        {loading ? '...' : stats.mutualMatches}
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Lifetime Stats - Show platform value */}
+            {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0) && (
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Lifetime Engagement</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-pink-600 font-medium">Total Interests Received</p>
+                        <p className="text-2xl font-bold text-pink-700 mt-1">
+                          {loading ? '...' : stats.lifetime.interestsReceived}
+                        </p>
+                        <p className="text-xs text-pink-500 mt-1">Since you joined</p>
+                      </div>
+                      <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center">
+                        <Heart className="h-6 w-6 text-pink-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-purple-600 font-medium">Total Interests Sent</p>
+                        <p className="text-2xl font-bold text-purple-700 mt-1">
+                          {loading ? '...' : stats.lifetime.interestsSent}
+                        </p>
+                        <p className="text-xs text-purple-500 mt-1">Since you joined</p>
+                      </div>
+                      <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <Eye className="h-6 w-6 text-purple-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-blue-600 font-medium">Profile Views</p>
+                        <p className="text-2xl font-bold text-blue-700 mt-1">
+                          {loading ? '...' : stats.lifetime.profileViews}
+                        </p>
+                        <p className="text-xs text-blue-500 mt-1">Since you joined</p>
+                      </div>
+                      <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Eye className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Interest Notification */}
             {stats.interestsReceived > 0 && (
