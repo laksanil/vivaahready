@@ -72,7 +72,7 @@ export function Navbar() {
   const isAdminViewMode = !!viewAsUser
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-lavender-100">
       {/* Admin View Banner */}
       {isAdminViewMode && (
         <div className="bg-purple-600 text-white px-4 py-2">

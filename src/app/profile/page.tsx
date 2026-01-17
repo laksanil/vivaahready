@@ -458,7 +458,7 @@ function ViewProfilePageContent() {
   // If trying to access with ?id= but not admin, show unauthorized
   if ((adminProfileId || isImpersonationMode) && !isAdmin) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-lavender-50/50 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">Unauthorized: Admin access required</p>
@@ -473,7 +473,7 @@ function ViewProfilePageContent() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-lavender-50/50 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">{error || 'No profile found'}</p>
@@ -741,7 +741,7 @@ function ViewProfilePageContent() {
   const displayName = getProfileDisplayName()
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-lavender-100">
       {/* Admin Mode Banner */}
       {isAdminMode && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">

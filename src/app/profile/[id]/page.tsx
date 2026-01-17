@@ -354,7 +354,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const canExpressInterest = userStatus?.canExpressInterest ?? false
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4">
+    <div className="min-h-screen bg-lavender-50/50 py-4">
       <div className="max-w-7xl mx-auto px-4">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-4">

@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-50 via-white to-accent-50 py-20">
+      <section className="bg-gradient-to-br from-lavender-100 via-lavender-50 to-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-6">
@@ -81,7 +81,7 @@ export default function AboutPage() {
       </section>
 
       {/* How We're Different */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-lavender-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="section-title mb-4">How We're Different</h2>

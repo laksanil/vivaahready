@@ -213,7 +213,7 @@ function LoginLoading() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary-50 to-white">
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-lavender-100 via-lavender-50 to-white">
       <Suspense fallback={<LoginLoading />}>
         <LoginForm />
       </Suspense>

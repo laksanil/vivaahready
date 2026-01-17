@@ -6,12 +6,12 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 270 100% 99%;
+    --foreground: 270 10% 10%;
   }
 
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-lavender-50 text-gray-900 antialiased;
   }
 }
 
@@ -101,13 +101,13 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-lavender-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300;
+  @apply bg-lavender-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
+  @apply bg-lavender-400;
 }
