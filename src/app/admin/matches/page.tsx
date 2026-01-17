@@ -9,7 +9,7 @@ import {
   Inbox, Send,
   Heart, AlertTriangle, Clock, TrendingUp,
   ArrowUpDown, Users, XCircle, Flag, Eye,
-  ExternalLink, Star,
+  ExternalLink, Star, CheckCircle, XOctagon, HourglassIcon,
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import {
@@ -84,6 +84,7 @@ interface Summary {
 
 type FilterType = 'all' | 'inactive' | 'no_interests' | 'no_matches' | 'pending_response'
 type SortField = 'lastLogin' | 'interestsReceived' | 'interestsSent' | 'mutualMatches' | 'createdAt'
+type ApprovalFilter = 'all' | 'approved' | 'pending' | 'rejected'
 
 const filters: { id: FilterType; label: string; description: string }[] = [
   { id: 'all', label: 'All Profiles', description: 'Show all profiles' },
@@ -100,6 +101,7 @@ export default function AdminMatchesPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [genderFilter, setGenderFilter] = useState('')
+  const [approvalFilter, setApprovalFilter] = useState<ApprovalFilter>('all')
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [sortBy, setSortBy] = useState<SortField>('lastLogin')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -109,7 +111,7 @@ export default function AdminMatchesPage() {
 
   useEffect(() => {
     fetchMatches()
-  }, [page, genderFilter, activeFilter, sortBy, sortOrder])
+  }, [page, genderFilter, approvalFilter, activeFilter, sortBy, sortOrder])
 
   const fetchMatches = async () => {
     setLoading(true)
@@ -120,6 +122,7 @@ export default function AdminMatchesPage() {
         sortBy,
         sortOrder,
         ...(genderFilter && { gender: genderFilter }),
+        ...(approvalFilter !== 'all' && { approvalStatus: approvalFilter }),
         ...(searchQuery && { search: searchQuery }),
         ...(activeFilter !== 'all' && { filter: activeFilter }),
       })
@@ -181,6 +184,38 @@ export default function AdminMatchesPage() {
       return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">Inactive</span>
     }
     return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">Dormant</span>
+  }
+
+  const getApprovalStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+            <CheckCircle className="h-3 w-3" />
+            Approved
+          </span>
+        )
+      case 'pending':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700">
+            <HourglassIcon className="h-3 w-3" />
+            Pending
+          </span>
+        )
+      case 'rejected':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+            <XOctagon className="h-3 w-3" />
+            Rejected
+          </span>
+        )
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+            {status || 'Unknown'}
+          </span>
+        )
+    }
   }
 
   const exportToCSV = () => {
@@ -301,6 +336,16 @@ export default function AdminMatchesPage() {
             <option value="female">Brides</option>
             <option value="male">Grooms</option>
           </select>
+          <select
+            value={approvalFilter}
+            onChange={(e) => { setApprovalFilter(e.target.value as ApprovalFilter); setPage(1); }}
+            className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="all">All Statuses</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
         </AdminSearchFilter>
       </AdminTabs>
 
@@ -383,7 +428,7 @@ export default function AdminMatchesPage() {
                         {sortBy === 'lastLogin' && <ArrowUpDown className="h-3 w-3" />}
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   </tr>
                   <tr className="bg-amber-50/50">
                     <th colSpan={7}></th>
@@ -556,28 +601,9 @@ export default function AdminMatchesPage() {
                           {getActivityStatus(profile.stats.daysSinceLastLogin)}
                         </div>
                       </td>
-                      {/* Actions */}
+                      {/* Status */}
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={adminLinks.matches(profile.user.id)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 text-purple-500 hover:text-purple-600 hover:bg-purple-50 rounded"
-                            title="View as this user"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </a>
-                          <a
-                            href={adminLinks.profile(profile.id, profile.user.id)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded"
-                            title="View Profile"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </div>
+                        {getApprovalStatusBadge(profile.approvalStatus)}
                       </td>
                     </tr>
                   ))}

@@ -72,12 +72,17 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get('sortBy') || 'lastLogin' // lastLogin, interestsReceived, interestsSent, createdAt
     const sortOrder = searchParams.get('sortOrder') || 'desc'
     const filter = searchParams.get('filter') // inactive, no_interests, no_matches
+    const approvalStatus = searchParams.get('approvalStatus') // approved, pending, rejected
 
     // Build where clause
     const where: any = {}
 
     if (gender) {
       where.gender = gender
+    }
+
+    if (approvalStatus) {
+      where.approvalStatus = approvalStatus
     }
 
     if (search) {
