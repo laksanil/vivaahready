@@ -66,6 +66,7 @@ interface ProfileStats {
       interestsSent: number
       profileViews: number
       matches: number
+      mutualMatches: number
     }
   }
 }
@@ -371,7 +372,7 @@ export default function AdminMatchesPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       <div className="flex items-center gap-1">
                         <Users className="h-3.5 w-3.5" />
-                        Matches
+                        Potential
                       </div>
                     </th>
                     <th
@@ -416,19 +417,10 @@ export default function AdminMatchesPage() {
                         Reports
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase bg-amber-50" colSpan={4}>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase bg-amber-50" colSpan={5}>
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-3.5 w-3.5 fill-amber-500" />
                         Lifetime Stats
-                      </div>
-                    </th>
-                    <th
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
-                      onClick={() => handleSort('lastLogin')}
-                    >
-                      <div className="flex items-center gap-1">
-                        Last Login
-                        {sortBy === 'lastLogin' && <ArrowUpDown className="h-3 w-3" />}
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -455,11 +447,17 @@ export default function AdminMatchesPage() {
                     </th>
                     <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
                       <div className="flex items-center justify-center gap-1">
-                        <Heart className="h-3 w-3" />
+                        <Users className="h-3 w-3" />
                         Matches
                       </div>
                     </th>
-                    <th colSpan={2}></th>
+                    <th className="px-2 py-1 text-center text-xs font-medium text-amber-700">
+                      <div className="flex items-center justify-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        Mutual
+                      </div>
+                    </th>
+                    <th colSpan={1}></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -591,18 +589,17 @@ export default function AdminMatchesPage() {
                           {profile.stats.lifetime?.profileViews || 0}
                         </span>
                       </td>
-                      {/* Lifetime Stats - Matches */}
+                      {/* Lifetime Stats - Matches (potential) */}
                       <td className="px-2 py-3 text-center bg-amber-50/30">
                         <span className={`font-semibold ${(profile.stats.lifetime?.matches || 0) > 0 ? 'text-amber-700' : 'text-gray-400'}`}>
                           {profile.stats.lifetime?.matches || 0}
                         </span>
                       </td>
-                      {/* Last Login */}
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm text-gray-600">{formatLastLogin(profile.user.lastLogin)}</span>
-                          {getActivityStatus(profile.stats.daysSinceLastLogin)}
-                        </div>
+                      {/* Lifetime Stats - Mutual Matches */}
+                      <td className="px-2 py-3 text-center bg-amber-50/30">
+                        <span className={`font-semibold ${(profile.stats.lifetime?.mutualMatches || 0) > 0 ? 'text-pink-600' : 'text-gray-400'}`}>
+                          {profile.stats.lifetime?.mutualMatches || 0}
+                        </span>
                       </td>
                       {/* Status */}
                       <td className="px-4 py-3">
@@ -629,6 +626,7 @@ export default function AdminMatchesPage() {
       <div className="mt-4 bg-white rounded-xl p-4 shadow-sm">
         <h3 className="text-sm font-medium text-gray-700 mb-2">Legend</h3>
         <div className="flex flex-wrap gap-4 text-xs text-gray-600">
+          <span><strong>Potential</strong> = Profiles matching criteria</span>
           <span><strong>P</strong> = Pending</span>
           <span><strong>A</strong> = Accepted</span>
           <span><strong>R</strong> = Rejected</span>
@@ -638,7 +636,7 @@ export default function AdminMatchesPage() {
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex items-center gap-2 text-xs text-amber-700">
             <Star className="h-3.5 w-3.5 fill-amber-500" />
-            <span><strong>Lifetime Stats</strong> = Total historical counts that never decrease (even when interests are withdrawn). Shows platform engagement value to users.</span>
+            <span><strong>Lifetime Stats</strong> = Total historical counts that never decrease. <strong>Matches</strong> = Accepted connections (mutual matches).</span>
           </div>
         </div>
       </div>

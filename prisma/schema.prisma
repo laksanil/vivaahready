@@ -224,7 +224,8 @@ model Profile {
   lifetimeInterestsReceived  Int  @default(0)  // Total interests ever received
   lifetimeInterestsSent      Int  @default(0)  // Total interests ever sent
   lifetimeProfileViews       Int  @default(0)  // Total profile views ever received
-  lifetimeMatches            Int  @default(0)  // Total mutual matches ever made
+  lifetimeMatches            Int  @default(0)  // Total potential matches ever shown (high-water mark)
+  lifetimeMutualMatches      Int  @default(0)  // Total mutual matches/connections ever made
 
   // Status
   approvalStatus    String @default("pending")

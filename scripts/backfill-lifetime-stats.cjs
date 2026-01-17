@@ -7,7 +7,8 @@
  * Stats backfilled:
  * - lifetimeInterestsReceived: Count of Match records where user is receiver
  * - lifetimeInterestsSent: Count of Match records where user is sender
- * - lifetimeMatches: Count of mutual matches (where both parties have accepted/both sent)
+ * - lifetimeMatches: Current potential matches count (high-water mark)
+ * - lifetimeMutualMatches: Count of mutual matches (where both parties have accepted)
  * - lifetimeProfileViews: Not backfilled (historical data not available)
  */
 
@@ -26,6 +27,7 @@ async function backfillLifetimeStats() {
       lifetimeInterestsReceived: true,
       lifetimeInterestsSent: true,
       lifetimeMatches: true,
+      lifetimeMutualMatches: true,
       user: {
         select: {
           name: true,
@@ -51,30 +53,7 @@ async function backfillLifetimeStats() {
       where: { senderId: profile.userId }
     })
 
-    // Count mutual matches
-    // A mutual match is when:
-    // 1. User sent interest and it was accepted, OR
-    // 2. User received interest and accepted it, OR
-    // 3. Both users sent interest to each other
-
-    // Method: Count accepted interests where user is sender or receiver
-    const acceptedAsSender = await prisma.match.count({
-      where: {
-        senderId: profile.userId,
-        status: 'accepted'
-      }
-    })
-
-    const acceptedAsReceiver = await prisma.match.count({
-      where: {
-        receiverId: profile.userId,
-        status: 'accepted'
-      }
-    })
-
-    // Mutual matches = unique connections where at least one side is accepted
-    // We need to avoid double counting - only count once per connection
-    // Get all accepted matches involving this user
+    // Count mutual matches (unique partners with accepted status)
     const acceptedMatches = await prisma.match.findMany({
       where: {
         OR: [
@@ -98,10 +77,11 @@ async function backfillLifetimeStats() {
     const mutualMatches = partnerIds.size
 
     // Check if we need to update
+    // Note: lifetimeMatches (potential matches) will be updated when user views matches page
     const needsUpdate =
       profile.lifetimeInterestsReceived !== interestsReceived ||
       profile.lifetimeInterestsSent !== interestsSent ||
-      profile.lifetimeMatches !== mutualMatches
+      profile.lifetimeMutualMatches !== mutualMatches
 
     if (needsUpdate) {
       await prisma.profile.update({
@@ -109,14 +89,14 @@ async function backfillLifetimeStats() {
         data: {
           lifetimeInterestsReceived: interestsReceived,
           lifetimeInterestsSent: interestsSent,
-          lifetimeMatches: mutualMatches
+          lifetimeMutualMatches: mutualMatches
         }
       })
 
       console.log(`✅ Updated: ${profile.user.name} (${profile.user.email})`)
       console.log(`   Received: ${profile.lifetimeInterestsReceived} -> ${interestsReceived}`)
       console.log(`   Sent: ${profile.lifetimeInterestsSent} -> ${interestsSent}`)
-      console.log(`   Matches: ${profile.lifetimeMatches} -> ${mutualMatches}`)
+      console.log(`   Mutual Matches: ${profile.lifetimeMutualMatches || 0} -> ${mutualMatches}`)
       updated++
     } else {
       skipped++

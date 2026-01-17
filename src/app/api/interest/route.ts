@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
-import { incrementInterestStats, incrementMatchesForBoth } from '@/lib/lifetimeStats'
+import { incrementInterestStats, incrementMutualMatchesForBoth } from '@/lib/lifetimeStats'
 
 export const dynamic = 'force-dynamic'
 
@@ -262,8 +262,8 @@ export async function POST(request: Request) {
       // Increment lifetime stats for both sender and receiver
       await incrementInterestStats(currentUserId, targetProfile.userId)
 
-      // Increment lifetime matches for both users (mutual connection created)
-      await incrementMatchesForBoth(currentUserId, targetProfile.userId)
+      // Increment lifetime mutual matches for both users
+      await incrementMutualMatchesForBoth(currentUserId, targetProfile.userId)
 
       return NextResponse.json({
         message: "It's a match! You both expressed interest.",
@@ -454,9 +454,9 @@ export async function PATCH(request: Request) {
       data: { status: newStatus }
     })
 
-    // Increment lifetime matches when a mutual connection is created (accept or reconsider)
+    // Increment lifetime mutual matches when a connection is created (accept or reconsider)
     if (action === 'accept' || action === 'reconsider') {
-      await incrementMatchesForBoth(interest.senderId, interest.receiverId)
+      await incrementMutualMatchesForBoth(interest.senderId, interest.receiverId)
     }
 
     return NextResponse.json({

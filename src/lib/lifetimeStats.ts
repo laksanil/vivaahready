@@ -10,7 +10,8 @@ import { prisma } from './prisma'
  * - lifetimeInterestsReceived: Total interests ever received
  * - lifetimeInterestsSent: Total interests ever sent
  * - lifetimeProfileViews: Total profile views ever received
- * - lifetimeMatches: Total mutual matches ever made
+ * - lifetimeMatches: Total potential matches ever shown (high-water mark)
+ * - lifetimeMutualMatches: Total mutual matches/connections ever made
  */
 
 /**
@@ -87,10 +88,36 @@ export async function incrementInterestStats(
 }
 
 /**
- * Increment the lifetime matches counter for both users in a mutual connection
+ * Update the lifetime matches counter for a user
+ * Called to update the potential matches count shown to the user
+ * Only increases (never decreases) to maintain lifetime high-water mark
+ */
+export async function updateLifetimeMatches(
+  userId: string,
+  currentPotentialMatches: number
+): Promise<void> {
+  // Get current lifetime matches
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+    select: { lifetimeMatches: true }
+  })
+
+  // Only update if current potential matches is higher than stored lifetime matches
+  if (profile && currentPotentialMatches > profile.lifetimeMatches) {
+    await prisma.profile.update({
+      where: { userId },
+      data: {
+        lifetimeMatches: currentPotentialMatches
+      }
+    })
+  }
+}
+
+/**
+ * Increment the lifetime mutual matches counter for both users
  * Called when a mutual match is created (either via accept or both expressing interest)
  */
-export async function incrementMatchesForBoth(
+export async function incrementMutualMatchesForBoth(
   userId1: string,
   userId2: string
 ): Promise<void> {
@@ -98,7 +125,7 @@ export async function incrementMatchesForBoth(
     prisma.profile.update({
       where: { userId: userId1 },
       data: {
-        lifetimeMatches: {
+        lifetimeMutualMatches: {
           increment: 1
         }
       }
@@ -106,7 +133,7 @@ export async function incrementMatchesForBoth(
     prisma.profile.update({
       where: { userId: userId2 },
       data: {
-        lifetimeMatches: {
+        lifetimeMutualMatches: {
           increment: 1
         }
       }
@@ -122,6 +149,7 @@ export async function getLifetimeStats(userId: string): Promise<{
   lifetimeInterestsSent: number
   lifetimeProfileViews: number
   lifetimeMatches: number
+  lifetimeMutualMatches: number
 } | null> {
   const profile = await prisma.profile.findUnique({
     where: { userId },
@@ -129,7 +157,8 @@ export async function getLifetimeStats(userId: string): Promise<{
       lifetimeInterestsReceived: true,
       lifetimeInterestsSent: true,
       lifetimeProfileViews: true,
-      lifetimeMatches: true
+      lifetimeMatches: true,
+      lifetimeMutualMatches: true
     }
   })
 

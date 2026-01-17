@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
 import { getTargetUserId } from '@/lib/admin'
-import { getLifetimeStats } from '@/lib/lifetimeStats'
+import { getLifetimeStats, updateLifetimeMatches } from '@/lib/lifetimeStats'
 
 export const dynamic = 'force-dynamic'
 
@@ -262,6 +262,13 @@ export async function GET(request: Request) {
     // Get lifetime stats (never decrease, show platform value)
     const lifetimeStats = await getLifetimeStats(targetUserId)
 
+    // Update lifetime matches if current potential matches is higher (high-water mark)
+    const currentPotentialMatches = sortedFreshMatches.length
+    await updateLifetimeMatches(targetUserId, currentPotentialMatches)
+
+    // Re-fetch lifetime stats to get updated matches value
+    const updatedLifetimeStats = await getLifetimeStats(targetUserId)
+
     return NextResponse.json({
       matches: allMatches,
       freshMatches: sortedFreshMatches,
@@ -273,7 +280,7 @@ export async function GET(request: Request) {
       // Stats for admin to see exact same counts as user
       stats: {
         // Active stats (current/dynamic - can change based on profile updates)
-        potentialMatches: sortedFreshMatches.length,
+        potentialMatches: currentPotentialMatches,
         mutualMatches: sortedMutualMatches.length,
         likedYouCount: sortedFreshMatches.filter(m => m.theyLikedMeFirst).length,
         interestsSent: interestsSentStats,
@@ -281,10 +288,11 @@ export async function GET(request: Request) {
         declined: declinedUserIds.size,
         // Lifetime stats (never decrease - show platform value)
         lifetime: {
-          interestsReceived: lifetimeStats?.lifetimeInterestsReceived || 0,
-          interestsSent: lifetimeStats?.lifetimeInterestsSent || 0,
-          profileViews: lifetimeStats?.lifetimeProfileViews || 0,
-          matches: lifetimeStats?.lifetimeMatches || 0,
+          interestsReceived: updatedLifetimeStats?.lifetimeInterestsReceived || 0,
+          interestsSent: updatedLifetimeStats?.lifetimeInterestsSent || 0,
+          profileViews: updatedLifetimeStats?.lifetimeProfileViews || 0,
+          matches: updatedLifetimeStats?.lifetimeMatches || 0,
+          mutualMatches: updatedLifetimeStats?.lifetimeMutualMatches || 0,
         },
       },
       userStatus: {
