@@ -1014,8 +1014,56 @@ function ProfileCard({
         {theirMatchScore && yourMatchScore && isLoggedIn && profile.userId !== viewerUserId && (
           <div className="border-t border-gray-100 pt-4">
             <div className="bg-gray-50 border border-gray-200 p-4">
+              {/* Header with Profile Pictures Side by Side */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-bold text-gray-800">Compatibility</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-base font-bold text-gray-800">Compatibility</h3>
+                  {/* Profile Pictures Side by Side */}
+                  {matchProfiles && (
+                    <div className="flex items-center">
+                      {/* Your Photo */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md bg-gray-200 relative z-10">
+                        {matchProfiles.myProfile.profileImageUrl ? (
+                          <img
+                            src={matchProfiles.myProfile.profileImageUrl}
+                            alt="You"
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary-100 text-primary-600 font-semibold text-sm">
+                            {matchProfiles.myProfile.name?.charAt(0) || 'Y'}
+                          </div>
+                        )}
+                      </div>
+                      {/* Heart Icon in between */}
+                      <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center -mx-1.5 z-20 border-2 border-white">
+                        <Heart className="w-3 h-3 text-white fill-white" />
+                      </div>
+                      {/* Their Photo - blur if not approved */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md bg-gray-200 relative z-10">
+                        {matchProfiles.theirProfile.profileImageUrl ? (
+                          <img
+                            src={matchProfiles.theirProfile.profileImageUrl}
+                            alt={matchProfiles.theirProfile.name}
+                            className={`w-full h-full object-cover ${profile.approvalStatus !== 'approved' ? 'blur-sm' : ''}`}
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center bg-primary-100 text-primary-600 font-semibold text-sm ${profile.approvalStatus !== 'approved' ? 'blur-sm' : ''}`}>
+                            {matchProfiles.theirProfile.name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                        {/* Lock overlay for non-approved profiles */}
+                        {profile.approvalStatus !== 'approved' && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                            <Lock className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-primary-600 font-semibold">You match {possessivePronoun.toLowerCase()}: {theirMatchScore.totalScore}/{theirMatchScore.maxScore}</span>
                   <span className="text-gray-400">|</span>
