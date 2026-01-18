@@ -99,26 +99,15 @@ export function Navbar() {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-              {/* Logo Icon - Couple with wreath */}
-              <div className="bg-white rounded-lg p-2 shadow-md">
-                <Image
-                  src="/logo-black.png"
-                  alt="VivaahReady Logo"
-                  width={48}
-                  height={48}
-                  className="h-11 w-11 object-contain"
-                  priority
-                />
-              </div>
-              {/* Brand Name and Tagline */}
-              <div className="flex flex-col">
-                <span className="text-2xl md:text-3xl font-bold text-white tracking-wide drop-shadow-md">
-                  VivaahReady
-                </span>
-                <span className="text-xs md:text-sm text-red-100 font-medium tracking-wider uppercase -mt-0.5">
-                  Meaningful Connections
-                </span>
-              </div>
+              {/* Full Logo - White couple with text on red background */}
+              <Image
+                src="/logo-couple.png"
+                alt="VivaahReady - Meaningful Connections"
+                width={200}
+                height={200}
+                className="h-16 w-auto object-contain"
+                priority
+              />
             </Link>
           </div>
 
