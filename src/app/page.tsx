@@ -49,25 +49,28 @@ export default async function HomePage() {
                 <span className="gradient-text">Traditional Soul</span>
               </h1>
               <p className="mt-6 text-lg text-gray-600 leading-relaxed">
-                Stop choosing between outdated tradition and superficial swiping.
-                VivaahReady bridges the gap — connecting Indian singles in the US
-                through preference-based matching and verified profiles.
+                Start free—create your profile, set deal-breakers and preferences, and view mutual matches only for better privacy.
+                <br />
+                Photos/names and interest requests unlock after verification. Contact details are shared only after mutual acceptance.
               </p>
               <div className="mt-8">
                 <FindMatchButton className="bg-primary-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center">
                   Find Your Match
                 </FindMatchButton>
               </div>
-              <div className="mt-8 flex items-center space-x-6 text-sm text-gray-500">
+              <div className="mt-6 flex items-center space-x-6 text-sm text-gray-500">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                   Verified Profiles
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  100% Free
+                  Free to start
                 </div>
               </div>
+              <p className="mt-3 text-sm text-gray-500">
+                Verification helps keep profiles genuine and interactions intentional.
+              </p>
             </div>
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-300">
@@ -77,21 +80,25 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Smart Matching</h3>
-                    <p className="text-sm text-gray-500">Based on your preferences</p>
+                    <p className="text-sm text-gray-500">Based on your preferences and mutual compatibility</p>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center text-gray-600">
-                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
-                    <span>Values-based matching</span>
+                    <Shield className="h-5 w-5 text-green-500 mr-2" />
+                    <span>Mutual matches only (privacy-first)</span>
                   </div>
                   <div className="flex items-center text-gray-600">
-                    <Shield className="h-5 w-5 text-green-500 mr-2" />
-                    <span>Privacy protected</span>
+                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
+                    <span>Compatibility table (deal-breakers + nice-to-haves)</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                    <span>Verified profiles</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Users className="h-5 w-5 text-blue-500 mr-2" />
-                    <span>Verified profiles only</span>
+                    <span>Contact shared after mutual acceptance</span>
                   </div>
                 </div>
               </div>
@@ -117,8 +124,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Create Your Profile</h3>
               <p className="text-gray-600">
-                Complete a detailed form about yourself, your values, and what you're
-                looking for in a partner.
+                Start free. Build your profile and set deal-breakers and nice-to-haves.
               </p>
             </div>
 
@@ -128,8 +134,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Profile Review</h3>
               <p className="text-gray-600">
-                Our team reviews your profile to ensure quality and authenticity
-                before you start matching.
+                We review profiles to maintain authenticity and a serious community.
               </p>
             </div>
 
@@ -139,8 +144,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">View Matches</h3>
               <p className="text-gray-600">
-                See profiles that match your preferences — age, location, caste,
-                education, and more.
+                See mutual matches only—you won't browse a public directory. Each match includes a compatibility table.
               </p>
             </div>
 
@@ -150,8 +154,7 @@ export default async function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Connect</h3>
               <p className="text-gray-600">
-                Express interest. When mutual, contact details are revealed
-                so you can take it from there!
+                Express interest. When it's mutual, contact details are revealed so you can take it from there.
               </p>
             </div>
           </div>
@@ -202,10 +205,10 @@ export default async function HomePage() {
                 <div className="text-center bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md mx-4">
                   <Lock className="h-12 w-12 text-primary-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Create Your Free Profile
+                    Create Your Profile (Free to Start)
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Sign up to see complete profiles, photos, and start connecting with your matches.
+                    See mutual matches and compatibility details. Unlock photos/names and interest after verification. Contact details are shared only after mutual acceptance.
                   </p>
                   <FindMatchButton className="btn-primary inline-flex items-center">
                     Find Your Match

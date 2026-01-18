@@ -99,15 +99,18 @@ export function Navbar() {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-              {/* Couple Icon */}
-              <Image
-                src="/logo-couple.png"
-                alt="VivaahReady"
-                width={80}
-                height={80}
-                className="h-14 w-14 object-contain"
-                priority
-              />
+              {/* Couple Icon - cropped from original logo to show only the silhouette */}
+              <div className="h-16 w-16 overflow-hidden relative flex-shrink-0 rounded-lg">
+                <Image
+                  src="/logo-original-red.png"
+                  alt="VivaahReady"
+                  width={500}
+                  height={500}
+                  className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[180%] h-auto"
+                  style={{ maxWidth: 'none' }}
+                  priority
+                />
+              </div>
               {/* Brand Name and Tagline */}
               <div className="flex flex-col">
                 <span className="text-white text-2xl font-bold tracking-tight">VivaahReady</span>
@@ -131,6 +134,9 @@ export function Navbar() {
                 </Link>
               </>
             )}
+            <Link href="/pricing" className="text-white/90 hover:text-white font-medium transition-colors">
+              Pricing
+            </Link>
             <Link href="/about" className="text-white/90 hover:text-white font-medium transition-colors">
               About Us
             </Link>
@@ -276,6 +282,13 @@ export function Navbar() {
                 </Link>
               </>
             )}
+            <Link
+              href="/pricing"
+              className="block text-white/90 hover:text-white font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Pricing
+            </Link>
             <Link
               href="/about"
               className="block text-white/90 hover:text-white font-medium"
