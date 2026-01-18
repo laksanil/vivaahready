@@ -192,6 +192,10 @@ function DashboardContent() {
     const hasStoredFormData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData')
     if (hasStoredFormData && shouldCreateProfile) return
 
+    // Don't show modal if user just completed registration (redirected with status=pending)
+    // The session might not have updated hasProfile yet, so we trust the URL param
+    if (showPendingMessage) return
+
     // Wait until session data is fully loaded before deciding to show modal
     // This prevents the flash where modal appears briefly before hasProfile is populated
     if (!sessionDataLoaded) return
@@ -203,7 +207,7 @@ function DashboardContent() {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded])
+  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage])
 
   useEffect(() => {
     if (!userContextReady) return

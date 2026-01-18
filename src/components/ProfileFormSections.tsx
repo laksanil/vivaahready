@@ -1371,7 +1371,7 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
       {/* Basic Religion Info - shown for all */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div>
-          <label className="form-label">Religion</label>
+          <label className="form-label">Religion <span className="text-red-500">*</span></label>
           <select name="religion" value={formData.religion as string || ''} onChange={handleReligionChange} className="input-field">
             <option value="">Select</option>
             {RELIGIONS.map(religion => (
@@ -1383,7 +1383,7 @@ export function ReligionSection({ formData, handleChange, setFormData }: Section
           )}
         </div>
         <div>
-          <label className="form-label">Community</label>
+          <label className="form-label">Community <span className="text-red-500">*</span></label>
           <select
             name="community"
             value={formData.community as string || ''}

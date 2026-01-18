@@ -24,7 +24,7 @@ import {
   Flag,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
-import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
+import { calculateAge, getInitials, extractPhotoUrls, maskPhone, formatDisplayName } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -620,7 +620,7 @@ function ProfileCard({
           <div className="flex-1 min-w-0 text-white">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-xl font-bold truncate">{profile.user.name}</h2>
+                <h2 className="text-xl font-bold truncate">{formatDisplayName(profile.user.name)}</h2>
                 <div className="text-sm text-white/90 mt-0.5">
                   {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
@@ -1094,9 +1094,21 @@ function ProfileCard({
                       const theirIsDealbreaker = theirCrit?.isDealbreaker
                       const yourIsDealbreaker = yourCrit?.isDealbreaker
 
-                      // Nice-to-haves get grey styling
+                      // Style preferences with colored backgrounds
                       const theirIsNiceToHave = theirCrit && !theirIsDealbreaker
                       const yourIsNiceToHave = yourCrit && !yourIsDealbreaker
+
+                      // Determine row background based on preference type
+                      const getTheirPrefStyle = () => {
+                        if (theirIsDealbreaker) return 'bg-red-50 text-gray-700'
+                        if (theirIsNiceToHave) return 'bg-blue-50 text-gray-700'
+                        return 'text-gray-700'
+                      }
+                      const getYourPrefStyle = () => {
+                        if (yourIsDealbreaker) return 'bg-red-50 text-gray-700'
+                        if (yourIsNiceToHave) return 'bg-blue-50 text-gray-700'
+                        return 'text-gray-700'
+                      }
 
                       return (
                         <div
@@ -1106,7 +1118,7 @@ function ProfileCard({
                           <div className="col-span-2 font-medium text-gray-700 truncate flex items-center gap-1">
                             {name}
                           </div>
-                          <div className={`col-span-3 text-center truncate flex items-center justify-center gap-1 ${theirIsNiceToHave ? 'text-gray-400' : 'text-gray-700'}`}>
+                          <div className={`col-span-3 text-center truncate flex items-center justify-center gap-1 px-1 rounded ${getTheirPrefStyle()}`}>
                             {theirCrit?.seekerPref || '-'}
                             {theirIsDealbreaker && <span className="text-red-500 font-bold text-xs" title="Deal-breaker">*</span>}
                           </div>
@@ -1119,7 +1131,7 @@ function ProfileCard({
                               )
                             ) : <span className="text-gray-300">-</span>}
                           </div>
-                          <div className={`col-span-3 text-center truncate flex items-center justify-center gap-1 ${yourIsNiceToHave ? 'text-gray-400' : 'text-gray-700'}`}>
+                          <div className={`col-span-3 text-center truncate flex items-center justify-center gap-1 px-1 rounded ${getYourPrefStyle()}`}>
                             {yourCrit?.seekerPref || '-'}
                             {yourIsDealbreaker && <span className="text-red-500 font-bold text-xs" title="Deal-breaker">*</span>}
                           </div>
@@ -1136,8 +1148,8 @@ function ProfileCard({
                       )
                     })}
                     <div className="mt-3 pt-2 border-t border-gray-200 flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1"><span className="text-red-500 font-bold">*</span> = Deal-breaker (Must have)</span>
-                      <span className="flex items-center gap-1"><span className="text-gray-400">Grey text</span> = Nice to have (Flexible)</span>
+                      <span className="flex items-center gap-1"><span className="bg-red-50 px-1.5 py-0.5 rounded text-gray-700">*</span> = Deal-breaker (Must have)</span>
+                      <span className="flex items-center gap-1"><span className="bg-blue-50 px-1.5 py-0.5 rounded text-gray-700">Blue</span> = Nice to have (Flexible)</span>
                     </div>
                   </div>
                 )

@@ -147,6 +147,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     !formData.linkedinError
   )
 
+  // Religion section validation - Religion and Community are required
+  const religionValue = formData.religion as string || ''
+  const communityValue = formData.community as string || ''
+  const isReligionComplete = religionValue !== '' && communityValue !== ''
+
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
     setError('')
@@ -651,7 +656,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'religion' && (
             <div className="space-y-4">
               <ReligionSection {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isReligionComplete)}
             </div>
           )}
 

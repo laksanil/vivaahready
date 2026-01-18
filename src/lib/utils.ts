@@ -64,6 +64,19 @@ export function getInitials(name: string | null | undefined): string {
 }
 
 /**
+ * Format full name to "Firstname L." format for privacy
+ * E.g., "Lakshmi Nagasamudra" -> "Lakshmi N."
+ */
+export function formatDisplayName(fullName: string | null | undefined): string {
+  if (!fullName) return 'User'
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase()
+  return `${firstName} ${lastInitial}.`
+}
+
+/**
  * Extract photo URLs from comma-separated photoUrls field
  * Only returns valid Cloudinary URLs (excludes Google Drive URLs)
  */
