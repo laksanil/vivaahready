@@ -22,6 +22,7 @@ import {
   ZoomIn,
   ArrowLeft,
   Flag,
+  AlertTriangle,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
 import VerificationPaymentModal from '@/components/VerificationPaymentModal'
@@ -204,6 +205,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       matched: boolean
       seekerPref: string | null
       candidateValue: string | null
+      isDealbreaker?: boolean
     }[]
   } | null>(null)
   const [yourMatchScore, setYourMatchScore] = useState<{
@@ -215,6 +217,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       matched: boolean
       seekerPref: string | null
       candidateValue: string | null
+      isDealbreaker?: boolean
     }[]
   } | null>(null)
   const [matchProfiles, setMatchProfiles] = useState<{
@@ -378,6 +381,43 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
             </Link>
           )}
         </div>
+
+        {/* Deal-breaker Violation Warning Banner */}
+        {yourMatchScore && (() => {
+          const dealBreakerViolations = yourMatchScore.criteria.filter(
+            c => c.isDealbreaker && !c.matched && c.seekerPref !== "Doesn't matter"
+          )
+          if (dealBreakerViolations.length === 0) return null
+
+          return (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-red-800 mb-1">
+                    Deal-breaker Mismatch{dealBreakerViolations.length > 1 ? 'es' : ''}
+                  </h4>
+                  <p className="text-red-700 text-sm mb-2">
+                    This profile does not match your deal-breaker preferences:
+                  </p>
+                  <ul className="text-sm text-red-700 space-y-1">
+                    {dealBreakerViolations.map((v, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <X className="w-4 h-4 text-red-500" />
+                        <span>
+                          <strong>{v.name}:</strong> You want {v.seekerPref}, but {profile.gender === 'female' ? 'she' : 'he'} has {v.candidateValue}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-red-600 text-xs mt-2 italic">
+                    This profile won't appear in your matches feed due to these deal-breaker conflicts.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Profile Card - Same as MatchingProfileCard */}
         <ProfileCard
