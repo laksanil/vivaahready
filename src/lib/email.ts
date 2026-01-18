@@ -3,8 +3,10 @@ import { Resend } from 'resend'
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-const FROM_EMAIL = 'VivaahReady <support@vivaahready.com>'
-const REPLY_TO = 'support@vivaahready.com'
+// Use Resend's default domain (no verification needed)
+// You can change this to operations@vivaahready.com after verifying your domain in Resend
+const FROM_EMAIL = 'VivaahReady <onboarding@resend.dev>'
+const REPLY_TO = 'no-reply@vivaahready.com'
 
 interface SendEmailParams {
   to: string
