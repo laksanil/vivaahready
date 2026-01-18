@@ -28,11 +28,11 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
               <Image
-                src="/logo-original.png"
+                src="/logo-banner.png"
                 alt="VivaahReady"
-                width={200}
-                height={56}
-                className="h-14 w-auto"
+                width={280}
+                height={107}
+                className="h-16 w-auto"
               />
             </div>
             <p className="text-gray-400 mb-4 max-w-md">
