@@ -232,6 +232,7 @@ export default function RegisterPage() {
   } | null>(null)
   const [countryCode, setCountryCode] = useState('+1')
   const [showPassword, setShowPassword] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -488,21 +489,27 @@ export default function RegisterPage() {
               <input
                 id="terms"
                 type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-0.5"
                 required
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
                 I agree to the{' '}
-                <Link href="/terms" className="text-primary-600 hover:text-primary-700">
-                  Terms of Service and Privacy Policy
+                <Link href="/terms" className="text-primary-600 hover:text-primary-700 underline">
+                  Terms of Use
                 </Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-primary-600 hover:text-primary-700 underline">
+                  Privacy Policy
+                </Link>.
               </label>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full flex items-center justify-center"
+              disabled={loading || !termsAccepted}
+              className={`btn-primary w-full flex items-center justify-center ${!termsAccepted ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? (
                 <>

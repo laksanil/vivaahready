@@ -3,180 +3,308 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-export default function TermsAndPrivacyPage() {
+export default function TermsOfUsePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <Link
-          href="/register"
+          href="/"
           className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-8"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Registration
+          Back to Home
         </Link>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Terms and Privacy Policy</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Terms of Use</h1>
+
+          {/* Effective Date */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-8 text-sm text-gray-600">
+            <p><strong>Effective Date:</strong> January 17, 2026</p>
+            <p><strong>Last Updated:</strong> January 17, 2026</p>
+          </div>
 
           <p className="text-gray-600 mb-8">
-            By accessing or using VivaahReady (the "Platform"), you agree to the following Terms of Use ("Terms") and the Privacy Policy governing how we collect, use, and protect your personal data. Please read both carefully before using our platform.
+            Welcome to VivaahReady. By accessing or using our platform ("Platform," "Service," or "Site"), you agree to be bound by these Terms of Use ("Terms"). Please read them carefully before using VivaahReady. If you do not agree to these Terms, do not use our Service.
           </p>
 
           <div className="space-y-8">
             {/* Section 1 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Eligibility to Use VivaahReady</h2>
-              <p className="text-gray-600 mb-3">To participate in the services provided by VivaahReady, you must:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Be at least 18 years old;</li>
-                <li>Be legally permitted to enter into a binding agreement;</li>
-                <li>Not be restricted under any applicable laws from using the Platform.</li>
-              </ul>
-              <p className="text-gray-600 mt-3">By using VivaahReady, you confirm that you meet these criteria.</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
+              <p className="text-gray-600 mb-3">
+                By creating an account, accessing, or using VivaahReady, you acknowledge that you have read, understood, and agree to be bound by these Terms and our Privacy Policy. These Terms constitute a legally binding agreement between you and VivaahReady.
+              </p>
+              <p className="text-gray-600">
+                We reserve the right to modify these Terms at any time. Material changes will be communicated via email or a notice on the Platform. Your continued use of the Service after such changes constitutes acceptance of the revised Terms.
+              </p>
             </section>
 
             {/* Section 2 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Account Registration and Security</h2>
-              <p className="text-gray-600 mb-3">You are responsible for the confidentiality and security of your login credentials. By registering, you agree to:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">2. Eligibility</h2>
+              <p className="text-gray-600 mb-3">To use VivaahReady, you must:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Provide accurate and up-to-date information;</li>
-                <li>Keep your login details private and secure;</li>
-                <li>Notify us immediately if you suspect unauthorized use of your account.</li>
+                <li>Be at least 18 years of age;</li>
+                <li>Be legally permitted to enter into a binding contract under applicable law;</li>
+                <li>Not be prohibited from using the Service under the laws of your jurisdiction;</li>
+                <li>Not have been previously suspended or removed from VivaahReady;</li>
+                <li>Create only one account for personal use (accounts created for others must be clearly designated as such, e.g., "Profile for my son/daughter").</li>
               </ul>
-              <p className="text-gray-600 mt-3">VivaahReady is not liable for any losses arising from failure to comply with these responsibilities.</p>
+              <p className="text-gray-600 mt-3">
+                By using our Service, you represent and warrant that you meet all eligibility requirements.
+              </p>
             </section>
 
             {/* Section 3 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">3. User Conduct and Community Standards</h2>
-              <p className="text-gray-600 mb-3">We aim to maintain a respectful and safe community. By using the Platform, you agree NOT to:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">3. Accounts and Profile Information</h2>
+              <p className="text-gray-600 mb-3">
+                When you create an account on VivaahReady, you agree to provide accurate, current, and complete information as prompted by our registration forms and to maintain and promptly update such information.
+              </p>
+              <p className="text-gray-600 mb-3 font-medium bg-yellow-50 border-l-4 border-yellow-400 pl-4 py-2">
+                You may not falsify or misrepresent your identity or any material information (including age, marital status, education, employment, location, or family details). Falsification and impersonation may constitute fraud and may be unlawful. VivaahReady may suspend or terminate accounts and may cooperate with law enforcement in appropriate circumstances.
+              </p>
+              <p className="text-gray-600 mb-3">You are responsible for:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Use the service for unlawful, misleading, or exploitative purposes;</li>
-                <li>Share or post content that is abusive, offensive, or inappropriate;</li>
-                <li>Impersonate another person or misrepresent your identity;</li>
-                <li>Engage in any behavior that disrupts or harms the community experience.</li>
+                <li>Maintaining the confidentiality of your account credentials;</li>
+                <li>All activities that occur under your account;</li>
+                <li>Notifying us immediately of any unauthorized use of your account.</li>
               </ul>
-              <p className="text-gray-600 mt-3">We reserve the right to suspend, disable, or delete accounts that violate these terms.</p>
+              <p className="text-gray-600 mt-3">
+                VivaahReady is not liable for any loss or damage arising from your failure to comply with these security obligations.
+              </p>
             </section>
 
             {/* Section 4 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">4. User Content and Rights</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">4. Profile Verification and Approval</h2>
               <p className="text-gray-600 mb-3">
-                You retain ownership of any content (photos, profiles, text, etc.) you upload to the Platform, but by posting content, you grant VivaahReady a non-exclusive, royalty-free, worldwide license to use, display, and reproduce your content solely for the purpose of operating the Platform.
+                VivaahReady employs a profile review and verification process to maintain a genuine, serious community. By submitting your profile, you consent to:
               </p>
-              <p className="text-gray-600 mb-3">You agree not to upload content that:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Violates any third-party rights, including intellectual property rights;</li>
-                <li>Contains personally identifiable information of others;</li>
-                <li>Promotes discrimination, hate, or violence.</li>
+                <li>Our review of your profile information and photos for authenticity and appropriateness;</li>
+                <li>Verification of certain information through documents or other means we may request;</li>
+                <li>Possible rejection or removal of your profile if it does not meet our standards.</li>
               </ul>
+              <p className="text-gray-600 mt-3">
+                Profile approval is at our sole discretion. We do not guarantee approval of any profile.
+              </p>
             </section>
 
             {/* Section 5 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">5. Subscription, Payments, and Refunds</h2>
-              <p className="text-gray-600 mb-3">Some features of the Platform are available only through a paid subscription. You agree to:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">5. How the Service Works</h2>
+              <p className="text-gray-600 mb-3">
+                VivaahReady is a matchmaking platform that connects individuals seeking marriage or serious relationships. Our service includes:
+              </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Pay all applicable fees for the services provided;</li>
-                <li>Provide accurate and valid payment information;</li>
-                <li>Cancel any recurring payments before renewal if you no longer wish to continue using paid features.</li>
+                <li><strong>Profile Creation:</strong> You create a profile with personal details, preferences, and photos;</li>
+                <li><strong>Matching:</strong> We show you profiles of other users who meet your stated preferences and vice versa;</li>
+                <li><strong>Interest Expression:</strong> You may express interest in profiles you find suitable;</li>
+                <li><strong>Mutual Connection:</strong> When both parties express interest, contact details may be revealed;</li>
+                <li><strong>Privacy-First Design:</strong> You only see mutual matches—profiles are not publicly browsable.</li>
               </ul>
-              <p className="text-gray-600 mt-3">All payments are non-refundable unless explicitly stated otherwise.</p>
+              <p className="text-gray-600 mt-3">
+                VivaahReady facilitates introductions but does not guarantee any specific outcome, including finding a partner, getting married, or any particular level of compatibility or success.
+              </p>
             </section>
 
             {/* Section 6 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Termination and Account Deactivation</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Fees and Payment</h2>
+              <p className="text-gray-600 mb-3">
+                VivaahReady offers certain features for free and may offer premium features for a fee. Current pricing includes:
+              </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>VivaahReady reserves the right to suspend, disable, or permanently remove your account if you violate these Terms.</li>
-                <li>You may deactivate your account at any time via your profile settings.</li>
+                <li><strong>Free Tier:</strong> Create profile, set preferences, view mutual matches (photos/names blurred until verified);</li>
+                <li><strong>Verified Registration Fee:</strong> One-time payment to unlock photos, names, and the ability to express interest;</li>
+                <li><strong>Contact Reveal Fee:</strong> Per-match fee to reveal contact details upon mutual interest.</li>
               </ul>
+              <p className="text-gray-600 mt-3">
+                All payments are processed through our payment processor. By making a payment, you agree to their terms of service. All fees are non-refundable unless otherwise stated or required by law. We reserve the right to change our pricing at any time with notice to existing users.
+              </p>
             </section>
 
             {/* Section 7 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Privacy Policy – Data Collection and Use</h2>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Personal Information We Collect</h3>
-              <p className="text-gray-600 mb-3">When you use VivaahReady, we collect personal information to provide and improve our services. This may include:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Member Conduct and Prohibited Activities</h2>
+              <p className="text-gray-600 mb-3">You agree NOT to:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Contact details (e.g., name, email, phone number);</li>
-                <li>Profile information (e.g., age, gender, location, preferences);</li>
-                <li>Usage data (e.g., interactions with the Platform).</li>
+                <li>Provide false information, impersonate another person, or submit forged or misleading documents during verification; such conduct may be unlawful and may be reported to relevant authorities;</li>
+                <li>Use the Service for any unlawful purpose or in violation of any applicable laws;</li>
+                <li>Harass, abuse, stalk, threaten, or otherwise violate the rights of others;</li>
+                <li>Post or transmit any content that is defamatory, obscene, pornographic, violent, or otherwise objectionable;</li>
+                <li>Solicit money, financial information, or other valuables from other users;</li>
+                <li>Use the Service for commercial purposes, advertising, or solicitation without our written consent;</li>
+                <li>Attempt to gain unauthorized access to other accounts, computer systems, or networks;</li>
+                <li>Interfere with or disrupt the Service or servers or networks connected to the Service;</li>
+                <li>Use any automated means (bots, scrapers, etc.) to access or collect data from the Service;</li>
+                <li>Create multiple accounts or create accounts on behalf of others without their consent;</li>
+                <li>Post content that infringes any third-party intellectual property rights;</li>
+                <li>Share personal contact information publicly before mutual interest is established;</li>
+                <li>Engage in any activity that we determine, in our sole discretion, to be harmful to the community.</li>
               </ul>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">How We Use Your Data</h3>
-              <p className="text-gray-600 mb-3">We use your personal information for the following purposes:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>To provide personalized matchmaking services;</li>
-                <li>To send notifications about new matches or updates;</li>
-                <li>To improve the user experience and our services.</li>
-              </ul>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Data Security</h3>
-              <p className="text-gray-600">
-                We take reasonable measures to protect your personal information from unauthorized access, disclosure, or alteration. However, please note that no system is completely secure, and we cannot guarantee 100% protection.
-              </p>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Sharing Your Data</h3>
-              <p className="text-gray-600 mb-3">We do not share your personal information with third parties, except as necessary for:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Providing services (e.g., payment processors);</li>
-                <li>Complying with legal obligations (e.g., responding to subpoenas).</li>
-              </ul>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Data Retention</h3>
-              <p className="text-gray-600">
-                We will retain your personal data for as long as your account is active or as needed to provide our services. You can request account deletion at any time.
-              </p>
-
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Your Rights</h3>
-              <p className="text-gray-600">
-                You have the right to access, update, or delete your personal information. To exercise these rights, please contact us at{' '}
-                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
+              <p className="text-gray-600 mt-3">
+                Violation of these rules may result in immediate suspension or termination of your account without refund.
               </p>
             </section>
 
             {/* Section 8 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">8. Disclaimers</h2>
-              <p className="text-gray-600 mb-3">VivaahReady is provided "as-is." We do not guarantee:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">8. User Content</h2>
+              <p className="text-gray-600 mb-3">
+                You retain ownership of any content (photos, text, information) you submit to VivaahReady ("User Content"). By submitting User Content, you grant VivaahReady a non-exclusive, worldwide, royalty-free, sublicensable license to use, reproduce, modify, display, and distribute your User Content solely for the purpose of operating and improving the Service.
+              </p>
+              <p className="text-gray-600 mb-3">You represent and warrant that:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>The accuracy or reliability of user content;</li>
-                <li>That the matches you receive will be compatible or successful;</li>
-                <li>That the Platform will be uninterrupted or error-free.</li>
+                <li>You own or have the necessary rights to your User Content;</li>
+                <li>Your User Content does not infringe or violate any third-party rights;</li>
+                <li>Your User Content complies with these Terms and all applicable laws.</li>
               </ul>
+              <p className="text-gray-600 mt-3">
+                We reserve the right to remove any User Content that violates these Terms or that we find objectionable for any reason.
+              </p>
             </section>
 
             {/* Section 9 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Limitation of Liability</h2>
-              <p className="text-gray-600 mb-3">To the maximum extent permitted by law, VivaahReady shall not be liable for indirect, incidental, or consequential damages resulting from:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Intellectual Property</h2>
+              <p className="text-gray-600 mb-3">
+                The Service, including all content, features, and functionality (excluding User Content), is owned by VivaahReady and is protected by copyright, trademark, and other intellectual property laws. You may not:
+              </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Your use or inability to use the Platform;</li>
-                <li>Any user conduct or content;</li>
-                <li>Unauthorized access to your account.</li>
+                <li>Copy, modify, or distribute any part of the Service without our written consent;</li>
+                <li>Use our trademarks, logos, or branding without authorization;</li>
+                <li>Reverse engineer or attempt to extract the source code of our software.</li>
               </ul>
             </section>
 
             {/* Section 10 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Changes to Terms and Privacy Policy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Privacy</h2>
               <p className="text-gray-600">
-                We reserve the right to modify these Terms and Privacy Policy at any time. If we make material changes, we will notify you by posting a notice on the Platform or by email. Continued use of the Platform after such updates constitutes your acceptance of the revised Terms and Privacy Policy.
+                Your privacy is important to us. Our collection and use of personal information is governed by our{' '}
+                <Link href="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</Link>,
+                which is incorporated into these Terms by reference. By using the Service, you consent to our collection and use of your information as described in the Privacy Policy.
               </p>
             </section>
 
             {/* Section 11 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">11. Contact Us</h2>
-              <p className="text-gray-600">
-                If you have any questions about these Terms or the Privacy Policy, please contact us at:{' '}
-                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">11. Termination</h2>
+              <p className="text-gray-600 mb-3">
+                You may terminate your account at any time through your account settings or by contacting us at{' '}
+                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
+              </p>
+              <p className="text-gray-600 mb-3">
+                We reserve the right to suspend or terminate your account at any time, with or without cause, with or without notice, including if we believe you have violated these Terms. Upon termination:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Your right to access and use the Service will immediately cease;</li>
+                <li>You will not be entitled to any refund of fees paid;</li>
+                <li>We may delete your account information and User Content.</li>
+              </ul>
+            </section>
+
+            {/* Section 12 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">12. Disclaimers</h2>
+              <p className="text-gray-600 mb-3">
+                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, VIVAAHREADY DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Implied warranties of merchantability, fitness for a particular purpose, and non-infringement;</li>
+                <li>Any warranty that the Service will be uninterrupted, secure, or error-free;</li>
+                <li>Any warranty regarding the accuracy, reliability, or completeness of any content or information provided by users;</li>
+                <li>Any warranty regarding the conduct, compatibility, or character of other users.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                VIVAAHREADY DOES NOT CONDUCT CRIMINAL BACKGROUND CHECKS ON ITS USERS. YOU ARE SOLELY RESPONSIBLE FOR YOUR INTERACTIONS WITH OTHER USERS. USE CAUTION AND COMMON SENSE WHEN INTERACTING WITH OTHERS.
               </p>
             </section>
+
+            {/* Section 13 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">13. Limitation of Liability</h2>
+              <p className="text-gray-600 mb-3">
+                TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, VIVAAHREADY AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Loss of profits, data, goodwill, or other intangible losses;</li>
+                <li>Damages resulting from your access to or use of (or inability to access or use) the Service;</li>
+                <li>Damages resulting from any conduct or content of any third party on the Service;</li>
+                <li>Damages resulting from unauthorized access, use, or alteration of your content or information.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                IN NO EVENT SHALL VIVAAHREADY'S TOTAL LIABILITY TO YOU EXCEED THE AMOUNT YOU HAVE PAID TO VIVAAHREADY IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+              </p>
+            </section>
+
+            {/* Section 14 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">14. Indemnification</h2>
+              <p className="text-gray-600">
+                You agree to indemnify, defend, and hold harmless VivaahReady and its officers, directors, employees, agents, and successors from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or related to your use of the Service, your User Content, your violation of these Terms, or your violation of any rights of another.
+              </p>
+            </section>
+
+            {/* Section 15 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">15. Dispute Resolution and Arbitration</h2>
+              <p className="text-gray-600 mb-3">
+                Any dispute, claim, or controversy arising out of or relating to these Terms or the Service shall be resolved through binding arbitration administered by a mutually agreed-upon arbitration service, except that you may bring claims in small claims court if your claims qualify.
+              </p>
+              <p className="text-gray-600 mb-3">
+                YOU AND VIVAAHREADY AGREE THAT ANY DISPUTE RESOLUTION PROCEEDINGS WILL BE CONDUCTED ONLY ON AN INDIVIDUAL BASIS AND NOT IN A CLASS, CONSOLIDATED, OR REPRESENTATIVE ACTION.
+              </p>
+              <p className="text-gray-600">
+                This arbitration agreement does not preclude you from bringing issues to the attention of federal, state, or local agencies. Such agencies may seek relief on your behalf if applicable law permits.
+              </p>
+            </section>
+
+            {/* Section 16 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">16. Governing Law and Jurisdiction</h2>
+              <p className="text-gray-600">
+                These Terms shall be governed by and construed in accordance with the laws of the State of California, without regard to its conflict of law provisions. Any legal action or proceeding not subject to arbitration shall be brought exclusively in the state or federal courts located in Alameda County, California.
+              </p>
+            </section>
+
+            {/* Section 17 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">17. General Provisions</h2>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li><strong>Entire Agreement:</strong> These Terms, together with the Privacy Policy, constitute the entire agreement between you and VivaahReady regarding the Service.</li>
+                <li><strong>Severability:</strong> If any provision of these Terms is found to be unenforceable, the remaining provisions will continue in full force and effect.</li>
+                <li><strong>Waiver:</strong> Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.</li>
+                <li><strong>Assignment:</strong> You may not assign or transfer these Terms without our prior written consent. We may assign our rights and obligations without restriction.</li>
+                <li><strong>Notices:</strong> We may provide notices to you via email, posting on the Service, or other reasonable means.</li>
+              </ul>
+            </section>
+
+            {/* Section 18 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">18. Contact Us</h2>
+              <p className="text-gray-600 mb-3">
+                If you have any questions about these Terms, please contact us at:
+              </p>
+              <div className="bg-gray-50 rounded-lg p-4 text-gray-600">
+                <p><strong>VivaahReady</strong></p>
+                <p>United States</p>
+                <p>Email: <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a></p>
+              </div>
+            </section>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              Last updated: January 17, 2026
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Also see our{' '}
+              <Link href="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</Link>
+            </p>
           </div>
         </div>
       </div>

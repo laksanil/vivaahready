@@ -16,10 +16,16 @@ export default function PrivacyPolicyPage() {
         </Link>
 
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
+
+          {/* Effective Date */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-8 text-sm text-gray-600">
+            <p><strong>Effective Date:</strong> January 17, 2026</p>
+            <p><strong>Last Updated:</strong> January 17, 2026</p>
+          </div>
 
           <p className="text-gray-600 mb-8">
-            At VivaahReady, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform. Please read this policy carefully.
+            At VivaahReady, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform ("Service"). Please read this policy carefully. By using VivaahReady, you consent to the practices described in this Privacy Policy.
           </p>
 
           <div className="space-y-8">
@@ -27,98 +33,168 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">1. Information We Collect</h2>
 
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Personal Information</h3>
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">1.1 Personal Information You Provide</h3>
               <p className="text-gray-600 mb-3">When you register and use VivaahReady, we collect personal information that you voluntarily provide, including:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Contact details (name, email address, phone number);</li>
-                <li>Profile information (age, gender, location, photos);</li>
-                <li>Preferences and interests for matchmaking;</li>
-                <li>Education, career, and family background details;</li>
-                <li>Religious and cultural preferences.</li>
+                <li><strong>Account Information:</strong> Name, email address, phone number, password;</li>
+                <li><strong>Profile Information:</strong> Age, gender, date of birth, height, weight, photos;</li>
+                <li><strong>Background Details:</strong> Education, occupation, employer, income range;</li>
+                <li><strong>Cultural Information:</strong> Religion, caste, community, mother tongue, languages spoken;</li>
+                <li><strong>Family Information:</strong> Family background, marital status, number of siblings;</li>
+                <li><strong>Location Information:</strong> Current city, state, country, hometown;</li>
+                <li><strong>Preferences:</strong> Partner preferences including age range, location, education, religion, and other matching criteria;</li>
+                <li><strong>Verification Documents:</strong> Government-issued ID, educational certificates, or other documents you submit for verification;</li>
+                <li><strong>Communications:</strong> Messages you send to other users or to our support team.</li>
               </ul>
 
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">Automatically Collected Information</h3>
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">1.2 Automatically Collected Information</h3>
               <p className="text-gray-600 mb-3">We may also collect certain information automatically when you use our platform:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Device information (browser type, operating system);</li>
-                <li>Usage data (pages visited, time spent, interactions);</li>
-                <li>IP address and general location information.</li>
+                <li><strong>Device Information:</strong> Device type, operating system, browser type, unique device identifiers;</li>
+                <li><strong>Usage Data:</strong> Pages visited, features used, time spent on the platform, click patterns;</li>
+                <li><strong>Log Data:</strong> IP address, access times, referring URLs, error logs;</li>
+                <li><strong>Cookies and Tracking:</strong> Information collected through cookies, pixels, and similar technologies.</li>
               </ul>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">1.3 Information from Third Parties</h3>
+              <p className="text-gray-600">
+                If you sign in using a third-party service (such as Google), we may receive information from that service, such as your name, email address, and profile picture, as permitted by your settings with that service.
+              </p>
             </section>
 
             {/* Section 2 */}
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">2. How We Use Your Information</h2>
-              <p className="text-gray-600 mb-3">We use the information we collect to:</p>
+              <p className="text-gray-600 mb-3">We use the information we collect for the following purposes:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Create and manage your account;</li>
-                <li>Provide personalized matchmaking services;</li>
-                <li>Display your profile to potential matches;</li>
-                <li>Send notifications about new matches, interests, and updates;</li>
-                <li>Improve our platform and user experience;</li>
-                <li>Respond to your inquiries and provide customer support;</li>
-                <li>Ensure the security and integrity of our platform.</li>
+                <li><strong>Provide Our Service:</strong> Create and manage your account, display your profile to potential matches, facilitate connections;</li>
+                <li><strong>Personalize Your Experience:</strong> Show you relevant matches based on your preferences and criteria;</li>
+                <li><strong>Communication:</strong> Send you notifications about new matches, interest expressions, messages, and account updates;</li>
+                <li><strong>Verification:</strong> Verify your identity and profile information to maintain a genuine community;</li>
+                <li><strong>Customer Support:</strong> Respond to your inquiries and provide assistance;</li>
+                <li><strong>Safety and Security:</strong> Detect and prevent fraud, abuse, and other harmful activities;</li>
+                <li><strong>Improve Our Service:</strong> Analyze usage patterns, conduct research, and develop new features;</li>
+                <li><strong>Legal Compliance:</strong> Comply with applicable laws, regulations, and legal processes;</li>
+                <li><strong>Marketing:</strong> Send you promotional communications (with your consent where required).</li>
               </ul>
             </section>
 
             {/* Section 3 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">3. Information Sharing</h2>
-              <p className="text-gray-600 mb-3">We do not sell your personal information. We may share your information only in the following circumstances:</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">3. How We Share Your Information</h2>
+              <p className="text-gray-600 mb-3">We do not sell your personal information to third parties. We may share your information in the following circumstances:</p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">3.1 With Other Users</h3>
+              <p className="text-gray-600 mb-3">
+                Your profile information is visible to other registered users based on matching criteria. This includes your photos, profile details, and preferences. Contact information is only shared after mutual interest is established and applicable fees are paid.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">3.2 With Service Providers</h3>
+              <p className="text-gray-600 mb-3">
+                We share information with third-party vendors who perform services on our behalf, including:
+              </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li><strong>With other users:</strong> Your profile information is visible to other registered users based on matching criteria;</li>
-                <li><strong>Service providers:</strong> Third parties who assist us in operating our platform (e.g., hosting, analytics);</li>
-                <li><strong>Legal requirements:</strong> When required by law or to protect our rights and safety;</li>
-                <li><strong>Business transfers:</strong> In connection with a merger, acquisition, or sale of assets.</li>
+                <li>Cloud hosting and storage providers;</li>
+                <li>Payment processors;</li>
+                <li>Email and communication services;</li>
+                <li>Analytics providers;</li>
+                <li>Customer support tools.</li>
               </ul>
+              <p className="text-gray-600 mt-3">
+                These providers are contractually obligated to use your information only for the purposes of providing services to us.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">3.3 For Legal Reasons</h3>
+              <p className="text-gray-600 mb-3">We may disclose your information if required to do so by law or in response to:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Subpoenas, court orders, or other legal processes;</li>
+                <li>Requests from law enforcement or government agencies;</li>
+                <li>To protect our rights, privacy, safety, or property, or that of our users or others;</li>
+                <li>To enforce our Terms of Use;</li>
+                <li>To investigate potential violations or fraudulent activity.</li>
+              </ul>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">3.4 Business Transfers</h3>
+              <p className="text-gray-600">
+                If VivaahReady is involved in a merger, acquisition, bankruptcy, or sale of assets, your information may be transferred as part of that transaction. We will notify you of any change in ownership or use of your information.
+              </p>
             </section>
 
             {/* Section 4 */}
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">4. Data Security</h2>
-              <p className="text-gray-600">
-                We implement appropriate technical and organizational measures to protect your personal information from unauthorized access, disclosure, alteration, or destruction. This includes encryption, secure servers, and access controls. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
+              <p className="text-gray-600 mb-3">
+                We implement appropriate technical and organizational measures to protect your personal information from unauthorized access, disclosure, alteration, or destruction. These measures include:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Encryption of data in transit and at rest;</li>
+                <li>Secure servers and infrastructure;</li>
+                <li>Access controls and authentication;</li>
+                <li>Regular security assessments and monitoring.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security.
               </p>
             </section>
 
             {/* Section 5 */}
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">5. Data Retention</h2>
-              <p className="text-gray-600">
-                We retain your personal information for as long as your account is active or as needed to provide our services. If you delete your account, we will remove your profile information, though some data may be retained for legal or legitimate business purposes.
+              <p className="text-gray-600 mb-3">
+                We retain your personal information for as long as your account is active or as needed to provide our services. We may also retain information as necessary to:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Comply with legal obligations;</li>
+                <li>Resolve disputes;</li>
+                <li>Enforce our agreements;</li>
+                <li>Protect our legitimate business interests.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                When you delete your account, we will remove your profile information from public view. Some data may be retained in backups or for legal compliance for a limited period.
               </p>
             </section>
 
             {/* Section 6 */}
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">6. Your Rights and Choices</h2>
-              <p className="text-gray-600 mb-3">You have the right to:</p>
+              <p className="text-gray-600 mb-3">Depending on your location, you may have certain rights regarding your personal information:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Access and review your personal information;</li>
-                <li>Update or correct inaccurate information;</li>
-                <li>Delete your account and personal data;</li>
-                <li>Opt out of marketing communications;</li>
-                <li>Request a copy of your data.</li>
+                <li><strong>Access:</strong> Request a copy of the personal information we hold about you;</li>
+                <li><strong>Correction:</strong> Request correction of inaccurate or incomplete information;</li>
+                <li><strong>Deletion:</strong> Request deletion of your personal information, subject to legal requirements;</li>
+                <li><strong>Data Portability:</strong> Request a copy of your data in a structured, commonly used format;</li>
+                <li><strong>Opt-Out:</strong> Opt out of marketing communications at any time;</li>
+                <li><strong>Withdraw Consent:</strong> Withdraw consent where processing is based on consent.</li>
               </ul>
               <p className="text-gray-600 mt-3">
                 To exercise these rights, please contact us at{' '}
-                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
+                <a href="mailto:privacy@vivaahready.com" className="text-primary-600 hover:text-primary-700">privacy@vivaahready.com</a>.
+                We may require verification of your identity before processing requests.
               </p>
             </section>
 
             {/* Section 7 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Cookies and Tracking</h2>
-              <p className="text-gray-600">
-                We use cookies and similar technologies to enhance your experience, analyze usage patterns, and remember your preferences. You can manage cookie preferences through your browser settings.
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Cookies and Tracking Technologies</h2>
+              <p className="text-gray-600 mb-3">
+                We use cookies and similar tracking technologies to enhance your experience, analyze usage, and remember your preferences. Types of cookies we use include:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li><strong>Essential Cookies:</strong> Necessary for the website to function properly;</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand how users interact with our platform;</li>
+                <li><strong>Preference Cookies:</strong> Remember your settings and preferences;</li>
+                <li><strong>Marketing Cookies:</strong> Used to deliver relevant advertisements (if applicable).</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                You can manage cookie preferences through your browser settings. Note that disabling certain cookies may affect the functionality of our Service.
               </p>
             </section>
 
             {/* Section 8 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">8. Third-Party Links</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">8. Third-Party Links and Services</h2>
               <p className="text-gray-600">
-                Our platform may contain links to third-party websites or services. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.
+                Our platform may contain links to third-party websites or services that are not operated by us. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.
               </p>
             </section>
 
@@ -126,35 +202,66 @@ export default function PrivacyPolicyPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">9. Children's Privacy</h2>
               <p className="text-gray-600">
-                VivaahReady is intended for users who are 18 years of age or older. We do not knowingly collect personal information from children under 18. If we become aware that we have collected data from a minor, we will take steps to delete that information.
+                VivaahReady is intended for users who are 18 years of age or older. We do not knowingly collect personal information from children under 18. If we become aware that we have collected data from a minor, we will take steps to delete that information promptly. If you believe we have collected information from a minor, please contact us immediately.
               </p>
             </section>
 
             {/* Section 10 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">10. International Data Transfers</h2>
               <p className="text-gray-600">
-                We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the updated policy on our platform with a new effective date. Your continued use of VivaahReady after such changes constitutes your acceptance of the revised policy.
+                Your information may be transferred to and processed in countries other than your own. These countries may have different data protection laws. By using our Service, you consent to the transfer of your information to the United States and other jurisdictions where we operate. We take appropriate measures to ensure your information is protected in accordance with this Privacy Policy.
               </p>
             </section>
 
             {/* Section 11 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">11. Contact Us</h2>
-              <p className="text-gray-600">
-                If you have any questions or concerns about this Privacy Policy or our data practices, please contact us at:{' '}
-                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">11. California Privacy Rights (CCPA)</h2>
+              <p className="text-gray-600 mb-3">
+                If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
               </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Right to know what personal information we collect, use, and disclose;</li>
+                <li>Right to request deletion of your personal information;</li>
+                <li>Right to opt-out of the sale of personal information (we do not sell your data);</li>
+                <li>Right to non-discrimination for exercising your privacy rights.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                To exercise these rights, contact us at{' '}
+                <a href="mailto:privacy@vivaahready.com" className="text-primary-600 hover:text-primary-700">privacy@vivaahready.com</a>.
+              </p>
+            </section>
+
+            {/* Section 12 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">12. Changes to This Policy</h2>
+              <p className="text-gray-600">
+                We may update this Privacy Policy from time to time to reflect changes in our practices or for legal, operational, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our platform with a new effective date. For significant changes, we may also send you an email notification. Your continued use of VivaahReady after such changes constitutes your acceptance of the revised policy.
+              </p>
+            </section>
+
+            {/* Section 13 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">13. Contact Us</h2>
+              <p className="text-gray-600 mb-3">
+                If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
+              </p>
+              <div className="bg-gray-50 rounded-lg p-4 text-gray-600">
+                <p><strong>VivaahReady</strong></p>
+                <p>United States</p>
+                <p>Email: <a href="mailto:privacy@vivaahready.com" className="text-primary-600 hover:text-primary-700">privacy@vivaahready.com</a></p>
+                <p>General Support: <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a></p>
+              </div>
             </section>
           </div>
 
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Last updated: January 2026
+              Last updated: January 17, 2026
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Also see our{' '}
-              <Link href="/terms" className="text-primary-600 hover:text-primary-700">Terms of Service</Link>
+              <Link href="/terms" className="text-primary-600 hover:text-primary-700">Terms of Use</Link>
             </p>
           </div>
         </div>

@@ -108,7 +108,7 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="section-title">How VivaahReady Works</h2>
@@ -272,27 +272,27 @@ export default async function HomePage() {
             <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-xl p-8 text-white">
               <div className="flex items-center gap-3 mb-6">
                 <Sparkles className="h-8 w-8" />
-                <h3 className="text-2xl font-semibold">Completely Free</h3>
+                <h3 className="text-2xl font-semibold">Free to Start</h3>
               </div>
               <p className="text-primary-100 mb-6">
-                No hidden fees. No premium tiers. Create your profile and start matching today.
+                Create your profile, set your deal-breakers and preferences, and view mutual matches only. Verification helps keep profiles genuine and interactions intentional.
               </p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center text-primary-100">
                   <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
-                  Unlimited profile access
+                  Free profile creation
                 </li>
                 <li className="flex items-center text-primary-100">
                   <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
-                  View all matched profiles & photos
+                  Mutual matches only (no public directory)
                 </li>
                 <li className="flex items-center text-primary-100">
                   <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
-                  Express unlimited interest
+                  Photos & names unlock after verification
                 </li>
                 <li className="flex items-center text-primary-100">
                   <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
-                  Full contact info on mutual match
+                  Contact details shared only after mutual acceptance
                 </li>
               </ul>
               <FindMatchButton className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center">
@@ -318,6 +318,12 @@ export default async function HomePage() {
             Find Your Match
             <ArrowRight className="ml-2 h-5 w-5" />
           </FindMatchButton>
+          <p className="mt-6 text-sm text-primary-200">
+            By using VivaahReady you agree to our{' '}
+            <Link href="/terms" className="underline hover:text-white">Terms of Use</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
+          </p>
         </div>
       </section>
     </div>

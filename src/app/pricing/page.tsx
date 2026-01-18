@@ -42,7 +42,7 @@ export default async function PricingPage() {
     <div className="bg-white">
       {/* SECTION 1 — HERO */}
       <section className="relative bg-gradient-to-br from-white via-silver-50 to-silver-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
               Pricing that protects your{' '}

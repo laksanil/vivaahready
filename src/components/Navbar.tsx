@@ -98,24 +98,15 @@ export function Navbar() {
         <div className="flex justify-between h-20">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-              {/* Couple Icon - cropped from original logo to show only the silhouette */}
-              <div className="h-16 w-16 overflow-hidden relative flex-shrink-0 rounded-lg">
-                <Image
-                  src="/logo-original-red.png"
-                  alt="VivaahReady"
-                  width={500}
-                  height={500}
-                  className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[180%] h-auto"
-                  style={{ maxWidth: 'none' }}
-                  priority
-                />
-              </div>
-              {/* Brand Name and Tagline */}
-              <div className="flex flex-col">
-                <span className="text-white text-2xl font-bold tracking-tight">VivaahReady</span>
-                <span className="text-white/80 text-xs tracking-wider uppercase">Meaningful Connections</span>
-              </div>
+            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center group hover:opacity-90 transition-opacity">
+              <Image
+                src="/logo-banner.png"
+                alt="VivaahReady"
+                width={280}
+                height={107}
+                className="h-14 w-auto"
+                priority
+              />
             </Link>
           </div>
 
