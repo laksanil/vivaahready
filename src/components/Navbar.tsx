@@ -73,7 +73,7 @@ export function Navbar() {
   const isAdminViewMode = !!viewAsUser
 
   return (
-    <nav className="bg-white/80 backdrop-blur-lg shadow-lg sticky top-0 z-50 border-b border-white/50">
+    <nav className="bg-gradient-to-r from-red-700 via-red-600 to-red-700 shadow-lg sticky top-0 z-50">
       {/* Admin View Banner */}
       {isAdminViewMode && (
         <div className="bg-purple-600 text-white px-4 py-2">
@@ -95,53 +95,65 @@ export function Navbar() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo Banner */}
+        <div className="flex justify-between h-20">
+          {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center">
-              <Image
-                src="/logo-banner.png"
-                alt="VivaahReady"
-                width={240}
-                height={92}
-                className="h-12 w-auto"
-                priority
-              />
+            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
+              {/* Logo Icon */}
+              <div className="bg-white rounded-full p-1.5 shadow-md">
+                <Image
+                  src="/logo-transparent.png"
+                  alt="VivaahReady Logo"
+                  width={48}
+                  height={48}
+                  className="h-11 w-11 object-contain"
+                  priority
+                />
+              </div>
+              {/* Brand Name and Tagline */}
+              <div className="flex flex-col">
+                <span className="text-2xl md:text-3xl font-bold text-white tracking-wide drop-shadow-md">
+                  VivaahReady
+                </span>
+                <span className="text-xs md:text-sm text-red-100 font-medium -mt-0.5">
+                  Find Your Perfect Match
+                </span>
+              </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {session && (
               <>
-                <Link href={buildUrl('/matches')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link href={buildUrl('/matches')} className="text-white/90 hover:text-white font-medium transition-colors">
                   My Matches
                 </Link>
-                <Link href={buildUrl('/connections')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link href={buildUrl('/connections')} className="text-white/90 hover:text-white font-medium transition-colors">
                   Connections
                 </Link>
-                <Link href={buildUrl('/messages')} className="text-gray-600 hover:text-primary-600 transition-colors">
+                <Link href={buildUrl('/messages')} className="text-white/90 hover:text-white font-medium transition-colors">
                   Messages
                 </Link>
               </>
             )}
-            <Link href="/about" className="text-gray-600 hover:text-primary-600 transition-colors">
+            <Link href="/about" className="text-white/90 hover:text-white font-medium transition-colors">
               About Us
             </Link>
 
             {status === 'loading' ? (
-              <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
+              <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
             ) : session ? (
               <div className="relative">
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className={`flex items-center space-x-2 ${isAdminViewMode ? 'text-purple-700' : 'text-gray-700'} hover:text-primary-600`}
+                  className={`flex items-center space-x-2 ${isAdminViewMode ? 'text-purple-200' : 'text-white'} hover:text-white/80`}
                 >
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${isAdminViewMode ? 'bg-purple-100' : 'bg-primary-100'}`}>
+                  <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isAdminViewMode ? 'bg-purple-100' : 'bg-white'}`}>
                     {isAdminViewMode ? (
                       <Eye className="h-5 w-5 text-purple-600" />
                     ) : (
-                      <User className="h-5 w-5 text-primary-600" />
+                      <User className="h-5 w-5 text-red-600" />
                     )}
                   </div>
                   <span className="font-medium">
@@ -156,7 +168,7 @@ export function Navbar() {
                 </button>
 
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 border">
                     <Link
                       href={buildUrl('/dashboard')}
                       className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
@@ -223,7 +235,7 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="bg-primary-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+              <Link href="/login" className="bg-white text-red-600 px-6 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors shadow-md">
                 Sign In
               </Link>
             )}
@@ -233,9 +245,9 @@ export function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-600 hover:text-primary-600"
+              className="text-white hover:text-white/80"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
             </button>
           </div>
         </div>
@@ -243,27 +255,27 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t">
+        <div className="md:hidden bg-red-800 border-t border-red-600">
           <div className="px-4 py-4 space-y-4">
             {session && (
               <>
                 <Link
                   href={buildUrl('/matches')}
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block text-white/90 hover:text-white font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Matches
                 </Link>
                 <Link
                   href={buildUrl('/connections')}
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block text-white/90 hover:text-white font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Connections
                 </Link>
                 <Link
                   href={buildUrl('/messages')}
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block text-white/90 hover:text-white font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Messages
@@ -272,7 +284,7 @@ export function Navbar() {
             )}
             <Link
               href="/about"
-              className="block text-gray-600 hover:text-primary-600"
+              className="block text-white/90 hover:text-white font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
               About Us
@@ -280,17 +292,17 @@ export function Navbar() {
 
             {session ? (
               <>
-                <hr />
+                <hr className="border-red-600" />
                 <Link
                   href={buildUrl('/dashboard')}
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block text-white/90 hover:text-white font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
                   href={buildUrl('/profile')}
-                  className="block text-gray-600 hover:text-primary-600"
+                  className="block text-white/90 hover:text-white font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Profile
@@ -302,13 +314,13 @@ export function Navbar() {
                         setIsMenuOpen(false)
                         setIsDeleteModalOpen(true)
                       }}
-                      className="block text-red-600"
+                      className="block text-red-200 hover:text-white"
                     >
                       Delete Profile
                     </button>
                     <button
                       onClick={() => signOut({ callbackUrl: '/' })}
-                      className="block text-red-600"
+                      className="block text-red-200 hover:text-white"
                     >
                       Sign Out
                     </button>
@@ -317,10 +329,10 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <hr />
+                <hr className="border-red-600" />
                 <Link
                   href="/login"
-                  className="block bg-primary-600 text-white text-center py-2 rounded-lg hover:bg-primary-700"
+                  className="block bg-white text-red-600 text-center py-2 rounded-lg font-semibold hover:bg-red-50"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In
