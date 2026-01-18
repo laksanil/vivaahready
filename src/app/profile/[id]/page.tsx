@@ -24,13 +24,14 @@ import {
   Flag,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
-import { calculateAge, getInitials, extractPhotoUrls, maskPhone, formatDisplayName } from '@/lib/utils'
+import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
 interface ProfileData {
   id: string
   userId: string
+  odNumber: string | null
   gender: string
   dateOfBirth: string | null
   placeOfBirth: string | null
@@ -620,7 +621,7 @@ function ProfileCard({
           <div className="flex-1 min-w-0 text-white">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-xl font-bold truncate">{formatDisplayName(profile.user.name)}</h2>
+                <h2 className="text-xl font-bold truncate">{viewerIsApproved ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
                 <div className="text-sm text-white/90 mt-0.5">
                   {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
