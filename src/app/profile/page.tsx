@@ -943,7 +943,7 @@ function ViewProfilePageContent() {
 
               {/* Preview Link */}
               <div>
-                <Link href={buildUrl(`/profile/${profile.id}`)} className="text-[#00BCD4] hover:underline text-sm flex items-center gap-1">
+                <Link href={buildUrl(`/profile/${profile.id}`)} className="text-cyan-500 hover:underline text-sm flex items-center gap-1">
                   <Eye className="h-4 w-4" /> Preview Public Profile
                 </Link>
               </div>
@@ -960,7 +960,7 @@ function ViewProfilePageContent() {
             onClick={() => setActiveTab('about')}
             className={`px-6 py-2 font-medium text-sm rounded-t-lg ${
               activeTab === 'about'
-                ? 'bg-[#E91E63] text-white'
+                ? 'bg-primary-600 text-white'
                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
             }`}
           >
@@ -970,7 +970,7 @@ function ViewProfilePageContent() {
             onClick={() => setActiveTab('preferences')}
             className={`px-6 py-2 font-medium text-sm rounded-t-lg ml-1 ${
               activeTab === 'preferences'
-                ? 'bg-[#E91E63] text-white'
+                ? 'bg-primary-600 text-white'
                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
             }`}
           >
@@ -985,8 +985,8 @@ function ViewProfilePageContent() {
               {/* Contact Details Section - At the top */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Contact Details</h2>
-                  <button onClick={() => setEditSection('contact')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Contact Details</h2>
+                  <button onClick={() => setEditSection('contact')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1011,7 +1011,7 @@ function ViewProfilePageContent() {
                     <div className="flex">
                       <span className="text-gray-500 w-36">LinkedIn</span>
                       <span className="text-gray-400 mr-2">:</span>
-                      <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">View Profile</a>
+                      <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline">View Profile</a>
                     </div>
                   )}
                   {(profile.instagram || profile.facebookInstagram) && (
@@ -1027,8 +1027,8 @@ function ViewProfilePageContent() {
               {/* 1. Basic Info - matches BasicsSection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Basic Info</h2>
-                  <button onClick={() => setEditSection('basics')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Basic Info</h2>
+                  <button onClick={() => setEditSection('basics')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1096,8 +1096,8 @@ function ViewProfilePageContent() {
               {/* 2. Education & Career (combined location + education - matches create flow) */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Education & Career</h2>
-                  <button onClick={() => setEditSection('location_education')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Education & Career</h2>
+                  <button onClick={() => setEditSection('location_education')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1164,8 +1164,8 @@ function ViewProfilePageContent() {
               {/* 4. Religion & Astro - matches ReligionSection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Religion & Astro</h2>
-                  <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Religion & Astro</h2>
+                  <button onClick={() => setEditSection('religion')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1196,7 +1196,7 @@ function ViewProfilePageContent() {
                     {profile.placeOfBirthCountry ? (
                       <span className="text-gray-800">{profile.placeOfBirthCountry}</span>
                     ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('religion')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1205,7 +1205,7 @@ function ViewProfilePageContent() {
                     {profile.placeOfBirthState ? (
                       <span className="text-gray-800">{profile.placeOfBirthState}</span>
                     ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('religion')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1214,7 +1214,7 @@ function ViewProfilePageContent() {
                     {profile.placeOfBirthCity ? (
                       <span className="text-gray-800">{profile.placeOfBirthCity}</span>
                     ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('religion')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1230,7 +1230,7 @@ function ViewProfilePageContent() {
                     {profile.raasi ? (
                       <span className="text-gray-800">{profile.raasi.charAt(0).toUpperCase() + profile.raasi.slice(1).replace(/_/g, ' ')}</span>
                     ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('religion')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1239,13 +1239,13 @@ function ViewProfilePageContent() {
                     {profile.nakshatra ? (
                       <span className="text-gray-800">{profile.nakshatra.charAt(0).toUpperCase() + profile.nakshatra.slice(1).replace(/_/g, ' ')}</span>
                     ) : (
-                      <button onClick={() => setEditSection('religion')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('religion')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
                     <span className="text-gray-500 w-24">Doshas</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className={profile.doshas ? "text-gray-800" : "text-[#00BCD4]"}>
+                    <span className={profile.doshas ? "text-gray-800" : "text-cyan-500"}>
                       {profile.doshas ? profile.doshas.charAt(0).toUpperCase() + profile.doshas.slice(1).replace(/_/g, ' ') : 'Not Specified'}
                     </span>
                   </div>
@@ -1255,8 +1255,8 @@ function ViewProfilePageContent() {
               {/* 5. Family - matches FamilySection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Family</h2>
-                  <button onClick={() => setEditSection('family')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Family</h2>
+                  <button onClick={() => setEditSection('family')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1272,7 +1272,7 @@ function ViewProfilePageContent() {
                     {profile.familyLocation ? (
                       <span className="text-gray-800">{profile.familyLocation}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1281,7 +1281,7 @@ function ViewProfilePageContent() {
                     {profile.familyValues ? (
                       <span className="text-gray-800">{profile.familyValues.charAt(0).toUpperCase() + profile.familyValues.slice(1)}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1290,7 +1290,7 @@ function ViewProfilePageContent() {
                     {profile.fatherName ? (
                       <span className="text-gray-800">{profile.fatherName}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1299,7 +1299,7 @@ function ViewProfilePageContent() {
                     {profile.fatherOccupation ? (
                       <span className="text-gray-800">{profile.fatherOccupation}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1308,7 +1308,7 @@ function ViewProfilePageContent() {
                     {profile.motherName ? (
                       <span className="text-gray-800">{profile.motherName}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1317,7 +1317,7 @@ function ViewProfilePageContent() {
                     {profile.motherOccupation ? (
                       <span className="text-gray-800">{profile.motherOccupation}</span>
                     ) : (
-                      <button onClick={() => setEditSection('family')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('family')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1342,8 +1342,8 @@ function ViewProfilePageContent() {
               {/* 6. Lifestyle - matches LifestyleSection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Lifestyle</h2>
-                  <button onClick={() => setEditSection('lifestyle')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Lifestyle</h2>
+                  <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1359,7 +1359,7 @@ function ViewProfilePageContent() {
                     {profile.smoking ? (
                       <span className="text-gray-800">{formatValue(profile.smoking)}</span>
                     ) : (
-                      <button onClick={() => setEditSection('lifestyle')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1368,7 +1368,7 @@ function ViewProfilePageContent() {
                     {profile.drinking ? (
                       <span className="text-gray-800">{profile.drinking === 'social' ? 'Social Drinker' : formatValue(profile.drinking)}</span>
                     ) : (
-                      <button onClick={() => setEditSection('lifestyle')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                   <div className="flex">
@@ -1377,7 +1377,7 @@ function ViewProfilePageContent() {
                     {profile.pets ? (
                       <span className="text-gray-800">{formatValue(profile.pets.replace(/_/g, ' '))}</span>
                     ) : (
-                      <button onClick={() => setEditSection('lifestyle')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                      <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}
                   </div>
                 </div>
@@ -1404,8 +1404,8 @@ function ViewProfilePageContent() {
               {/* 7. About Me - matches AboutMeSection fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">About Me</h2>
-                  <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">About Me</h2>
+                  <button onClick={() => setEditSection('aboutme')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1434,7 +1434,7 @@ function ViewProfilePageContent() {
                   </div>
                 ) : (
                   <div className="mb-4">
-                    <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] hover:underline text-sm">Add your bio</button>
+                    <button onClick={() => setEditSection('aboutme')} className="text-cyan-500 hover:underline text-sm">Add your bio</button>
                   </div>
                 )}
                 {/* Social Links */}
@@ -1445,10 +1445,10 @@ function ViewProfilePageContent() {
                     <span className="text-gray-800">
                       {profile.linkedinProfile && profile.linkedinProfile.trim() !== '' ? (
                         profile.linkedinProfile === 'no_linkedin' ? 'No LinkedIn' : (
-                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-[#00BCD4] hover:underline">{profile.linkedinProfile.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '').replace(/\/$/, '') || 'View Profile'}</a>
+                          <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline">{profile.linkedinProfile.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '').replace(/\/$/, '') || 'View Profile'}</a>
                         )
                       ) : (
-                        <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                        <button onClick={() => setEditSection('aboutme')} className="text-cyan-500 hover:underline">Enter Now</button>
                       )}
                     </span>
                   </div>
@@ -1457,7 +1457,7 @@ function ViewProfilePageContent() {
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
                       {profile.instagram || profile.facebookInstagram || (
-                        <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                        <button onClick={() => setEditSection('aboutme')} className="text-cyan-500 hover:underline">Enter Now</button>
                       )}
                     </span>
                   </div>
@@ -1466,7 +1466,7 @@ function ViewProfilePageContent() {
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
                       {profile.facebook || (
-                        <button onClick={() => setEditSection('aboutme')} className="text-[#00BCD4] hover:underline">Enter Now</button>
+                        <button onClick={() => setEditSection('aboutme')} className="text-cyan-500 hover:underline">Enter Now</button>
                       )}
                     </span>
                   </div>
@@ -1479,8 +1479,8 @@ function ViewProfilePageContent() {
               {/* 8. Must-Have Preferences (Deal-breakers) - matches PreferencesPage1Section fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Must-Have Preferences (Deal-breakers)</h2>
-                  <button onClick={() => setEditSection('preferences_1')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Must-Have Preferences (Deal-breakers)</h2>
+                  <button onClick={() => setEditSection('preferences_1')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
@@ -1573,8 +1573,8 @@ function ViewProfilePageContent() {
               {/* 9. Nice-to-Have Preferences (Optional) - matches PreferencesPage2Section fields */}
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[#E91E63] font-semibold text-lg">Nice-to-Have Preferences (Optional)</h2>
-                  <button onClick={() => setEditSection('preferences_2')} className="text-[#00BCD4] text-sm hover:underline flex items-center gap-1">
+                  <h2 className="text-primary-600 font-semibold text-lg">Nice-to-Have Preferences (Optional)</h2>
+                  <button onClick={() => setEditSection('preferences_2')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
