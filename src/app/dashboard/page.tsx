@@ -62,6 +62,9 @@ function DashboardContent() {
   } | null>(null)
   const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
 
+  // Check if session data is fully loaded (hasProfile will be undefined until JWT callback populates it)
+  // This prevents the flash where "Create Profile" modal appears briefly before session data loads
+  const sessionDataLoaded = isAdminView || (session?.user && (session.user as any).hasProfile !== undefined)
   const hasProfile = isAdminView
     ? !!impersonatedUser?.profile
     : ((session?.user as any)?.hasProfile || false)
@@ -189,6 +192,10 @@ function DashboardContent() {
     const hasStoredFormData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData')
     if (hasStoredFormData && shouldCreateProfile) return
 
+    // Wait until session data is fully loaded before deciding to show modal
+    // This prevents the flash where modal appears briefly before hasProfile is populated
+    if (!sessionDataLoaded) return
+
     if (status === 'authenticated' && needsProfile && (shouldCreateProfile || !showCreateProfileModal)) {
       // Small delay to ensure page is ready
       const timer = setTimeout(() => {
@@ -196,7 +203,7 @@ function DashboardContent() {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal])
+  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded])
 
   useEffect(() => {
     if (!userContextReady) return
@@ -238,7 +245,11 @@ function DashboardContent() {
     }
   }
 
-  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady)) {
+  // Show loader while:
+  // 1. Session is loading
+  // 2. Admin view mode checks are pending
+  // 3. Session data (hasProfile) is not yet populated from JWT
+  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady) || (status === 'authenticated' && !sessionDataLoaded)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
