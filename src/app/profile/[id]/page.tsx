@@ -387,6 +387,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           matchProfiles={matchProfiles}
           viewerUserId={viewerUserId}
           isLoggedIn={canAccess}
+          viewerIsApproved={userStatus?.isApproved ?? false}
           onReport={() => setShowReportModal(true)}
           buildUrl={buildUrl}
         />
@@ -431,6 +432,7 @@ interface ProfileCardProps {
   matchProfiles?: MatchProfilesData | null
   viewerUserId?: string | null
   isLoggedIn?: boolean
+  viewerIsApproved?: boolean
   onReport?: () => void
   buildUrl: (path: string) => string
 }
@@ -447,16 +449,18 @@ function ProfileCard({
   buildUrl,
   viewerUserId,
   isLoggedIn,
+  viewerIsApproved = false,
 }: ProfileCardProps) {
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
   const interestSent = profile.interestStatus?.sentByMe
   const interestReceived = profile.interestStatus?.receivedFromThem
   const isMutual = profile.interestStatus?.mutual
 
-  // Determine if sensitive info should be shown (own profile or verified)
+  // Determine if sensitive info should be shown
+  // Only show clear contact info for: own profile OR mutual match
+  // Non-approved users and even approved users should see masked info until mutual
   const isOwnProfile = viewerUserId === profile.userId
-  const isVerified = profile.approvalStatus === 'approved'
-  const showClear = isOwnProfile || isVerified
+  const showClear = isOwnProfile || isMutual
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -543,10 +547,10 @@ function ProfileCard({
                 <>
                   <img
                     src={carouselPhotos.length > 0 ? carouselPhotos[photoIndex] : (photoUrl || '')}
-                    alt={profile.user.name}
-                    className="w-full h-full object-cover cursor-pointer"
+                    alt={viewerIsApproved ? profile.user.name : 'Profile'}
+                    className={`w-full h-full object-cover ${viewerIsApproved ? 'cursor-pointer' : 'blur-lg'}`}
                     referrerPolicy="no-referrer"
-                    onClick={() => openLightbox(photoIndex)}
+                    onClick={() => viewerIsApproved && openLightbox(photoIndex)}
                     onError={(e) => {
                       if (photoUrl && e.currentTarget.src !== photoUrl) {
                         e.currentTarget.src = photoUrl
@@ -555,15 +559,25 @@ function ProfileCard({
                       }
                     }}
                   />
-                  {/* Zoom icon overlay */}
-                  <div
-                    className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                    onClick={() => openLightbox(photoIndex)}
-                  >
-                    <ZoomIn className="h-6 w-6 text-white" />
-                  </div>
-                  {/* Carousel navigation arrows */}
-                  {carouselPhotos.length > 1 && (
+                  {/* Lock overlay for non-approved viewers */}
+                  {!viewerIsApproved && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="bg-white/90 p-2 rounded-full">
+                        <Lock className="h-5 w-5 text-gray-600" />
+                      </div>
+                    </div>
+                  )}
+                  {/* Zoom icon overlay - only for approved viewers */}
+                  {viewerIsApproved && (
+                    <div
+                      className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                      onClick={() => openLightbox(photoIndex)}
+                    >
+                      <ZoomIn className="h-6 w-6 text-white" />
+                    </div>
+                  )}
+                  {/* Carousel navigation arrows - only for approved viewers */}
+                  {viewerIsApproved && carouselPhotos.length > 1 && (
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); setPhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length) }}
@@ -581,15 +595,15 @@ function ProfileCard({
                   )}
                 </>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary-100">
+                <div className={`w-full h-full flex items-center justify-center bg-primary-100 ${!viewerIsApproved ? 'blur-lg' : ''}`}>
                   <span className="text-2xl font-semibold text-primary-600">
                     {getInitials(profile.user.name)}
                   </span>
                 </div>
               )}
             </div>
-            {/* Photo navigation dots */}
-            {carouselPhotos.length > 1 && (
+            {/* Photo navigation dots - only for approved viewers */}
+            {viewerIsApproved && carouselPhotos.length > 1 && (
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
                 {carouselPhotos.slice(0, 5).map((_, idx) => (
                   <button
@@ -703,14 +717,14 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Contact Details Section - Masked for non-verified profiles unless viewing own profile */}
+        {/* Contact Details Section - Masked until mutual match or own profile */}
         <div className="border-b border-gray-100 pb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-base font-bold text-gray-800">Contact Details</h3>
-            {!isVerified && !isOwnProfile && (
+            {!showClear && (
               <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                Pending Verification
+                {isMutual ? 'Contact Shared' : 'Connect to Reveal'}
               </span>
             )}
           </div>
@@ -1103,8 +1117,8 @@ function ProfileCard({
           </div>
         )}
       </div>
-      {/* Photo Lightbox Modal */}
-      {lightboxOpen && thumbnails.length > 0 && (
+      {/* Photo Lightbox Modal - Only for approved viewers */}
+      {lightboxOpen && thumbnails.length > 0 && viewerIsApproved && (
         <div
           className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
           onClick={closeLightbox}

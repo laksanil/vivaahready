@@ -100,7 +100,7 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center">
               <Image
-                src="/logo-transparent.png"
+                src="/logo-original.png"
                 alt="VivaahReady"
                 width={180}
                 height={50}
