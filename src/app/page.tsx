@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { Heart, Shield, Users, CheckCircle, Star, ArrowRight, Lock, Sparkles } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, ArrowRight, Lock, Sparkles, Phone, UserCheck } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
-import FindMatchButton from '@/components/FindMatchButton'
 
 async function getPreviewProfiles() {
   try {
@@ -41,63 +40,79 @@ export default async function HomePage() {
     <div>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-white via-silver-50 to-silver-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Modern Matchmaking with a{' '}
                 <span className="gradient-text">Traditional Soul</span>
               </h1>
-              <p className="mt-6 text-lg text-gray-600 leading-relaxed">
-                Start free—create your profile, set deal-breakers and preferences, and view mutual matches only for better privacy.
-                <br />
-                Photos/names and interest requests unlock after verification. Contact details are shared only after mutual acceptance.
+              <p className="mt-5 text-lg text-gray-600 leading-relaxed">
+                Create your profile, set deal-breakers and preferences, and view mutual matches only. Photos and contact details unlock after verification and mutual interest.
               </p>
-              <div className="mt-8">
-                <FindMatchButton className="bg-primary-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center">
-                  Find Your Match
-                </FindMatchButton>
+
+              {/* CTA Buttons */}
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/register"
+                  className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
+                >
+                  Create Free Profile
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+                <a
+                  href="#how-it-works"
+                  className="border-2 border-gray-300 text-gray-700 px-8 py-3.5 rounded-lg font-semibold text-lg hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center justify-center"
+                >
+                  How it Works
+                </a>
               </div>
-              <div className="mt-6 flex items-center space-x-6 text-sm text-gray-500">
+
+              {/* Trust Microcopy */}
+              <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  Verified Profiles
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1.5" />
                   Free to start
                 </div>
+                <span className="text-gray-300">•</span>
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 text-green-500 mr-1.5" />
+                  Phone verification
+                </div>
+                <span className="text-gray-300">•</span>
+                <div className="flex items-center">
+                  <UserCheck className="h-4 w-4 text-green-500 mr-1.5" />
+                  Contact after mutual interest
+                </div>
               </div>
-              <p className="mt-3 text-sm text-gray-500">
-                Verification helps keep profiles genuine and interactions intentional.
-              </p>
             </div>
+
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center">
-                    <Heart className="h-8 w-8 text-primary-600" />
+              <div className="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2 hover:rotate-0 transition-transform duration-300">
+                <div className="flex items-center space-x-4 mb-5">
+                  <div className="h-14 w-14 rounded-full bg-primary-100 flex items-center justify-center">
+                    <Heart className="h-7 w-7 text-primary-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Smart Matching</h3>
-                    <p className="text-sm text-gray-500">Based on your preferences and mutual compatibility</p>
+                    <p className="text-sm text-gray-500">Based on your preferences</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <Shield className="h-5 w-5 text-green-500 mr-2" />
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Shield className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                     <span>Mutual matches only (privacy-first)</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <Star className="h-5 w-5 text-yellow-500 mr-2" />
-                    <span>Compatibility table (deal-breakers + nice-to-haves)</span>
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Star className="h-4 w-4 text-yellow-500 mr-2 flex-shrink-0" />
+                    <span>Compatibility scores with deal-breakers</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                    <span>Verified profiles</span>
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    <span>Phone-verified profiles</span>
                   </div>
-                  <div className="flex items-center text-gray-600">
-                    <Users className="h-5 w-5 text-blue-500 mr-2" />
+                  <div className="flex items-center text-gray-600 text-sm">
+                    <Users className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
                     <span>Contact shared after mutual acceptance</span>
                   </div>
                 </div>
@@ -108,53 +123,53 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="section-title">How VivaahReady Works</h2>
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              We believe meaningful connections require quality profiles and mutual interest.
+            <p className="mt-3 text-gray-500">
+              Privacy-first matchmaking with phone-verified profiles.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">1</span>
+          <div className="grid md:grid-cols-4 gap-6">
+            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-primary-600">1</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Create Your Profile</h3>
-              <p className="text-gray-600">
-                Start free. Build your profile and set deal-breakers and nice-to-haves.
+              <h3 className="text-lg font-semibold mb-2">Create Profile</h3>
+              <p className="text-gray-600 text-sm">
+                Free to start. Add preferences and deal-breakers.
               </p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">2</span>
+            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-primary-600">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Profile Review</h3>
-              <p className="text-gray-600">
-                We review profiles to maintain authenticity and a serious community.
+              <h3 className="text-lg font-semibold mb-2">Verification</h3>
+              <p className="text-gray-600 text-sm">
+                Admin phone verification keeps the community genuine.
               </p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">3</span>
+            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-primary-600">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">View Matches</h3>
-              <p className="text-gray-600">
-                See mutual matches only—you won't browse a public directory. Each match includes a compatibility table.
+              <h3 className="text-lg font-semibold mb-2">Mutual Matches</h3>
+              <p className="text-gray-600 text-sm">
+                See curated mutual matches with compatibility scores.
               </p>
             </div>
 
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">4</span>
+            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-primary-600">4</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Connect</h3>
-              <p className="text-gray-600">
-                Express interest. When it's mutual, contact details are revealed so you can take it from there.
+              <h3 className="text-lg font-semibold mb-2">Connect</h3>
+              <p className="text-gray-600 text-sm">
+                Contact details shared only after mutual interest.
               </p>
             </div>
           </div>
@@ -163,12 +178,12 @@ export default async function HomePage() {
 
       {/* Blurred Profiles Preview */}
       {previewProfiles.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white via-silver-50 to-silver-100">
+        <section className="py-16 bg-gradient-to-b from-white via-silver-50 to-silver-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
+            <div className="text-center mb-10">
               <h2 className="section-title">Real Profiles Waiting for You</h2>
-              <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-                Join now to see complete profiles and start connecting with compatible matches.
+              <p className="mt-3 text-gray-500 max-w-xl mx-auto">
+                Join to see complete profiles and start connecting with compatible matches.
               </p>
             </div>
 
@@ -200,20 +215,30 @@ export default async function HomePage() {
                 ))}
               </div>
 
-              {/* Overlay CTA */}
-              <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px] rounded-xl">
-                <div className="text-center bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-xl max-w-md mx-4">
-                  <Lock className="h-12 w-12 text-primary-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Create Your Profile (Free to Start)
+              {/* Overlay CTA - Premium Styling */}
+              <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[2px] rounded-xl">
+                <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md mx-4 border border-gray-100">
+                  <Lock className="h-10 w-10 text-primary-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">
+                    Unlock matches after you create your profile
                   </h3>
-                  <p className="text-gray-600 mb-6">
-                    See mutual matches and compatibility details. Unlock photos/names and interest after verification. Contact details are shared only after mutual acceptance.
-                  </p>
-                  <FindMatchButton className="btn-primary inline-flex items-center">
-                    Find Your Match
+                  <ul className="space-y-2 mb-6 text-sm text-gray-600">
+                    <li className="flex items-start">
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>No public browsing — matches appear only when compatible.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>Photos & contact unlock after verification + mutual interest.</span>
+                    </li>
+                  </ul>
+                  <Link
+                    href="/register"
+                    className="btn-primary w-full flex items-center justify-center py-3"
+                  >
+                    Create Free Profile
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </FindMatchButton>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -222,108 +247,112 @@ export default async function HomePage() {
       )}
 
       {/* Features */}
-      <section className="py-20 bg-white">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="section-title">Why Choose VivaahReady?</h2>
-              <div className="mt-8 space-y-6">
+              <div className="mt-6 space-y-5">
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <Shield className="h-6 w-6 text-primary-600" />
+                  <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                    <Shield className="h-5 w-5 text-primary-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-1">Verified & Secure</h3>
-                    <p className="text-gray-600">
-                      All profiles are manually reviewed before approval. Your privacy
-                      is protected with limited information sharing until mutual interest.
+                    <p className="text-gray-600 text-sm">
+                      All profiles are manually reviewed. Your privacy is protected until mutual interest.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <Users className="h-6 w-6 text-primary-600" />
+                  <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                    <Users className="h-5 w-5 text-primary-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-1">Preference Matching</h3>
-                    <p className="text-gray-600">
-                      See only profiles that match YOUR preferences — age, location,
-                      caste, diet, education, and more. No irrelevant matches.
+                    <p className="text-gray-600 text-sm">
+                      See only profiles matching YOUR preferences — age, location, caste, diet, and more.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start">
-                  <div className="flex-shrink-0 h-12 w-12 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
-                    <Heart className="h-6 w-6 text-primary-600" />
+                  <div className="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                    <Heart className="h-5 w-5 text-primary-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-1">Mutual Interest Required</h3>
-                    <p className="text-gray-600">
-                      Contact details are shared only when BOTH parties express interest.
-                      No spam, no unwanted contacts.
+                    <p className="text-gray-600 text-sm">
+                      Contact details shared only when BOTH parties express interest. No spam.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-xl p-8 text-white">
-              <div className="flex items-center gap-3 mb-6">
-                <Sparkles className="h-8 w-8" />
-                <h3 className="text-2xl font-semibold">Free to Start</h3>
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-xl p-7 text-white">
+              <div className="flex items-center gap-3 mb-5">
+                <Sparkles className="h-7 w-7" />
+                <h3 className="text-xl font-semibold">Free to Start</h3>
               </div>
-              <p className="text-primary-100 mb-6">
-                Create your profile, set your deal-breakers and preferences, and view mutual matches only. Verification helps keep profiles genuine and interactions intentional.
+              <p className="text-primary-100 mb-5 text-sm">
+                Create your profile, set deal-breakers, and view mutual matches. Verification keeps profiles genuine.
               </p>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center text-primary-100">
-                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+              <ul className="space-y-3 mb-6">
+                <li className="flex items-center text-primary-100 text-sm">
+                  <CheckCircle className="h-4 w-4 text-white mr-3 flex-shrink-0" />
                   Free profile creation
                 </li>
-                <li className="flex items-center text-primary-100">
-                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                <li className="flex items-center text-primary-100 text-sm">
+                  <CheckCircle className="h-4 w-4 text-white mr-3 flex-shrink-0" />
                   Mutual matches only (no public directory)
                 </li>
-                <li className="flex items-center text-primary-100">
-                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
+                <li className="flex items-center text-primary-100 text-sm">
+                  <CheckCircle className="h-4 w-4 text-white mr-3 flex-shrink-0" />
                   Photos & names unlock after verification
                 </li>
-                <li className="flex items-center text-primary-100">
-                  <CheckCircle className="h-5 w-5 text-white mr-3 flex-shrink-0" />
-                  Contact details shared only after mutual acceptance
+                <li className="flex items-center text-primary-100 text-sm">
+                  <CheckCircle className="h-4 w-4 text-white mr-3 flex-shrink-0" />
+                  Contact shared after mutual acceptance
                 </li>
               </ul>
-              <FindMatchButton className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center">
-                Find Your Match
+              <Link
+                href="/register"
+                className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center"
+              >
+                Create Free Profile
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </FindMatchButton>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-6">
-            Your Story Begins Here
+      {/* Final CTA Section - Light background */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Ready to create your profile?
           </h2>
-          <p className="text-xl text-primary-100 mb-8">
-            Join Indian singles in the US who trust VivaahReady
-            to find their perfect life partner.
+          <p className="text-lg text-gray-600 mb-8">
+            Free to start. Verified, privacy-first matchmaking for serious relationships.
           </p>
-          <FindMatchButton className="inline-flex items-center bg-white text-primary-600 px-8 py-4 rounded-full font-semibold hover:bg-primary-50 transition-colors shadow-lg">
-            Find Your Match
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </FindMatchButton>
-          <p className="mt-6 text-sm text-primary-200">
-            By using VivaahReady you agree to our{' '}
-            <Link href="/terms" className="underline hover:text-white">Terms of Use</Link>
-            {' '}and{' '}
-            <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>.
-          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/register"
+              className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
+            >
+              Create Free Profile
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              href="/pricing"
+              className="border-2 border-gray-300 text-gray-700 px-8 py-3.5 rounded-lg font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all flex items-center justify-center"
+            >
+              View Pricing
+            </Link>
+          </div>
         </div>
       </section>
     </div>
