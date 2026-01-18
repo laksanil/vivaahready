@@ -270,7 +270,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
     const newPhotos: { file: File; preview: string }[] = []
     Array.from(files).forEach((file) => {
-      if (photos.length + newPhotos.length < 6) {
+      if (photos.length + newPhotos.length < 3) {
         newPhotos.push({
           file,
           preview: URL.createObjectURL(file),
@@ -755,7 +755,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   Upload Your Photo
                 </h3>
                 <p className="text-gray-600">
-                  A profile photo is required to view and connect with matches. Add up to 6 photos.
+                  A profile photo is required to view and connect with matches. Add up to 3 photos.
                 </p>
               </div>
 
@@ -785,7 +785,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 ))}
 
                 {/* Add Photo Buttons */}
-                {Array.from({ length: Math.max(0, 6 - photos.length) }).map((_, index) => (
+                {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, index) => (
                   <button
                     key={`empty-${index}`}
                     onClick={() => fileInputRef.current?.click()}
