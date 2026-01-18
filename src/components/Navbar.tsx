@@ -98,15 +98,19 @@ export function Navbar() {
         <div className="flex justify-between h-20">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center group hover:opacity-90 transition-opacity">
+            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
               <Image
-                src="/logo-banner.png"
+                src="/logo-icon.png"
                 alt="VivaahReady"
-                width={280}
-                height={107}
+                width={120}
+                height={120}
                 className="h-14 w-auto"
                 priority
               />
+              <div className="flex flex-col">
+                <span className="text-white text-2xl font-bold tracking-tight">VivaahReady</span>
+                <span className="text-white/80 text-xs tracking-wider uppercase">Meaningful Connections</span>
+              </div>
             </Link>
           </div>
 
