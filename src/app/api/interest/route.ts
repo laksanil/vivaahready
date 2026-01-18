@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { incrementInterestStats, incrementMutualMatchesForBoth } from '@/lib/lifetimeStats'
+import { sendNewInterestEmail, sendInterestAcceptedEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -265,6 +266,31 @@ export async function POST(request: Request) {
       // Increment lifetime mutual matches for both users
       await incrementMutualMatchesForBoth(currentUserId, targetProfile.userId)
 
+      // Send mutual match email to the other person (who expressed interest first)
+      // Get current user's profile info
+      const currentUserProfile = await prisma.profile.findUnique({
+        where: { userId: currentUserId },
+        select: { id: true, firstName: true }
+      })
+      const currentUser = await prisma.user.findUnique({
+        where: { id: currentUserId },
+        select: { name: true }
+      })
+
+      if (targetProfile.user.email && currentUserProfile) {
+        const currentUserFirstName = currentUserProfile.firstName || currentUser?.name?.split(' ')[0] || 'Someone'
+
+        // Send email notification (don't block the response)
+        sendInterestAcceptedEmail(
+          targetProfile.user.email,
+          targetProfile.user.name || 'there',
+          currentUserFirstName,
+          currentUserProfile.id
+        ).catch((err) => {
+          console.error('Failed to send mutual match email:', err)
+        })
+      }
+
       return NextResponse.json({
         message: "It's a match! You both expressed interest.",
         mutual: true,
@@ -291,6 +317,28 @@ export async function POST(request: Request) {
 
     // Increment lifetime stats for both sender and receiver
     await incrementInterestStats(currentUserId, targetProfile.userId)
+
+    // Send email notification to the receiver about the new interest
+    // Get sender's profile info for the email
+    const senderUser = await prisma.user.findUnique({
+      where: { id: currentUserId },
+      select: { name: true, profile: { select: { id: true, firstName: true } } }
+    })
+
+    if (senderUser && targetProfile.user.email) {
+      const senderFirstName = senderUser.profile?.firstName || senderUser.name?.split(' ')[0] || 'Someone'
+      const senderProfileId = senderUser.profile?.id || ''
+
+      // Send email (don't block the response if email fails)
+      sendNewInterestEmail(
+        targetProfile.user.email,
+        targetProfile.user.name || 'there',
+        senderFirstName,
+        senderProfileId
+      ).catch((err) => {
+        console.error('Failed to send new interest email:', err)
+      })
+    }
 
     return NextResponse.json({
       message: 'Interest sent successfully',
@@ -457,6 +505,27 @@ export async function PATCH(request: Request) {
     // Increment lifetime mutual matches when a connection is created (accept or reconsider)
     if (action === 'accept' || action === 'reconsider') {
       await incrementMutualMatchesForBoth(interest.senderId, interest.receiverId)
+
+      // Send email to the original sender that their interest was accepted
+      // Get receiver's profile info (the one who accepted)
+      const receiverProfile = await prisma.profile.findUnique({
+        where: { userId: interest.receiverId },
+        select: { id: true, firstName: true }
+      })
+
+      if (interest.sender.email && receiverProfile) {
+        const receiverFirstName = receiverProfile.firstName || interest.receiver.name?.split(' ')[0] || 'Someone'
+
+        // Send email notification (don't block the response)
+        sendInterestAcceptedEmail(
+          interest.sender.email,
+          interest.sender.name || 'there',
+          receiverFirstName,
+          receiverProfile.id
+        ).catch((err) => {
+          console.error('Failed to send interest accepted email:', err)
+        })
+      }
     }
 
     return NextResponse.json({

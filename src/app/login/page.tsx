@@ -4,7 +4,6 @@ import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Heart, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
-import FindMatchModal from '@/components/FindMatchModal'
 
 function LoginForm() {
   const router = useRouter()
@@ -18,7 +17,6 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -180,20 +178,7 @@ function LoginForm() {
           </button>
         </form>
 
-        {/* Sign Up Free button */}
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 mb-3">Don't have an account?</p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full bg-gradient-to-r from-teal-400 to-teal-500 text-white py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
-          >
-            Sign Up Free
-          </button>
-        </div>
       </div>
-
-      {/* Find Match Modal */}
-      <FindMatchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   )
 }

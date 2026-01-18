@@ -230,14 +230,9 @@ export function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
-                <Link href="/register" className="bg-white text-primary-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-50 transition-colors shadow-sm">
-                  Create Profile
-                </Link>
-                <Link href="/login" className="text-white/90 hover:text-white text-sm font-medium transition-colors border border-white/30 px-4 py-2 rounded-lg hover:border-white/50">
-                  Sign In
-                </Link>
-              </div>
+              <Link href="/login" className="bg-white text-primary-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-50 transition-colors shadow-sm">
+                Sign In
+              </Link>
             )}
           </div>
 
@@ -338,15 +333,8 @@ export function Navbar() {
               <>
                 <hr className="my-2 border-gray-100" />
                 <Link
-                  href="/register"
-                  className="block bg-primary-600 text-white text-center py-2.5 rounded-lg font-semibold hover:bg-primary-700"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Create Profile
-                </Link>
-                <Link
                   href="/login"
-                  className="block text-center text-gray-600 hover:text-primary-600 py-2 font-medium"
+                  className="block bg-primary-600 text-white text-center py-2.5 rounded-lg font-semibold hover:bg-primary-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In

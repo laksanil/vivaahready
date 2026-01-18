@@ -57,7 +57,7 @@ export default async function HomePage() {
                   href="/register"
                   className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
                 >
-                  Create Free Profile
+                  Find My Match
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
                 <a
@@ -236,7 +236,7 @@ export default async function HomePage() {
                     href="/register"
                     className="btn-primary w-full flex items-center justify-center py-3"
                   >
-                    Create Free Profile
+                    Find My Match
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </div>
@@ -321,7 +321,7 @@ export default async function HomePage() {
                 href="/register"
                 className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center"
               >
-                Create Free Profile
+                Find My Match
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
@@ -343,7 +343,7 @@ export default async function HomePage() {
               href="/register"
               className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
             >
-              Create Free Profile
+              Find My Match
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link

@@ -339,6 +339,15 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         }
         onClose()
       } else {
+        // Send welcome email after successful profile completion
+        fetch('/api/profile/send-welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profileId: createdProfileId }),
+        }).catch((err) => {
+          console.error('Failed to send welcome email:', err)
+        })
+
         router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
         onClose()
       }

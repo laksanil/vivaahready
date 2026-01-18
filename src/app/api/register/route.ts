@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { hash } from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { sendWelcomeEmail } from '@/lib/email'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -52,10 +51,8 @@ export async function POST(request: Request) {
       },
     })
 
-    // Send welcome email (don't block registration if email fails)
-    sendWelcomeEmail(email, name).catch((err) => {
-      console.error('Failed to send welcome email:', err)
-    })
+    // Note: Welcome email is sent after full profile creation (photos uploaded)
+    // See: /api/profile/send-welcome-email
 
     return NextResponse.json(
       {

@@ -150,6 +150,17 @@ function PhotosUploadContent() {
         })
       }
 
+      // Send welcome email after successful profile completion (only for new signups)
+      if (fromSignup) {
+        fetch('/api/profile/send-welcome-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profileId }),
+        }).catch((err) => {
+          console.error('Failed to send welcome email:', err)
+        })
+      }
+
       // Redirect to dashboard with success message
       router.push('/dashboard?status=pending')
     } catch {
