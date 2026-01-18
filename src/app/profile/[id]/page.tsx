@@ -24,6 +24,7 @@ import {
   Flag,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
+import VerificationPaymentModal from '@/components/VerificationPaymentModal'
 import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
@@ -221,6 +222,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     theirProfile: { profileImageUrl: string | null; gender: string; name: string }
   } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdminAccess)
 
@@ -390,6 +392,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           isLoggedIn={canAccess}
           viewerIsApproved={userStatus?.isApproved ?? false}
           onReport={() => setShowReportModal(true)}
+          onOpenPayment={() => setShowPaymentModal(true)}
           buildUrl={buildUrl}
         />
 
@@ -399,6 +402,12 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           onClose={() => setShowReportModal(false)}
           reportedUserId={profile.userId}
           reportedUserName={profile.user.name}
+        />
+
+        {/* Verification Payment Modal */}
+        <VerificationPaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
         />
       </div>
     </div>
@@ -435,6 +444,7 @@ interface ProfileCardProps {
   isLoggedIn?: boolean
   viewerIsApproved?: boolean
   onReport?: () => void
+  onOpenPayment?: () => void
   buildUrl: (path: string) => string
 }
 
@@ -445,6 +455,7 @@ function ProfileCard({
   canExpressInterest,
   theirMatchScore,
   onReport,
+  onOpenPayment,
   yourMatchScore,
   matchProfiles,
   buildUrl,
@@ -651,9 +662,13 @@ function ProfileCard({
                     {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
                   </button>
                 ) : !canExpressInterest ? (
-                  <Link href={buildUrl('/profile')} className="w-8 h-8 bg-white/20 flex items-center justify-center" title="Get Verified to Like">
-                    <Lock className="h-4 w-4 text-white" />
-                  </Link>
+                  <button
+                    onClick={onOpenPayment}
+                    className="w-8 h-8 bg-primary-500 hover:bg-primary-600 flex items-center justify-center"
+                    title="Get Verified to Express Interest"
+                  >
+                    <Heart className="h-4 w-4 text-white" />
+                  </button>
                 ) : (
                   <button
                     onClick={onSendInterest}
@@ -715,6 +730,30 @@ function ProfileCard({
           <div className="border-b border-gray-100 pb-4">
             <h3 className="text-base font-bold text-gray-800 mb-2">About</h3>
             <p className="text-base text-gray-600 leading-relaxed">{profile.aboutMe}</p>
+          </div>
+        )}
+
+        {/* Express Interest CTA for non-verified users */}
+        {!canExpressInterest && isLoggedIn && profile.userId !== viewerUserId && !isMutual && !interestSent && (
+          <div className="bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-100 rounded-xl p-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-primary-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">Interested in this profile?</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Complete your profile verification to express interest and unlock full access to names, photos, and social media links.
+                </p>
+                <button
+                  onClick={onOpenPayment}
+                  className="bg-primary-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2"
+                >
+                  <Heart className="w-4 h-4" />
+                  Express Interest — Get Verified
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
