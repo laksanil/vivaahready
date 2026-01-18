@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       include: { user: true },
     })
 
-    if (!profile || !profile.user) {
+    if (!profile || !profile.user || !profile.user.email) {
       return NextResponse.json(
         { error: 'Profile not found' },
         { status: 404 }
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     // Send welcome email
-    await sendWelcomeEmail(profile.user.email, profile.user.name || profile.firstName)
+    await sendWelcomeEmail(profile.user.email, profile.user.name || profile.firstName || 'there')
 
     return NextResponse.json({ success: true })
   } catch (error) {
