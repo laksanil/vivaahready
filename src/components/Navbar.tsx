@@ -115,8 +115,8 @@ export function Navbar() {
                 <span className="text-2xl md:text-3xl font-bold text-white tracking-wide drop-shadow-md">
                   VivaahReady
                 </span>
-                <span className="text-xs md:text-sm text-red-100 font-medium -mt-0.5">
-                  Find Your Perfect Match
+                <span className="text-xs md:text-sm text-red-100 font-medium tracking-wider uppercase -mt-0.5">
+                  Meaningful Connections
                 </span>
               </div>
             </Link>
