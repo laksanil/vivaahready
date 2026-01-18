@@ -348,8 +348,35 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           console.error('Failed to send welcome email:', err)
         })
 
-        router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
-        onClose()
+        // Get stored email and sign in the user automatically
+        const storedEmail = sessionStorage.getItem('newUserEmail')
+        if (storedEmail && password) {
+          // Sign in with credentials
+          const result = await signIn('credentials', {
+            email: storedEmail,
+            password: password,
+            redirect: false,
+          })
+
+          // Clean up session storage
+          sessionStorage.removeItem('newUserId')
+          sessionStorage.removeItem('newUserEmail')
+
+          if (result?.ok) {
+            onClose()
+            router.push('/dashboard?status=pending')
+          } else {
+            // Fallback to login page if auto-signin fails
+            onClose()
+            router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
+          }
+        } else {
+          // Fallback to login page if no stored credentials
+          sessionStorage.removeItem('newUserId')
+          sessionStorage.removeItem('newUserEmail')
+          onClose()
+          router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
+        }
       }
     } catch {
       setError('Failed to upload photos. Please try again.')
