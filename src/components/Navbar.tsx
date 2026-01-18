@@ -95,19 +95,24 @@ export function Navbar() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-28">
+        <div className="flex justify-between h-20">
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-              {/* Full Logo - White couple with text on red background */}
+              {/* Couple Icon */}
               <Image
                 src="/logo-couple.png"
-                alt="VivaahReady - Meaningful Connections"
-                width={400}
-                height={120}
-                className="h-24 w-auto object-contain"
+                alt="VivaahReady"
+                width={80}
+                height={80}
+                className="h-14 w-14 object-contain"
                 priority
               />
+              {/* Brand Name and Tagline */}
+              <div className="flex flex-col">
+                <span className="text-white text-2xl font-bold tracking-tight">VivaahReady</span>
+                <span className="text-white/80 text-xs tracking-wider uppercase">Meaningful Connections</span>
+              </div>
             </Link>
           </div>
 
