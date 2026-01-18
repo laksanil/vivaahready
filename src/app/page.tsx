@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { Heart, Shield, Users, CheckCircle, Star, ArrowRight, Lock, Sparkles, Phone, UserCheck } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Phone, UserCheck } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
+import FindMatchButton from '@/components/FindMatchButton'
 
 async function getPreviewProfiles() {
   try {
@@ -53,13 +54,7 @@ export default async function HomePage() {
 
               {/* CTA Buttons */}
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/register"
-                  className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
-                >
-                  Find My Match
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
+                <FindMatchButton variant="primary" />
                 <a
                   href="#how-it-works"
                   className="border-2 border-gray-300 text-gray-700 px-8 py-3.5 rounded-lg font-semibold text-lg hover:border-gray-400 hover:bg-gray-50 transition-all flex items-center justify-center"
@@ -232,13 +227,7 @@ export default async function HomePage() {
                       <span>Photos & contact unlock after verification + mutual interest.</span>
                     </li>
                   </ul>
-                  <Link
-                    href="/register"
-                    className="btn-primary w-full flex items-center justify-center py-3"
-                  >
-                    Find My Match
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  <FindMatchButton variant="secondary" />
                 </div>
               </div>
             </div>
@@ -317,13 +306,7 @@ export default async function HomePage() {
                   Contact shared after mutual acceptance
                 </li>
               </ul>
-              <Link
-                href="/register"
-                className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors inline-flex items-center"
-              >
-                Find My Match
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              <FindMatchButton variant="white" />
             </div>
           </div>
         </div>
@@ -339,13 +322,7 @@ export default async function HomePage() {
             Free to start. Verified, privacy-first matchmaking for serious relationships.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center"
-            >
-              Find My Match
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
+            <FindMatchButton variant="primary" />
             <Link
               href="/pricing"
               className="border-2 border-gray-300 text-gray-700 px-8 py-3.5 rounded-lg font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all flex items-center justify-center"
