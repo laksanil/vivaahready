@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { calculateMatchScore } from '@/lib/matching'
+import { calculateMatchScore, isMutualMatch } from '@/lib/matching'
 import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
@@ -55,6 +55,17 @@ export async function GET(
       return NextResponse.json({ theirMatchScore: null, yourMatchScore: null })
     }
 
+    // Check if this is a mutual match (both parties' deal-breakers satisfied)
+    const isMutual = isMutualMatch(myProfile as any, viewedProfile as any)
+
+    // If not a mutual match due to deal-breaker violations, block access
+    if (!isMutual) {
+      return NextResponse.json({
+        blocked: true,
+        reason: 'This profile cannot be viewed due to deal-breaker preference conflicts.',
+      })
+    }
+
     // Calculate BOTH match scores:
     // 1. How well YOU match THEIR preferences (theirMatchScore)
     const theirMatchScore = calculateMatchScore(viewedProfile as any, myProfile as any)
@@ -63,6 +74,7 @@ export async function GET(
     const yourMatchScore = calculateMatchScore(myProfile as any, viewedProfile as any)
 
     return NextResponse.json({
+      blocked: false,
       theirMatchScore,  // How well you match their preferences
       yourMatchScore,   // How well they match your preferences
       myProfile: {

@@ -22,7 +22,6 @@ import {
   ZoomIn,
   ArrowLeft,
   Flag,
-  AlertTriangle,
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
 import VerificationPaymentModal from '@/components/VerificationPaymentModal'
@@ -226,6 +225,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [blockedByDealbreaker, setBlockedByDealbreaker] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdminAccess)
 
@@ -295,6 +295,13 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
       const response = await fetch(buildApiUrl(`/api/profile/${params.id}/match-score`))
       if (response.ok) {
         const data = await response.json()
+
+        // Check if blocked due to deal-breaker violations
+        if (data.blocked) {
+          setBlockedByDealbreaker(true)
+          return
+        }
+
         setTheirMatchScore(data.theirMatchScore)
         setYourMatchScore(data.yourMatchScore)
         if (data.myProfile && data.theirProfile) {
@@ -357,6 +364,32 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     )
   }
 
+  // Block access if deal-breaker preferences don't match (either direction)
+  if (blockedByDealbreaker && profile.userId !== viewerUserId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12">
+        <div className="max-w-md mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <X className="h-8 w-8 text-gray-400" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 mb-3">Profile Not Available</h1>
+            <p className="text-gray-600 mb-6">
+              This profile cannot be viewed because your preferences or their preferences have deal-breaker conflicts that don't match.
+            </p>
+            <Link
+              href={buildUrl('/matches')}
+              className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Matches
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const canExpressInterest = userStatus?.canExpressInterest ?? false
 
   return (
@@ -381,43 +414,6 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
             </Link>
           )}
         </div>
-
-        {/* Deal-breaker Violation Warning Banner */}
-        {yourMatchScore && (() => {
-          const dealBreakerViolations = yourMatchScore.criteria.filter(
-            c => c.isDealbreaker && !c.matched && c.seekerPref !== "Doesn't matter"
-          )
-          if (dealBreakerViolations.length === 0) return null
-
-          return (
-            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-red-800 mb-1">
-                    Deal-breaker Mismatch{dealBreakerViolations.length > 1 ? 'es' : ''}
-                  </h4>
-                  <p className="text-red-700 text-sm mb-2">
-                    This profile does not match your deal-breaker preferences:
-                  </p>
-                  <ul className="text-sm text-red-700 space-y-1">
-                    {dealBreakerViolations.map((v, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <X className="w-4 h-4 text-red-500" />
-                        <span>
-                          <strong>{v.name}:</strong> You want {v.seekerPref}, but {profile.gender === 'female' ? 'she' : 'he'} has {v.candidateValue}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-red-600 text-xs mt-2 italic">
-                    This profile won't appear in your matches feed due to these deal-breaker conflicts.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )
-        })()}
 
         {/* Profile Card - Same as MatchingProfileCard */}
         <ProfileCard
