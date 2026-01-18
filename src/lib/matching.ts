@@ -1,19 +1,21 @@
 /**
  * Matching Algorithm for VivaahReady
  *
- * FLEXIBLE MATCHING: Shows profiles based on compatibility, not hard filters.
- * - Profiles are shown if they are potentially compatible
- * - Match score indicates how well preferences align
- * - Users can see profiles even if not all preferences match perfectly
+ * STRICT MATCHING: Respects exact user preferences with no buffers or tolerances.
+ * - Deal-breaker preferences are strictly enforced - no exceptions
+ * - Soft preferences are also respected exactly as specified
+ * - Two-way/mutual matching: BOTH parties' preferences must be satisfied
+ * - Professional approach: What user requests is exactly what they get
  *
  * Matching Criteria:
  * - Gender (required): Opposite gender
- * - Age: Within preferred age range (interpreted as relative age difference)
- * - Location: Matches preferred location
+ * - Age: STRICT - Within exact preferred age range (no buffer)
+ * - Location: Matches preferred location exactly
  * - Community: Intelligent community matching with sub-community awareness
- * - Diet: Matches preferred diet
+ * - Diet: Matches preferred diet exactly
  * - Qualification: Meets minimum preferred education
- * - Gotra: Different gotra if required
+ * - Gotra: Different gotra if required (always strict)
+ * - All other preferences: Matched exactly as specified
  */
 
 interface ProfileForMatching {
@@ -192,8 +194,8 @@ export function parseAgePreference(prefAgeDiff: string | null | undefined, seeke
   if (relativeMatch && seekerAge !== null) {
     const diffMin = parseInt(relativeMatch[1])
     const diffMax = parseInt(relativeMatch[2])
-    // Assuming they want someone older by this many years
-    return { min: seekerAge + diffMin - 2, max: seekerAge + diffMax + 2 }
+    // STRICT: Assuming they want someone older by this many years - no buffer
+    return { min: seekerAge + diffMin, max: seekerAge + diffMax }
   }
 
   // Pattern: "< X years" or "less than X years" (relative)
@@ -208,10 +210,11 @@ export function parseAgePreference(prefAgeDiff: string | null | undefined, seeke
   const youngerOlderMatch = pref.match(/(\d+)\s*years?\s*(younger|older)/)
   if (youngerOlderMatch && seekerAge !== null) {
     const diff = parseInt(youngerOlderMatch[1])
+    // STRICT: No buffer
     if (youngerOlderMatch[2] === 'younger') {
-      return { min: seekerAge - diff - 2, max: seekerAge }
+      return { min: seekerAge - diff, max: seekerAge }
     } else {
-      return { min: seekerAge, max: seekerAge + diff + 2 }
+      return { min: seekerAge, max: seekerAge + diff }
     }
   }
 
@@ -575,9 +578,9 @@ function extractUSState(location: string): string | null {
 const PREF_LOCATION_TO_STATE: Record<string, string | null> = {
   'doesnt_matter': null,
   'usa': null,  // Any US location
-  'within_50_miles': null,  // Proximity-based - treat as flexible (can't verify without geocoding)
-  'within_100_miles': null, // Proximity-based - treat as flexible
-  'same_city': null,        // City-based - treat as flexible (would need exact city matching)
+  'within_50_miles': null,  // NOTE: Cannot verify without geocoding - returns true (technical limitation)
+  'within_100_miles': null, // NOTE: Cannot verify without geocoding - returns true (technical limitation)
+  'same_city': null,        // NOTE: Would need exact city matching - returns true (technical limitation)
   'same_state': null,       // Will be handled by extracting seeker's state
   'bay_area': 'california',
   'southern_california': 'california',
@@ -646,16 +649,17 @@ function isLocationMatch(preference: string | null | undefined, candidateLocatio
     return isUSLocation(candidateLocation)
   }
 
-  // Bay Area - check for Bay Area cities or California
+  // Bay Area - check for Bay Area cities ONLY (STRICT)
   if (prefLower === 'bay_area') {
     const candState = extractUSState(candidateLocation)
     if (candState !== 'california') return false
-    // Check if it's specifically in Bay Area
+    // Check if it's specifically in Bay Area - STRICT matching
     for (const city of BAY_AREA_CITIES) {
       if (candLower.includes(city)) return true
     }
-    // If just "California" or "CA", allow it (benefit of doubt)
-    if (candLower === 'california' || candLower === 'ca' || candLower.includes('bay area')) return true
+    // Only allow if explicitly mentions Bay Area
+    if (candLower.includes('bay area')) return true
+    // STRICT: Don't assume all California is Bay Area
     return false
   }
 
@@ -1359,24 +1363,25 @@ export function matchesSeekerPreferences(
   const candidateAge = calculateAgeFromDOB(candidate.dateOfBirth)
 
   // 2. Age check - use prefAgeMin/Max if available, otherwise legacy prefAgeDiff
+  // STRICT: No buffer - respect exact user preferences
   const hasAgePref = isPrefSet(seeker.prefAgeMin) || isPrefSet(seeker.prefAgeMax) || isPrefSet(seeker.prefAgeDiff)
   if (hasAgePref) {
     let ageMatches = true
 
     if (candidateAge !== null) {
-      // Use min/max if set
+      // Use min/max if set - exact matching, no buffer
       if (isPrefSet(seeker.prefAgeMin)) {
         const minAge = parseInt(seeker.prefAgeMin || '18')
-        if (candidateAge < minAge - 2) ageMatches = false // 2 year buffer
+        if (candidateAge < minAge) ageMatches = false
       }
       if (isPrefSet(seeker.prefAgeMax)) {
         const maxAge = parseInt(seeker.prefAgeMax || '99')
-        if (candidateAge > maxAge + 2) ageMatches = false // 2 year buffer
+        if (candidateAge > maxAge) ageMatches = false
       }
       // Legacy support
       if (!isPrefSet(seeker.prefAgeMin) && !isPrefSet(seeker.prefAgeMax) && isPrefSet(seeker.prefAgeDiff)) {
         const ageRange = parseAgePreference(seeker.prefAgeDiff, seekerAge)
-        if (ageRange && (candidateAge < ageRange.min - 2 || candidateAge > ageRange.max + 2)) {
+        if (ageRange && (candidateAge < ageRange.min || candidateAge > ageRange.max)) {
           ageMatches = false
         }
       }

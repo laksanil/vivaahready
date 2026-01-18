@@ -139,6 +139,68 @@ function isLocationMatch(seekerPref, candidateLocation) {
   return { match: false, reason: `Wants ${seekerPref}, candidate in ${candidateLocation}` };
 }
 
+// Age matching
+function calculateAge(dob) {
+  if (!dob) return null;
+
+  // Handle MM/DD/YYYY format
+  const mmddyyyy = dob.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mmddyyyy) {
+    const year = parseInt(mmddyyyy[3]);
+    const month = parseInt(mmddyyyy[1]) - 1;
+    const day = parseInt(mmddyyyy[2]);
+    const date = new Date(year, month, day);
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  // Handle ISO date format
+  const date = new Date(dob);
+  if (!isNaN(date.getTime())) {
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  return null;
+}
+
+function isAgeMatch(seekerPrefMin, seekerPrefMax, candidateDob, isDealbreakerFlag) {
+  const hasMinPref = isPrefSet(seekerPrefMin);
+  const hasMaxPref = isPrefSet(seekerPrefMax);
+
+  if (!hasMinPref && !hasMaxPref) {
+    return { match: true, reason: 'No age preference set' };
+  }
+
+  const candidateAge = calculateAge(candidateDob);
+  if (candidateAge === null) {
+    return { match: false, reason: 'Candidate age unknown' };
+  }
+
+  // STRICT: No buffer - respect exact user preferences
+  const minAge = hasMinPref ? parseInt(seekerPrefMin) : 18;
+  const maxAge = hasMaxPref ? parseInt(seekerPrefMax) : 99;
+
+  if (candidateAge < minAge) {
+    return { match: false, reason: `Candidate age ${candidateAge} below minimum ${minAge}` };
+  }
+  if (candidateAge > maxAge) {
+    return { match: false, reason: `Candidate age ${candidateAge} above maximum ${maxAge}` };
+  }
+
+  return { match: true, reason: `Candidate age ${candidateAge} within ${minAge}-${maxAge}` };
+}
+
 // Education matching
 function isEducationMatch(seekerPref, candidateQual) {
   if (!isPrefSet(seekerPref)) return { match: true, reason: 'No preference set' };
@@ -189,6 +251,17 @@ function checkMutualMatch(profileA, profileB) {
 
   // ===== Check: Does B meet A's preferences? =====
 
+  // Age
+  const ageA = isAgeMatch(profileA.prefAgeMin, profileA.prefAgeMax, profileB.dateOfBirth, isDealbreaker(profileA.prefAgeIsDealbreaker));
+  if (!ageA.match) {
+    if (isDealbreaker(profileA.prefAgeIsDealbreaker)) {
+      result.dealbreakersFailedByB.push({ field: 'Age', ...ageA });
+      result.isMatch = false;
+    } else {
+      result.softMismatchesA.push({ field: 'Age', ...ageA });
+    }
+  }
+
   // Diet
   const dietA = isDietMatch(profileA.prefDiet, profileB.dietaryPreference);
   if (!dietA.match) {
@@ -234,6 +307,17 @@ function checkMutualMatch(profileA, profileB) {
   }
 
   // ===== Check: Does A meet B's preferences? =====
+
+  // Age
+  const ageB = isAgeMatch(profileB.prefAgeMin, profileB.prefAgeMax, profileA.dateOfBirth, isDealbreaker(profileB.prefAgeIsDealbreaker));
+  if (!ageB.match) {
+    if (isDealbreaker(profileB.prefAgeIsDealbreaker)) {
+      result.dealbreakersFailedByA.push({ field: 'Age', ...ageB });
+      result.isMatch = false;
+    } else {
+      result.softMismatchesB.push({ field: 'Age', ...ageB });
+    }
+  }
 
   // Diet
   const dietB = isDietMatch(profileB.prefDiet, profileA.dietaryPreference);
@@ -285,6 +369,85 @@ function checkMutualMatch(profileA, profileB) {
 // ============ TEST CASES ============
 
 const TEST_CASES = [
+  // ===== AGE TESTS =====
+  {
+    name: 'Age: Dealbreaker rejects candidate below minimum age',
+    profileA: {
+      name: 'Novely (F)',
+      prefAgeMin: '23',
+      prefAgeMax: '27',
+      prefAgeIsDealbreaker: true,
+      dateOfBirth: '01/01/1998', // 27 years old
+    },
+    profileB: {
+      name: 'Ani (M)',
+      prefAgeMin: null,
+      prefAgeMax: null,
+      prefAgeIsDealbreaker: false,
+      dateOfBirth: '01/01/2004', // 22 years old - below Novely's min of 23
+    },
+    expectedMatch: false,
+    expectedReason: 'B (age 22) is below A\'s min age of 23 (dealbreaker)',
+  },
+  {
+    name: 'Age: Dealbreaker rejects candidate above maximum age',
+    profileA: {
+      name: 'Young Seeker',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: true,
+      dateOfBirth: '01/01/1997',
+    },
+    profileB: {
+      name: 'Older Person',
+      prefAgeMin: null,
+      prefAgeMax: null,
+      prefAgeIsDealbreaker: false,
+      dateOfBirth: '01/01/1985', // 41 years old - above max of 30
+    },
+    expectedMatch: false,
+    expectedReason: 'B (age 41) is above A\'s max age of 30 (dealbreaker)',
+  },
+  {
+    name: 'Age: Non-dealbreaker still checks exact range, just doesnt block',
+    profileA: {
+      name: 'Flexible Seeker',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: false, // NOT a dealbreaker - will note mismatch but not block
+      dateOfBirth: '01/01/1997',
+    },
+    profileB: {
+      name: 'Slightly Young',
+      prefAgeMin: null,
+      prefAgeMax: null,
+      prefAgeIsDealbreaker: false,
+      dateOfBirth: '01/01/2002', // 24 years old - below min of 25
+    },
+    expectedMatch: true, // Still matches because age is NOT a dealbreaker for A
+    expectedSoftMismatch: true, // But it's noted as a soft mismatch
+    expectedReason: 'B (age 24) is below A\'s min 25, but not a dealbreaker so still matches',
+  },
+  {
+    name: 'Age: Exact match passes',
+    profileA: {
+      name: 'Seeker',
+      prefAgeMin: '28',
+      prefAgeMax: '32',
+      prefAgeIsDealbreaker: true,
+      dateOfBirth: '01/01/1995',
+    },
+    profileB: {
+      name: 'Perfect Match',
+      prefAgeMin: null,
+      prefAgeMax: null,
+      prefAgeIsDealbreaker: false,
+      dateOfBirth: '01/01/1996', // 30 years old - exactly in range
+    },
+    expectedMatch: true,
+    expectedReason: 'B (age 30) is exactly within A\'s range 28-32',
+  },
+
   // ===== DIET TESTS =====
   {
     name: 'Diet: Vegetarian preference (dealbreaker) rejects non-veg',
