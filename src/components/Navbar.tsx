@@ -100,13 +100,13 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-3 group hover:opacity-90 transition-opacity">
               {/* Logo Icon - Couple with wreath */}
-              <div className="bg-white rounded-lg p-1.5 shadow-md">
+              <div className="bg-white rounded-lg p-2 shadow-md">
                 <Image
-                  src="/logo-icon.png"
+                  src="/logo-black.png"
                   alt="VivaahReady Logo"
-                  width={52}
-                  height={52}
-                  className="h-12 w-12 object-contain"
+                  width={48}
+                  height={48}
+                  className="h-11 w-11 object-contain"
                   priority
                 />
               </div>
