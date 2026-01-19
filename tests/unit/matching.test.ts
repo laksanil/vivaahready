@@ -31,6 +31,7 @@ const baseProfile = (overrides: Record<string, unknown> = {}) => ({
   annualIncome: '100k-150k',
   religion: 'Hindu',
   citizenship: 'USA',
+  country: 'USA',
   grewUpIn: 'USA',
   openToRelocation: 'no',
   pets: 'no_but_open',
@@ -196,6 +197,22 @@ describe('Matching engine rules', () => {
     })
 
     expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
+  })
+
+  it('uses country fallback for grew-up-in same_as_mine deal-breakers', () => {
+    const seeker = baseProfile({
+      ...seekerBase,
+      grewUpIn: null,
+      country: 'USA',
+      prefGrewUpIn: 'same_as_mine',
+      prefGrewUpInIsDealbreaker: true,
+    })
+    const candidate = baseProfile({
+      ...candidateBase,
+      grewUpIn: 'India',
+    })
+
+    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(false)
   })
 
   it('enforces height dealbreakers', () => {

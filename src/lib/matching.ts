@@ -117,6 +117,7 @@ interface ProfileForMatching {
   religion?: string | null
   citizenship?: string | null
   grewUpIn?: string | null
+  country?: string | null
   openToRelocation?: string | null
   pets?: string | null
   hobbies?: string | null
@@ -1836,7 +1837,8 @@ export function matchesSeekerPreferences(
 
   // 18. Grew Up In check
   if (isPrefSet(seeker.prefGrewUpIn)) {
-    const matches = isGrewUpInMatch(seeker.prefGrewUpIn, seeker.grewUpIn, candidate.grewUpIn, false)
+    const seekerGrewUpIn = seeker.grewUpIn || seeker.country
+    const matches = isGrewUpInMatch(seeker.prefGrewUpIn, seekerGrewUpIn, candidate.grewUpIn, false)
     if (!matches && isDealbreaker(seeker.prefGrewUpInIsDealbreaker)) {
       return false
     }
@@ -2335,7 +2337,8 @@ export function calculateMatchScore(
   let grewUpInMatched = true
   if (isPrefSet(seeker.prefGrewUpIn)) {
     totalCriteria++
-    grewUpInMatched = isGrewUpInMatch(seeker.prefGrewUpIn, seeker.grewUpIn, candidate.grewUpIn, true)
+    const seekerGrewUpIn = seeker.grewUpIn || seeker.country
+    grewUpInMatched = isGrewUpInMatch(seeker.prefGrewUpIn, seekerGrewUpIn, candidate.grewUpIn, true)
     if (grewUpInMatched) matchedCount++
   }
 
