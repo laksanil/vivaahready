@@ -61,6 +61,53 @@ const handlePreferenceChange = (
   }
 }
 
+// Helper that mirrors DealBreakerToggle's handleToggle behavior
+const dealBreakerRelatedFields: Record<string, string[]> = {
+  'prefDiet': ['prefDiet'],
+  'prefSmoking': ['prefSmoking'],
+  'prefDrinking': ['prefDrinking'],
+  'prefGrewUpIn': ['prefGrewUpIn'],
+  'prefFamilyValues': ['prefFamilyValues'],
+  'prefFamilyLocation': ['prefFamilyLocationCountry'],
+  'prefPets': ['prefPets'],
+  'prefMaritalStatus': ['prefMaritalStatus'],
+  'prefHasChildren': ['prefHasChildren'],
+  'prefReligion': ['prefReligion'],
+  'prefCommunity': ['prefCommunity'],
+  'prefRelocation': ['prefRelocation'],
+  'prefEducation': ['prefQualification'],
+  'prefIncome': ['prefIncome'],
+  'prefGotra': ['prefGotra'],
+}
+
+const checkboxFields = new Set(['prefMaritalStatus'])
+
+const handleDealBreakerToggle = (
+  currentState: Record<string, unknown>,
+  fieldName: string,
+  checked: boolean
+): Record<string, unknown> => {
+  const updates: Record<string, unknown> = { [`${fieldName}IsDealbreaker`]: checked }
+
+  if (checked) {
+    const fieldsToCheck = dealBreakerRelatedFields[fieldName] || [fieldName]
+    fieldsToCheck.forEach((fieldToCheck) => {
+      const currentValue = (currentState[fieldToCheck] as string) || ''
+      if (checkboxFields.has(fieldToCheck)) {
+        const values = currentValue.split(', ').filter(v => v && v !== 'doesnt_matter')
+        updates[fieldToCheck] = values.join(', ')
+      } else if (currentValue === 'doesnt_matter' || currentValue === '') {
+        updates[fieldToCheck] = ''
+      }
+    })
+  }
+
+  return {
+    ...currentState,
+    ...updates,
+  }
+}
+
 describe('Deal-breaker Validation', () => {
   describe('isDoesntMatterValue detection', () => {
     it('detects "doesnt_matter" as a "doesn\'t matter" value', () => {
@@ -239,6 +286,56 @@ describe('Deal-breaker Validation', () => {
       expect(newState.prefDietIsDealbreaker).toBe(false)
       expect(newState.firstName).toBe('John')
     })
+  })
+})
+
+describe('Deal-breaker toggle enforces specific selections', () => {
+  it('clears "doesnt_matter" for single-select fields when toggled on', () => {
+    const initialState = {
+      prefGrewUpIn: 'doesnt_matter',
+      prefGrewUpInIsDealbreaker: false,
+    }
+
+    const newState = handleDealBreakerToggle(initialState, 'prefGrewUpIn', true)
+
+    expect(newState.prefGrewUpIn).toBe('')
+    expect(newState.prefGrewUpInIsDealbreaker).toBe(true)
+  })
+
+  it('preserves specific values when toggled on', () => {
+    const initialState = {
+      prefRelocation: 'yes',
+      prefRelocationIsDealbreaker: false,
+    }
+
+    const newState = handleDealBreakerToggle(initialState, 'prefRelocation', true)
+
+    expect(newState.prefRelocation).toBe('yes')
+    expect(newState.prefRelocationIsDealbreaker).toBe(true)
+  })
+
+  it('removes "doesnt_matter" from checkbox selections', () => {
+    const initialState = {
+      prefMaritalStatus: 'doesnt_matter, divorced',
+      prefMaritalStatusIsDealbreaker: false,
+    }
+
+    const newState = handleDealBreakerToggle(initialState, 'prefMaritalStatus', true)
+
+    expect(newState.prefMaritalStatus).toBe('divorced')
+    expect(newState.prefMaritalStatusIsDealbreaker).toBe(true)
+  })
+
+  it('clears checkbox selections when only "doesnt_matter" is selected', () => {
+    const initialState = {
+      prefMaritalStatus: 'doesnt_matter',
+      prefMaritalStatusIsDealbreaker: false,
+    }
+
+    const newState = handleDealBreakerToggle(initialState, 'prefMaritalStatus', true)
+
+    expect(newState.prefMaritalStatus).toBe('')
+    expect(newState.prefMaritalStatusIsDealbreaker).toBe(true)
   })
 })
 

@@ -107,3 +107,9 @@ gh pr merge 123 --squash --delete-branch
 ## Completed Work History
 
 <!-- Move completed entries here for reference -->
+
+## 2026-01-19 12:08 - DEV_A
+**Status:** COMPLETED
+**Task:** Enforce deal-breaker selections and add validation tests
+**Branch:** work/dev-a-dealbreaker-tests
+**Files:** src/components/ProfileFormSections.tsx, tests/unit/dealbreaker-validation.test.ts

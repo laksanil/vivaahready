@@ -7,7 +7,6 @@ import {
   Users,
   Lock,
   Heart,
-  MessageCircle,
   ChevronDown,
   Sparkles,
   Eye,
@@ -50,7 +49,7 @@ export default async function PricingPage() {
               <span className="gradient-text">time</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed">
-              Start free. Pay only when you&apos;re ready to verify and genuinely connect—so every interaction is intentional.
+              Start free. Verify once when you&apos;re ready to connect—so every interaction is intentional.
             </p>
             <p className="mt-4 text-sm text-gray-500 font-medium">
               No subscriptions. No recurring fees.
@@ -69,19 +68,19 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      {/* SECTION 2 — HOW PRICING WORKS */}
+      {/* SECTION 2 — HOW IT WORKS */}
       <section id="how-it-works" className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="section-title">How Pricing Works</h2>
+            <h2 className="section-title">How It Works</h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
               Simple, transparent pricing designed for intentional connections.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Step 1 */}
-            <div className="relative text-center p-6">
+            <div className="relative text-center p-8 bg-gray-50 rounded-2xl">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl font-bold text-primary-600">1</span>
               </div>
@@ -89,31 +88,16 @@ export default async function PricingPage() {
               <p className="text-gray-600">
                 Create your profile, set deal-breakers and preferences, and view mutual matches only.
               </p>
-              {/* Connector line (hidden on mobile) */}
-              <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-primary-200 to-primary-100" />
             </div>
 
             {/* Step 2 */}
-            <div className="relative text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">2</span>
+            <div className="relative text-center p-8 bg-primary-50 rounded-2xl border-2 border-primary-200">
+              <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-white">2</span>
               </div>
               <h3 className="text-xl font-semibold mb-3">Verified Registration (One-time)</h3>
               <p className="text-gray-600">
-                Admin verification keeps profiles genuine. Unlock photos/names and express interest.
-              </p>
-              {/* Connector line (hidden on mobile) */}
-              <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-primary-200 to-primary-100" />
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl font-bold text-primary-600">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Connect (Per Mutual Match)</h3>
-              <p className="text-gray-600">
-                After mutual acceptance, reveal contact details and start messaging.
+                Unlock photos/names and express interest. After mutual acceptance, you can reveal phone/email and message securely on VivaahReady.
               </p>
             </div>
           </div>
@@ -130,7 +114,7 @@ export default async function PricingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Card A: Free to Start */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 flex flex-col">
               <div className="mb-6">
@@ -207,50 +191,17 @@ export default async function PricingPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
-                  <span className="text-primary-100">Designed for serious intent</span>
+                  <span className="text-primary-100">After mutual acceptance: reveal phone + email</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+                  <span className="text-primary-100">Message inside VivaahReady</span>
                 </li>
               </ul>
 
               <Link href={verifyLink} className="bg-white text-primary-600 px-6 py-3 font-semibold rounded-lg text-center hover:bg-primary-50 transition-colors shadow-lg">
                 Get Verified
               </Link>
-            </div>
-
-            {/* Card C: Contact Reveal */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 flex flex-col">
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <MessageCircle className="h-6 w-6 text-primary-600" />
-                  <h3 className="text-xl font-semibold text-gray-900">Contact Reveal</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-gray-900">$20</span>
-                  <span className="text-gray-500 text-sm">per mutual match</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-8 flex-grow">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-600">Available only after mutual acceptance</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-600">Reveals contact details</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-600">Messaging enabled for that match</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-600">Pay only when both say &quot;Yes&quot;</span>
-                </li>
-              </ul>
-
-              <a href="#how-it-works" className="btn-outline text-center w-full">
-                Learn How It Works
-              </a>
             </div>
           </div>
         </div>
@@ -268,20 +219,7 @@ export default async function PricingPage() {
               Completely free platforms often lead to casual outreach and no follow-through. People can message many profiles impulsively—and disappear. That wastes time and creates disappointment.
             </p>
             <p className="mt-4">
-              VivaahReady uses verification and mutual-consent contact sharing to make every interaction more intentional:
-            </p>
-            <ul className="mt-4 space-y-2 list-none pl-0">
-              <li className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-primary-600 flex-shrink-0 mt-1" />
-                <span><strong>Verified Registration</strong> discourages fake or casual profiles and helps keep the community serious.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Lock className="h-5 w-5 text-primary-600 flex-shrink-0 mt-1" />
-                <span><strong>Contact Reveal</strong> happens only after mutual acceptance—so sharing contact details is deliberate, not random.</span>
-              </li>
-            </ul>
-            <p className="mt-6">
-              The result is fewer dead-ends, better privacy, and a higher-quality experience.
+              Verified Registration helps keep profiles genuine and interactions intentional, while mutual acceptance ensures contact details are shared only when both members agree.
             </p>
           </div>
 
@@ -289,11 +227,11 @@ export default async function PricingPage() {
           <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-primary-50 rounded-lg p-4 text-center">
               <Shield className="h-6 w-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">Less spam and unsolicited outreach</p>
+              <p className="text-sm font-medium text-gray-700">More serious community</p>
             </div>
             <div className="bg-primary-50 rounded-lg p-4 text-center">
               <Heart className="h-6 w-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">More intentional conversations</p>
+              <p className="text-sm font-medium text-gray-700">Less unsolicited outreach</p>
             </div>
             <div className="bg-primary-50 rounded-lg p-4 text-center">
               <Eye className="h-6 w-6 text-primary-600 mx-auto mb-2" />
@@ -324,15 +262,15 @@ export default async function PricingPage() {
             </div>
             <div className="flex items-start gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-              <p className="text-gray-700">Photos and names are visible after verification.</p>
+              <p className="text-gray-700">Photos and names unlock after verification.</p>
             </div>
             <div className="flex items-start gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-              <p className="text-gray-700">Contact details are shared only after mutual acceptance.</p>
+              <p className="text-gray-700">Phone and email are revealed only after mutual acceptance.</p>
             </div>
             <div className="flex items-start gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-              <p className="text-gray-700">You stay in control at every step.</p>
+              <p className="text-gray-700">Messaging happens inside VivaahReady after mutual acceptance.</p>
             </div>
           </div>
         </div>
@@ -362,12 +300,12 @@ export default async function PricingPage() {
               answer="Only when you choose to verify to unlock photos/names and express interest."
             />
             <FAQItem
-              question="Why is Contact Reveal $20?"
-              answer="Contact details are sensitive. A per-connection fee ensures contact sharing is intentional and happens only when both members accept interest."
+              question="When are phone and email shared?"
+              answer="Phone and email are revealed only after both members mutually accept interest, and only for verified members."
             />
             <FAQItem
-              question="When do I pay $20?"
-              answer="Only after mutual acceptance, when you choose to reveal contact details and start messaging."
+              question="Can we message on the website?"
+              answer="Yes. After mutual acceptance, verified members can message each other on VivaahReady."
             />
             <FAQItem
               question="Do you have subscriptions?"
@@ -378,12 +316,8 @@ export default async function PricingPage() {
               answer="No. To protect privacy, you will only see profiles that are a mutual match based on preferences and deal-breakers."
             />
             <FAQItem
-              question="Does paying guarantee a response?"
+              question="Does verification guarantee a response?"
               answer="No platform can guarantee responses, but verification and mutual acceptance improve the likelihood of serious engagement."
-            />
-            <FAQItem
-              question="How do you reduce spam and ghosting?"
-              answer="Verification and mutual-consent contact sharing reduce casual outreach and encourage intentional connections."
             />
           </div>
         </div>
