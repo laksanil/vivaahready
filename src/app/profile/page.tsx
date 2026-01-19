@@ -1522,7 +1522,11 @@ function ViewProfilePageContent() {
                       <span className="text-gray-800">
                         {profile.prefAgeMin && profile.prefAgeMax
                           ? `${profile.prefAgeMin} - ${profile.prefAgeMax} years`
-                          : profile.prefAgeDiff || "Doesn't matter"}
+                          : profile.prefAgeMin
+                            ? `${profile.prefAgeMin}+ years`
+                            : profile.prefAgeMax
+                              ? `Up to ${profile.prefAgeMax} years`
+                              : profile.prefAgeDiff || "Doesn't matter"}
                       </span>
                     </div>
                     <div className="flex">
