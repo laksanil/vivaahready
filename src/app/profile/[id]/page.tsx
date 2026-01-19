@@ -226,6 +226,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const [showReportModal, setShowReportModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [blockedByDealbreaker, setBlockedByDealbreaker] = useState(false)
+  const [matchScoreChecked, setMatchScoreChecked] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdminAccess)
 
@@ -299,6 +300,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
         // Check if blocked due to deal-breaker violations
         if (data.blocked) {
           setBlockedByDealbreaker(true)
+          setMatchScoreChecked(true)
           return
         }
 
@@ -312,7 +314,9 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
         }
       }
     } catch (err) {
-      // Ignore
+      // Ignore errors - allow viewing if check fails
+    } finally {
+      setMatchScoreChecked(true)
     }
   }
 
@@ -343,7 +347,11 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     }
   }
 
-  if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
+  // Show loading while: auth loading, profile loading, admin check pending, or match score check pending
+  const isOwnProfile = profile?.userId === viewerUserId
+  const needsMatchScoreCheck = canAccess && profile && !isOwnProfile && !matchScoreChecked
+
+  if (status === 'loading' || loading || (isAdminView && !adminChecked) || needsMatchScoreCheck) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
