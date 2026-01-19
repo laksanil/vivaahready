@@ -31,12 +31,6 @@ PRs ready to be merged (tests passing, no conflicts):
 
 <!-- Add your work entries below this line -->
 
-## 2026-01-19 13:07 - DEV_A
-**Status:** IN_PROGRESS
-**Task:** Fix grew-up-in deal-breaker matching fallback and add unit test
-**Branch:** work/dev-a-fix-grewupin-dealbreaker
-**Files:** src/lib/matching.ts, tests/unit/matching.test.ts
-
 ## 2026-01-16 12:05 - DEV_A
 **Status:** COMPLETED
 **Task:** Pure functionality audit - what works vs what doesn't
@@ -113,6 +107,12 @@ gh pr merge 123 --squash --delete-branch
 ## Completed Work History
 
 <!-- Move completed entries here for reference -->
+
+## 2026-01-19 13:07 - DEV_A
+**Status:** COMPLETED
+**Task:** Fix grew-up-in deal-breaker matching fallback and add unit test
+**Branch:** work/dev-a-fix-grewupin-dealbreaker
+**Files:** src/lib/matching.ts, tests/unit/matching.test.ts
 
 ## 2026-01-19 12:08 - DEV_A
 **Status:** COMPLETED
