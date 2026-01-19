@@ -130,6 +130,74 @@ describe('Matching engine rules', () => {
     expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
   })
 
+  it('does not block when candidate data is missing for deal-breakers', () => {
+    const seeker = baseProfile({
+      ...seekerBase,
+      prefDiet: 'veg',
+      prefDietIsDealbreaker: true,
+      prefSmoking: 'no',
+      prefSmokingIsDealbreaker: true,
+      prefDrinking: 'no',
+      prefDrinkingIsDealbreaker: true,
+      prefLocation: 'same_state',
+      prefLocationIsDealbreaker: true,
+      prefCommunity: 'same_as_mine',
+      prefCommunityIsDealbreaker: true,
+      prefReligion: 'Hindu',
+      prefReligionIsDealbreaker: true,
+      prefMaritalStatus: 'never_married',
+      prefMaritalStatusIsDealbreaker: true,
+      prefHasChildren: 'no_children',
+      prefHasChildrenIsDealbreaker: true,
+      prefIncome: '75k-100k',
+      prefIncomeIsDealbreaker: true,
+      prefOccupationList: 'software engineer',
+      prefOccupationIsDealbreaker: true,
+      prefFamilyValues: 'traditional',
+      prefFamilyValuesIsDealbreaker: true,
+      prefFamilyLocation: 'USA',
+      prefFamilyLocationIsDealbreaker: true,
+      prefMotherTongue: 'same_as_mine',
+      prefMotherTongueIsDealbreaker: true,
+      prefCitizenship: 'same_as_mine',
+      prefCitizenshipIsDealbreaker: true,
+      prefGrewUpIn: 'USA',
+      prefGrewUpInIsDealbreaker: true,
+      prefPets: 'must_love',
+      prefPetsIsDealbreaker: true,
+      prefHobbies: 'same_as_mine',
+      prefHobbiesIsDealbreaker: true,
+      prefFitness: 'same_as_mine',
+      prefFitnessIsDealbreaker: true,
+      prefInterests: 'same_as_mine',
+      prefInterestsIsDealbreaker: true,
+    })
+    const candidate = baseProfile({
+      ...candidateBase,
+      dietaryPreference: null,
+      smoking: null,
+      drinking: null,
+      currentLocation: null,
+      community: null,
+      religion: null,
+      maritalStatus: null,
+      hasChildren: null,
+      annualIncome: null,
+      occupation: null,
+      familyValues: null,
+      familyLocation: null,
+      motherTongue: null,
+      citizenship: null,
+      grewUpIn: null,
+      pets: null,
+      hobbies: null,
+      fitness: null,
+      interests: null,
+    })
+
+    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
+  })
+
   it('enforces height dealbreakers', () => {
     const seeker = baseProfile({
       ...seekerBase,
@@ -357,7 +425,7 @@ describe('Matching engine rules', () => {
     expect(isMutualMatch(profileAConflict as any, profileB as any)).toBe(false)
   })
 
-  it('calculateMatchScore ignores "doesnt_matter" in scoring and flags missing data', () => {
+  it('calculateMatchScore ignores "doesnt_matter" and does not penalize missing data', () => {
     const seeker = baseProfile({
       ...seekerBase,
       prefDiet: 'veg',
@@ -374,7 +442,7 @@ describe('Matching engine rules', () => {
     const dietCriterion = score.criteria.find(c => c.name === 'Diet')
     const smokingCriterion = score.criteria.find(c => c.name === 'Smoking')
 
-    expect(dietCriterion?.matched).toBe(false)
+    expect(dietCriterion?.matched).toBe(true)
     expect(smokingCriterion?.matched).toBe(true)
     expect(score.maxScore).toBe(1)
   })

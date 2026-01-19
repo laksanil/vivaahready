@@ -2,7 +2,8 @@
  * Matching Algorithm for VivaahReady
  *
  * STRICT MATCHING: Respects exact user preferences with no buffers or tolerances.
- * - Deal-breaker preferences are strictly enforced - no exceptions
+ * - Deal-breaker preferences are strictly enforced when data is present
+ *   (missing candidate data never blocks a match)
  * - Soft preferences are also respected exactly as specified
  * - Two-way/mutual matching: BOTH parties' preferences must be satisfied
  * - Professional approach: What user requests is exactly what they get
@@ -492,7 +493,7 @@ function isBrahmin(community: string): boolean {
  * Intelligent community matching
  * - "Same Community only" -> Match at broad level (e.g., both Brahmins)
  * - Specific community -> Match if communities are compatible
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isCommunityMatch(seekerCommunity: string | null | undefined, seekerPref: string | null | undefined, candidateCommunity: string | null | undefined, strict: boolean = false): boolean {
   // No preference or "doesn't matter"
@@ -502,7 +503,7 @@ function isCommunityMatch(seekerCommunity: string | null | undefined, seekerPref
 
   // No candidate community info - can't verify
   if (!candidateCommunity) {
-    return !strict // If strict (deal-breaker), missing data = no match
+    return true // Missing data never blocks a match
   }
 
   const prefList = parsePreferenceList(seekerPref)
@@ -517,7 +518,7 @@ function isCommunityMatch(seekerCommunity: string | null | undefined, seekerPref
   if (prefLower.includes('same_as_mine') || prefLower.includes('same as mine') ||
       prefLower.includes('same community') || prefLower.includes('same_community') ||
       prefLower.includes('same caste') || prefLower.includes('same_caste')) {
-    if (!seekerCommunity) return !strict // Can't compare
+    if (!seekerCommunity) return true // Can't compare
 
     const seekerLower = seekerCommunity.toLowerCase()
 
@@ -690,7 +691,7 @@ const BAY_AREA_CITIES = [
 /**
  * Smart location matching that handles dropdown preference values
  * STRICT: If someone specifies a state, only match that state
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isLocationMatch(
   preference: string | null | undefined,
@@ -705,7 +706,7 @@ function isLocationMatch(
 
   // No candidate location - can't verify
   if (!candidateLocation) {
-    return !strict // If strict (deal-breaker), missing data = no match
+    return true // Missing data never blocks a match
   }
 
   const prefList = parsePreferenceList(preference)
@@ -730,27 +731,27 @@ function isLocationMatch(
   if (prefLower === 'same_city') {
     const seekerCity = extractCity(seekerLocation)
     const candCity = extractCity(candidateLocation)
-    if (!seekerCity || !candCity) return !strict
+    if (!seekerCity || !candCity) return true
     return seekerCity === candCity
   }
 
   if (prefLower === 'same_state') {
     const seekerState = seekerLocation ? extractUSState(seekerLocation) : null
     const candState = extractUSState(candidateLocation)
-    if (!seekerState || !candState) return !strict
+    if (!seekerState || !candState) return true
     return seekerState === candState
   }
 
   // Multi-state regions
   if (prefLower === 'tri_state') {
     const candState = extractUSState(candidateLocation)
-    if (!candState) return !strict
+    if (!candState) return true
     return ['new york', 'new jersey', 'connecticut'].includes(candState)
   }
 
   if (prefLower === 'dmv_area') {
     const candState = extractUSState(candidateLocation)
-    if (!candState) return !strict
+    if (!candState) return true
     return ['district of columbia', 'maryland', 'virginia'].includes(candState)
   }
 
@@ -829,7 +830,7 @@ function isLocationMatch(
 
 /**
  * Check if diet preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isDietMatch(seekerPref: string | null | undefined, candidateDiet: string | null | undefined, strict: boolean = false): boolean {
   // No preference
@@ -839,7 +840,7 @@ function isDietMatch(seekerPref: string | null | undefined, candidateDiet: strin
 
   // No candidate diet info
   if (!candidateDiet) {
-    return !strict // If strict (deal-breaker), missing data = no match
+    return true // Missing data never blocks a match
   }
 
   const normalizeDiet = (diet: string) => diet.toLowerCase().replace(/[_\s-]/g, '')
@@ -881,7 +882,7 @@ function isDietMatch(seekerPref: string | null | undefined, candidateDiet: strin
 
 /**
  * Check if gotra requirement is met
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string | null | undefined, candidateGotra: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
@@ -890,13 +891,13 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
 
   // "Different Gotra" requirement
   if (seekerPref.toLowerCase().includes('different')) {
-    if (!seekerGotra || !candidateGotra) return !strict // If strict, missing data = no match
+    if (!seekerGotra || !candidateGotra) return true // Missing data never blocks a match
     return seekerGotra.toLowerCase() !== candidateGotra.toLowerCase()
   }
 
   // Same gotra requirement
   if (seekerPref.toLowerCase().includes('same')) {
-    if (!seekerGotra || !candidateGotra) return !strict
+    if (!seekerGotra || !candidateGotra) return true
     return seekerGotra.toLowerCase() === candidateGotra.toLowerCase()
   }
 
@@ -906,7 +907,7 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
 /**
  * Check if education requirement is met
  * Supports both level-based (e.g., "Bachelor's or higher") and category-based (e.g., "Medical Professional") matching
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
@@ -926,13 +927,13 @@ function isEducationMatch(seekerPref: string | null | undefined, candidateQual: 
     if (prefConfig.type === 'level' && prefConfig.minLevel !== undefined) {
       // Level-based matching: candidate level must be >= minimum
       const candidateLevel = getEducationLevel(candidateQual)
-      if (candidateLevel === 0) return !strict // If strict, can't determine = no match
+      if (candidateLevel === 0) return true // Missing data never blocks a match
       return candidateLevel >= prefConfig.minLevel
     }
 
     if (prefConfig.type === 'category' && prefConfig.categories) {
       // Category-based matching: candidate must be in specific categories
-      if (!candidateQual) return !strict
+      if (!candidateQual) return true
       return matchesEducationCategory(candidateQual, prefConfig.categories)
     }
   }
@@ -941,9 +942,9 @@ function isEducationMatch(seekerPref: string | null | undefined, candidateQual: 
   const seekerMinLevel = getEducationLevel(seekerPref)
   const candidateLevel = getEducationLevel(candidateQual)
 
-  // If we can't determine levels, allow the match (unless strict)
+  // If we can't determine levels, allow the match
   if (seekerMinLevel === 0 || candidateLevel === 0) {
-    return !strict
+    return true
   }
 
   return candidateLevel >= seekerMinLevel
@@ -1024,7 +1025,7 @@ function isHeightMatch(
   if (!hasMin && !hasMax && !hasExact) return true
 
   const candidateInches = parseHeightToInches(candidateHeight)
-  if (candidateInches === null) return !strict
+  if (candidateInches === null) return true
 
   let minInches: number | null = null
   let maxInches: number | null = null
@@ -1040,7 +1041,7 @@ function isHeightMatch(
 
   if (!hasMin && !hasMax && hasExact) {
     const parsedExact = parseHeightToInches(prefExact)
-    if (parsedExact === null) return !strict
+    if (parsedExact === null) return true
     const prefLower = prefExact?.toLowerCase() || ''
     if (prefLower.includes('above') || prefLower.includes('+')) {
       minInches = parsedExact
@@ -1060,13 +1061,13 @@ function isHeightMatch(
 
 /**
  * Check if smoking preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isSmokingMatch(seekerPref: string | null | undefined, candidateSmoking: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateSmoking) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateSmoking) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateSmoking.toLowerCase()
@@ -1089,13 +1090,13 @@ function isSmokingMatch(seekerPref: string | null | undefined, candidateSmoking:
 
 /**
  * Check if drinking preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isDrinkingMatch(seekerPref: string | null | undefined, candidateDrinking: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateDrinking) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateDrinking) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateDrinking.toLowerCase()
@@ -1118,13 +1119,13 @@ function isDrinkingMatch(seekerPref: string | null | undefined, candidateDrinkin
 
 /**
  * Check if marital status preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMaritalStatus: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateMaritalStatus) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateMaritalStatus) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
 
@@ -1149,13 +1150,13 @@ function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMa
  * Check if partner's children preferences match
  * Preferences: doesnt_matter, no_children, ok_not_living, ok_living, ok_any
  * Candidate values: no, yes_living_with_me, yes_not_living_with_me
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isHasChildrenMatch(seekerPref: string | null | undefined, candidateHasChildren: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateHasChildren) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateHasChildren) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateHasChildren.toLowerCase()
@@ -1188,20 +1189,20 @@ function isHasChildrenMatch(seekerPref: string | null | undefined, candidateHasC
 
 /**
  * Check if family values preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFamilyValuesMatch(seekerPref: string | null | undefined, seekerFamilyValues: string | null | undefined, candidateFamilyValues: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateFamilyValues) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateFamilyValues) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateFamilyValues.toLowerCase()
 
   // "same_as_mine" - match if same as seeker's family values
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerFamilyValues) return !strict
+    if (!seekerFamilyValues) return true
     return seekerFamilyValues.toLowerCase() === cand
   }
 
@@ -1211,20 +1212,20 @@ function isFamilyValuesMatch(seekerPref: string | null | undefined, seekerFamily
 
 /**
  * Check if family location preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFamilyLocationMatch(seekerPref: string | null | undefined, seekerFamilyLocation: string | null | undefined, candidateFamilyLocation: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateFamilyLocation) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateFamilyLocation) return true // Missing data never blocks a match
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateFamilyLocation.toLowerCase()
 
   // "same_as_mine" / "same_country" - match if similar location
   if (pref === 'same_as_mine' || pref === 'same as mine' || pref === 'same_country' || pref === 'same country') {
-    if (!seekerFamilyLocation) return !strict
+    if (!seekerFamilyLocation) return true
     // Check for overlap in location strings
     const seekerLoc = seekerFamilyLocation.toLowerCase()
     return cand.includes(seekerLoc) || seekerLoc.includes(cand) ||
@@ -1248,7 +1249,7 @@ function isFamilyLocationMatch(seekerPref: string | null | undefined, seekerFami
  * @param seekerMotherTongueOther - seeker's custom mother tongue if "Other"
  * @param candidateMotherTongue - candidate's mother tongue
  * @param candidateMotherTongueOther - candidate's custom mother tongue if "Other"
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isMotherTongueMatch(
   seekerPrefList: string | null | undefined,
@@ -1262,7 +1263,7 @@ function isMotherTongueMatch(
   if (isNoPreferenceValue(seekerPrefList)) {
     return true
   }
-  if (!candidateMotherTongue) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateMotherTongue) return true // Missing data never blocks a match
 
   // Parse the preference list (comma-separated or JSON)
   const prefList = parsePreferenceList(seekerPrefList)
@@ -1348,13 +1349,13 @@ function intelligentTextMatch(text1: string, text2: string): boolean {
 
 /**
  * Check if income preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isIncomeMatch(seekerPref: string | null | undefined, candidateIncome: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateIncome) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateIncome) return true // Missing data never blocks a match
 
   // Map income ranges to numeric values for comparison
   const incomeToValue: Record<string, number> = {
@@ -1384,13 +1385,13 @@ function isIncomeMatch(seekerPref: string | null | undefined, candidateIncome: s
 
 /**
  * Check if sub-community preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCommunity: string | null | undefined, candidateSubCommunity: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateSubCommunity) return !strict // If strict (deal-breaker), missing data = no match
+  if (!candidateSubCommunity) return true // Missing data never blocks a match
 
   const prefList = parsePreferenceList(seekerPref)
   const prefLower = (prefList[0] ?? seekerPref).toLowerCase()
@@ -1398,7 +1399,7 @@ function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCom
 
   // "same_as_mine" - match if same sub-community
   if (wantsSameAsMine) {
-    if (!seekerSubCommunity) return !strict
+    if (!seekerSubCommunity) return true
     if (seekerSubCommunity.toLowerCase() === candidateSubCommunity.toLowerCase()) return true
   }
 
@@ -1413,13 +1414,13 @@ function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCom
 
 /**
  * Check if religion preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isReligionMatch(seekerPref: string | null | undefined, candidateReligion: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateReligion) return !strict
+  if (!candidateReligion) return true
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateReligion.toLowerCase()
@@ -1429,20 +1430,20 @@ function isReligionMatch(seekerPref: string | null | undefined, candidateReligio
 
 /**
  * Check if citizenship preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isCitizenshipMatch(seekerPref: string | null | undefined, seekerCitizenship: string | null | undefined, candidateCitizenship: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateCitizenship) return !strict
+  if (!candidateCitizenship) return true
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateCitizenship.toLowerCase()
 
   // "same_as_mine" - match if same citizenship
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerCitizenship) return !strict
+    if (!seekerCitizenship) return true
     return seekerCitizenship.toLowerCase() === cand
   }
 
@@ -1451,20 +1452,20 @@ function isCitizenshipMatch(seekerPref: string | null | undefined, seekerCitizen
 
 /**
  * Check if grew up in preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isGrewUpInMatch(seekerPref: string | null | undefined, seekerGrewUpIn: string | null | undefined, candidateGrewUpIn: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateGrewUpIn) return !strict
+  if (!candidateGrewUpIn) return true
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateGrewUpIn.toLowerCase()
 
   // "same_as_mine" - match if same grew up location
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerGrewUpIn) return !strict
+    if (!seekerGrewUpIn) return true
     return seekerGrewUpIn.toLowerCase() === cand
   }
 
@@ -1473,13 +1474,13 @@ function isGrewUpInMatch(seekerPref: string | null | undefined, seekerGrewUpIn: 
 
 /**
  * Check if relocation preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isRelocationMatch(seekerPref: string | null | undefined, candidateRelocation: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateRelocation) return !strict
+  if (!candidateRelocation) return true
 
   const pref = seekerPref.toLowerCase()
   const cand = candidateRelocation.toLowerCase()
@@ -1499,13 +1500,13 @@ function isRelocationMatch(seekerPref: string | null | undefined, candidateReloc
 
 /**
  * Check if pets preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isPetsMatch(seekerPref: string | null | undefined, candidatePets: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidatePets) return !strict
+  if (!candidatePets) return true
 
   const pref = seekerPref.toLowerCase()
   const cand = candidatePets.toLowerCase()
@@ -1534,19 +1535,19 @@ function isPetsMatch(seekerPref: string | null | undefined, candidatePets: strin
 
 /**
  * Check if hobbies preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: string | null | undefined, candidateHobbies: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateHobbies) return !strict
+  if (!candidateHobbies) return true
 
   const pref = seekerPref.toLowerCase()
 
   // "same_as_mine" - check for overlap in hobbies
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerHobbies) return !strict
+    if (!seekerHobbies) return true
     const seekerList = seekerHobbies.toLowerCase().split(',').map(h => h.trim())
     const candList = candidateHobbies.toLowerCase().split(',').map(h => h.trim())
     // At least one common hobby
@@ -1558,19 +1559,19 @@ function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: st
 
 /**
  * Check if fitness preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: string | null | undefined, candidateFitness: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateFitness) return !strict
+  if (!candidateFitness) return true
 
   const pref = seekerPref.toLowerCase()
 
   // "same_as_mine" - check for overlap in fitness activities
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerFitness) return !strict
+    if (!seekerFitness) return true
     const seekerList = seekerFitness.toLowerCase().split(',').map(f => f.trim())
     const candList = candidateFitness.toLowerCase().split(',').map(f => f.trim())
     // At least one common fitness activity
@@ -1582,19 +1583,19 @@ function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: st
 
 /**
  * Check if interests preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests: string | null | undefined, candidateInterests: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateInterests) return !strict
+  if (!candidateInterests) return true
 
   const pref = seekerPref.toLowerCase()
 
   // "same_as_mine" - check for overlap in interests
   if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerInterests) return !strict
+    if (!seekerInterests) return true
     const seekerList = seekerInterests.toLowerCase().split(',').map(i => i.trim())
     const candList = candidateInterests.toLowerCase().split(',').map(i => i.trim())
     // At least one common interest
@@ -1606,13 +1607,13 @@ function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests
 
 /**
  * Check if occupation preferences match
- * @param strict - if true, missing candidate data returns false (for deal-breakers)
+ * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isOccupationMatch(seekerPref: string | null | undefined, candidateOccupation: string | null | undefined, strict: boolean = false): boolean {
   if (isNoPreferenceValue(seekerPref)) {
     return true
   }
-  if (!candidateOccupation) return !strict
+  if (!candidateOccupation) return true
 
   const prefList = parsePreferenceList(seekerPref)
   if (prefList.length === 0) return true
@@ -1982,9 +1983,8 @@ export function calculateMatchScore(
           ageMatched = candidateAge >= ageRange.min && candidateAge <= ageRange.max
         }
       }
-    } else {
-      ageMatched = false
     }
+    // Missing candidate age never blocks a match
     if (ageMatched) matchedCount++
   }
 

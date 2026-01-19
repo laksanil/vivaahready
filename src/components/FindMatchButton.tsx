@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import FindMatchModal from './FindMatchModal'
+import { isTestMode } from '@/lib/testMode'
 
 interface FindMatchButtonProps {
   variant?: 'primary' | 'secondary' | 'white'
@@ -18,6 +19,15 @@ export default function FindMatchButton({
   showArrow = true
 }: FindMatchButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isTestMode) return
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('e2eOpenModal') === '1') {
+      setIsModalOpen(true)
+    }
+  }, [])
 
   const variantStyles = {
     primary: 'bg-primary-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:bg-primary-700 hover:shadow-xl transition-all flex items-center justify-center',

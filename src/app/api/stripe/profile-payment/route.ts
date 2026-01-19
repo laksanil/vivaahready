@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
+import { isTestMode } from '@/lib/testMode'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-04-10',
@@ -38,6 +39,13 @@ export async function POST(request: Request) {
 
     // Get profile data from request (to store in metadata)
     const { profileData } = await request.json()
+
+    if (isTestMode) {
+      return NextResponse.json({
+        url: '/profile/create/payment-success?session_id=test',
+        sessionId: 'test_session'
+      })
+    }
 
     // Create one-time payment checkout session
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -86,6 +94,10 @@ export async function GET(request: Request) {
 
     if (!sessionId) {
       return NextResponse.json({ error: 'Session ID required' }, { status: 400 })
+    }
+
+    if (isTestMode) {
+      return NextResponse.json({ paid: true, paymentId: 'test_payment' })
     }
 
     // Retrieve Stripe session

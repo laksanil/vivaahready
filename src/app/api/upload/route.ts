@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import cloudinary from '@/lib/cloudinary'
+import { isTestMode } from '@/lib/testMode'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     }
 
     const uploadedUrls: string[] = []
+    const placeholderUrl = process.env.E2E_TEST_PHOTO_URL || 'https://vivaahready.com/logo-icon.png'
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
@@ -42,6 +44,11 @@ export async function POST(request: Request) {
         return NextResponse.json({
           error: `File ${file.name} exceeds 10MB limit`
         }, { status: 400 })
+      }
+
+      if (isTestMode) {
+        uploadedUrls.push(placeholderUrl)
+        continue
       }
 
       // Convert file to buffer

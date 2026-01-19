@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
 import { getTargetUserId } from '@/lib/admin'
+import { isTestMode } from '@/lib/testMode'
 
 export async function POST(request: Request) {
   try {
@@ -45,15 +46,17 @@ export async function POST(request: Request) {
     // Remove the photo from the list
     const updatedPhotos = existingPhotos.filter(url => url !== photoUrl)
 
-    // Try to delete from Cloudinary (extract public_id from URL)
-    try {
-      const urlParts = photoUrl.split('/')
-      const publicIdWithExt = urlParts.slice(-2).join('/') // Get folder/filename
-      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '') // Remove extension
-      await cloudinary.uploader.destroy(publicId)
-    } catch (cloudinaryError) {
-      console.error('Failed to delete from Cloudinary:', cloudinaryError)
-      // Continue even if Cloudinary delete fails
+    if (!isTestMode) {
+      // Try to delete from Cloudinary (extract public_id from URL)
+      try {
+        const urlParts = photoUrl.split('/')
+        const publicIdWithExt = urlParts.slice(-2).join('/') // Get folder/filename
+        const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '') // Remove extension
+        await cloudinary.uploader.destroy(publicId)
+      } catch (cloudinaryError) {
+        console.error('Failed to delete from Cloudinary:', cloudinaryError)
+        // Continue even if Cloudinary delete fails
+      }
     }
 
     // Update profile
