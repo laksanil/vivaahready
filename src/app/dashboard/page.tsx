@@ -61,16 +61,22 @@ function DashboardContent() {
     profile: { approvalStatus: string } | null
   } | null>(null)
   const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
+  // Check for status query param (redirected from profile creation)
+  const showPendingMessage = searchParams.get('status') === 'pending'
+  const shouldCreateProfile = searchParams.get('createProfile') === 'true'
 
   // Check if session data is fully loaded (hasProfile will be undefined until JWT callback populates it)
   // This prevents the flash where "Create Profile" modal appears briefly before session data loads
   const sessionDataLoaded = isAdminView || (session?.user && (session.user as any).hasProfile !== undefined)
-  const hasProfile = isAdminView
+  const sessionHasProfile = isAdminView
     ? !!impersonatedUser?.profile
     : ((session?.user as any)?.hasProfile || false)
-  const approvalStatus = isAdminView
+  const sessionApprovalStatus = isAdminView
     ? (impersonatedUser?.profile?.approvalStatus || null)
     : ((session?.user as any)?.approvalStatus || null)
+  const pendingFromUrl = showPendingMessage && !sessionApprovalStatus
+  const hasProfile = sessionHasProfile || pendingFromUrl
+  const approvalStatus = sessionApprovalStatus || (pendingFromUrl ? 'pending' : null)
   const isApproved = hasProfile && approvalStatus === 'approved'
   const isPending = hasProfile && approvalStatus === 'pending'
   const isRejected = hasProfile && approvalStatus === 'rejected'
@@ -117,9 +123,6 @@ function DashboardContent() {
     }
   }, [isAdminView, isAdminAccess, viewAsUser])
 
-  // Check for status query param (redirected from profile creation)
-  const showPendingMessage = searchParams.get('status') === 'pending'
-  const shouldCreateProfile = searchParams.get('createProfile') === 'true'
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
 
@@ -303,7 +306,7 @@ function DashboardContent() {
         </div>
 
         {/* Profile Status Alerts */}
-        {(needsProfile || showPendingMessage) && !isPending && !isRejected && (
+        {needsProfile && !isPending && !isRejected && (
           <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div className="flex items-start">
               <AlertCircle className="h-6 w-6 text-yellow-500 mt-0.5" />
