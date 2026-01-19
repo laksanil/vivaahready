@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2 } from 'lucide-react'
+import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2, Edit } from 'lucide-react'
 import DeleteProfileModal from './DeleteProfileModal'
 
 export function Navbar() {
@@ -126,6 +126,9 @@ export function Navbar() {
                 </Link>
                 <Link href={buildUrl('/messages')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   Messages
+                </Link>
+                <Link href={buildUrl('/profile')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+                  Edit Profile
                 </Link>
               </>
             )}
@@ -274,6 +277,13 @@ export function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Messages
+                </Link>
+                <Link
+                  href={buildUrl('/profile')}
+                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Edit Profile
                 </Link>
               </>
             )}
