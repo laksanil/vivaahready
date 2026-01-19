@@ -31,6 +31,12 @@ PRs ready to be merged (tests passing, no conflicts):
 
 <!-- Add your work entries below this line -->
 
+## 2026-01-19 12:08 - DEV_A
+**Status:** IN_PROGRESS
+**Task:** Enforce deal-breaker selections and add validation tests
+**Branch:** work/dev-a-dealbreaker-tests
+**Files:** src/components/ProfileFormSections.tsx, tests/unit/dealbreaker-validation.test.ts
+
 ## 2026-01-16 12:05 - DEV_A
 **Status:** COMPLETED
 **Task:** Pure functionality audit - what works vs what doesn't
