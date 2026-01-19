@@ -190,18 +190,34 @@ interface Profile {
   phoneVerified: boolean
 }
 
+type ProfileTab = 'about' | 'preferences'
+
+const EDIT_SECTION_TABS: Record<string, ProfileTab> = {
+  basics: 'about',
+  contact: 'about',
+  location_education: 'about',
+  religion: 'about',
+  family: 'about',
+  lifestyle: 'about',
+  aboutme: 'about',
+  preferences_1: 'preferences',
+  preferences_2: 'preferences',
+}
+
 function ViewProfilePageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const adminProfileId = searchParams.get('id') // Admin can view any profile with ?id=xxx
+  const tabParam = searchParams.get('tab')
+  const editParam = searchParams.get('edit')
   const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [profileUserName, setProfileUserName] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'about' | 'preferences'>('about')
+  const [activeTab, setActiveTab] = useState<ProfileTab>('about')
   const [editSection, setEditSection] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminCheckDone, setAdminCheckDone] = useState(false) // Track if admin check completed
@@ -441,6 +457,18 @@ function ViewProfilePageContent() {
       fetchProfile()
     }
   }, [session, isAdmin, adminProfileId, adminCheckDone, isImpersonationMode, buildApiUrl])
+
+  useEffect(() => {
+    if (editParam && EDIT_SECTION_TABS[editParam]) {
+      setActiveTab(EDIT_SECTION_TABS[editParam])
+      setEditSection(editParam)
+      return
+    }
+
+    if (tabParam === 'about' || tabParam === 'preferences') {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam, editParam])
 
   // Show loading while checking session, admin status, or loading profile
   if (status === 'loading' || loading || ((adminProfileId || isImpersonationMode) && !adminCheckDone)) {

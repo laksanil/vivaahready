@@ -285,14 +285,14 @@ function FeedPageContent() {
               <div className="bg-white rounded-xl shadow-sm p-10 text-center">
                 <Heart className="h-12 w-12 mx-auto text-gray-300 mb-3" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {searchQuery ? 'No Matching Profiles' : 'No More Profiles'}
+                  {searchQuery ? 'No Matching Profiles' : 'No Matches Found'}
                 </h3>
                 <p className="text-gray-600 mb-6 text-sm">
                   {searchQuery
                     ? 'Try adjusting your search terms.'
-                    : "You've seen all the profiles that match your preferences. Check back later for new matches!"}
+                    : "Sorry, we do not have matches that fit your criteria yet. Try editing your partner preferences and changing your deal breakers to see more profiles."}
                 </p>
-                <div className="flex justify-center gap-3">
+                <div className="flex flex-wrap justify-center gap-3">
                   {searchQuery ? (
                     <button
                       onClick={() => setSearchQuery('')}
@@ -307,6 +307,12 @@ function FeedPageContent() {
                       </Link>
                       <Link href={buildUrl('/reconsider')} className="btn-secondary text-sm py-2">
                         Reconsider Passed
+                      </Link>
+                      <Link
+                        href={buildUrl('/profile?tab=preferences&edit=preferences_1')}
+                        className="btn-secondary text-sm py-2"
+                      >
+                        Edit Partner Preferences
                       </Link>
                     </>
                   )}
