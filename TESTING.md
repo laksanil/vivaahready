@@ -31,6 +31,7 @@ tests/
 │   ├── navigation.spec.ts  # Page navigation & links
 │   ├── auth.spec.ts        # Authentication flows
 │   ├── signup-modal.spec.ts # Registration modal
+│   ├── end-to-end-flow.spec.ts # Full user journey (signup → profile → matches → admin → messaging)
 │   ├── api-health.spec.ts  # API endpoint health
 │   └── responsive.spec.ts  # Mobile/tablet/desktop
 ├── unit/                   # Unit tests (Vitest)
@@ -68,7 +69,14 @@ tests/
    - Protected routes require auth
    - Error handling for invalid data
 
-5. **responsive.spec.ts** - Tests responsive design
+5. **end-to-end-flow.spec.ts** - Full onboarding + matching + messaging journey
+   - User signup via FindMatchModal
+   - Photo upload flow
+   - Admin approvals
+   - Matching + mutual likes
+   - Messaging and profile edits
+
+6. **responsive.spec.ts** - Tests responsive design
    - Mobile view (iPhone 13)
    - Tablet view (iPad Mini)
    - Desktop view (1920x1080)
@@ -165,7 +173,24 @@ jobs:
    npx playwright install chromium
    ```
 
-3. **Flaky tests**: Add `test.slow()` or increase timeout
+3. **Custom browser path**: Use a system Chrome or a custom Chromium binary
+   ```bash
+   PLAYWRIGHT_USE_SYSTEM_CHROME=1 npm run test:e2e
+   # or
+   PLAYWRIGHT_CHROME_EXECUTABLE_PATH=/path/to/chrome npm run test:e2e
+   ```
+
+4. **Pass extra Chrome flags**:
+   ```bash
+   PLAYWRIGHT_CHROME_ARGS="--disable-crashpad" npm run test:e2e
+   ```
+
+5. **Skip DB reset (not recommended)**:
+   ```bash
+   E2E_SKIP_DB_SETUP=1 npm run test:e2e
+   ```
+
+6. **Flaky tests**: Add `test.slow()` or increase timeout
    ```typescript
    test('slow test', async ({ page }) => {
      test.slow()

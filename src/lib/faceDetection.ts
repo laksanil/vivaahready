@@ -1,10 +1,12 @@
 import * as faceapi from 'face-api.js'
+import { isTestMode } from '@/lib/testMode'
 
 let modelsLoaded = false
 let modelsLoading = false
 
 // Load face detection models
 export async function loadFaceDetectionModels(): Promise<boolean> {
+  if (isTestMode) return true
   if (modelsLoaded) return true
   if (modelsLoading) {
     // Wait for models to finish loading
@@ -89,6 +91,12 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
   isValid: boolean
   message: string
 }> {
+  if (isTestMode) {
+    return {
+      isValid: true,
+      message: 'Photo accepted',
+    }
+  }
   console.log('Validating photo:', imageFile.name, imageFile.type, imageFile.size)
 
   // Check file type

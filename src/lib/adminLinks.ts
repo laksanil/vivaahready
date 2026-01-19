@@ -38,6 +38,9 @@ export const adminLinks = {
   // View user's dashboard
   dashboard: (userId: string) => adminViewLink('/dashboard', userId),
 
+  // View user's feed
+  feed: (userId: string) => adminViewLink('/feed', userId),
+
   // View user's matches
   matches: (userId: string) => adminViewLink('/matches', userId),
 
@@ -58,6 +61,7 @@ export const adminLinks = {
  * All pages that support admin impersonation via viewAsUser
  */
 export const IMPERSONATION_PAGES = [
+  '/feed',
   '/dashboard',
   '/matches',
   '/connections',

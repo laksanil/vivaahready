@@ -36,6 +36,8 @@ export async function POST(request: Request) {
     await prisma.subscription.upsert({
       where: { userId: session.user.id },
       update: {
+        plan: 'basic',
+        status: 'active',
         profilePaid: true,
         profilePaymentId: `PAY_${Date.now()}_${session.user.id}`,
         updatedAt: new Date(),

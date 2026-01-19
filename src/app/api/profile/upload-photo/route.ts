@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
+import { isTestMode } from '@/lib/testMode'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
@@ -48,6 +49,25 @@ export async function POST(request: Request) {
       return NextResponse.json({
         error: 'Maximum 3 photos allowed. Please delete a photo before adding a new one.'
       }, { status: 400 })
+    }
+
+    if (isTestMode) {
+      const placeholderUrl = process.env.E2E_TEST_PHOTO_URL || 'https://vivaahready.com/logo-icon.png'
+      const existingPhotos = profile.photoUrls ? profile.photoUrls.split(',').filter(Boolean) : []
+      const updatedPhotos = [...existingPhotos, placeholderUrl]
+
+      await prisma.profile.update({
+        where: { id: profileId },
+        data: {
+          photoUrls: updatedPhotos.join(','),
+          profileImageUrl: profile.profileImageUrl || placeholderUrl
+        }
+      })
+
+      return NextResponse.json({
+        message: 'Photo uploaded successfully (test mode)',
+        url: placeholderUrl
+      })
     }
 
     // Convert file to buffer

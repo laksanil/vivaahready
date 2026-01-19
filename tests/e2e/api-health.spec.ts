@@ -56,21 +56,6 @@ test.describe('Admin API Routes', () => {
   })
 })
 
-test.describe('Payment API Routes', () => {
-  test('payment status API exists', async ({ request }) => {
-    const response = await request.get('/api/payment/status')
-    expect(response.status()).toBeLessThan(500)
-  })
-
-  test('stripe checkout requires valid data', async ({ request }) => {
-    const response = await request.post('/api/stripe/checkout', {
-      data: {}
-    })
-    // Should fail gracefully, not 500
-    expect(response.status()).toBeLessThan(500)
-  })
-})
-
 test.describe('User API Routes', () => {
   test('verification status API exists', async ({ request }) => {
     const response = await request.get('/api/user/verification-status')

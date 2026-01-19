@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import Stripe from 'stripe'
+import { isTestMode } from '@/lib/testMode'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-04-10',
@@ -27,6 +28,10 @@ export async function POST(request: Request) {
     }
 
     const priceConfig = PRICE_MAP[priceId]
+
+    if (isTestMode) {
+      return NextResponse.json({ url: '/pricing?subscription=mock' })
+    }
 
     // Create Stripe checkout session
     const checkoutSession = await stripe.checkout.sessions.create({

@@ -1,0 +1,425 @@
+import { test, expect, type Page } from '@playwright/test'
+import path from 'path'
+
+const uniqueId = Date.now().toString(36)
+const password = 'E2EPass123!'
+
+const userA = {
+  firstName: `E2E${uniqueId}A`,
+  lastName: 'Alpha',
+  email: `e2e-alpha-${uniqueId}@example.com`,
+  phone: '5551234567',
+  gender: 'male',
+}
+
+const userB = {
+  firstName: `E2E${uniqueId}B`,
+  lastName: 'Beta',
+  email: `e2e-beta-${uniqueId}@example.com`,
+  phone: '5559876543',
+  gender: 'female',
+}
+
+const userC = {
+  firstName: `E2E${uniqueId}C`,
+  lastName: 'Gamma',
+  email: `e2e-gamma-${uniqueId}@example.com`,
+  phone: '5550001122',
+  gender: 'female',
+}
+
+const photoPath = path.join(process.cwd(), 'public', 'logo-couple.png')
+
+async function mockZipLookup(page: Page) {
+  await page.route('https://api.zippopotam.us/us/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        'post code': '10001',
+        country: 'United States',
+        places: [{ 'place name': 'New York', state: 'NY' }],
+      }),
+    })
+  })
+}
+
+async function openSignupModal(page: Page) {
+  await page.goto('/?e2eOpenModal=1', { waitUntil: 'domcontentloaded' })
+  const basicHeading = page.getByRole('heading', { name: /Basic Info/i })
+  try {
+    await basicHeading.waitFor({ state: 'visible', timeout: 30000 })
+    return
+  } catch {
+    // Fall back to clicking the CTA if the auto-open hook didn't fire yet.
+  }
+  const ctaButton = page.getByRole('button', { name: /Find My Match|Get Started|Register/i }).first()
+  await expect(ctaButton).toBeVisible({ timeout: 15000 })
+  await page.waitForTimeout(300)
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await ctaButton.click({ force: true, timeout: 5000 })
+    try {
+      await basicHeading.waitFor({ state: 'visible', timeout: 8000 })
+      return
+    } catch {
+      await page.waitForTimeout(500)
+    }
+  }
+  await expect(basicHeading).toBeVisible({ timeout: 10000 })
+}
+
+async function completeBasics(page: Page, user: typeof userA) {
+  await page.selectOption('select[name="createdBy"]', 'self')
+  await page.selectOption('select[name="gender"]', user.gender)
+  await page.fill('input[name="firstName"]', user.firstName)
+  await page.fill('input[name="lastName"]', user.lastName)
+  await page.fill('input[name="dateOfBirth"]', '01/01/1992')
+  await page.selectOption('select[name="height"]', "5'8\"")
+  await page.selectOption('select[name="motherTongue"]', 'English')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Education & Career/i })).toBeVisible()
+}
+
+async function completeLocationEducation(page: Page) {
+  await mockZipLookup(page)
+  await page.fill('input[name="zipCode"]', '10001')
+  await page.selectOption('select[name="qualification"]', 'bachelors_cs')
+  await page.selectOption('select[name="occupation"]', 'software_engineer')
+  await page.selectOption('select[name="annualIncome"]', '75k-100k')
+  await page.selectOption('select[name="openToRelocation"]', 'yes')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Religion & Astro/i })).toBeVisible()
+}
+
+async function completeReligion(page: Page) {
+  await page.selectOption('select[name="religion"]', 'Agnostic')
+  await expect(page.locator('select[name="community"]')).toBeEnabled()
+  await page.selectOption('select[name="community"]', 'Agnostic')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Family Details/i })).toBeVisible()
+}
+
+async function completeFamily(page: Page) {
+  await page.selectOption('select[name="familyLocation"]', 'USA')
+  await page.selectOption('select[name="familyValues"]', 'moderate')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Lifestyle/i })).toBeVisible()
+}
+
+async function completeLifestyle(page: Page) {
+  await page.selectOption('select[name="dietaryPreference"]', 'Vegetarian')
+  await page.selectOption('select[name="smoking"]', 'No')
+  await page.selectOption('select[name="drinking"]', 'No')
+  await page.selectOption('select[name="pets"]', 'no_but_love')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /About Me/i })).toBeVisible()
+}
+
+async function completeAboutMe(page: Page) {
+  await page.fill('textarea[name="aboutMe"]', 'I am a test user who values family, growth, and kindness.')
+  const linkedinSelect = page.locator('label:has-text("LinkedIn")').locator('..').locator('select')
+  await linkedinSelect.selectOption('no_linkedin')
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Partner Preferences/i })).toBeVisible()
+}
+
+async function skipPreferences(page: Page) {
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /More Preferences/i })).toBeVisible()
+  await page.getByRole('button', { name: /Continue/i }).click()
+  await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible()
+}
+
+async function createAccount(page: Page, user: typeof userA) {
+  await page.fill('input[type="email"]', user.email)
+  await page.locator('input[type="tel"]').fill(user.phone)
+  await page.fill('input[placeholder="Enter password"]', password)
+  await page.fill('input[placeholder="Re-enter password"]', password)
+  const registerResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
+  )
+  const profileResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
+  )
+  await page.getByRole('button', { name: /Create Account & Continue/i }).click()
+  await Promise.all([registerResponse, profileResponse])
+  await expect(page.getByRole('heading', { name: /Upload Your Photo/i })).toBeVisible({ timeout: 30000 })
+}
+
+async function uploadModalPhoto(page: Page) {
+  await page.setInputFiles('input[type="file"]', photoPath)
+  await page.getByRole('button', { name: /Complete Registration/i }).click()
+  await page.waitForURL(/dashboard|login/, { timeout: 120000 })
+}
+
+async function completeSignupFlow(page: Page, user: typeof userA) {
+  await openSignupModal(page)
+  await completeBasics(page, user)
+  await completeLocationEducation(page)
+  await completeReligion(page)
+  await completeFamily(page)
+  await completeLifestyle(page)
+  await completeAboutMe(page)
+  await skipPreferences(page)
+  await createAccount(page, user)
+  await uploadModalPhoto(page)
+
+  if (page.url().includes('/login')) {
+    await login(page, user.email, password)
+    await page.waitForURL(/dashboard/, { timeout: 60000 })
+  }
+
+  await signOut(page, user.firstName)
+}
+
+async function login(page: Page, email: string, userPassword: string) {
+  await page.goto('/login')
+  await page.fill('#email', email)
+  await page.fill('#password', userPassword)
+  await page.getByRole('button', { name: /Sign In/i }).click()
+}
+
+async function signOut(page: Page, firstName: string) {
+  const profileButton = page.getByRole('button', { name: new RegExp(firstName, 'i') })
+  await expect(profileButton).toBeVisible()
+  await profileButton.click()
+  await page.getByRole('button', { name: /Sign Out/i }).click()
+  await page.waitForURL(/\//)
+}
+
+async function approveProfileByEmail(page: Page, email: string) {
+  const card = page.locator('div.bg-white.rounded-xl', { has: page.getByText(email) }).first()
+  await expect(card).toBeVisible({ timeout: 15000 })
+  await card.getByRole('button', { name: 'Approve' }).click()
+  await expect(card).toHaveCount(0)
+}
+
+async function rejectProfileByEmail(page: Page, email: string) {
+  const card = page.locator('div.bg-white.rounded-xl', { has: page.getByText(email) }).first()
+  await expect(card).toBeVisible({ timeout: 15000 })
+  await card.getByRole('button', { name: 'Reject' }).click()
+  const modal = page.getByRole('dialog', { name: /Reject Profile/i })
+  await expect(modal).toBeVisible()
+  await modal.getByRole('textbox').fill('Incomplete details for verification.')
+  await modal.getByRole('button', { name: /Confirm Rejection/i }).click()
+  await expect(modal).toBeHidden()
+  await expect(card).toHaveCount(0)
+}
+
+async function likeProfile(page: Page, firstName: string) {
+  const searchInput = page.locator('input[placeholder*="Search"]')
+  await expect(searchInput).toBeVisible()
+  await searchInput.fill(firstName)
+  const card = page.locator('div.bg-white.rounded-lg', { has: page.getByRole('heading', { name: new RegExp(firstName, 'i') }) }).first()
+  await expect(card).toBeVisible()
+  await card.locator('button[title*="Like"]').click()
+  await expect(card).toHaveCount(0)
+  await searchInput.fill('')
+}
+
+async function openConnectionAndMessage(page: Page, firstName: string) {
+  const card = page.locator('div.bg-white.rounded-xl', { has: page.getByRole('heading', { name: new RegExp(firstName, 'i') }) }).first()
+  await expect(card).toBeVisible()
+  await card.getByRole('button', { name: /Message/i }).click()
+  const modal = page.getByRole('dialog')
+  await expect(modal).toBeVisible()
+  await modal.getByLabel('Type a message').fill('Hi! Excited to connect and learn more about you.')
+  await modal.getByRole('button', { name: /Send message/i }).click()
+  await expect(modal.getByText('Hi! Excited to connect and learn more about you.')).toBeVisible()
+  await modal.getByRole('button', { name: /Close conversation/i }).click()
+}
+
+async function lookupUserIdFromAdminProfiles(page: Page, email: string) {
+  await page.goto('/admin/profiles', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByRole('heading', { name: /Profiles/i })).toBeVisible({ timeout: 15000 })
+  const searchInput = page.getByPlaceholder(/Search by name, email, VR ID|Search\.\.\./i)
+  await expect(searchInput).toBeVisible({ timeout: 15000 })
+  await searchInput.fill(email)
+  await searchInput.press('Enter')
+
+  const row = page.locator('tr', { has: page.getByText(email) }).first()
+  await expect(row).toBeVisible()
+  const viewAsLink = row.getByRole('link', { name: /View as this user/i }).first()
+  const href = await viewAsLink.getAttribute('href')
+  expect(href).toBeTruthy()
+  const match = href?.match(/viewAsUser=([^&]+)/)
+  return match ? match[1] : ''
+}
+
+test.describe.serial('End-to-end user journey', () => {
+  test.describe.configure({ timeout: 180000 })
+  let userAId = ''
+  let userBId = ''
+
+  test('User A signs up and completes profile with photo upload', async ({ page }) => {
+    await completeSignupFlow(page, userA)
+  })
+
+  test('User B signs up and completes profile with photo upload', async ({ page }) => {
+    await completeSignupFlow(page, userB)
+  })
+
+  test('User C signs up and completes profile with photo upload', async ({ page }) => {
+    await completeSignupFlow(page, userC)
+  })
+
+  test('Admin approves new profiles', async ({ page }) => {
+    await page.goto('/admin/login')
+    await page.fill('input[placeholder="Enter username"]', 'admin')
+    await page.fill('input[placeholder="Enter password"]', 'vivaah2024')
+    await page.getByRole('button', { name: /Sign In/i }).click()
+    await page.waitForURL(/\/admin/, { timeout: 60000 })
+
+    await page.goto('/admin/approvals')
+    await expect(page.getByRole('heading', { name: /Profile Approvals/i })).toBeVisible()
+    await approveProfileByEmail(page, userA.email)
+    await approveProfileByEmail(page, userB.email)
+    await rejectProfileByEmail(page, userC.email)
+
+    userAId = await lookupUserIdFromAdminProfiles(page, userA.email)
+    expect(userAId).toBeTruthy()
+
+    userBId = await lookupUserIdFromAdminProfiles(page, userB.email)
+    expect(userBId).toBeTruthy()
+  })
+
+  test('User B logs in, completes photos, and likes User A', async ({ page }) => {
+    await login(page, userB.email, password)
+    await page.waitForURL(/profile\/photos|dashboard/, { timeout: 60000 })
+
+    if (page.url().includes('/profile/photos')) {
+      await page.locator('input[placeholder="Phone number"]').fill(userB.phone)
+      await page.setInputFiles('input[type="file"]', photoPath)
+      await page.getByRole('button', { name: /Complete Registration/i }).click()
+      await page.waitForURL(/dashboard/, { timeout: 60000 })
+    }
+
+    await page.goto('/matches')
+    await likeProfile(page, userA.firstName)
+    await signOut(page, userB.firstName)
+  })
+
+  test('User A matches, messages, and edits profile', async ({ page }) => {
+    await login(page, userA.email, password)
+    await page.waitForURL(/dashboard/, { timeout: 60000 })
+
+    await page.goto('/matches')
+    await likeProfile(page, userB.firstName)
+
+    await page.goto('/admin/login')
+    await page.fill('input[placeholder="Enter username"]', 'admin')
+    await page.fill('input[placeholder="Enter password"]', 'vivaah2024')
+    await page.getByRole('button', { name: /Sign In/i }).click()
+    await page.waitForURL(/\/admin/, { timeout: 60000 })
+
+    await page.goto(`/connections?viewAsUser=${userAId}`)
+    await openConnectionAndMessage(page, userB.firstName)
+
+    await page.goto('/profile')
+    const aboutHeading = page.getByRole('heading', { name: 'About Me', level: 2 })
+    await expect(aboutHeading).toBeVisible()
+    await aboutHeading.locator('..').getByRole('button', { name: /Edit/i }).click()
+    await expect(page.getByRole('heading', { name: /Edit About Me/i })).toBeVisible()
+
+    const updatedBio = 'Updated bio: thoughtful, adventurous, and family-oriented.'
+    await page.fill('textarea[name="aboutMe"]', updatedBio)
+    const referralSelect = page.locator('select[name="referralSource"]')
+    if (await referralSelect.isVisible()) {
+      await referralSelect.selectOption('google')
+    }
+    const saveResponse = page.waitForResponse((response) =>
+      response.url().includes('/api/profile') &&
+      response.request().method() === 'PUT' &&
+      response.ok()
+    )
+    await page.getByRole('button', { name: /Save Changes/i }).click()
+    await saveResponse
+    await expect(page.getByRole('heading', { name: /Edit About Me/i })).toBeHidden()
+    await expect(page.getByText(updatedBio).first()).toBeVisible()
+
+    await expect(page.getByText(/Photo Uploaded/i)).toBeVisible()
+    await expect(page.locator('img[alt^="Photo"]').first()).toBeVisible()
+  })
+
+  test('User A explores matches, connections, messages, search, and reconsider', async ({ page }) => {
+    await login(page, userA.email, password)
+    await page.waitForURL(/dashboard/, { timeout: 60000 })
+
+    await page.goto('/matches')
+    await expect(page.locator('h1, h2').first()).toBeVisible()
+    const searchInput = page.locator('input[placeholder*="Search"]').first()
+    if (await searchInput.isVisible()) {
+      await searchInput.fill(userB.firstName)
+      await page.waitForTimeout(300)
+      await searchInput.fill('')
+    }
+
+    const tabButtons = [
+      page.getByRole('button', { name: /Matches/i }),
+      page.getByRole('button', { name: /Sent/i }),
+      page.getByRole('button', { name: /Received/i }),
+    ]
+    for (const tab of tabButtons) {
+      if (await tab.first().isVisible()) {
+        await tab.first().click()
+      }
+    }
+
+    await page.goto('/connections')
+    await expect(page.getByRole('heading', { name: /Connections/i })).toBeVisible()
+    const messageButton = page.getByRole('button', { name: /^Message$/ }).first()
+    if (await messageButton.isVisible()) {
+      await messageButton.click()
+      const modal = page.getByRole('dialog')
+      await expect(modal).toBeVisible()
+      await modal.getByLabel('Type a message').fill('Hello from the E2E user flow.')
+      await modal.getByRole('button', { name: /Send message/i }).click()
+      await modal.getByRole('button', { name: /Close conversation/i }).click()
+    }
+
+    await page.goto('/messages')
+    await expect(page.getByRole('heading', { name: /Messages/i })).toBeVisible()
+    await expect(page.getByText(new RegExp(userB.firstName, 'i')).first()).toBeVisible()
+
+    await page.goto('/search')
+    await expect(page.getByRole('heading', { name: /Your Matches|Browse Profiles/i })).toBeVisible()
+
+    await page.goto('/reconsider')
+    await expect(page.getByRole('heading', { name: 'Passed Profiles', exact: true })).toBeVisible()
+  })
+
+  test('Admin reviews management pages', async ({ page }) => {
+    await page.goto('/admin/login')
+    await page.fill('input[placeholder="Enter username"]', 'admin')
+    await page.fill('input[placeholder="Enter password"]', 'vivaah2024')
+    await page.getByRole('button', { name: /Sign In/i }).click()
+    await page.waitForURL(/\/admin/, { timeout: 60000 })
+
+    await page.goto('/admin')
+    await expect(page.getByRole('heading', { name: /Dashboard/i })).toBeVisible()
+
+    await page.goto('/admin/profiles')
+    await expect(page.locator('text=/Profiles|All Profiles/i').first()).toBeVisible()
+
+    const searchInput = page.locator('input[placeholder*="Search"]').first()
+    if (await searchInput.isVisible()) {
+      await searchInput.fill(userA.email)
+      await page.waitForTimeout(500)
+    }
+
+    const viewAsUserLink = page.locator('a:has-text("View as User")').first()
+    if (await viewAsUserLink.isVisible()) {
+      const href = await viewAsUserLink.getAttribute('href')
+      expect(href || '').toContain('viewAsUser')
+    }
+
+    await page.goto('/admin/matches')
+    await expect(page.locator('text=/Matches/i').first()).toBeVisible()
+
+    await page.goto('/admin/reports')
+    await expect(page.locator('text=/Reports/i').first()).toBeVisible()
+
+    await page.goto(`/admin/users/${userAId}`)
+    await expect(page.locator('text=/User Details|Profile/i').first()).toBeVisible()
+  })
+})

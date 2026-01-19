@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { isTestMode } from '@/lib/testMode'
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -16,6 +17,10 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
+  if (isTestMode) {
+    console.info('Email skipped in test mode', { to, subject })
+    return { success: true, id: 'test-email' }
+  }
   // Skip if Resend is not configured
   if (!resend) {
     console.warn('Email not sent: RESEND_API_KEY not configured')
