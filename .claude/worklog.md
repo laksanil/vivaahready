@@ -121,7 +121,8 @@ gh pr merge 123 --squash --delete-branch
 **Files:** src/components/ProfileFormSections.tsx, tests/unit/dealbreaker-validation.test.ts
 
 ## 2026-01-19 13:29 - DEV_A
-**Status:** IN_PROGRESS
+**Status:** COMPLETED
 **Task:** Normalize partner preferences "same as mine" into explicit values and adjust matching/tests
 **Branch:** work/dev-a-normalize-pref-same-as-mine
+**PR:** Pending (gh not installed)
 **Files:** src/app/api/profile/route.ts, src/app/api/profile/create-from-modal/route.ts, src/app/api/admin/create-profile/route.ts, src/app/api/admin/profiles/[id]/route.ts, src/lib/matching.ts, tests/unit/matching.test.ts (and any new tests)
