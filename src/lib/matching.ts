@@ -834,7 +834,7 @@ function isLocationMatch(
  */
 function isDietMatch(seekerPref: string | null | undefined, candidateDiet: string | null | undefined, strict: boolean = false): boolean {
   // No preference
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
