@@ -31,6 +31,13 @@ PRs ready to be merged (tests passing, no conflicts):
 
 <!-- Add your work entries below this line -->
 
+## 2026-01-20 14:30 - DEV_A
+**Status:** IN_PROGRESS
+**Task:** Comprehensive test coverage (unit + E2E) for core user/admin flows (non-payment) and API integration
+**Files:** tests/e2e/helpers.ts, tests/e2e/api-integration.spec.ts, tests/e2e/ui-coverage.spec.ts, tests/e2e/end-to-end-flow.spec.ts, tests/unit/profile-form-sections.test.tsx
+**Branch:** work/dev-a-comprehensive-tests
+**Notes:** Adding UI + API integration coverage and stabilizing existing E2E flow.
+
 ## 2026-01-16 12:05 - DEV_A
 **Status:** COMPLETED
 **Task:** Pure functionality audit - what works vs what doesn't
