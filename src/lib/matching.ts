@@ -885,7 +885,7 @@ function isDietMatch(seekerPref: string | null | undefined, candidateDiet: strin
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string | null | undefined, candidateGotra: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
