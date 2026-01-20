@@ -36,7 +36,7 @@ export default defineConfig({
       },
     },
   ],
-  webServer: process.env.CI ? undefined : {
+  webServer: {
     command: 'npm run dev -- -p 3001 -H 127.0.0.1',
     url: 'http://127.0.0.1:3001',
     reuseExistingServer: !process.env.CI,
