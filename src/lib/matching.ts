@@ -989,6 +989,17 @@ function parsePreferenceList(pref: string | null | undefined): string[] {
   return normalized
 }
 
+function parseFreeTextList(value: string | null | undefined): string[] {
+  if (!value) return []
+  return parsePreferenceList(value)
+}
+
+function hasListOverlap(listA: string[], listB: string[]): boolean {
+  return listA.some(item =>
+    listB.some(other => other.includes(item) || item.includes(other))
+  )
+}
+
 function parseHeightToInches(height: string | null | undefined): number | null {
   if (!height) return null
   const normalized = height.toLowerCase().trim()
@@ -1544,18 +1555,24 @@ function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: st
   }
   if (!candidateHobbies) return true
 
-  const pref = seekerPref.toLowerCase()
+  const prefList = parsePreferenceList(seekerPref)
+  if (prefList.length === 0) return true
 
-  // "same_as_mine" - check for overlap in hobbies
-  if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerHobbies) return true
-    const seekerList = seekerHobbies.toLowerCase().split(',').map(h => h.trim())
-    const candList = candidateHobbies.toLowerCase().split(',').map(h => h.trim())
-    // At least one common hobby
-    return seekerList.some(h => candList.some(c => c.includes(h) || h.includes(c)))
+  const candidateList = parseFreeTextList(candidateHobbies)
+  if (candidateList.length === 0) return true
+
+  const wantsSameAsMine = prefList.some(pref => pref === 'same_as_mine' || pref === 'same as mine')
+  const cleanedPrefList = prefList.filter(pref => pref !== 'same_as_mine' && pref !== 'same as mine' && pref !== 'specific')
+
+  if (wantsSameAsMine) {
+    const seekerList = parseFreeTextList(seekerHobbies)
+    if (seekerList.length === 0) return true
+    if (hasListOverlap(seekerList, candidateList)) return true
+    if (cleanedPrefList.length === 0) return false
   }
 
-  return true
+  if (cleanedPrefList.length === 0) return true
+  return hasListOverlap(cleanedPrefList, candidateList)
 }
 
 /**
@@ -1568,18 +1585,24 @@ function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: st
   }
   if (!candidateFitness) return true
 
-  const pref = seekerPref.toLowerCase()
+  const prefList = parsePreferenceList(seekerPref)
+  if (prefList.length === 0) return true
 
-  // "same_as_mine" - check for overlap in fitness activities
-  if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerFitness) return true
-    const seekerList = seekerFitness.toLowerCase().split(',').map(f => f.trim())
-    const candList = candidateFitness.toLowerCase().split(',').map(f => f.trim())
-    // At least one common fitness activity
-    return seekerList.some(f => candList.some(c => c.includes(f) || f.includes(c)))
+  const candidateList = parseFreeTextList(candidateFitness)
+  if (candidateList.length === 0) return true
+
+  const wantsSameAsMine = prefList.some(pref => pref === 'same_as_mine' || pref === 'same as mine')
+  const cleanedPrefList = prefList.filter(pref => pref !== 'same_as_mine' && pref !== 'same as mine' && pref !== 'specific')
+
+  if (wantsSameAsMine) {
+    const seekerList = parseFreeTextList(seekerFitness)
+    if (seekerList.length === 0) return true
+    if (hasListOverlap(seekerList, candidateList)) return true
+    if (cleanedPrefList.length === 0) return false
   }
 
-  return true
+  if (cleanedPrefList.length === 0) return true
+  return hasListOverlap(cleanedPrefList, candidateList)
 }
 
 /**
@@ -1592,18 +1615,24 @@ function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests
   }
   if (!candidateInterests) return true
 
-  const pref = seekerPref.toLowerCase()
+  const prefList = parsePreferenceList(seekerPref)
+  if (prefList.length === 0) return true
 
-  // "same_as_mine" - check for overlap in interests
-  if (pref === 'same_as_mine' || pref === 'same as mine') {
-    if (!seekerInterests) return true
-    const seekerList = seekerInterests.toLowerCase().split(',').map(i => i.trim())
-    const candList = candidateInterests.toLowerCase().split(',').map(i => i.trim())
-    // At least one common interest
-    return seekerList.some(i => candList.some(c => c.includes(i) || i.includes(c)))
+  const candidateList = parseFreeTextList(candidateInterests)
+  if (candidateList.length === 0) return true
+
+  const wantsSameAsMine = prefList.some(pref => pref === 'same_as_mine' || pref === 'same as mine')
+  const cleanedPrefList = prefList.filter(pref => pref !== 'same_as_mine' && pref !== 'same as mine' && pref !== 'specific')
+
+  if (wantsSameAsMine) {
+    const seekerList = parseFreeTextList(seekerInterests)
+    if (seekerList.length === 0) return true
+    if (hasListOverlap(seekerList, candidateList)) return true
+    if (cleanedPrefList.length === 0) return false
   }
 
-  return true
+  if (cleanedPrefList.length === 0) return true
+  return hasListOverlap(cleanedPrefList, candidateList)
 }
 
 /**

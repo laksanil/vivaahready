@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
+import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 
 /**
  * Format display name as "Firstname L." for privacy
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = normalizeSameAsMinePreferences(await request.json())
 
     // Check if profile already exists
     const existingProfile = await prisma.profile.findUnique({
@@ -175,7 +176,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Profile not found. Please create a profile first.' }, { status: 404 })
     }
 
-    const body = await request.json()
+    const body = normalizeSameAsMinePreferences(await request.json(), existingProfile || undefined)
 
     // Build update data - only include fields that are in the schema
     const updateData: Record<string, unknown> = {}
@@ -241,6 +242,7 @@ export async function PUT(request: Request) {
     if (body.prefCommunity !== undefined) updateData.prefCommunity = body.prefCommunity
     if (body.prefSubCommunity !== undefined) updateData.prefSubCommunity = body.prefSubCommunity
     if (body.prefCommunityList !== undefined) updateData.prefCommunity = body.prefCommunityList // Store the list in prefCommunity when specific
+    if (body.prefSubCommunityList !== undefined) updateData.prefSubCommunity = body.prefSubCommunityList
     if (body.prefCaste !== undefined) updateData.prefCaste = body.prefCaste
     if (body.prefGotra !== undefined) updateData.prefGotra = body.prefGotra
     if (body.prefQualification !== undefined) updateData.prefQualification = body.prefQualification
@@ -259,6 +261,7 @@ export async function PUT(request: Request) {
     if (body.prefHasChildren !== undefined) updateData.prefHasChildren = body.prefHasChildren
     if (body.prefRelocation !== undefined) updateData.prefRelocation = body.prefRelocation
     if (body.prefMotherTongue !== undefined) updateData.prefMotherTongue = body.prefMotherTongue
+    if (body.prefMotherTongueList !== undefined) updateData.prefMotherTongue = body.prefMotherTongueList
     if (body.prefPets !== undefined) updateData.prefPets = body.prefPets
     if (body.idealPartnerDesc !== undefined) updateData.idealPartnerDesc = body.idealPartnerDesc
     if (body.photoUrls !== undefined) updateData.photoUrls = body.photoUrls

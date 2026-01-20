@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
+import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,18 +62,34 @@ export async function PATCH(
 
     const body = await request.json()
 
-    // Get the profile to find the userId
+    // Get the profile to find the userId and normalize "same as mine" values
     const existingProfile = await prisma.profile.findUnique({
       where: { id: params.id },
-      select: { userId: true }
     })
 
     if (!existingProfile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
+    const normalizedBody = normalizeSameAsMinePreferences(body, existingProfile)
+
     // Extract user-related fields that need to be updated separately
-    const { firstName, lastName, user, userId, id, createdAt, updatedAt, ...profileData } = body
+    const { firstName, lastName, user, userId, id, createdAt, updatedAt, ...profileData } = normalizedBody
+
+    if (profileData.prefCommunityList !== undefined) {
+      profileData.prefCommunity = profileData.prefCommunityList
+      delete profileData.prefCommunityList
+    }
+
+    if (profileData.prefSubCommunityList !== undefined) {
+      profileData.prefSubCommunity = profileData.prefSubCommunityList
+      delete profileData.prefSubCommunityList
+    }
+
+    if (profileData.prefMotherTongueList !== undefined) {
+      profileData.prefMotherTongue = profileData.prefMotherTongueList
+      delete profileData.prefMotherTongueList
+    }
 
     // Update user name if firstName/lastName provided
     if (firstName || lastName) {

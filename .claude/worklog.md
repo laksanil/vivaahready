@@ -119,3 +119,9 @@ gh pr merge 123 --squash --delete-branch
 **Task:** Enforce deal-breaker selections and add validation tests
 **Branch:** work/dev-a-dealbreaker-tests
 **Files:** src/components/ProfileFormSections.tsx, tests/unit/dealbreaker-validation.test.ts
+
+## 2026-01-19 13:29 - DEV_A
+**Status:** IN_PROGRESS
+**Task:** Normalize partner preferences "same as mine" into explicit values and adjust matching/tests
+**Branch:** work/dev-a-normalize-pref-same-as-mine
+**Files:** src/app/api/profile/route.ts, src/app/api/profile/create-from-modal/route.ts, src/app/api/admin/create-profile/route.ts, src/app/api/admin/profiles/[id]/route.ts, src/lib/matching.ts, tests/unit/matching.test.ts (and any new tests)

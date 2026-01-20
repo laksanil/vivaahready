@@ -215,6 +215,27 @@ describe('Matching engine rules', () => {
     expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(false)
   })
 
+  it('matches explicit hobbies list preferences', () => {
+    const seeker = baseProfile({
+      ...seekerBase,
+      prefHobbies: 'Reading, Painting',
+      prefHobbiesIsDealbreaker: true,
+    })
+    const candidate = baseProfile({
+      ...candidateBase,
+      hobbies: 'Cooking, Painting',
+    })
+
+    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
+
+    const nonMatchCandidate = baseProfile({
+      ...candidateBase,
+      hobbies: 'Gaming',
+    })
+
+    expect(matchesSeekerPreferences(seeker as any, nonMatchCandidate as any)).toBe(false)
+  })
+
   it('enforces height dealbreakers', () => {
     const seeker = baseProfile({
       ...seekerBase,
