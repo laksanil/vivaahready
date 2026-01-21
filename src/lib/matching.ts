@@ -910,7 +910,7 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
