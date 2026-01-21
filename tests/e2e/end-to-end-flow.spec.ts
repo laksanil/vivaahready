@@ -143,7 +143,7 @@ async function skipPreferences(page: Page) {
   await page.getByRole('button', { name: /Continue/i }).click()
   await expect(page.getByRole('heading', { name: /More Preferences/i })).toBeVisible()
   await page.getByRole('button', { name: /Continue/i }).click()
-  await expect(page.getByRole('heading', { name: /Add Your Photos|Upload Your Photo/i })).toBeVisible({ timeout: 30000 })
+  await expect(page.getByRole('heading', { name: /Add Your Photos/i })).toBeVisible({ timeout: 30000 })
 }
 
 async function uploadModalPhoto(page: Page) {
