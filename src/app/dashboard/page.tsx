@@ -170,8 +170,9 @@ function DashboardContent() {
           // Clear the stored form data
           sessionStorage.removeItem('signupFormData')
 
-          // Redirect to photos upload page
-          router.push(`/profile/photos?profileId=${profileData.profileId}&fromSignup=true`)
+          // Redirect to profile complete page to continue signup from step 4 (religion)
+          // User has completed steps 1 (basics), 2 (location/education), and 3 (account via Google)
+          router.push(`/profile/complete?profileId=${profileData.profileId}&step=4`)
         } else {
           // If profile creation fails, show the modal to let user complete manually
           sessionStorage.removeItem('signupFormData')

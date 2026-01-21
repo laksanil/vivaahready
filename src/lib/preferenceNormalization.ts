@@ -89,7 +89,7 @@ export const normalizeSameAsMinePreferences = <T extends Record<string, unknown>
   input: T,
   fallback?: Record<string, unknown>
 ): T => {
-  const normalized = { ...input }
+  const normalized: Record<string, unknown> = { ...input }
 
   const listMappings = [
     { prefKey: 'prefCommunityList', sourceKeys: ['community', 'caste'] },
@@ -129,5 +129,5 @@ export const normalizeSameAsMinePreferences = <T extends Record<string, unknown>
     }
   }
 
-  return normalized
+  return normalized as T
 }

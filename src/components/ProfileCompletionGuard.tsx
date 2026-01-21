@@ -3,18 +3,24 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { Loader2 } from 'lucide-react'
 
 interface ProfileCompletionStatus {
   isComplete: boolean
   hasProfile: boolean
   hasPhone: boolean
   hasPhotos: boolean
+  signupStep: number
   profileId: string | null
+  reason: string | null
 }
 
 /**
  * Component that checks if user has completed their profile
- * (has both phone and photos) and redirects to the photos page if not.
+ * and redirects to the appropriate completion page if not.
+ *
+ * - If signup is incomplete (signupStep < 10), redirect to /profile/complete
+ * - If only photos/phone missing, redirect to /profile/photos
  *
  * This runs globally on all pages except explicitly excluded ones.
  */
@@ -23,6 +29,7 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
   const router = useRouter()
   const pathname = usePathname()
   const [checked, setChecked] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
     // Don't check if not authenticated
@@ -32,10 +39,11 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
       return
     }
 
-    // Pages to skip - these should always be accessible
+    // Pages to skip - these should always be accessible without profile completion
     const skipPages = [
       '/profile/photos',
       '/profile/create',
+      '/profile/complete',
       '/login',
       '/register',
       '/about',
@@ -75,11 +83,16 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
 
         const data: ProfileCompletionStatus = await res.json()
 
-        // Redirect if:
-        // 1. User has a profile (hasProfile is true)
-        // 2. Profile is incomplete (missing phone or photos)
+        // Redirect if profile exists but is incomplete
         if (data.hasProfile && !data.isComplete && data.profileId) {
-          router.push(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
+          setIsRedirecting(true)
+          // If signup flow not finished (step < 10), redirect to complete profile page
+          if (data.signupStep < 10) {
+            router.replace(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep}`)
+            return
+          }
+          // Otherwise just missing photos/phone, redirect to photos page
+          router.replace(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
           return
         }
 
@@ -93,7 +106,23 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
     checkCompletion()
   }, [sessionStatus, router, pathname])
 
-  // Always render children - the redirect happens asynchronously
-  // This prevents flash of content before redirect
+  // Show loading while checking or redirecting to prevent flash of dashboard content
+  if (sessionStatus === 'authenticated' && (!checked || isRedirecting)) {
+    // Only show loader for protected pages that require completion check
+    const protectedPaths = ['/dashboard', '/matches', '/connections', '/messages', '/profile/edit']
+    const isProtectedPath = protectedPaths.some(p => pathname?.startsWith(p))
+
+    if (isProtectedPath) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white via-silver-50 to-silver-100">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      )
+    }
+  }
+
   return <>{children}</>
 }

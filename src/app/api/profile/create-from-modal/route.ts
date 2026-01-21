@@ -217,7 +217,9 @@ export async function POST(request: Request) {
         gender: data.gender,
         createdBy: data.createdBy,
 
-        // Basic Info
+        // Basic Info - Name fields
+        firstName: data.firstName,
+        lastName: data.lastName,
         dateOfBirth: data.dateOfBirth,
         age: data.age,
         height: data.height,
@@ -364,6 +366,10 @@ export async function POST(request: Request) {
 
         // Status
         approvalStatus: 'pending',
+
+        // Signup progress - step 4 means basics (1), location/education (2), and account (3) are done
+        // User needs to continue from step 4 (religion) onwards
+        signupStep: 4,
       },
     })
 

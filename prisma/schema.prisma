@@ -227,6 +227,10 @@ model Profile {
   lifetimeMatches            Int  @default(0)  // Total potential matches ever shown (high-water mark)
   lifetimeMutualMatches      Int  @default(0)  // Total mutual matches/connections ever made
 
+  // Signup Progress (tracks which step user completed during multi-step signup)
+  // Steps: 1=basics, 2=location_education, 3=account, 4=religion, 5=family, 6=lifestyle, 7=aboutme, 8=preferences_1, 9=preferences_2, 10=photos
+  signupStep        Int    @default(3)  // Defaults to 3 (account) since profile is created at step 3
+
   // Status
   approvalStatus    String @default("pending")
   approvalDate      DateTime?

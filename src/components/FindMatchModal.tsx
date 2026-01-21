@@ -50,11 +50,12 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Steps for user: basics → location → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → account → photos
-const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'account', 'photos']
+// Steps for user: basics → location → account (early save!) → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → photos
+// Account creation moved to step 3 so users can save their data early and not lose it
+const SECTION_ORDER = ['basics', 'location_education', 'account', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'admin_account', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'admin_account', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -181,13 +182,16 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       sessionStorage.setItem('newUserId', data.userId)
       sessionStorage.setItem('newUserEmail', email)
 
-      // Step 2: Create profile
+      // Step 2: Create partial profile with basics + location/education data
+      // This ensures user data is saved early and won't be lost
       const profileResponse = await fetch('/api/profile/create-from-modal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           ...formData,
+          // Mark as incomplete so we know to update it later
+          _isPartialSave: true,
         }),
       })
 
@@ -200,9 +204,64 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       const profileData = await profileResponse.json()
       setCreatedProfileId(profileData.profileId)
-      setStep(step + 1) // Move to photos step
+
+      // Send welcome email immediately after account creation
+      fetch('/api/profile/send-welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profileId: profileData.profileId }),
+      }).catch((err) => {
+        console.error('Failed to send welcome email:', err)
+      })
+
+      setStep(step + 1) // Move to next section (religion)
     } catch {
       setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Update profile with new section data (called after account is created)
+  const handleUpdateProfile = async () => {
+    if (!createdProfileId) {
+      // No profile yet, just continue to next step
+      setStep(step + 1)
+      return
+    }
+
+    setError('')
+    setLoading(true)
+
+    try {
+      // Get the newUserId from sessionStorage for authorization
+      const newUserId = sessionStorage.getItem('newUserId')
+
+      // Calculate next step number (step + 1) to save progress
+      const nextStep = step + 1
+
+      const response = await fetch(`/api/profile/${createdProfileId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(newUserId && { 'x-new-user-id': newUserId }),
+        },
+        body: JSON.stringify({
+          ...formData,
+          signupStep: nextStep, // Track progress for returning users
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        setError(data.error || 'Failed to save profile data')
+        setLoading(false)
+        return
+      }
+
+      setStep(nextStep)
+    } catch {
+      setError('Failed to save. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -211,7 +270,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const handleSectionContinue = () => {
     const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
     if (step < sectionOrder.length) {
-      setStep(step + 1)
+      // If we have a created profile, save data before continuing
+      if (createdProfileId) {
+        handleUpdateProfile()
+      } else {
+        setStep(step + 1)
+      }
     }
   }
 
@@ -344,15 +408,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         }
         onClose()
       } else {
-        // Send welcome email after successful profile completion
-        fetch('/api/profile/send-welcome-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profileId: createdProfileId }),
-        }).catch((err) => {
-          console.error('Failed to send welcome email:', err)
-        })
-
+        // Welcome email already sent after account creation (step 3)
         // Get stored email and sign in the user automatically
         const storedEmail = sessionStorage.getItem('newUserEmail')
         if (storedEmail && password) {
