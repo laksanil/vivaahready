@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 import bcrypt from 'bcryptjs'
+import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 
 // Generate a VR ID
 function generateVRId(): string {
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       })
 
       // Prepare profile data
+      const normalizedProfileData = normalizeSameAsMinePreferences(profileData || {})
       const profileFields: Record<string, unknown> = {
         userId: user.id,
         odNumber: vrId,
@@ -180,12 +182,14 @@ export async function POST(request: NextRequest) {
         prefCommunity: 'prefCommunity',
         prefSubCommunity: 'prefSubCommunity',
         prefCommunityList: 'prefCommunity',
+        prefSubCommunityList: 'prefSubCommunity',
         prefCaste: 'prefCaste',
         prefGotra: 'prefGotra',
         prefHobbies: 'prefHobbies',
         prefFitness: 'prefFitness',
         prefInterests: 'prefInterests',
         prefGrewUpIn: 'prefGrewUpIn',
+        prefMotherTongueList: 'prefMotherTongue',
         idealPartnerDesc: 'idealPartnerDesc',
         referralSource: 'referralSource',
         zipCode: 'zipCode',
@@ -195,15 +199,15 @@ export async function POST(request: NextRequest) {
 
       // Copy profile data
       for (const [formKey, dbKey] of Object.entries(fieldMappings)) {
-        if (profileData[formKey] !== undefined && profileData[formKey] !== '') {
-          profileFields[dbKey] = profileData[formKey]
+        if (normalizedProfileData[formKey] !== undefined && normalizedProfileData[formKey] !== '') {
+          profileFields[dbKey] = normalizedProfileData[formKey]
         }
       }
 
       // Handle name fields specially
-      if (profileData.firstName || profileData.lastName) {
+      if (normalizedProfileData.firstName || normalizedProfileData.lastName) {
         // Store full name in a way that can be retrieved
-        profileFields.createdBy = profileData.createdBy || 'admin'
+        profileFields.createdBy = normalizedProfileData.createdBy || 'admin'
       }
 
       // Create profile
@@ -212,10 +216,10 @@ export async function POST(request: NextRequest) {
       })
 
       // Update user name with first and last name
-      if (profileData.firstName && profileData.lastName) {
+      if (normalizedProfileData.firstName && normalizedProfileData.lastName) {
         await tx.user.update({
           where: { id: user.id },
-          data: { name: `${profileData.firstName} ${profileData.lastName}` },
+          data: { name: `${normalizedProfileData.firstName} ${normalizedProfileData.lastName}` },
         })
       }
 

@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic'
  * 1. Profile exists
  * 2. User has a phone number
  * 3. Profile has at least one photo (profileImageUrl or photoUrls)
+ * 4. Signup flow is complete (signupStep >= 10)
  */
 export async function GET() {
   try {
@@ -29,6 +30,7 @@ export async function GET() {
             id: true,
             profileImageUrl: true,
             photoUrls: true,
+            signupStep: true,
           },
         },
       },
@@ -41,27 +43,33 @@ export async function GET() {
         hasProfile: false,
         hasPhone: false,
         hasPhotos: false,
+        signupStep: 0,
       })
     }
 
     const hasProfile = !!user.profile
     const hasPhone = !!user.phone && user.phone.trim() !== ''
     const hasPhotos = !!(user.profile?.profileImageUrl || user.profile?.photoUrls)
+    const signupStep = user.profile?.signupStep || 3 // Default to 3 (account created)
 
-    const isComplete = hasProfile && hasPhone && hasPhotos
+    // Profile is complete only if all requirements met AND signup flow finished (step 10 = photos)
+    const isComplete = hasProfile && hasPhone && hasPhotos && signupStep >= 10
 
     return NextResponse.json({
       isComplete,
       hasProfile,
       hasPhone,
       hasPhotos,
+      signupStep,
       profileId: user.profile?.id || null,
       reason: !isComplete
         ? !hasProfile
           ? 'no_profile'
-          : !hasPhone
-            ? 'no_phone'
-            : 'no_photos'
+          : signupStep < 10
+            ? 'signup_incomplete'
+            : !hasPhone
+              ? 'no_phone'
+              : 'no_photos'
         : null,
     })
   } catch (error) {

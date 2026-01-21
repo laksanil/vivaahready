@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateVrId } from '@/lib/vrId'
+import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -182,7 +183,7 @@ const profileSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const data = profileSchema.parse(body)
+    const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
 
     // Find user by email
     const user = await prisma.user.findUnique({
@@ -216,7 +217,9 @@ export async function POST(request: Request) {
         gender: data.gender,
         createdBy: data.createdBy,
 
-        // Basic Info
+        // Basic Info - Name fields
+        firstName: data.firstName,
+        lastName: data.lastName,
         dateOfBirth: data.dateOfBirth,
         age: data.age,
         height: data.height,
@@ -363,6 +366,10 @@ export async function POST(request: Request) {
 
         // Status
         approvalStatus: 'pending',
+
+        // Signup progress - step 4 means basics (1), location/education (2), and account (3) are done
+        // User needs to continue from step 4 (religion) onwards
+        signupStep: 4,
       },
     })
 
