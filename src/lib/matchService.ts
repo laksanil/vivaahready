@@ -34,7 +34,7 @@ interface MatchResults {
     id: string
     gender: string
     profileImageUrl: string | null
-    photoUrls: string[] | null
+    photoUrls: string | null
   }
 }
 

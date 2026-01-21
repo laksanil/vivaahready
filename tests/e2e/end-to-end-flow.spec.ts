@@ -88,7 +88,23 @@ async function completeLocationEducation(page: Page) {
   await page.selectOption('select[name="annualIncome"]', '75k-100k')
   await page.selectOption('select[name="openToRelocation"]', 'yes')
   await page.getByRole('button', { name: /Continue/i }).click()
-  await expect(page.getByRole('heading', { name: /Religion & Astro/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible()
+}
+
+async function completeAccount(page: Page, user: typeof userA) {
+  await page.fill('input[type="email"]', user.email)
+  await page.locator('input[type="tel"]').fill(user.phone)
+  await page.fill('input[placeholder="Enter password"]', password)
+  await page.fill('input[placeholder="Re-enter password"]', password)
+  const registerResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
+  )
+  const profileResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
+  )
+  await page.getByRole('button', { name: /Create Account & Continue/i }).click()
+  await Promise.all([registerResponse, profileResponse])
+  await expect(page.getByRole('heading', { name: /Religion & Astro/i })).toBeVisible({ timeout: 30000 })
 }
 
 async function completeReligion(page: Page) {
@@ -127,23 +143,7 @@ async function skipPreferences(page: Page) {
   await page.getByRole('button', { name: /Continue/i }).click()
   await expect(page.getByRole('heading', { name: /More Preferences/i })).toBeVisible()
   await page.getByRole('button', { name: /Continue/i }).click()
-  await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible()
-}
-
-async function createAccount(page: Page, user: typeof userA) {
-  await page.fill('input[type="email"]', user.email)
-  await page.locator('input[type="tel"]').fill(user.phone)
-  await page.fill('input[placeholder="Enter password"]', password)
-  await page.fill('input[placeholder="Re-enter password"]', password)
-  const registerResponse = page.waitForResponse(
-    (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
-  )
-  const profileResponse = page.waitForResponse(
-    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
-  )
-  await page.getByRole('button', { name: /Create Account & Continue/i }).click()
-  await Promise.all([registerResponse, profileResponse])
-  await expect(page.getByRole('heading', { name: /Upload Your Photo/i })).toBeVisible({ timeout: 30000 })
+  await expect(page.getByRole('heading', { name: /Add Your Photos|Upload Your Photo/i })).toBeVisible({ timeout: 30000 })
 }
 
 async function uploadModalPhoto(page: Page) {
@@ -156,12 +156,12 @@ async function completeSignupFlow(page: Page, user: typeof userA) {
   await openSignupModal(page)
   await completeBasics(page, user)
   await completeLocationEducation(page)
+  await completeAccount(page, user)
   await completeReligion(page)
   await completeFamily(page)
   await completeLifestyle(page)
   await completeAboutMe(page)
   await skipPreferences(page)
-  await createAccount(page, user)
   await uploadModalPhoto(page)
 
   if (page.url().includes('/login')) {
