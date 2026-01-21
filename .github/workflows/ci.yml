@@ -54,6 +54,20 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,6 +88,8 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
+          DATABASE_URL_E2E: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

@@ -224,8 +224,10 @@ async function openConnectionAndMessage(page: Page, firstName: string) {
   const modal = page.getByRole('dialog')
   await expect(modal).toBeVisible()
   await modal.getByLabel('Type a message').fill('Hi! Excited to connect and learn more about you.')
+  const sendResponse = page.waitForResponse((res) => res.url().includes('/api/messages') && res.request().method() === 'POST')
   await modal.getByRole('button', { name: /Send message/i }).click()
-  await expect(modal.getByText('Hi! Excited to connect and learn more about you.')).toBeVisible()
+  await sendResponse
+  await expect(modal.getByText('Hi! Excited to connect and learn more about you.')).toBeVisible({ timeout: 15000 })
   await modal.getByRole('button', { name: /Close conversation/i }).click()
 }
 

@@ -497,7 +497,7 @@ function isBrahmin(community: string): boolean {
  */
 function isCommunityMatch(seekerCommunity: string | null | undefined, seekerPref: string | null | undefined, candidateCommunity: string | null | undefined, strict: boolean = false): boolean {
   // No preference or "doesn't matter"
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
@@ -834,7 +834,7 @@ function isLocationMatch(
  */
 function isDietMatch(seekerPref: string | null | undefined, candidateDiet: string | null | undefined, strict: boolean = false): boolean {
   // No preference
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
@@ -885,7 +885,7 @@ function isDietMatch(seekerPref: string | null | undefined, candidateDiet: strin
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string | null | undefined, candidateGotra: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
@@ -910,7 +910,7 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
 
@@ -1064,7 +1064,7 @@ function isHeightMatch(
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isSmokingMatch(seekerPref: string | null | undefined, candidateSmoking: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateSmoking) return true // Missing data never blocks a match
@@ -1093,7 +1093,7 @@ function isSmokingMatch(seekerPref: string | null | undefined, candidateSmoking:
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isDrinkingMatch(seekerPref: string | null | undefined, candidateDrinking: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateDrinking) return true // Missing data never blocks a match
@@ -1122,7 +1122,7 @@ function isDrinkingMatch(seekerPref: string | null | undefined, candidateDrinkin
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMaritalStatus: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateMaritalStatus) return true // Missing data never blocks a match
@@ -1153,7 +1153,7 @@ function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMa
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isHasChildrenMatch(seekerPref: string | null | undefined, candidateHasChildren: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateHasChildren) return true // Missing data never blocks a match
@@ -1192,7 +1192,7 @@ function isHasChildrenMatch(seekerPref: string | null | undefined, candidateHasC
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFamilyValuesMatch(seekerPref: string | null | undefined, seekerFamilyValues: string | null | undefined, candidateFamilyValues: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateFamilyValues) return true // Missing data never blocks a match
@@ -1215,7 +1215,7 @@ function isFamilyValuesMatch(seekerPref: string | null | undefined, seekerFamily
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFamilyLocationMatch(seekerPref: string | null | undefined, seekerFamilyLocation: string | null | undefined, candidateFamilyLocation: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateFamilyLocation) return true // Missing data never blocks a match
@@ -1352,7 +1352,7 @@ function intelligentTextMatch(text1: string, text2: string): boolean {
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isIncomeMatch(seekerPref: string | null | undefined, candidateIncome: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateIncome) return true // Missing data never blocks a match
@@ -1388,7 +1388,7 @@ function isIncomeMatch(seekerPref: string | null | undefined, candidateIncome: s
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCommunity: string | null | undefined, candidateSubCommunity: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateSubCommunity) return true // Missing data never blocks a match
@@ -1417,7 +1417,7 @@ function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCom
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isReligionMatch(seekerPref: string | null | undefined, candidateReligion: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateReligion) return true
@@ -1433,7 +1433,7 @@ function isReligionMatch(seekerPref: string | null | undefined, candidateReligio
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isCitizenshipMatch(seekerPref: string | null | undefined, seekerCitizenship: string | null | undefined, candidateCitizenship: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateCitizenship) return true
@@ -1455,7 +1455,7 @@ function isCitizenshipMatch(seekerPref: string | null | undefined, seekerCitizen
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isGrewUpInMatch(seekerPref: string | null | undefined, seekerGrewUpIn: string | null | undefined, candidateGrewUpIn: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateGrewUpIn) return true
@@ -1477,7 +1477,7 @@ function isGrewUpInMatch(seekerPref: string | null | undefined, seekerGrewUpIn: 
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isRelocationMatch(seekerPref: string | null | undefined, candidateRelocation: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateRelocation) return true
@@ -1503,7 +1503,7 @@ function isRelocationMatch(seekerPref: string | null | undefined, candidateReloc
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isPetsMatch(seekerPref: string | null | undefined, candidatePets: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidatePets) return true
@@ -1538,7 +1538,7 @@ function isPetsMatch(seekerPref: string | null | undefined, candidatePets: strin
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: string | null | undefined, candidateHobbies: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateHobbies) return true
@@ -1562,7 +1562,7 @@ function isHobbiesMatch(seekerPref: string | null | undefined, seekerHobbies: st
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: string | null | undefined, candidateFitness: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateFitness) return true
@@ -1586,7 +1586,7 @@ function isFitnessMatch(seekerPref: string | null | undefined, seekerFitness: st
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests: string | null | undefined, candidateInterests: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateInterests) return true
@@ -1610,7 +1610,7 @@ function isInterestsMatch(seekerPref: string | null | undefined, seekerInterests
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
 function isOccupationMatch(seekerPref: string | null | undefined, candidateOccupation: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref)) {
+  if (!seekerPref || isNoPreferenceValue(seekerPref)) {
     return true
   }
   if (!candidateOccupation) return true
