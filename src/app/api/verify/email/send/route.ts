@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmailVerificationOtp } from '@/lib/email'
 import { generateOtp, setOtp } from '@/lib/otpStore'
 
 export async function POST() {
@@ -32,20 +33,23 @@ export async function POST() {
     const otp = generateOtp()
     setOtp('email', session.user.id, otp, 10) // 10 minutes expiry
 
-    // In production, send email here using a service like SendGrid, Resend, etc.
-    console.log(`[DEV] Email OTP for ${user.email}: ${otp}`)
+    const sendResult = await sendEmailVerificationOtp(user.email, otp)
+    if (!sendResult.success) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Email send failed in development; returning OTP for testing.', sendResult.error)
+        return NextResponse.json({
+          success: true,
+          message: 'Verification code generated (email service not configured).',
+          devOtp: otp,
+        })
+      }
 
-    // TODO: Implement actual email sending
-    // await sendEmail({
-    //   to: user.email,
-    //   subject: 'Verify your email - VivaahReady',
-    //   body: `Your verification code is: ${otp}. It expires in 10 minutes.`,
-    // })
+      return NextResponse.json({ error: 'Failed to send verification code' }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Verification code sent to your email',
-      // In development, include OTP for testing (remove in production!)
       ...(process.env.NODE_ENV === 'development' && { devOtp: otp }),
     })
   } catch (error) {
