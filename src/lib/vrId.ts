@@ -1,7 +1,7 @@
 import { prisma } from './prisma'
 
 // Starting sequence number for VR IDs
-const VR_ID_START = 29
+const VR_ID_START = 11
 
 /**
  * Generates the next VR ID in format VRYYYYMMDDXXX

@@ -193,6 +193,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const [userStatus, setUserStatus] = useState<{
     isApproved: boolean
     canExpressInterest: boolean
+    canAcceptInterest?: boolean
   } | null>(null)
   const [myProfile, setMyProfile] = useState<any>(null)
   const [theirMatchScore, setTheirMatchScore] = useState<{
@@ -399,6 +400,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   }
 
   const canExpressInterest = userStatus?.canExpressInterest ?? false
+  const canAcceptInterest = userStatus?.canAcceptInterest ?? false
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-4">
@@ -429,6 +431,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           onSendInterest={handleSendInterest}
           isSending={sendingInterest}
           canExpressInterest={canExpressInterest}
+          canAcceptInterest={canAcceptInterest}
           theirMatchScore={theirMatchScore}
           yourMatchScore={yourMatchScore}
           matchProfiles={matchProfiles}
@@ -481,6 +484,7 @@ interface ProfileCardProps {
   onSendInterest: () => void
   isSending: boolean
   canExpressInterest: boolean
+  canAcceptInterest?: boolean
   theirMatchScore?: MatchScoreData | null
   yourMatchScore?: MatchScoreData | null
   matchProfiles?: MatchProfilesData | null
@@ -497,6 +501,7 @@ function ProfileCard({
   onSendInterest,
   isSending,
   canExpressInterest,
+  canAcceptInterest = false,
   theirMatchScore,
   onReport,
   onOpenPayment,
@@ -697,22 +702,24 @@ function ProfileCard({
                     <Clock className="h-4 w-4 text-white" />
                   </div>
                 ) : interestReceived ? (
-                  <button
-                    onClick={onSendInterest}
-                    disabled={isSending || !canExpressInterest}
-                    className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
-                    title="Accept Interest"
-                  >
-                    {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
-                  </button>
-                ) : !canExpressInterest ? (
-                  <button
-                    onClick={onOpenPayment}
-                    className="w-8 h-8 bg-primary-500 hover:bg-primary-600 flex items-center justify-center"
-                    title="Get Verified to Express Interest"
-                  >
-                    <Heart className="h-4 w-4 text-white" />
-                  </button>
+                  canAcceptInterest ? (
+                    <button
+                      onClick={onSendInterest}
+                      disabled={isSending}
+                      className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
+                      title="Accept Interest"
+                    >
+                      {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={onOpenPayment}
+                      className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
+                      title="Get Verified to Accept Interest"
+                    >
+                      <Heart className="h-4 w-4 text-white" />
+                    </button>
+                  )
                 ) : (
                   <button
                     onClick={onSendInterest}
@@ -777,24 +784,24 @@ function ProfileCard({
           </div>
         )}
 
-        {/* Express Interest CTA for non-verified users */}
-        {!canExpressInterest && isLoggedIn && profile.userId !== viewerUserId && !isMutual && !interestSent && (
-          <div className="bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-100 rounded-xl p-5">
+        {/* Verification CTA - Show when user received interest but needs verification to accept */}
+        {!canAcceptInterest && isLoggedIn && profile.userId !== viewerUserId && !isMutual && interestReceived && (
+          <div className="bg-gradient-to-r from-green-50 to-accent-50 border border-green-100 rounded-xl p-5">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Heart className="w-6 h-6 text-primary-600" />
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-green-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">Interested in this profile?</h3>
+                <h3 className="font-semibold text-gray-900 mb-1">This person is interested in you!</h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  Complete your profile verification to express interest and unlock full access to names, photos, and social media links.
+                  Complete your profile verification to accept their interest and unlock full access to contact details.
                 </p>
                 <button
                   onClick={onOpenPayment}
-                  className="bg-primary-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2"
+                  className="bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
                 >
                   <Heart className="w-4 h-4" />
-                  Express Interest — Get Verified
+                  Accept Interest — Get Verified
                 </button>
               </div>
             </div>

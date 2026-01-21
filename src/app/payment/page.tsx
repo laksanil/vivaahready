@@ -94,7 +94,7 @@ export default function PaymentPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Complete!</h1>
             <p className="text-gray-600 mb-6">
               Your $50 payment has been received. Your profile is now pending admin approval.
-              Once approved, you'll be able to express interest in matching profiles.
+              Once approved, you'll be able to accept interests and connect with matching profiles.
             </p>
             <div className="flex justify-center gap-4">
               <Link href="/matches" className="btn-primary">
@@ -135,7 +135,7 @@ export default function PaymentPage() {
                 <span className="text-gray-500">one-time payment</span>
               </div>
               <p className="text-gray-600">
-                Complete your profile verification to unlock the ability to express interest
+                Complete your profile verification to unlock the ability to accept interests
                 and connect with matching profiles.
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function PaymentPage() {
             <div className="mt-8 p-4 bg-white/50 rounded-lg">
               <p className="text-sm text-gray-600">
                 <strong>Note:</strong> After payment, your profile will be reviewed by our admin team.
-                Once approved, you'll receive full access to express interest in matching profiles.
+                Once approved, you'll be able to accept interests and view contact details of your matches.
               </p>
             </div>
           </div>

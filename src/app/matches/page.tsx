@@ -38,6 +38,7 @@ function FeedPageContent() {
   const [userStatus, setUserStatus] = useState<{
     isApproved: boolean
     canExpressInterest: boolean
+    canAcceptInterest?: boolean
   } | null>(null)
   const [showMatchModal, setShowMatchModal] = useState<FeedProfile | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

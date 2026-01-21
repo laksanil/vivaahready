@@ -191,14 +191,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Profile ID is required' }, { status: 400 })
     }
 
-    // Get current user's profile to check if approved
+    // Get current user's profile - expressing interest is free, no approval required
     const myProfile = await prisma.profile.findUnique({
       where: { userId: currentUserId },
     })
 
-    if (!myProfile || myProfile.approvalStatus !== 'approved') {
+    if (!myProfile) {
       return NextResponse.json({
-        error: 'Your profile must be approved to express interest'
+        error: 'You must complete your profile to express interest'
       }, { status: 403 })
     }
 
@@ -421,6 +421,21 @@ export async function PATCH(request: Request) {
       // Only receiver can accept/reject/reconsider
       if (!isReceiver) {
         return NextResponse.json({ error: 'Only the recipient can perform this action' }, { status: 403 })
+      }
+
+      // Accepting interest requires profile to be verified/approved
+      if (action === 'accept' || action === 'reconsider') {
+        const myProfile = await prisma.profile.findUnique({
+          where: { userId: currentUserId },
+          select: { approvalStatus: true }
+        })
+
+        if (!myProfile || myProfile.approvalStatus !== 'approved') {
+          return NextResponse.json({
+            error: 'Your profile must be verified to accept interest. Please complete verification first.',
+            requiresVerification: true
+          }, { status: 403 })
+        }
       }
     }
 
