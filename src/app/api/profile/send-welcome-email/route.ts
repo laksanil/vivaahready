@@ -26,8 +26,17 @@ export async function POST(request: Request) {
       )
     }
 
-    // Send welcome email
-    await sendWelcomeEmail(profile.user.email, profile.user.name || profile.firstName || 'there')
+    const sendResult = await sendWelcomeEmail(
+      profile.user.email,
+      profile.user.name || profile.firstName || 'there'
+    )
+
+    if (!sendResult.success) {
+      return NextResponse.json(
+        { error: 'Failed to send welcome email' },
+        { status: 502 }
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

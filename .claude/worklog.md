@@ -140,3 +140,9 @@ gh pr merge 123 --squash --delete-branch
 **Branch:** work/dev-a-normalize-pref-same-as-mine
 **PR:** Pending (gh not installed)
 **Files:** src/app/api/profile/route.ts, src/app/api/profile/create-from-modal/route.ts, src/app/api/admin/create-profile/route.ts, src/app/api/admin/profiles/[id]/route.ts, src/lib/matching.ts, tests/unit/matching.test.ts (and any new tests)
+
+## 2026-01-21 10:20 - DEV_A
+**Status:** IN_PROGRESS
+**Task:** Wire email verification sending through Resend and surface failures
+**Files:** src/app/api/verify/email/send/route.ts, src/lib/email.ts, .env.example
+**Branch:** work/dev-a-email-verification-resend
