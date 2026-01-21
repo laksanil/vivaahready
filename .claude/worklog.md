@@ -31,6 +31,13 @@ PRs ready to be merged (tests passing, no conflicts):
 
 <!-- Add your work entries below this line -->
 
+## 2026-01-21 01:45 - DEV_A
+**Status:** COMPLETED
+**Task:** Refactor admin matches stats to compute directly (remove internal fetch dependency)
+**Files:** src/lib/matchService.ts, src/app/api/matches/auto/route.ts, src/app/api/admin/matches/route.ts
+**Branch:** work/dev-a-admin-matches-direct
+**Notes:** PR #2 created.
+
 ## 2026-01-20 14:30 - DEV_A
 **Status:** COMPLETED
 **Task:** Comprehensive test coverage (unit + E2E) for core user/admin flows (non-payment) and API integration

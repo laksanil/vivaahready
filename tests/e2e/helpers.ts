@@ -123,6 +123,11 @@ export async function createUserWithProfile(
 ): Promise<{ userId: string; profileId: string }> {
   const { userId } = await registerUser(request, baseURL, user, password)
   const { profileId } = await createProfile(request, baseURL, user, overrides)
+  // Mark signup flow complete so profile completion guard doesn't redirect in UI flows.
+  await request.put(`${baseURL}/api/profile/${profileId}`, {
+    data: { signupStep: 10 },
+    headers: { 'x-new-user-id': userId },
+  })
   return { userId, profileId }
 }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
+import { getMatchResultsForUser } from '@/lib/matchService'
 
 // Stats returned from user API - same counts users see
 interface UserStats {
@@ -19,36 +20,13 @@ interface UserStats {
   }
 }
 
-// Helper to get all stats by calling the same API users use
-async function getStatsForUser(userId: string, baseUrl: string, cookieHeader: string): Promise<UserStats> {
-  const defaultStats: UserStats = {
-    potentialMatches: 0,
-    mutualMatches: 0,
-    interestsSent: { total: 0, pending: 0, accepted: 0, rejected: 0 },
-    interestsReceived: { total: 0, pending: 0, accepted: 0, rejected: 0 },
-    declined: 0,
-    lifetime: { interestsReceived: 0, interestsSent: 0, profileViews: 0, matches: 0, mutualMatches: 0 },
-  }
-
-  try {
-    const response = await fetch(`${baseUrl}/api/matches/auto?viewAsUser=${userId}`, {
-      headers: {
-        'Cookie': cookieHeader,
-      },
-    })
-
-    if (!response.ok) {
-      console.error(`Failed to fetch stats for user ${userId}: ${response.status}`)
-      return defaultStats
-    }
-
-    const data = await response.json()
-    // Return stats from user API - this is exactly what users see
-    return data.stats || defaultStats
-  } catch (error) {
-    console.error(`Error fetching stats for user ${userId}:`, error)
-    return defaultStats
-  }
+const defaultStats: UserStats = {
+  potentialMatches: 0,
+  mutualMatches: 0,
+  interestsSent: { total: 0, pending: 0, accepted: 0, rejected: 0 },
+  interestsReceived: { total: 0, pending: 0, accepted: 0, rejected: 0 },
+  declined: 0,
+  lifetime: { interestsReceived: 0, interestsSent: 0, profileViews: 0, matches: 0, mutualMatches: 0 },
 }
 
 export const dynamic = 'force-dynamic'
@@ -60,10 +38,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get base URL and cookies for internal API calls
     const url = new URL(request.url)
-    const baseUrl = `${url.protocol}//${url.host}`
-    const cookieHeader = request.headers.get('cookie') || ''
 
     const { searchParams } = url
     const page = parseInt(searchParams.get('page') || '1')
@@ -116,7 +91,15 @@ export async function GET(request: Request) {
     const profilesWithStats = await Promise.all(
       profiles.map(async (profile) => {
         // Get all stats from the user API - ensures admin sees exact same counts as users
-        const userStats = await getStatsForUser(profile.user.id, baseUrl, cookieHeader)
+        let userStats = defaultStats
+        try {
+          const matchResults = await getMatchResultsForUser(profile.user.id, { debug: false })
+          if (matchResults?.stats) {
+            userStats = matchResults.stats
+          }
+        } catch (error) {
+          console.error(`Error computing stats for user ${profile.user.id}:`, error)
+        }
 
         // Get reports filed by this user (not part of user-facing stats)
         const reportsFiled = await prisma.report.count({

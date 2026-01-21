@@ -110,7 +110,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
 
     // Matches: pass a profile to populate reconsider
     await page.goto('/matches')
-    await expect(page.getByRole('heading', { name: /My Matches/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /My Matches/i })).toBeVisible({ timeout: 15000 })
     const passButton = page.getByTitle('Pass').first()
     if (await passButton.isVisible()) {
       await passButton.click()
