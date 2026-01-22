@@ -18,12 +18,40 @@ export async function POST(request: NextRequest) {
 
     // Handle incoming email event
     if (type === 'email.received') {
-      const { from, to, subject, text, html } = data
+      // Webhook only contains metadata, need to fetch full email via API
+      const emailId = data.email_id
+      const from = data.from
+      const to = data.to
+      const subject = data.subject
 
-      console.log('Incoming email:', { from, to, subject })
+      console.log('Incoming email:', { emailId, from, to, subject })
 
-      // Forward the email to your personal Gmail
-      if (resend) {
+      if (resend && emailId) {
+        // Fetch the full email content from Resend API
+        let emailContent = ''
+        let emailText = ''
+
+        try {
+          // Use fetch to get the email content since Resend SDK might not have this method
+          const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
+            headers: {
+              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            },
+          })
+
+          if (response.ok) {
+            const emailData = await response.json()
+            emailContent = emailData.html || ''
+            emailText = emailData.text || ''
+            console.log('Fetched email content for:', emailId)
+          } else {
+            console.log('Could not fetch email content, status:', response.status)
+          }
+        } catch (fetchError) {
+          console.error('Error fetching email content:', fetchError)
+        }
+
+        // Forward the email to your personal Gmail
         await resend.emails.send({
           from: 'VivaahReady Support <noreply@vivaahready.com>',
           to: [FORWARD_TO_EMAIL],
@@ -31,13 +59,13 @@ export async function POST(request: NextRequest) {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${from}</p>
-                <p style="margin: 0 0 8px 0;"><strong>To:</strong> ${to}</p>
+                <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${from || 'Unknown'}</p>
+                <p style="margin: 0 0 8px 0;"><strong>To:</strong> ${Array.isArray(to) ? to.join(', ') : to || 'Unknown'}</p>
                 <p style="margin: 0;"><strong>Subject:</strong> ${subject || 'No Subject'}</p>
               </div>
               <div style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
                 <h3 style="margin: 0 0 16px 0; color: #1f2937;">Message:</h3>
-                ${html || `<pre style="white-space: pre-wrap;">${text || 'No content'}</pre>`}
+                ${emailContent || `<pre style="white-space: pre-wrap;">${emailText || 'No content available - check Resend dashboard'}</pre>`}
               </div>
               <p style="margin-top: 20px; color: #6b7280; font-size: 12px;">
                 This email was forwarded from support@vivaahready.com
@@ -45,17 +73,17 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `
-From: ${from}
-To: ${to}
+From: ${from || 'Unknown'}
+To: ${Array.isArray(to) ? to.join(', ') : to || 'Unknown'}
 Subject: ${subject || 'No Subject'}
 
 Message:
-${text || 'No content'}
+${emailText || 'No content available - check Resend dashboard'}
 
 ---
 This email was forwarded from support@vivaahready.com
           `,
-          replyTo: from, // Reply goes back to original sender
+          replyTo: typeof from === 'string' ? from : undefined,
         })
 
         console.log('Email forwarded to:', FORWARD_TO_EMAIL)
