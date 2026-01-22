@@ -44,9 +44,9 @@ export async function detectFacesInImage(imageFile: File): Promise<{
     const loaded = await loadFaceDetectionModels()
     if (!loaded) {
       return {
-        hasFace: true, // Allow upload if models fail to load
+        hasFace: false,
         faceCount: 0,
-        error: 'Face detection unavailable'
+        error: 'Face detection unavailable. Please try again later.'
       }
     }
 
@@ -69,9 +69,9 @@ export async function detectFacesInImage(imageFile: File): Promise<{
   } catch (error) {
     console.error('Face detection error:', error)
     return {
-      hasFace: true, // Allow upload if detection fails
+      hasFace: false,
       faceCount: 0,
-      error: 'Face detection failed'
+      error: 'Face detection failed. Please try a different photo.'
     }
   }
 }
@@ -122,11 +122,11 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
     const faceResult = await detectFacesInImage(imageFile)
 
     if (faceResult.error) {
-      // If face detection is unavailable, allow the upload
-      console.log('Face detection unavailable, allowing upload')
+      // Face detection failed - do not allow upload
+      console.log('Face detection error:', faceResult.error)
       return {
-        isValid: true,
-        message: 'Photo accepted'
+        isValid: false,
+        message: faceResult.error
       }
     }
 
@@ -143,10 +143,10 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
     }
   } catch (error) {
     console.error('Face detection error during validation:', error)
-    // Allow upload if face detection fails unexpectedly
+    // Do not allow upload if face detection fails
     return {
-      isValid: true,
-      message: 'Photo accepted'
+      isValid: false,
+      message: 'Unable to validate photo. Please try again or use a different photo.'
     }
   }
 }
