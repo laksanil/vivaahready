@@ -44,9 +44,9 @@ export async function detectFacesInImage(imageFile: File): Promise<{
     const loaded = await loadFaceDetectionModels()
     if (!loaded) {
       return {
-        hasFace: false,
+        hasFace: true, // Allow upload if models fail to load
         faceCount: 0,
-        error: 'Face detection unavailable. Please try again later.'
+        error: 'Face detection unavailable'
       }
     }
 
@@ -69,9 +69,9 @@ export async function detectFacesInImage(imageFile: File): Promise<{
   } catch (error) {
     console.error('Face detection error:', error)
     return {
-      hasFace: false,
+      hasFace: true, // Allow upload if detection fails
       faceCount: 0,
-      error: 'Face detection failed. Please try a different photo.'
+      error: 'Face detection failed'
     }
   }
 }

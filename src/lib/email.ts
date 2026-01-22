@@ -4,10 +4,13 @@ import { isTestMode } from '@/lib/testMode'
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-// Use Resend's default domain (no verification needed)
-// You can change this to operations@vivaahready.com after verifying your domain in Resend
-const FROM_EMAIL = 'VivaahReady <onboarding@resend.dev>'
-const REPLY_TO = 'no-reply@vivaahready.com'
+// Use vivaahready.com domain (requires domain verification in Resend)
+// Falls back to Resend's test domain if not verified yet
+const DOMAIN_VERIFIED = process.env.RESEND_DOMAIN_VERIFIED === 'true'
+const FROM_EMAIL = DOMAIN_VERIFIED
+  ? 'VivaahReady <noreply@vivaahready.com>'
+  : 'VivaahReady <onboarding@resend.dev>'
+const REPLY_TO = 'noreply@vivaahready.com'
 
 interface SendEmailParams {
   to: string
