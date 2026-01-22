@@ -819,7 +819,7 @@ function ProfileCard({
               </span>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
             <div className="flex">
               <span className="text-gray-500 w-24">Email</span>
               <span className="text-gray-400 mr-2">:</span>
@@ -862,7 +862,7 @@ function ProfileCard({
           {/* BASIC INFO Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Basic Info</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {age && <><span className="text-gray-500">Age</span><span className="text-gray-800">{age} years</span></>}
               {profile.height && <><span className="text-gray-500">Height</span><span className="text-gray-800">{profile.height}</span></>}
               {profile.maritalStatus && <><span className="text-gray-500">Marital Status</span><span className="text-gray-800">{formatValue(profile.maritalStatus)}</span></>}
@@ -876,7 +876,7 @@ function ProfileCard({
           {/* LOCATION Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Location</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {profile.currentLocation && <><span className="text-gray-500">Current</span><span className="text-gray-800">{profile.currentLocation}</span></>}
               {profile.grewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.grewUpIn}</span></>}
               {profile.citizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.citizenship}</span></>}
@@ -888,7 +888,7 @@ function ProfileCard({
           {/* RELIGION & BACKGROUND Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Religion & Background</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {profile.religion && <><span className="text-gray-500">Religion</span><span className="text-gray-800">{profile.religion}</span></>}
               {profile.community && <><span className="text-gray-500">Community</span><span className="text-gray-800">{profile.community}</span></>}
               {profile.subCommunity && <><span className="text-gray-500">Sub-Community</span><span className="text-gray-800">{profile.subCommunity}</span></>}
@@ -900,7 +900,7 @@ function ProfileCard({
           {profile.religion === 'Hindu' && (profile.manglik || profile.raasi || profile.nakshatra || profile.doshas || profile.placeOfBirth || profile.placeOfBirthCity) && (
             <div className="space-y-2">
               <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Astro Details</h3>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 {profile.manglik && <><span className="text-gray-500">Manglik</span><span className="text-gray-800">{profile.manglik === 'yes' ? 'Yes' : profile.manglik === 'no' ? 'No' : "Don't Know"}</span></>}
                 {profile.raasi && <><span className="text-gray-500">Raasi</span><span className="text-gray-800">{profile.raasi}</span></>}
                 {profile.nakshatra && <><span className="text-gray-500">Nakshatra</span><span className="text-gray-800">{profile.nakshatra}</span></>}
@@ -916,7 +916,7 @@ function ProfileCard({
           {profile.religion === 'Muslim' && (profile.maslak || profile.namazPractice) && (
             <div className="space-y-2">
               <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 {profile.maslak && <><span className="text-gray-500">Maslak</span><span className="text-gray-800">{profile.maslak}</span></>}
                 {profile.namazPractice && <><span className="text-gray-500">Namaz</span><span className="text-gray-800">{profile.namazPractice}</span></>}
               </div>
@@ -927,7 +927,7 @@ function ProfileCard({
           {profile.religion === 'Sikh' && (profile.amritdhari || profile.turban) && (
             <div className="space-y-2">
               <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 {profile.amritdhari && <><span className="text-gray-500">Amritdhari</span><span className="text-gray-800">{profile.amritdhari}</span></>}
                 {profile.turban && <><span className="text-gray-500">Turban</span><span className="text-gray-800">{profile.turban}</span></>}
               </div>
@@ -938,7 +938,7 @@ function ProfileCard({
           {profile.religion === 'Christian' && (profile.churchAttendance || profile.baptized) && (
             <div className="space-y-2">
               <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Religious Practice</h3>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 {profile.churchAttendance && <><span className="text-gray-500">Church Attendance</span><span className="text-gray-800">{profile.churchAttendance}</span></>}
                 {profile.baptized && <><span className="text-gray-500">Baptized</span><span className="text-gray-800">{profile.baptized}</span></>}
               </div>
@@ -948,7 +948,7 @@ function ProfileCard({
           {/* EDUCATION & CAREER Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{formatEducation(profile.qualification)}</span></>}
               {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
               {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
@@ -960,7 +960,7 @@ function ProfileCard({
           {/* LIFESTYLE Section - Diet, Smoking, Drinking, Pets */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Lifestyle</h3>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {profile.dietaryPreference && <><span className="text-gray-500">Diet</span><span className="text-gray-800">{profile.dietaryPreference}</span></>}
               {profile.smoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{formatValue(profile.smoking)}</span></>}
               {profile.drinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{formatValue(profile.drinking)}</span></>}

@@ -1018,9 +1018,9 @@ function ViewProfilePageContent() {
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Email</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Email</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800 flex items-center gap-2">
                       {profile.email || 'Not specified'}
@@ -1028,7 +1028,7 @@ function ViewProfilePageContent() {
                     </span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Phone</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Phone</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800 flex items-center gap-2">
                       {profile.phone || 'Not specified'}
@@ -1037,14 +1037,14 @@ function ViewProfilePageContent() {
                   </div>
                   {profile.linkedinProfile && profile.linkedinProfile.trim() !== '' && profile.linkedinProfile !== 'no_linkedin' && (
                     <div className="flex">
-                      <span className="text-gray-500 w-36">LinkedIn</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">LinkedIn</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:underline">View Profile</a>
                     </div>
                   )}
                   {(profile.instagram || profile.facebookInstagram) && (
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Instagram</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Instagram</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.instagram || profile.facebookInstagram}</span>
                     </div>
@@ -1060,61 +1060,61 @@ function ViewProfilePageContent() {
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">First Name</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">First Name</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.firstName || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Last Name</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Last Name</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.lastName || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Posted by</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Posted by</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.createdBy) || 'Self'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Gender</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Gender</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.gender)}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Date of Birth</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Date of Birth</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.dateOfBirth || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Age</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Age</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{age || profile.age || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Height</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Height</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatHeight(profile.height)}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Marital Status</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Marital Status</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.maritalStatus)}</span>
                   </div>
                   {profile.maritalStatus !== 'never_married' && (
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Children</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Children</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue(profile.hasChildren) || 'Not specified'}</span>
                     </div>
                   )}
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Mother Tongue</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Mother Tongue</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.motherTongue || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Languages Known</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Languages Known</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.languagesKnown || 'Not specified'}</span>
                   </div>
@@ -1130,59 +1130,59 @@ function ViewProfilePageContent() {
                   </button>
                 </div>
                 {/* Location Info */}
-                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm mb-4">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Location</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Location</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.currentLocation || 'Not specified'}{profile.country ? `, ${profile.country}` : ''}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Grew Up In</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Grew Up In</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.grewUpIn || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Citizenship</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Citizenship</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.citizenship || 'Not specified'}</span>
                   </div>
                   {profile.residencyStatus && (
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Residency Status</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Residency Status</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue(profile.residencyStatus)}</span>
                     </div>
                   )}
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Open to Relocation</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Open to Relocation</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).openToRelocation) || 'Not specified'}</span>
                   </div>
                 </div>
                 {/* Education & Career Info */}
-                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Highest Qualification</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Highest Qualification</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.qualification)}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">College(s) Attended</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">College(s) Attended</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.university || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Working With</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Working With</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.employerName || 'Not specified'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Working As</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Working As</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.occupation)}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Annual Income</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Annual Income</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.annualIncome || 'Not specified'}</span>
                   </div>
@@ -1197,7 +1197,7 @@ function ViewProfilePageContent() {
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-3 gap-x-8 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-3 text-sm">
                   <div className="flex">
                     <span className="text-gray-500 w-24">Religion</span>
                     <span className="text-gray-400 mr-2">:</span>
@@ -1288,14 +1288,14 @@ function ViewProfilePageContent() {
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Lives with Family</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Lives with Family</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.livesWithFamily === 'yes' ? 'Yes' : 'No'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Family Location</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Family Location</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.familyLocation ? (
                       <span className="text-gray-800">{profile.familyLocation}</span>
@@ -1304,7 +1304,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Family Values</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Family Values</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.familyValues ? (
                       <span className="text-gray-800">{profile.familyValues.charAt(0).toUpperCase() + profile.familyValues.slice(1)}</span>
@@ -1313,7 +1313,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Father&apos;s Name</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Father&apos;s Name</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.fatherName ? (
                       <span className="text-gray-800">{profile.fatherName}</span>
@@ -1322,7 +1322,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Father&apos;s Occupation</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Father&apos;s Occupation</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.fatherOccupation ? (
                       <span className="text-gray-800">{profile.fatherOccupation}</span>
@@ -1331,7 +1331,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Mother&apos;s Name</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Mother&apos;s Name</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.motherName ? (
                       <span className="text-gray-800">{profile.motherName}</span>
@@ -1340,7 +1340,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Mother&apos;s Occupation</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Mother&apos;s Occupation</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.motherOccupation ? (
                       <span className="text-gray-800">{profile.motherOccupation}</span>
@@ -1349,12 +1349,12 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">No. of Brothers</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">No. of Brothers</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.numberOfBrothers || '0'}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">No. of Sisters</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">No. of Sisters</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{profile.numberOfSisters || '0'}</span>
                   </div>
@@ -1375,14 +1375,14 @@ function ViewProfilePageContent() {
                     Edit <span className="text-xs">▶</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-3 text-sm">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Diet</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Diet</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">{formatValue(profile.dietaryPreference)}</span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Smoking</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Smoking</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.smoking ? (
                       <span className="text-gray-800">{formatValue(profile.smoking)}</span>
@@ -1391,7 +1391,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Drinking</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Drinking</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.drinking ? (
                       <span className="text-gray-800">{profile.drinking === 'social' ? 'Social Drinker' : formatValue(profile.drinking)}</span>
@@ -1400,7 +1400,7 @@ function ViewProfilePageContent() {
                     )}
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Pets</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Pets</span>
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.pets ? (
                       <span className="text-gray-800">{formatValue(profile.pets.replace(/_/g, ' '))}</span>
@@ -1438,7 +1438,7 @@ function ViewProfilePageContent() {
                   </button>
                 </div>
                 {/* Health & Wellness */}
-                <div className="grid grid-cols-3 gap-x-8 gap-y-2 text-sm mb-4 pb-4 border-b border-gray-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm mb-4 pb-4 border-b border-gray-100">
                   <div className="flex">
                     <span className="text-gray-500 w-28">Blood Group</span>
                     <span className="text-gray-400 mr-2">:</span>
@@ -1466,9 +1466,9 @@ function ViewProfilePageContent() {
                   </div>
                 )}
                 {/* Social Links */}
-                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm border-t border-gray-100 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm border-t border-gray-100 pt-4">
                   <div className="flex">
-                    <span className="text-gray-500 w-36">LinkedIn</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">LinkedIn</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
                       {profile.linkedinProfile && profile.linkedinProfile.trim() !== '' ? (
@@ -1481,7 +1481,7 @@ function ViewProfilePageContent() {
                     </span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Instagram</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Instagram</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
                       {profile.instagram || profile.facebookInstagram || (
@@ -1490,7 +1490,7 @@ function ViewProfilePageContent() {
                     </span>
                   </div>
                   <div className="flex">
-                    <span className="text-gray-500 w-36">Facebook</span>
+                    <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Facebook</span>
                     <span className="text-gray-400 mr-2">:</span>
                     <span className="text-gray-800">
                       {profile.facebook || (
@@ -1515,9 +1515,9 @@ function ViewProfilePageContent() {
                 {/* Age & Height */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Age & Height</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Age Range</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Age Range</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">
                         {profile.prefAgeMin && profile.prefAgeMax
@@ -1530,7 +1530,7 @@ function ViewProfilePageContent() {
                       </span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Height Range</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Height Range</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">
                         {profile.prefHeightMin && profile.prefHeightMax
@@ -1543,15 +1543,15 @@ function ViewProfilePageContent() {
                 {/* Marital Status */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Marital Status</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Marital Status</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Marital Status</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefMaritalStatus ? formatValue(profile.prefMaritalStatus) : "Doesn't matter"}</span>
                     </div>
                     {profile.prefHasChildren && (
                       <div className="flex">
-                        <span className="text-gray-500 w-36">Partner&apos;s Children</span>
+                        <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Partner&apos;s Children</span>
                         <span className="text-gray-400 mr-2">:</span>
                         <span className="text-gray-800">{formatValue(profile.prefHasChildren)}</span>
                       </div>
@@ -1561,19 +1561,19 @@ function ViewProfilePageContent() {
                 {/* Religion & Community */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Religion & Community</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Religion</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Religion</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefReligion ? formatValue(profile.prefReligion) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Community</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Community</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefCommunity ? formatValue(profile.prefCommunity) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Gotra Preference</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Gotra Preference</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefGotra ? formatValue(profile.prefGotra) : "Doesn't matter"}</span>
                     </div>
@@ -1582,19 +1582,19 @@ function ViewProfilePageContent() {
                 {/* Lifestyle */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Lifestyle</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Diet</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Diet</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefDiet ? formatValue(profile.prefDiet) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Smoking</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Smoking</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefSmoking ? formatValue(profile.prefSmoking) : "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Drinking</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Drinking</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefDrinking ? formatValue(profile.prefDrinking) : "Doesn't matter"}</span>
                     </div>
@@ -1613,24 +1613,24 @@ function ViewProfilePageContent() {
                 {/* Location */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Location</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Preferred Locations</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Preferred Locations</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefLocationList || profile.prefLocation || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Citizenship</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Citizenship</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefCitizenship || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Grew Up In</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Grew Up In</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefGrewUpIn) || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Open to Relocation</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Open to Relocation</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefRelocation) || "Doesn't matter"}</span>
                     </div>
@@ -1639,19 +1639,19 @@ function ViewProfilePageContent() {
                 {/* Education & Career */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Education & Career</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Min Education</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Min Education</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue(profile.prefQualification) || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Min Income</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Min Income</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{profile.prefIncome || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Occupations</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Occupations</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefOccupationList || "Doesn't matter"}</span>
                     </div>
@@ -1660,14 +1660,14 @@ function ViewProfilePageContent() {
                 {/* Family */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Family Preferences</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Family Values</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Family Values</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefFamilyValues) || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Family Location</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Family Location</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefFamilyLocationCountry || "Doesn't matter"}</span>
                     </div>
@@ -1676,19 +1676,19 @@ function ViewProfilePageContent() {
                 {/* Other */}
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Other Preferences</h4>
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Mother Tongue</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Mother Tongue</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefMotherTongueList || formatValue((profile as unknown as Record<string, string>).prefMotherTongue) || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Sub-Community</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Sub-Community</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefSubCommunityList || "Doesn't matter"}</span>
                     </div>
                     <div className="flex">
-                      <span className="text-gray-500 w-36">Pets</span>
+                      <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Pets</span>
                       <span className="text-gray-400 mr-2">:</span>
                       <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefPets) || "Doesn't matter"}</span>
                     </div>

@@ -345,7 +345,7 @@ function PhotosUploadContent() {
           )}
 
           {/* Photo Grid - 3 slots */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
             {/* Uploaded Photos */}
             {photos.map((photo, index) => (
               <div key={index} className="relative aspect-square overflow-hidden border-2 border-primary-500 bg-gray-100 rounded-lg">

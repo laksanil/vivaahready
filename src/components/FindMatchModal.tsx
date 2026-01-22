@@ -643,7 +643,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="form-label">Password *</label>
                     <input
@@ -848,7 +848,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               </div>
 
               {/* Photo Grid */}
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 {/* Uploaded Photos */}
                 {photos.map((photo, index) => (
                   <div key={index} className="relative aspect-square overflow-hidden border-2 border-primary-500 bg-gray-100">
