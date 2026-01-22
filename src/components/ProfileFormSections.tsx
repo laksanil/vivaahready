@@ -717,7 +717,7 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
   return (
     <>
       {/* Family Location & Values */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <div>
           <label className="form-label">Lives with Family?</label>
           <select name="livesWithFamily" value={formData.livesWithFamily as string || ''} onChange={handleChange} className="input-field">
@@ -1112,7 +1112,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
       {/* Health & Wellness Section - Condensed layout */}
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Health & Wellness</h4>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <div>
             <label className="form-label">Blood Group</label>
             <select name="bloodGroup" value={formData.bloodGroup as string || ''} onChange={handleChange} className="input-field">
@@ -1930,7 +1930,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           <h4 className="text-sm font-semibold text-gray-800">Age & Height <span className="text-red-500">*</span></h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Age Range <span className="text-red-500">*</span> {userAge && <span className="text-gray-400 text-xs">(You: {userAge})</span>}</label>
                 <DealBreakerToggle field="prefAge" formData={formData} setFormData={setFormData} />
               </div>
@@ -1946,7 +1946,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </div>
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Height Range <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefHeight" formData={formData} setFormData={setFormData} />
               </div>
@@ -2039,9 +2039,9 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
           <h4 className="text-sm font-semibold text-gray-800">Religion & Community <span className="text-red-500">*</span></h4>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Religion <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefReligion" formData={formData} setFormData={setFormData} />
               </div>
@@ -2054,7 +2054,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
             {prefReligion && prefReligion !== 'doesnt_matter' && (
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                   <label className="form-label mb-0">Community</label>
                   <DealBreakerToggle field="prefCommunity" formData={formData} setFormData={setFormData} />
                 </div>
@@ -2069,7 +2069,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             )}
             {showGotra && (
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                   <label className="form-label mb-0">Gothra</label>
                   <DealBreakerToggle field="prefGotra" formData={formData} setFormData={setFormData} />
                 </div>
@@ -2089,9 +2089,9 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
           <h4 className="text-sm font-semibold text-gray-800">Lifestyle <span className="text-red-500">*</span></h4>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Diet <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefDiet" formData={formData} setFormData={setFormData} relatedField="prefDiet" />
               </div>
@@ -2105,7 +2105,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {isDealbreaker(formData, 'prefDiet') && !(formData.prefDiet as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Smoking <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefSmoking" formData={formData} setFormData={setFormData} relatedField="prefSmoking" />
               </div>
@@ -2116,7 +2116,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {isDealbreaker(formData, 'prefSmoking') && !(formData.prefSmoking as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Drinking <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefDrinking" formData={formData} setFormData={setFormData} relatedField="prefDrinking" />
               </div>
@@ -2135,12 +2135,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         <div className="space-y-3 p-3 rounded-lg border bg-white">
           <h4 className="text-sm font-semibold text-gray-800">Location</h4>
           <div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
               <label className="form-label mb-0 text-sm">Preferred Locations (select all that apply)</label>
               <DealBreakerToggle field="prefLocation" formData={formData} setFormData={setFormData} />
             </div>
             <div className="p-3 border rounded bg-gray-50 max-h-36 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {PREF_LOCATION_OPTIONS.map((opt) => (
                   <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-2 py-1 rounded">
                     <input type="checkbox" checked={isChecked('prefLocationList', opt.value)} onChange={(e) => handleCheckboxChange('prefLocationList', opt.value, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
@@ -2156,9 +2156,9 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select at least one location</p>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div className="relative">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Citizenship</label>
                 <DealBreakerToggle field="prefCitizenship" formData={formData} setFormData={setFormData} />
               </div>
@@ -2190,7 +2190,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               )}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Grew Up In</label>
                 <DealBreakerToggle field="prefGrewUpIn" formData={formData} setFormData={setFormData} />
               </div>
@@ -2208,7 +2208,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               )}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Open to relocation?</label>
                 <DealBreakerToggle field="prefRelocation" formData={formData} setFormData={setFormData} />
               </div>
@@ -2230,7 +2230,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           <h4 className="text-sm font-semibold text-gray-800">Education & Career</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Minimum Education</label>
                 <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
               </div>
@@ -2243,7 +2243,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               )}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Minimum Income</label>
                 <DealBreakerToggle field="prefIncome" formData={formData} setFormData={setFormData} />
               </div>
@@ -2265,7 +2265,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           <h4 className="text-sm font-semibold text-gray-800">Family Preferences</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Family Values</label>
                 <DealBreakerToggle field="prefFamilyValues" formData={formData} setFormData={setFormData} />
               </div>
@@ -2280,7 +2280,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               {isDealbreaker(formData, 'prefFamilyValues') && !(formData.prefFamilyValues as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Family Location Country</label>
                 <DealBreakerToggle field="prefFamilyLocationCountry" formData={formData} setFormData={setFormData} />
               </div>
@@ -2303,7 +2303,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         <div className="space-y-3 p-3 rounded-lg border bg-white">
           {/* Mother Tongue - Multi-select */}
           <div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
               <label className="form-label mb-0">Mother Tongue (select all that apply)</label>
               <DealBreakerToggle field="prefMotherTongue" formData={formData} setFormData={setFormData} />
             </div>
