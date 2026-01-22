@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import Image from 'next/image'
-import { ArrowLeft, Loader2, Camera, Upload, Trash2, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import {
   BasicsSection,
   LocationSection,
@@ -18,9 +17,10 @@ import {
 } from '@/components/ProfileFormSections'
 
 // Full step order including all sections
-// Steps: 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2, 9=photos
+// Steps: 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2
 // Note: Account creation (original step 3) is already done when user reaches this page
-const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
+// Photos are handled separately on /profile/photos page (with phone number)
+const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
 
 const SECTION_TITLES: Record<string, string> = {
   basics: 'Basic Info',
@@ -31,7 +31,6 @@ const SECTION_TITLES: Record<string, string> = {
   aboutme: 'About Me',
   preferences_1: 'Partner Preferences',
   preferences_2: 'More Preferences',
-  photos: 'Add Your Photos',
 }
 
 // Map signupStep (database value) to local step index
@@ -67,11 +66,6 @@ function ProfileCompleteContent() {
   const [error, setError] = useState('')
   const [formData, setFormData] = useState<Record<string, unknown>>({})
 
-  // Photo upload state
-  const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([])
-  const [uploadingPhotos, setUploadingPhotos] = useState(false)
-  const [photoVisibility, setPhotoVisibility] = useState('verified_only')
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -254,9 +248,13 @@ function ProfileCompleteContent() {
     }
   }
 
-  const handleSectionContinue = () => {
-    if (step < SECTION_ORDER.length) {
-      handleUpdateProfile(step + 1)
+  const handleSectionContinue = async () => {
+    // If on last step (preferences_2, which is step 8), save and redirect to photos page
+    if (step === SECTION_ORDER.length) {
+      await handleUpdateProfile(step)
+      router.push(`/profile/photos?profileId=${profileId}&fromSignup=true`)
+    } else if (step < SECTION_ORDER.length) {
+      await handleUpdateProfile(step + 1)
     }
   }
 
@@ -312,87 +310,6 @@ function ProfileCompleteContent() {
     hasValidLinkedIn &&
     !formData.linkedinError
   )
-
-  // Photo handlers
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-
-    const newPhotos: { file: File; preview: string }[] = []
-    Array.from(files).forEach((file) => {
-      if (photos.length + newPhotos.length < 3) {
-        newPhotos.push({
-          file,
-          preview: URL.createObjectURL(file),
-        })
-      }
-    })
-    setPhotos((prev) => [...prev, ...newPhotos])
-  }
-
-  const handleRemovePhoto = (index: number) => {
-    setPhotos((prev) => {
-      const updated = [...prev]
-      URL.revokeObjectURL(updated[index].preview)
-      updated.splice(index, 1)
-      return updated
-    })
-  }
-
-  const handlePhotoSubmit = async () => {
-    if (!profileId) {
-      setError('Profile not found. Please try again.')
-      return
-    }
-
-    if (photos.length === 0) {
-      setError('Please upload at least one photo to continue.')
-      return
-    }
-
-    setError('')
-    setLoading(true)
-    setUploadingPhotos(true)
-
-    try {
-      // Upload photos
-      for (const photo of photos) {
-        const photoFormData = new FormData()
-        photoFormData.append('file', photo.file)
-        photoFormData.append('profileId', profileId)
-
-        await fetch('/api/profile/upload-photo', {
-          method: 'POST',
-          body: photoFormData,
-        })
-      }
-
-      // Update photo visibility setting
-      await fetch('/api/profile/update-visibility', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profileId,
-          photoVisibility,
-        }),
-      })
-
-      // Mark signup as complete (step 10)
-      await fetch(`/api/profile/${profileId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signupStep: 10 }),
-      })
-
-      // Redirect to photos page for phone number entry
-      router.push(`/profile/photos?profileId=${profileId}&fromSignup=true`)
-    } catch {
-      setError('Failed to upload photos. Please try again.')
-    } finally {
-      setLoading(false)
-      setUploadingPhotos(false)
-    }
-  }
 
   const currentSection = SECTION_ORDER[step - 1]
   const totalSteps = SECTION_ORDER.length
@@ -577,179 +494,6 @@ function ProfileCompleteContent() {
               <div className="space-y-4">
                 <PreferencesPage2Section {...sectionProps} />
                 {renderContinueButton(handleSectionContinue)}
-              </div>
-            )}
-
-            {/* Photos Section */}
-            {currentSection === 'photos' && (
-              <div>
-                <div className="text-center mb-6">
-                  <div className="w-20 h-20 bg-primary-100 flex items-center justify-center mx-auto mb-4 rounded-full">
-                    <Camera className="h-10 w-10 text-primary-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Upload Your Photo
-                  </h3>
-                  <p className="text-gray-600">
-                    A profile photo is required to view and connect with matches. Add up to 3 photos.
-                  </p>
-                </div>
-
-                {/* Photo Grid */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  {photos.map((photo, index) => (
-                    <div key={index} className="relative aspect-square overflow-hidden border-2 border-primary-500 bg-gray-100 rounded-lg">
-                      <Image
-                        src={photo.preview}
-                        alt={`Photo ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                      <button
-                        onClick={() => handleRemovePhoto(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 shadow-lg hover:bg-red-600 transition-colors rounded-full"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      {index === 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-primary-500 text-white text-xs py-1 text-center">
-                          Primary Photo
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {Array.from({ length: Math.max(0, 3 - photos.length) }).map((_, index) => (
-                    <button
-                      key={`empty-${index}`}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors ${
-                        photos.length === 0 && index === 0
-                          ? 'border-primary-400 bg-primary-50 hover:bg-primary-100'
-                          : 'border-gray-300 bg-gray-50 hover:border-primary-400 hover:bg-primary-50'
-                      }`}
-                    >
-                      <Upload className={`h-6 w-6 mb-1 ${photos.length === 0 && index === 0 ? 'text-primary-500' : 'text-gray-400'}`} />
-                      <span className={`text-xs ${photos.length === 0 && index === 0 ? 'text-primary-600 font-medium' : 'text-gray-500'}`}>
-                        {photos.length === 0 && index === 0 ? 'Add Photo *' : 'Add Photo'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePhotoSelect}
-                  className="hidden"
-                />
-
-                {/* Upload Button */}
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-3 border-2 border-primary-500 text-primary-600 font-semibold hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 rounded-lg"
-                >
-                  <Upload className="h-5 w-5" />
-                  Upload from Device
-                </button>
-
-                {/* Photo Visibility Options */}
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-3">Photo Privacy Settings</h4>
-                  <p className="text-sm text-gray-500 mb-4">Choose who can view your photos:</p>
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="photoVisibility"
-                        value="verified_only"
-                        checked={photoVisibility === 'verified_only'}
-                        onChange={(e) => setPhotoVisibility(e.target.value)}
-                        className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                      />
-                      <div>
-                        <span className="font-medium text-gray-900">Verified Members Only</span>
-                        <p className="text-sm text-gray-500">Your photos will only be visible to members with verified profiles</p>
-                      </div>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="photoVisibility"
-                        value="matching_preferences"
-                        checked={photoVisibility === 'matching_preferences'}
-                        onChange={(e) => setPhotoVisibility(e.target.value)}
-                        className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                      />
-                      <div>
-                        <span className="font-medium text-gray-900">Matching Profiles Only</span>
-                        <p className="text-sm text-gray-500">Your photos will be visible to members whose preferences align with your profile</p>
-                      </div>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="photoVisibility"
-                        value="mutual_interest"
-                        checked={photoVisibility === 'mutual_interest'}
-                        onChange={(e) => setPhotoVisibility(e.target.value)}
-                        className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
-                      />
-                      <div>
-                        <span className="font-medium text-gray-900">After Mutual Interest</span>
-                        <p className="text-sm text-gray-500">Your photos will only be revealed after both parties express interest</p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Photo Guidelines */}
-                <div className="mt-4 bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-900 mb-2">Photo Guidelines</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Use a recent, clear photograph of yourself
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Ensure your face is clearly visible
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Avoid group photos or images with accessories obscuring your face
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Submit Button */}
-                <div className="mt-6">
-                  <button
-                    onClick={handlePhotoSubmit}
-                    disabled={loading || photos.length === 0}
-                    className={`w-full py-3.5 font-semibold text-lg shadow-lg transition-all rounded-lg ${
-                      !loading && photos.length > 0
-                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {loading ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                        {uploadingPhotos ? 'Uploading Photos...' : 'Processing...'}
-                      </span>
-                    ) : (
-                      'Continue to Phone Verification'
-                    )}
-                  </button>
-                  {photos.length === 0 && (
-                    <p className="text-center text-sm text-gray-500 mt-2">
-                      Please upload at least one photo to continue
-                    </p>
-                  )}
-                </div>
               </div>
             )}
           </div>
