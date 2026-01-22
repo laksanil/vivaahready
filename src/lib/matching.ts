@@ -1148,15 +1148,35 @@ function isMaritalStatusMatch(seekerPref: string | null | undefined, candidateMa
     return true
   }
 
-  const candStatus = candidateMaritalStatus.toLowerCase()
+  const candStatus = candidateMaritalStatus.toLowerCase().trim().replace(/\s+/g, '_')
+
+  // Normalize marital status values - map equivalent terms to canonical forms
+  const normalizeMaritalStatus = (status: string): string => {
+    const s = status.toLowerCase().trim().replace(/\s+/g, '_')
+    // Single = never_married (most common equivalence)
+    if (s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster') {
+      return 'never_married'
+    }
+    // Divorced variations
+    if (s === 'divorcee' || s === 'divorced_person') {
+      return 'divorced'
+    }
+    // Widowed variations
+    if (s === 'widow' || s === 'widower') {
+      return 'widowed'
+    }
+    return s
+  }
+
+  const normalizedCandStatus = normalizeMaritalStatus(candStatus)
 
   // Preference could be comma-separated list like "never_married, divorced"
-  const acceptedStatuses = pref.split(',').map(s => s.trim().replace(/\s+/g, '_'))
+  const acceptedStatuses = pref.split(',').map(s => normalizeMaritalStatus(s.trim()))
 
   return acceptedStatuses.some(status =>
-    candStatus === status ||
-    candStatus.includes(status) ||
-    status.includes(candStatus)
+    normalizedCandStatus === status ||
+    normalizedCandStatus.includes(status) ||
+    status.includes(normalizedCandStatus)
   )
 }
 
