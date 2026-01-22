@@ -69,6 +69,11 @@ export function Footer() {
                   About Us
                 </Link>
               </li>
+              <li>
+                <Link href="/contact" className="hover:text-primary-400 transition-colors">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -95,8 +100,8 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-primary-400 flex-shrink-0" />
-                <a href="mailto:hello@vivaahready.com" className="hover:text-primary-400 transition-colors">
-                  hello@vivaahready.com
+                <a href="mailto:support@vivaahready.com" className="hover:text-primary-400 transition-colors">
+                  support@vivaahready.com
                 </a>
               </li>
               <li className="flex items-center space-x-2">
