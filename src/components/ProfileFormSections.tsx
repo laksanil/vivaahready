@@ -34,6 +34,19 @@ const isNeverMarried = (status: string | null | undefined): boolean => {
   return s === 'never_married' || s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster'
 }
 
+// Helper to check if a value exists in dropdown options
+const isValueInOptions = (value: string | null | undefined, options: Array<{ value: string; label: string }>): boolean => {
+  if (!value) return true // Empty is always valid
+  return options.some(opt => opt.value === value)
+}
+
+// Helper to get display label for a value (handles legacy values)
+const getOptionLabel = (value: string | null | undefined, options: Array<{ value: string; label: string }>): string => {
+  if (!value) return ''
+  const option = options.find(opt => opt.value === value)
+  return option ? option.label : value // Return raw value if not found
+}
+
 interface SectionProps {
   formData: Record<string, unknown>
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
@@ -218,6 +231,12 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
             <label className="form-label">Height <span className="text-red-500">*</span></label>
             <select name="height" value={formData.height as string || ''} onChange={handleChange} className="input-field" required>
               <option value="">Select</option>
+              {/* Show legacy value as first option if it doesn't match standard options */}
+              {(formData.height as string) && !isValueInOptions(formData.height as string, HEIGHT_OPTIONS) && (
+                <option value={formData.height as string}>
+                  {formData.height as string} (Current)
+                </option>
+              )}
               {HEIGHT_OPTIONS.map((h) => (
                 <option key={h.value} value={h.value}>{h.label}</option>
               ))}
@@ -574,6 +593,12 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
           <label className="form-label">Open to Relocation <span className="text-red-500">*</span></label>
           <select name="openToRelocation" value={formData.openToRelocation as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
+            {/* Show legacy value as first option if it doesn't match standard options */}
+            {(formData.openToRelocation as string) && !isValueInOptions(formData.openToRelocation as string, RELOCATION_OPTIONS) && (
+              <option value={formData.openToRelocation as string}>
+                {formData.openToRelocation as string} (Current)
+              </option>
+            )}
             {RELOCATION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -613,6 +638,12 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
           <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
           <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
+            {/* Show legacy value as first option if it doesn't match standard options */}
+            {(formData.qualification as string) && !isValueInOptions(formData.qualification as string, QUALIFICATION_OPTIONS) && (
+              <option value={formData.qualification as string}>
+                {formData.qualification as string} (Current)
+              </option>
+            )}
             {QUALIFICATION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -687,6 +718,12 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
           <label className="form-label">Occupation <span className="text-red-500">*</span></label>
           <select name="occupation" value={formData.occupation as string || ''} onChange={handleChange} className="input-field" required>
             <option value="">Select</option>
+            {/* Show legacy value as first option if it doesn't match standard options */}
+            {(formData.occupation as string) && !isValueInOptions(formData.occupation as string, OCCUPATION_OPTIONS) && (
+              <option value={formData.occupation as string}>
+                {formData.occupation as string} (Current)
+              </option>
+            )}
             {OCCUPATION_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -702,17 +739,27 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
       </div>
       <div>
         <label className="form-label">Annual Income (USD) <span className="text-red-500">*</span></label>
-        <select name="annualIncome" value={formData.annualIncome as string || ''} onChange={handleChange} className="input-field" required>
-          <option value="">Select</option>
-          <option value="student">Student / No Income</option>
-          <option value="homemaker">Homemaker / Not Working</option>
-          <option value="<50k">Less than $50k</option>
-          <option value="50k-75k">$50k - $75k</option>
-          <option value="75k-100k">$75k - $100k</option>
-          <option value="100k-150k">$100k - $150k</option>
-          <option value="150k-200k">$150k - $200k</option>
-          <option value=">200k">More than $200k</option>
-        </select>
+        {(() => {
+          const incomeOptions = ['student', 'homemaker', '<50k', '50k-75k', '75k-100k', '100k-150k', '150k-200k', '>200k']
+          const currentIncome = formData.annualIncome as string
+          const isLegacyValue = currentIncome && !incomeOptions.includes(currentIncome)
+          return (
+            <select name="annualIncome" value={currentIncome || ''} onChange={handleChange} className="input-field" required>
+              <option value="">Select</option>
+              {isLegacyValue && (
+                <option value={currentIncome}>{currentIncome} (Current)</option>
+              )}
+              <option value="student">Student / No Income</option>
+              <option value="homemaker">Homemaker / Not Working</option>
+              <option value="<50k">Less than $50k</option>
+              <option value="50k-75k">$50k - $75k</option>
+              <option value="75k-100k">$75k - $100k</option>
+              <option value="100k-150k">$100k - $150k</option>
+              <option value="150k-200k">$150k - $200k</option>
+              <option value=">200k">More than $200k</option>
+            </select>
+          )
+        })()}
       </div>
       <div>
         <label className="form-label">Education & Career Details</label>
@@ -756,12 +803,22 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
         </div>
         <div>
           <label className="form-label">Family Values <span className="text-red-500">*</span></label>
-          <select name="familyValues" value={formData.familyValues as string || ''} onChange={handleChange} className="input-field" required>
-            <option value="">Select</option>
-            <option value="traditional">Traditional</option>
-            <option value="moderate">Moderate</option>
-            <option value="liberal">Liberal</option>
-          </select>
+          {(() => {
+            const familyValuesOptions = ['traditional', 'moderate', 'liberal']
+            const currentValue = formData.familyValues as string
+            const isLegacyValue = currentValue && !familyValuesOptions.includes(currentValue.toLowerCase())
+            return (
+              <select name="familyValues" value={currentValue || ''} onChange={handleChange} className="input-field" required>
+                <option value="">Select</option>
+                {isLegacyValue && (
+                  <option value={currentValue}>{currentValue} (Current)</option>
+                )}
+                <option value="traditional">Traditional</option>
+                <option value="moderate">Moderate</option>
+                <option value="liberal">Liberal</option>
+              </select>
+            )
+          })()}
         </div>
       </div>
 
