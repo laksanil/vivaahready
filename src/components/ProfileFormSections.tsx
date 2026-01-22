@@ -17,6 +17,23 @@ const US_STATES = [
 
 const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Marathi', 'Gujarati', 'Punjabi', 'Bengali', 'Tulu', 'Urdu']
 
+// Normalize marital status values - handles legacy data where 'Single' was used instead of 'never_married'
+const normalizeMaritalStatus = (status: string | null | undefined): string => {
+  if (!status) return 'never_married'
+  const s = status.toLowerCase().trim()
+  if (s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster') {
+    return 'never_married'
+  }
+  return status
+}
+
+// Check if marital status represents "never married" (handles legacy 'Single' values)
+const isNeverMarried = (status: string | null | undefined): boolean => {
+  if (!status) return true
+  const s = status.toLowerCase().trim()
+  return s === 'never_married' || s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster'
+}
+
 interface SectionProps {
   formData: Record<string, unknown>
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
@@ -215,7 +232,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="form-label">Marital Status <span className="text-red-500">*</span></label>
-            <select name="maritalStatus" value={formData.maritalStatus as string || 'never_married'} onChange={handleChange} className="input-field">
+            <select name="maritalStatus" value={normalizeMaritalStatus(formData.maritalStatus as string)} onChange={handleChange} className="input-field">
               <option value="never_married">Never Married</option>
               <option value="divorced">Divorced</option>
               <option value="separated">Separated</option>
@@ -223,8 +240,8 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               <option value="awaiting_divorce">Awaiting Divorce</option>
             </select>
           </div>
-          {/* Show children question only if not never_married */}
-          {(formData.maritalStatus as string) && (formData.maritalStatus as string) !== 'never_married' && (
+          {/* Show children question only if not never_married (handles legacy 'Single' values) */}
+          {!isNeverMarried(formData.maritalStatus as string) && (
             <div>
               <label className="form-label">Do you have children? <span className="text-red-500">*</span></label>
               <select name="hasChildren" value={formData.hasChildren as string || ''} onChange={handleChange} className="input-field" required>

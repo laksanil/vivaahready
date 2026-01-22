@@ -586,6 +586,23 @@ function ViewProfilePageContent() {
     return value.replace(/_/g, ' ')
   }
 
+  // Format marital status with normalization (Single -> Never Married)
+  const formatMaritalStatus = (value: string | null | undefined) => {
+    if (!value) return 'Not specified'
+    const s = value.toLowerCase().trim()
+    if (s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster') {
+      return 'Never Married'
+    }
+    return value.replace(/_/g, ' ')
+  }
+
+  // Check if marital status represents "never married" (handles legacy 'Single' values)
+  const isNeverMarried = (status: string | null | undefined): boolean => {
+    if (!status) return true
+    const s = status.toLowerCase().trim()
+    return s === 'never_married' || s === 'single' || s === 'unmarried' || s === 'bachelor' || s === 'spinster'
+  }
+
   const age = calculateAge(profile.dateOfBirth)
   const photoUrl = profile.profileImageUrl || null
 
@@ -1099,9 +1116,9 @@ function ViewProfilePageContent() {
                   <div className="flex">
                     <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Marital Status</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{formatValue(profile.maritalStatus)}</span>
+                    <span className="text-gray-800">{formatMaritalStatus(profile.maritalStatus)}</span>
                   </div>
-                  {profile.maritalStatus !== 'never_married' && (
+                  {!isNeverMarried(profile.maritalStatus) && (
                     <div className="flex">
                       <span className="text-gray-500 w-28 sm:w-36 flex-shrink-0">Children</span>
                       <span className="text-gray-400 mr-2">:</span>
