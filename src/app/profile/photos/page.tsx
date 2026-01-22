@@ -8,19 +8,34 @@ import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft, Phone, Shield,
 import Link from 'next/link'
 import { useFaceDetection } from '@/hooks/useFaceDetection'
 
-// Country codes for phone number
+// Country codes for phone number with expected digit lengths
 const countryCodes = [
-  { code: '+1', country: 'USA', flag: '🇺🇸' },
-  { code: '+1', country: 'Canada', flag: '🇨🇦' },
-  { code: '+91', country: 'India', flag: '🇮🇳' },
-  { code: '+44', country: 'UK', flag: '🇬🇧' },
-  { code: '+61', country: 'Australia', flag: '🇦🇺' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪' },
-  { code: '+65', country: 'Singapore', flag: '🇸🇬' },
-  { code: '+49', country: 'Germany', flag: '🇩🇪' },
-  { code: '+33', country: 'France', flag: '🇫🇷' },
-  { code: '+81', country: 'Japan', flag: '🇯🇵' },
+  { code: '+1', country: 'USA', flag: '🇺🇸', digits: 10 },
+  { code: '+1', country: 'Canada', flag: '🇨🇦', digits: 10 },
+  { code: '+91', country: 'India', flag: '🇮🇳', digits: 10 },
+  { code: '+44', country: 'UK', flag: '🇬🇧', digits: 10 },
+  { code: '+61', country: 'Australia', flag: '🇦🇺', digits: 9 },
+  { code: '+971', country: 'UAE', flag: '🇦🇪', digits: 9 },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬', digits: 8 },
+  { code: '+49', country: 'Germany', flag: '🇩🇪', digits: 10 },
+  { code: '+33', country: 'France', flag: '🇫🇷', digits: 9 },
+  { code: '+81', country: 'Japan', flag: '🇯🇵', digits: 10 },
 ]
+
+// Validate phone number based on country
+const validatePhoneNumber = (phone: string, country: typeof countryCodes[0]): { valid: boolean; message: string } => {
+  const digitsOnly = phone.replace(/\D/g, '')
+
+  if (!digitsOnly) {
+    return { valid: false, message: 'Please enter your phone number' }
+  }
+
+  if (digitsOnly.length !== country.digits) {
+    return { valid: false, message: `${country.country} phone numbers must be ${country.digits} digits` }
+  }
+
+  return { valid: true, message: '' }
+}
 
 function PhotosUploadContent() {
   const router = useRouter()
@@ -115,8 +130,10 @@ function PhotosUploadContent() {
       return
     }
 
-    if (!phoneNumber.trim()) {
-      setError('Please enter your phone number to continue.')
+    // Validate phone number
+    const phoneValidation = validatePhoneNumber(phoneNumber, selectedCountry)
+    if (!phoneValidation.valid) {
+      setError(phoneValidation.message)
       return
     }
 
@@ -285,11 +302,14 @@ function PhotosUploadContent() {
                 <input
                   type="tel"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="Phone number"
+                  onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, '').slice(0, selectedCountry.digits))}
+                  placeholder={`${selectedCountry.digits}-digit phone number`}
+                  maxLength={selectedCountry.digits}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-lg"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-sm font-medium">Required *</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  {phoneNumber.length}/{selectedCountry.digits}
+                </span>
               </div>
             </div>
 
