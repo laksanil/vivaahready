@@ -124,9 +124,6 @@ export function Navbar() {
                 <Link href={buildUrl('/connections')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   Connections
                 </Link>
-                <Link href={buildUrl('/messages')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                  Messages
-                </Link>
                 <Link href={buildUrl('/profile')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   Edit Profile
                 </Link>
@@ -273,13 +270,6 @@ export function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Connections
-                </Link>
-                <Link
-                  href={buildUrl('/messages')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Messages
                 </Link>
                 <Link
                   href={buildUrl('/profile')}
