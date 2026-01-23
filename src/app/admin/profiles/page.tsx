@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Download, Trash2, RefreshCw, Ban, UserCheck, ShieldCheck, ImageOff,
   ExternalLink, Eye, Loader2, Users, UserX, Heart, AlertTriangle,
-  Check, X, Edit, LayoutDashboard, MessageCircle
+  Check, X, Edit, LayoutDashboard, MessageCircle, CreditCard
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { useToast } from '@/components/Toast'
@@ -61,6 +61,9 @@ interface Profile {
     email: string
     phone: string | null
     lastLogin: string | null
+    subscription?: {
+      profilePaid: boolean
+    } | null
   }
   interestStats?: {
     received: { total: number; pending: number; accepted: number; rejected: number }
@@ -533,8 +536,16 @@ function AdminProfilesContent() {
     }
 
     // Default profile view
+    // Color code: suspended=red, approved+paid=green tint, approved+unpaid=amber tint
+    const getRowClass = () => {
+      if (profile.isSuspended) return 'bg-red-50'
+      if (profile.approvalStatus === 'approved') {
+        return profile.user.subscription?.profilePaid ? 'bg-green-50/50' : 'bg-amber-50/50'
+      }
+      return ''
+    }
     return (
-      <tr key={profile.id || profile.user.id} className={`hover:bg-gray-50 ${profile.isSuspended ? 'bg-red-50' : ''}`}>
+      <tr key={profile.id || profile.user.id} className={`hover:bg-gray-100 ${getRowClass()}`}>
         <td className="px-4 py-3">
           <span className="font-mono text-sm text-gray-600">{profile.odNumber || '-'}</span>
         </td>
@@ -567,12 +578,24 @@ function AdminProfilesContent() {
           )}
         </td>
         <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {getStatusBadge(profile)}
             {profile.isVerified && (
               <span title="Verified">
                 <ShieldCheck className="h-4 w-4 text-green-500" />
               </span>
+            )}
+            {/* Payment Status - show for approved profiles */}
+            {profile.approvalStatus === 'approved' && (
+              profile.user.subscription?.profilePaid ? (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-xs" title="Paid">
+                  <CreditCard className="h-3 w-3" />
+                </span>
+              ) : (
+                <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs" title="Unpaid">
+                  <CreditCard className="h-3 w-3" />
+                </span>
+              )
             )}
           </div>
         </td>

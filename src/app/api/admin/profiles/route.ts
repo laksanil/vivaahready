@@ -311,7 +311,18 @@ export async function GET(request: Request) {
           profileImageUrl: true,
           drivePhotosLink: true,
           user: {
-            select: { id: true, name: true, email: true, phone: true, lastLogin: true }
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              lastLogin: true,
+              subscription: {
+                select: {
+                  profilePaid: true,
+                }
+              }
+            }
           }
         }
       }),
