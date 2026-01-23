@@ -137,10 +137,6 @@ function DashboardContent() {
       .then(res => res.json())
       .then(data => {
         setHasPaid(data.hasPaid === true)
-        // Auto-show payment modal if not paid
-        if (data.hasPaid !== true) {
-          setShowPaymentModal(true)
-        }
       })
       .catch(() => setHasPaid(false))
   }, [isPending, isAdminView])
