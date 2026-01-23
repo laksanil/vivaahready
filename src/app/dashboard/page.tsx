@@ -550,7 +550,7 @@ function DashboardContent() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <Link
                   href={buildUrl('/matches')}
-                  className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!isApproved ? 'opacity-60 pointer-events-none' : ''}`}
+                  className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!hasProfile ? 'opacity-60 pointer-events-none' : ''}`}
                 >
                   <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
                     <Users className="h-5 w-5 text-primary-600" />
