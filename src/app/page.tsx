@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Phone, UserCheck } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Phone, UserCheck, EyeOff } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
@@ -76,8 +76,8 @@ export default async function HomePage() {
                 </div>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center">
-                  <UserCheck className="h-4 w-4 text-green-500 mr-1.5" />
-                  Contact after mutual interest
+                  <EyeOff className="h-4 w-4 text-green-500 mr-1.5" />
+                  No tracking or ads
                 </div>
               </div>
             </div>
@@ -166,6 +166,21 @@ export default async function HomePage() {
               <p className="text-gray-600 text-sm">
                 Contact details shared only after mutual interest.
               </p>
+            </div>
+          </div>
+
+          {/* Privacy Promise Banner */}
+          <div className="mt-10 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <EyeOff className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Your Privacy is Our Priority</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  No tracking cookies, no ads, no third-party analytics. We only use essential cookies to keep you signed in.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -274,6 +289,18 @@ export default async function HomePage() {
                     <h3 className="text-lg font-semibold mb-1">Mutual Interest Required</h3>
                     <p className="text-gray-600 text-sm">
                       Contact details shared only when BOTH parties express interest. No spam.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <EyeOff className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1">No Tracking, No Ads</h3>
+                    <p className="text-gray-600 text-sm">
+                      We don&apos;t track you, sell your data, or show ads. Essential cookies only.
                     </p>
                   </div>
                 </div>

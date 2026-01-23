@@ -5,6 +5,7 @@ import './globals.css'
 import { Providers } from './providers'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import CookieConsent from '@/components/CookieConsent'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -31,6 +32,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <Footer />
           </Suspense>
+          <CookieConsent />
         </Providers>
       </body>
     </html>
