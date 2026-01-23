@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink, CreditCard, AlertCircle } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
 import { useToast } from '@/components/Toast'
@@ -32,7 +32,16 @@ interface PendingProfile {
     name: string
     email: string
     phone: string | null
+    subscription?: {
+      profilePaid: boolean
+    } | null
   }
+}
+
+interface PaymentStats {
+  total: number
+  paid: number
+  unpaid: number
 }
 
 type TabType = 'pending' | 'rejected'
@@ -52,6 +61,8 @@ export default function AdminApprovalsPage() {
     currentIndex: 0,
     profileName: ''
   })
+  const [pendingStats, setPendingStats] = useState<PaymentStats>({ total: 0, paid: 0, unpaid: 0 })
+  const [rejectedStats, setRejectedStats] = useState<PaymentStats>({ total: 0, paid: 0, unpaid: 0 })
 
   const openPhotoModal = (profile: PendingProfile) => {
     const photos = extractPhotoUrls(profile.photoUrls)
@@ -98,6 +109,8 @@ export default function AdminApprovalsPage() {
       const rejectedData = await rejectedRes.json()
       setPendingProfiles(pendingData.profiles || [])
       setRejectedProfiles(rejectedData.profiles || [])
+      setPendingStats(pendingData.stats || { total: 0, paid: 0, unpaid: 0 })
+      setRejectedStats(rejectedData.stats || { total: 0, paid: 0, unpaid: 0 })
     } catch (error) {
       console.error('Error fetching profiles:', error)
       showToast('Failed to load profiles. Please refresh the page.', 'error')
@@ -193,6 +206,24 @@ export default function AdminApprovalsPage() {
         }
       />
 
+      {/* Payment Stats Bar */}
+      {!loading && (activeTab === 'pending' ? pendingStats.total : rejectedStats.total) > 0 && (
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Payment Status:</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+            <Check className="h-4 w-4" />
+            {activeTab === 'pending' ? pendingStats.paid : rejectedStats.paid} Paid
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+            <AlertCircle className="h-4 w-4" />
+            {activeTab === 'pending' ? pendingStats.unpaid : rejectedStats.unpaid} Unpaid
+          </div>
+        </div>
+      )}
+
       <AdminTabs
         tabs={tabs}
         activeTab={activeTab}
@@ -278,6 +309,18 @@ export default function AdminApprovalsPage() {
                     }`}>
                       {profile.gender === 'female' ? 'Bride' : 'Groom'}
                     </span>
+                    {/* Payment Status Badge */}
+                    {profile.user.subscription?.profilePaid ? (
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <CreditCard className="h-3 w-3" />
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                        <AlertCircle className="h-3 w-3" />
+                        Unpaid
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-3">

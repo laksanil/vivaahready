@@ -37,12 +37,33 @@ export async function GET(request: Request) {
         drivePhotosLink: true,
         referralSource: true,
         user: {
-          select: { id: true, name: true, email: true, phone: true }
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            subscription: {
+              select: {
+                profilePaid: true,
+              }
+            }
+          }
         }
       }
     })
 
-    return NextResponse.json({ profiles })
+    // Calculate payment stats
+    const paidCount = profiles.filter(p => p.user.subscription?.profilePaid).length
+    const unpaidCount = profiles.length - paidCount
+
+    return NextResponse.json({
+      profiles,
+      stats: {
+        total: profiles.length,
+        paid: paidCount,
+        unpaid: unpaidCount,
+      }
+    })
   } catch (error) {
     console.error('Admin approve GET error:', error)
     return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 })

@@ -157,7 +157,7 @@ export function Navbar() {
                   <span className="text-sm font-medium">
                     {isAdminViewMode
                       ? (viewedUserName?.split(' ')[0] || 'Loading...')
-                      : (profileDisplayName || session.user.name?.split(' ')[0])
+                      : (profileDisplayName || session?.user?.name?.split(' ')[0] || 'User')
                     }
                   </span>
                   {isAdminViewMode && (
