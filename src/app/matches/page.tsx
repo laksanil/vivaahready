@@ -542,45 +542,71 @@ function FeedPageContent() {
                           Received {new Date(interest.createdAt).toLocaleDateString()}
                         </p>
                       </Link>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch(buildApiUrl('/api/interest'), {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ interestId: interest.id, action: 'accept' })
-                              })
-                              if (res.ok) {
-                                fetchInterests()
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex gap-2">
+                          <div className="group relative">
+                            <button
+                              onClick={async () => {
+                                if (!userStatus?.isApproved) return
+                                try {
+                                  const res = await fetch(buildApiUrl('/api/interest'), {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ interestId: interest.id, action: 'accept' })
+                                  })
+                                  if (res.ok) {
+                                    fetchInterests()
+                                  }
+                                } catch (err) {
+                                  console.error('Error accepting interest:', err)
+                                }
+                              }}
+                              disabled={!userStatus?.isApproved}
+                              className={`px-4 py-2 text-sm font-medium rounded-lg ${
+                                userStatus?.isApproved
+                                  ? 'bg-primary-600 text-white hover:bg-primary-700'
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                            >
+                              Accept
+                            </button>
+                            {!userStatus?.isApproved && (
+                              <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg max-w-[200px]">
+                                  <div className="font-semibold">Verification Required</div>
+                                  <div className="text-gray-300">Get verified to accept interests</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(buildApiUrl('/api/interest'), {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ interestId: interest.id, action: 'reject' })
+                                })
+                                if (res.ok) {
+                                  fetchInterests()
+                                }
+                              } catch (err) {
+                                console.error('Error declining interest:', err)
                               }
-                            } catch (err) {
-                              console.error('Error accepting interest:', err)
-                            }
-                          }}
-                          className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch(buildApiUrl('/api/interest'), {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ interestId: interest.id, action: 'reject' })
-                              })
-                              if (res.ok) {
-                                fetchInterests()
-                              }
-                            } catch (err) {
-                              console.error('Error declining interest:', err)
-                            }
-                          }}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
-                        >
-                          Decline
-                        </button>
+                            }}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                        {!userStatus?.isApproved && (
+                          <Link
+                            href={buildUrl('/payment')}
+                            className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                          >
+                            Get verified to accept →
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
