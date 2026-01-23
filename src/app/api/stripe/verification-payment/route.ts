@@ -5,9 +5,11 @@ import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 import { isTestMode } from '@/lib/testMode'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Initialize Stripe only if the key exists
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   apiVersion: '2024-04-10',
-})
+}) : null
 
 const VERIFICATION_FEE = 5000 // $50 in cents
 
@@ -48,6 +50,12 @@ export async function POST() {
       })
     }
 
+    // Check if Stripe is configured
+    if (!stripe) {
+      console.error('Stripe is not configured - STRIPE_SECRET_KEY is missing')
+      return NextResponse.json({ error: 'Payment system is not configured. Please contact support.' }, { status: 500 })
+    }
+
     // Create one-time payment checkout session
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -79,6 +87,11 @@ export async function POST() {
     return NextResponse.json({ url: checkoutSession.url, sessionId: checkoutSession.id })
   } catch (error) {
     console.error('Verification payment error:', error)
+    // Provide more specific error message if it's a Stripe error
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error('Stripe error details:', error.message, error.type)
+      return NextResponse.json({ error: `Payment error: ${error.message}` }, { status: 500 })
+    }
     return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
   }
 }
@@ -105,6 +118,12 @@ export async function GET(request: Request) {
         paymentId: 'test_payment',
         message: 'Payment successful! Your profile is now pending admin verification.'
       })
+    }
+
+    // Check if Stripe is configured
+    if (!stripe) {
+      console.error('Stripe is not configured - STRIPE_SECRET_KEY is missing')
+      return NextResponse.json({ error: 'Payment system is not configured. Please contact support.' }, { status: 500 })
     }
 
     // Retrieve Stripe session
