@@ -636,48 +636,140 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">How It Works</h2>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-primary-600 font-semibold">1</span>
+            {/* State-aware guidance section */}
+            {isPending && hasPaid === true ? (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">What&apos;s Next</h2>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Profile Submitted</p>
+                      <p className="text-sm text-gray-500">Your profile and verification are complete</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Complete Your Profile</p>
-                    <p className="text-sm text-gray-500">Fill in your details and preferences</p>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Under Review</p>
+                      <p className="text-sm text-gray-500">Our team is reviewing your profile (24-48 hours)</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-primary-600 font-semibold">2</span>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Bell className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Get Notified</p>
+                      <p className="text-sm text-gray-400">You&apos;ll receive an email once approved</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Profile Review</p>
-                    <p className="text-sm text-gray-500">Our team reviews your profile for quality</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-primary-600 font-semibold">3</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">View Matched Profiles</p>
-                    <p className="text-sm text-gray-500">See profiles that match your preferences</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <span className="text-primary-600 font-semibold">4</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">Express Interest</p>
-                    <p className="text-sm text-gray-500">When both express interest, contact details are revealed!</p>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Users className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Start Matching</p>
+                      <p className="text-sm text-gray-400">View matches and express interest</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : isPending && hasPaid === false ? (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Complete Verification</h2>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Profile Created</p>
+                      <p className="text-sm text-gray-500">Your profile details are saved</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Shield className="h-4 w-4 text-primary-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Get Verified</p>
+                      <p className="text-sm text-gray-500">Complete verification to proceed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Users className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">View Matches</p>
+                      <p className="text-sm text-gray-400">See profiles matched for you</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <Heart className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Connect</p>
+                      <p className="text-sm text-gray-400">Mutual interest unlocks contact details</p>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="btn-primary w-full mt-4"
+                >
+                  Get Verified Now
+                </button>
+              </div>
+            ) : needsProfile ? (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Get Started</h2>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="text-primary-600 font-semibold">1</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Create Your Profile</p>
+                      <p className="text-sm text-gray-500">Fill in your details and preferences</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="text-gray-400 font-semibold">2</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Get Verified</p>
+                      <p className="text-sm text-gray-400">Complete verification to proceed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="text-gray-400 font-semibold">3</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">View Matches</p>
+                      <p className="text-sm text-gray-400">See profiles matched for you</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                      <span className="text-gray-400 font-semibold">4</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-500">Connect</p>
+                      <p className="text-sm text-gray-400">Mutual interest unlocks contact details</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {/* Sidebar */}
