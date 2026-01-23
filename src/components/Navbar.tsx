@@ -133,7 +133,7 @@ export function Navbar() {
               </>
             )}
             <Link href="/pricing" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-              Pricing
+              Get Verified
             </Link>
             <Link href="/about" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               About
@@ -295,7 +295,7 @@ export function Navbar() {
               className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Pricing
+              Get Verified
             </Link>
             <Link
               href="/about"
