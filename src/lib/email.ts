@@ -343,10 +343,10 @@ export async function sendNewInterestEmail(
       <td style="padding: 40px 20px;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 
-          <!-- Header with celebratory gradient -->
+          <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #f43f5e 50%, #ec4899 100%); padding: 32px 40px; text-align: center;">
-              <div style="font-size: 48px; margin-bottom: 8px;">💝</div>
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
               <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
             </td>
@@ -491,10 +491,10 @@ export async function sendInterestAcceptedEmail(
       <td style="padding: 40px 20px;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 
-          <!-- Celebratory Header -->
+          <!-- Celebratory Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #dc2626 0%, #f43f5e 50%, #ec4899 100%); padding: 40px; text-align: center;">
-              <div style="font-size: 64px; margin-bottom: 12px;">🎉💕🎉</div>
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 12px;" />
               <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">It's a Match!</h1>
               <p style="margin: 12px 0 0 0; color: rgba(255,255,255,0.95); font-size: 16px;">Congratulations, ${recipientFirstName}!</p>
             </td>
