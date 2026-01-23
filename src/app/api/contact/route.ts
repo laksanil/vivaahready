@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send email to support
+    // Send email to support (directly to Gmail since support@vivaahready.com forwards there anyway)
     const result = await sendEmail({
-      to: 'support@vivaahready.com',
+      to: 'usdesivivah@gmail.com',
       subject: `[Contact Form] ${subject}`,
       html: `
         <!DOCTYPE html>
