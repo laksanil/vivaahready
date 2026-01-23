@@ -257,57 +257,57 @@ function FeedPageContent() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-4">
+          <div className="flex gap-0.5 sm:gap-1 p-1 bg-gray-100 rounded-lg mb-4 overflow-x-auto">
             <button
               onClick={() => setActiveTab('matches')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'matches'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Users className="h-4 w-4" />
+              <Users className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Matches</span>
-              <span className="bg-primary-100 text-primary-700 text-xs px-1.5 py-0.5 rounded-full">{profiles.length}</span>
+              <span className="bg-primary-100 text-primary-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{profiles.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('sent')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'sent'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Sent</span>
-              <span className="bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">{sentInterests.length}</span>
+              <span className="bg-blue-100 text-blue-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{sentInterests.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('received')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'received'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Inbox className="h-4 w-4" />
+              <Inbox className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Received</span>
               {receivedInterests.length > 0 && (
-                <span className="bg-primary-100 text-primary-700 text-xs px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
+                <span className="bg-primary-100 text-primary-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
               )}
             </button>
             <button
               onClick={() => setActiveTab('passed')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'passed'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Passed</span>
               {passedProfiles.length > 0 && (
-                <span className="bg-gray-200 text-gray-700 text-xs px-1.5 py-0.5 rounded-full">{passedProfiles.length}</span>
+                <span className="bg-gray-200 text-gray-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{passedProfiles.length}</span>
               )}
             </button>
           </div>

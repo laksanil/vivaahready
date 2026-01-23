@@ -18,7 +18,11 @@ if (!globalStore.otpStore) {
 
 export const otpStore = globalStore.otpStore
 
-export function generateOtp(): string {
+export function generateOtp(digits: number = 4): string {
+  if (digits === 4) {
+    return Math.floor(1000 + Math.random() * 9000).toString()
+  }
+  // 6 digits for backward compatibility
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 

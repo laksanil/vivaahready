@@ -913,6 +913,113 @@ support@vivaahready.com
   })
 }
 
+// Email verification code
+export async function sendEmailVerificationCode(email: string, code: string) {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; text-align: center;">Verify Your Email</h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                Enter this code to verify your email address and continue creating your profile.
+              </p>
+
+              <!-- Code Box -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <div style="display: inline-block; background-color: #f3f4f6; border: 2px dashed #d1d5db; border-radius: 12px; padding: 20px 40px;">
+                      <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your verification code</p>
+                      <p style="margin: 0; color: #1f2937; font-size: 40px; font-weight: bold; letter-spacing: 12px;">${code}</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 24px 0 0 0; color: #9ca3af; font-size: 14px; text-align: center;">
+                This code expires in 10 minutes.
+              </p>
+
+              <p style="margin: 16px 0 0 0; color: #9ca3af; font-size: 14px; text-align: center;">
+                If you didn't request this code, you can safely ignore this email.
+              </p>
+
+              <!-- Signature -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 15px; font-weight: 600;">The VivaahReady Team</p>
+                    <p style="margin: 0; color: #dc2626; font-size: 14px;">
+                      <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  const text = `Your VivaahReady verification code is: ${code}
+
+Enter this code to verify your email address and continue creating your profile.
+
+This code expires in 10 minutes.
+
+If you didn't request this code, you can safely ignore this email.
+
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+
+  return sendEmail({
+    to: email,
+    subject: `${code} is your VivaahReady verification code`,
+    html,
+    text,
+  })
+}
+
 // Account suspended email
 export async function sendAccountSuspendedEmail(
   email: string,

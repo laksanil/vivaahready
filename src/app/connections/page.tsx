@@ -339,7 +339,7 @@ function ConnectionsPageContent() {
                     {newMatches.length} new
                   </span>
                 </div>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                   {newMatches.map((profile) => (
                     <ConnectionCard
                       key={profile.id}
@@ -361,7 +361,7 @@ function ConnectionsPageContent() {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {newMatches.length > 0 ? 'All Connections' : 'Your Connections'}
                 </h2>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                   {existingMatches.map((profile) => (
                     <ConnectionCard
                       key={profile.id}
@@ -538,9 +538,9 @@ function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true
         </div>
       )}
 
-      <div className="flex">
+      <div className="flex flex-col sm:flex-row">
         {/* Photo */}
-        <div className="w-32 h-40 flex-shrink-0 bg-gray-200 relative">
+        <div className="w-full h-48 sm:w-28 sm:h-36 md:w-32 md:h-40 flex-shrink-0 bg-gray-200 relative">
           {allPhotos.length > 0 && !imageError ? (
             <img
               src={allPhotos[photoIndex]}
@@ -567,7 +567,7 @@ function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true
         </div>
 
         {/* Info */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-3 sm:p-4">
           <div className="flex items-start justify-between">
             <div>
               <h3 className={`font-semibold text-gray-900 ${!isApproved ? 'blur-sm select-none' : ''}`}>

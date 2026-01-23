@@ -76,19 +76,19 @@ export function Navbar() {
     <nav className="bg-primary-600 shadow-md sticky top-0 z-50">
       {/* Admin View Banner */}
       {isAdminViewMode && (
-        <div className="bg-purple-600 text-white px-4 py-1.5">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              <span className="text-sm">
-                Viewing as: <strong>{viewedUserName || 'Loading...'}</strong>
+        <div className="bg-purple-600 text-white px-3 sm:px-4 py-1.5">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <Eye className="h-4 w-4 flex-shrink-0" />
+              <span className="text-xs sm:text-sm truncate">
+                Viewing as: <strong className="truncate">{viewedUserName || 'Loading...'}</strong>
               </span>
             </div>
             <Link
               href="/admin"
-              className="text-sm bg-white text-purple-600 px-3 py-1 rounded font-medium hover:bg-purple-50"
+              className="text-xs sm:text-sm bg-white text-purple-600 px-2 sm:px-3 py-1 rounded font-medium hover:bg-purple-50 whitespace-nowrap flex-shrink-0"
             >
-              ← Exit to Admin
+              <span className="hidden sm:inline">← </span>Exit
             </Link>
           </div>
         </div>
@@ -129,9 +129,11 @@ export function Navbar() {
                 </Link>
               </>
             )}
-            <Link href="/pricing" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-              Get Verified
-            </Link>
+            {(session || isAdminViewMode) && (
+              <Link href="/pricing" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+                Get Verified
+              </Link>
+            )}
             <Link href="/about" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               About
             </Link>
@@ -166,7 +168,7 @@ export function Navbar() {
                 </button>
 
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1.5 border border-gray-100">
+                  <div className="absolute right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg py-1.5 border border-gray-100">
                     <Link
                       href={buildUrl('/dashboard')}
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -280,13 +282,15 @@ export function Navbar() {
                 </Link>
               </>
             )}
-            <Link
-              href="/pricing"
-              className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Get Verified
-            </Link>
+            {(session || isAdminViewMode) && (
+              <Link
+                href="/pricing"
+                className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Get Verified
+              </Link>
+            )}
             <Link
               href="/about"
               className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"

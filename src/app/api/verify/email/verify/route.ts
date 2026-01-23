@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     const { otp } = await request.json()
 
-    if (!otp || otp.length !== 6) {
+    if (!otp || otp.length !== 4) {
       return NextResponse.json({ error: 'Invalid verification code' }, { status: 400 })
     }
 

@@ -320,20 +320,20 @@ export default function VerifyPage() {
                 </div>
               )}
               <p className="text-gray-600">
-                Enter the 6-digit code sent to your email:
+                Enter the 4-digit code sent to your email:
               </p>
               <div className="flex gap-3">
                 <input
                   type="text"
                   value={emailOtp}
-                  onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="Enter code"
                   className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg tracking-widest"
-                  maxLength={6}
+                  maxLength={4}
                 />
                 <button
                   onClick={verifyEmailOtp}
-                  disabled={emailVerifying || emailOtp.length !== 6}
+                  disabled={emailVerifying || emailOtp.length !== 4}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
                   {emailVerifying ? (

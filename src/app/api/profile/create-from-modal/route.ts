@@ -198,6 +198,15 @@ export async function POST(request: Request) {
       )
     }
 
+    // Check if email is verified (only for email/password users, not Google OAuth)
+    // Google OAuth users have emailVerified set automatically
+    if (user.password && !user.emailVerified) {
+      return NextResponse.json(
+        { error: 'Please verify your email before creating a profile', requiresEmailVerification: true },
+        { status: 403 }
+      )
+    }
+
     // Check if profile already exists
     if (user.profile) {
       return NextResponse.json(

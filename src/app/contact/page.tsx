@@ -60,7 +60,7 @@ export default function ContactPage() {
       {/* Contact Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             {/* Contact Information */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Information</h2>
@@ -130,7 +130,7 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="bg-gray-50 rounded-2xl p-8">
+            <div className="bg-gray-50 rounded-2xl p-5 sm:p-8">
               {isSubmitted ? (
                 <div className="text-center py-12">
                   <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

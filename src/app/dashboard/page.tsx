@@ -151,6 +151,24 @@ function DashboardContent() {
     }
   }, [status, router, isAdminView, adminChecked, isAdminAccess])
 
+  // Check if email verification is required for email/password users
+  const [emailVerificationRequired, setEmailVerificationRequired] = useState(false)
+  useEffect(() => {
+    if (status !== 'authenticated' || isAdminView) return
+
+    // Check verification status
+    fetch('/api/user/verification-status')
+      .then(res => res.json())
+      .then(data => {
+        // If user has a password (email/password signup) and email is not verified, redirect
+        if (data.hasPassword && !data.emailVerified) {
+          setEmailVerificationRequired(true)
+          router.push('/verify-email')
+        }
+      })
+      .catch(() => {})
+  }, [status, isAdminView, router])
+
   // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
     const handleGoogleAuthCallback = async () => {
@@ -415,59 +433,59 @@ function DashboardContent() {
             {/* Stats Grid - Active Stats */}
             <div className="mb-4">
               <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Current Activity</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Your Matches</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500">Your Matches</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.matchesCount}
                       </p>
                     </div>
-                    <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Users className="h-6 w-6 text-blue-600" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Active Interests</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500">Active Interests</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.interestsReceived}
                       </p>
                     </div>
-                    <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center">
-                      <Heart className="h-6 w-6 text-pink-600" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center">
+                      <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Pending Sent</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500">Pending Sent</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.interestsSent}
                       </p>
                     </div>
-                    <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Eye className="h-6 w-6 text-purple-600" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500">Mutual Matches</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500">Mutual Matches</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.mutualMatches}
                       </p>
                     </div>
-                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                   </div>
                 </div>
@@ -478,7 +496,7 @@ function DashboardContent() {
             {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0) && (
               <div className="mb-8">
                 <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Lifetime Engagement</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
                   <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -557,12 +575,12 @@ function DashboardContent() {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Quick Actions */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                 <Link
                   href={buildUrl('/matches')}
                   className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!hasProfile ? 'opacity-60 pointer-events-none' : ''}`}

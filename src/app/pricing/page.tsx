@@ -72,7 +72,7 @@ export default async function GetVerifiedPage() {
             Why We Verify Every Member
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-3">
                 <Shield className="h-6 w-6 text-primary-600" />
@@ -113,14 +113,14 @@ export default async function GetVerifiedPage() {
             How Verification Works
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
               { step: '1', title: 'Create Profile', desc: 'Tell us about yourself' },
               { step: '2', title: 'Submit for Review', desc: 'One-time verification fee' },
               { step: '3', title: 'Admin Review', desc: '24-48 hour turnaround' },
               { step: '4', title: 'Start Connecting', desc: 'Message your matches' }
             ].map((item) => (
-              <div key={item.step} className="text-center p-4 bg-white rounded-xl">
+              <div key={item.step} className="text-center p-3 sm:p-4 bg-white rounded-xl">
                 <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-700 rounded-full text-sm font-bold mb-2">
                   {item.step}
                 </span>
@@ -139,7 +139,7 @@ export default async function GetVerifiedPage() {
             What Verified Members Get
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {[
               { icon: Eye, title: 'Full Profile Access', desc: 'See photos, names & details' },
               { icon: Heart, title: 'Express Interest', desc: 'Send & receive interests' },

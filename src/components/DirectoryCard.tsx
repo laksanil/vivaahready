@@ -138,7 +138,7 @@ export function DirectoryCard({
                 {/* Prev Button */}
                 <button
                   onClick={prevPhoto}
-                  className="absolute left-0.5 top-1/2 -translate-y-1/2 p-0.5 bg-black/40 hover:bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute left-0.5 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 bg-black/40 hover:bg-black/60 rounded-full text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -146,7 +146,7 @@ export function DirectoryCard({
                 {/* Next Button */}
                 <button
                   onClick={nextPhoto}
-                  className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 bg-black/40 hover:bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-0.5 top-1/2 -translate-y-1/2 p-1.5 sm:p-1 bg-black/40 hover:bg-black/60 rounded-full text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -225,13 +225,13 @@ export function DirectoryCard({
             {profile.currentLocation && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[120px]">{profile.currentLocation}</span>
+                <span className="truncate max-w-[80px] sm:max-w-[120px]">{profile.currentLocation}</span>
               </span>
             )}
             {profile.qualification && (
-              <span className="flex items-center gap-1 hidden sm:flex">
+              <span className="hidden sm:flex items-center gap-1">
                 <GraduationCap className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[100px]">{profile.qualification}</span>
+                <span className="truncate max-w-[80px] sm:max-w-[100px]">{profile.qualification}</span>
               </span>
             )}
           </div>
@@ -266,12 +266,12 @@ export function DirectoryCard({
 
         {/* Actions Column */}
         {showActions && (
-          <div className="flex flex-col justify-center gap-2 p-3 border-l border-gray-100">
+          <div className="flex flex-col justify-center gap-1.5 sm:gap-2 p-2 sm:p-3 border-l border-gray-100">
             {/* View Profile Button */}
             <div className="group relative">
               <Link
                 href={buildUrl(`/profile/${profile.id}`)}
-                className="block p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                className="block p-2 sm:p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
               >
                 <Eye className="h-5 w-5" />
               </Link>
@@ -288,7 +288,7 @@ export function DirectoryCard({
               <div className="group relative">
                 <Link
                   href={buildUrl('/profile')}
-                  className="block p-2.5 text-gray-400 bg-gray-100 rounded-lg"
+                  className="block p-2 sm:p-2.5 text-gray-400 bg-gray-100 rounded-lg"
                 >
                   <Lock className="h-5 w-5" />
                 </Link>

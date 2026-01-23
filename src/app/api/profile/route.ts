@@ -30,6 +30,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if email is verified (skip for admin creating profiles or Google OAuth users)
+    if (!targetUser.isAdminView) {
+      const user = await prisma.user.findUnique({
+        where: { id: targetUser.userId },
+        select: { emailVerified: true, password: true },
+      })
+
+      // Only require verification for email/password users (not Google OAuth)
+      // Google OAuth users have emailVerified set automatically
+      if (user?.password && !user.emailVerified) {
+        return NextResponse.json(
+          { error: 'Please verify your email before creating a profile', requiresEmailVerification: true },
+          { status: 403 }
+        )
+      }
+    }
+
     const body = normalizeSameAsMinePreferences(await request.json())
 
     // Check if profile already exists

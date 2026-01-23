@@ -127,52 +127,52 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-5 gap-6">
-            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
+            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">1</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Create Profile (Free)</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Create Profile (Free)</h3>
               <p className="text-gray-600 text-sm">
                 Create your profile and preferences. Add deal-breakers and match preferences.
               </p>
             </div>
 
-            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">2</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Find Matches</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Find Matches</h3>
               <p className="text-gray-600 text-sm">
                 See curated matches where both sides&apos; preferences align. Identity stays hidden.
               </p>
             </div>
 
-            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">3</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Express Interest (Free)</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Express Interest (Free)</h3>
               <p className="text-gray-600 text-sm">
                 Express interest for free to signal intent.
               </p>
             </div>
 
-            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">4</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Verify to Proceed</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Verify to Proceed</h3>
               <p className="text-gray-600 text-sm">
                 Verification is required to unlock next steps and keep the community genuine.
               </p>
             </div>
 
-            <div className="text-center p-5 rounded-xl hover:bg-gray-50 transition-colors">
+            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">5</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Connect</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Connect</h3>
               <p className="text-gray-600 text-sm">
                 Mutual interest unlocks messaging and contact details.
               </p>
@@ -193,7 +193,7 @@ export default async function HomePage() {
             </div>
 
             <div className="relative">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
                 {previewProfiles.map((profile) => (
                   <div key={profile.id} className="relative group">
                     <div className="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl overflow-hidden">
@@ -248,7 +248,7 @@ export default async function HomePage() {
       {/* Features */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-12 items-center">
             <div>
               <h2 className="section-title">Why Choose VivaahReady?</h2>
               <div className="mt-6 space-y-5">

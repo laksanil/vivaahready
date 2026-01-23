@@ -31,6 +31,7 @@ export async function GET() {
       phone: user.phone,
       emailVerified: user.emailVerified,
       phoneVerified: user.phoneVerified,
+      hasPassword: !!user.password, // true for email/password users, false for Google OAuth
       approvalStatus: user.profile?.approvalStatus || 'pending',
     })
   } catch (error) {
