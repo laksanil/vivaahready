@@ -244,6 +244,16 @@ export async function POST(request: Request) {
     })
 
     if (reverseInterest) {
+      // Mutual interest scenario - but current user must be approved to create a connection
+      // Check if the current user's profile is approved
+      if (!myProfile || myProfile.approvalStatus !== 'approved') {
+        return NextResponse.json({
+          error: 'Your profile must be verified to connect with matches. Please complete verification first.',
+          requiresVerification: true,
+          wouldBeMutual: true
+        }, { status: 403 })
+      }
+
       // Mutual interest! Update both to accepted
       await prisma.match.update({
         where: { id: reverseInterest.id },

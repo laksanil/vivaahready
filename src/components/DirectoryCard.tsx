@@ -295,6 +295,22 @@ export function DirectoryCard({
                   </div>
                 </div>
               </div>
+            ) : profile.theyLikedMeFirst && isRestricted ? (
+              /* They liked me first but I'm not approved - can't create mutual match */
+              <div className="group relative">
+                <button
+                  disabled
+                  className="p-2.5 rounded-lg bg-gray-200 text-gray-400 cursor-not-allowed"
+                >
+                  <Heart className="h-5 w-5 fill-current" />
+                </button>
+                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
+                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                    <div className="font-semibold">Verification Required</div>
+                    <div className="text-gray-300">Get verified to connect with this match</div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="group relative">
                 <button

@@ -13,6 +13,7 @@ import {
   Send,
   Inbox,
   Users,
+  Clock,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
@@ -509,7 +510,21 @@ function FeedPageContent() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
+                {/* Verification Required Banner */}
+                {!userStatus?.isApproved && receivedInterests.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-2">
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-amber-800">Awaiting Admin Approval</h4>
+                        <p className="text-sm text-amber-700 mt-1">
+                          Your profile is pending verification. Once approved (typically 24-48 hours), you&apos;ll be able to accept interests and connect with matches.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {receivedInterests.map((interest) => (
                   <div
                     key={interest.id}
