@@ -12,19 +12,18 @@ import {
   ArrowRight,
   MessageCircle,
   BadgeCheck,
-  Star
 } from 'lucide-react'
 
 // FAQ Accordion Component
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
     <details className="group border-b border-stone-200 last:border-b-0">
-      <summary className="flex items-center justify-between py-6 cursor-pointer list-none">
-        <h3 className="text-base font-medium text-stone-800 pr-4">{question}</h3>
-        <ChevronDown className="h-5 w-5 text-stone-400 flex-shrink-0 transition-transform group-open:rotate-180" />
+      <summary className="flex items-center justify-between py-4 cursor-pointer list-none">
+        <h3 className="text-sm font-medium text-stone-800 pr-4">{question}</h3>
+        <ChevronDown className="h-4 w-4 text-stone-400 flex-shrink-0 transition-transform group-open:rotate-180" />
       </summary>
-      <div className="pb-6 pr-12">
-        <p className="text-stone-600 leading-relaxed">{answer}</p>
+      <div className="pb-4 pr-8">
+        <p className="text-stone-600 text-sm leading-relaxed">{answer}</p>
       </div>
     </details>
   )
@@ -38,131 +37,124 @@ export default async function GetVerifiedPage() {
 
   return (
     <div className="bg-white">
-      {/* HERO SECTION - Emotional, Story-driven */}
-      <section className="relative bg-gradient-to-b from-stone-50 to-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+      {/* HERO SECTION - Compact with CTA at top */}
+      <section className="bg-gradient-to-b from-stone-50 to-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
           <div className="text-center">
-            <p className="text-primary-600 font-medium tracking-wide uppercase text-sm mb-4">
-              A Different Kind of Matchmaking
-            </p>
+            {/* Quick CTA at top */}
+            <Link
+              href={verifyLink}
+              className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-full font-medium text-sm shadow-md hover:shadow-lg transition-all mb-8"
+            >
+              Get Verified Now
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
 
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-stone-900 leading-tight mb-8">
-              Where Serious People
-              <br />
-              Find Real Connections
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-4">
+              Where Serious People Find Real Connections
             </h1>
 
-            <p className="text-xl md:text-2xl text-stone-600 leading-relaxed max-w-2xl mx-auto mb-6">
-              VivaahReady is built for people who are ready for marriage, not endless swiping.
-              Every member is verified. Every profile is real.
+            <p className="text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto mb-4">
+              VivaahReady is built for people ready for marriage. Every member is verified. Every profile is real.
             </p>
 
-            <div className="flex items-center justify-center gap-2 text-stone-500">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span className="text-sm">Trusted by families across India</span>
-            </div>
+            <p className="text-stone-500 text-sm">
+              One-time fee &middot; No subscriptions &middot; Lifetime access
+            </p>
           </div>
         </div>
       </section>
 
-      {/* VALUE PROPOSITION - Why Verification Matters */}
-      <section className="py-20 md:py-24 bg-white border-t border-stone-100">
+      {/* VALUE PROPOSITION - Condensed */}
+      <section className="py-10 md:py-12 bg-white border-t border-stone-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-5">
-              Why We Verify Every Member
-            </h2>
-            <p className="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-              Marriage is one of life&apos;s most important decisions. You deserve to meet people
-              who are as serious about it as you are.
-            </p>
-          </div>
+          <h2 className="text-2xl font-bold text-stone-900 text-center mb-8">
+            Why We Verify Every Member
+          </h2>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Shield className="h-8 w-8 text-primary-600" />
+              <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Shield className="h-6 w-6 text-primary-600" />
               </div>
-              <h3 className="text-xl font-semibold text-stone-900 mb-3">Trust & Safety</h3>
-              <p className="text-stone-600 leading-relaxed">
-                Our team manually reviews every profile before approval. No fake accounts. No catfishing. Just real people.
+              <h3 className="text-base font-semibold text-stone-900 mb-2">Trust & Safety</h3>
+              <p className="text-stone-600 text-sm leading-relaxed">
+                Our team manually reviews every profile. No fake accounts.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Heart className="h-8 w-8 text-primary-600" />
+              <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Heart className="h-6 w-6 text-primary-600" />
               </div>
-              <h3 className="text-xl font-semibold text-stone-900 mb-3">Serious Intent</h3>
-              <p className="text-stone-600 leading-relaxed">
-                Verification filters out casual browsers. Everyone here has made a commitment to finding their life partner.
+              <h3 className="text-base font-semibold text-stone-900 mb-2">Serious Intent</h3>
+              <p className="text-stone-600 text-sm leading-relaxed">
+                Verification filters out casual browsers. Everyone here is committed.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Users className="h-8 w-8 text-primary-600" />
+              <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Users className="h-6 w-6 text-primary-600" />
               </div>
-              <h3 className="text-xl font-semibold text-stone-900 mb-3">Quality Over Quantity</h3>
-              <p className="text-stone-600 leading-relaxed">
-                A smaller community of genuine, verified individuals leads to more meaningful connections.
+              <h3 className="text-base font-semibold text-stone-900 mb-2">Quality Over Quantity</h3>
+              <p className="text-stone-600 text-sm leading-relaxed">
+                A smaller community of genuine individuals means better matches.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS - Clean Steps */}
-      <section className="py-20 md:py-24 bg-stone-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-5">
-              How Verification Works
-            </h2>
-            <p className="text-lg text-stone-600">
-              A simple process to join our trusted community
-            </p>
-          </div>
+      {/* HOW IT WORKS - Compact horizontal */}
+      <section className="py-10 md:py-12 bg-stone-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-stone-900 text-center mb-8">
+            How Verification Works
+          </h2>
 
-          <div className="space-y-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              {
-                step: '01',
-                title: 'Create Your Profile',
-                desc: 'Tell us about yourself, your values, and what you\'re looking for in a partner.'
-              },
-              {
-                step: '02',
-                title: 'Complete Verification',
-                desc: 'Submit your profile for review with a one-time verification fee.'
-              },
-              {
-                step: '03',
-                title: 'Admin Review',
-                desc: 'Our team reviews your profile within 24-48 hours to ensure authenticity.'
-              },
-              {
-                step: '04',
-                title: 'Start Connecting',
-                desc: 'Once verified, browse profiles, express interest, and message your matches.'
-              }
-            ].map((item, index) => (
-              <div key={item.step} className="flex gap-6 md:gap-8 items-start group">
-                <div className="flex flex-col items-center">
-                  <span className="text-4xl md:text-5xl font-bold text-stone-200 group-hover:text-primary-200 transition-colors">
-                    {item.step}
-                  </span>
-                  {index < 3 && (
-                    <div className="w-px h-16 bg-stone-200 mt-2" />
-                  )}
+              { step: '1', title: 'Create Profile', desc: 'Tell us about yourself' },
+              { step: '2', title: 'Submit for Review', desc: 'One-time verification fee' },
+              { step: '3', title: 'Admin Review', desc: '24-48 hour turnaround' },
+              { step: '4', title: 'Start Connecting', desc: 'Message your matches' }
+            ].map((item) => (
+              <div key={item.step} className="text-center p-4 bg-white rounded-xl">
+                <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-700 rounded-full text-sm font-bold mb-2">
+                  {item.step}
+                </span>
+                <h3 className="text-sm font-semibold text-stone-900 mb-1">{item.title}</h3>
+                <p className="text-stone-500 text-xs">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES - Compact grid */}
+      <section className="py-10 md:py-12 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-stone-900 text-center mb-8">
+            What Verified Members Get
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { icon: Eye, title: 'Full Profile Access', desc: 'See photos, names & details' },
+              { icon: Heart, title: 'Express Interest', desc: 'Send & receive interests' },
+              { icon: MessageCircle, title: 'Private Messaging', desc: 'Message your matches' },
+              { icon: Lock, title: 'Privacy Protection', desc: 'Contact shared after mutual match' },
+              { icon: BadgeCheck, title: 'Verified Badge', desc: 'Show you\'re serious' },
+              { icon: UserCheck, title: 'Verified Community', desc: 'All members are reviewed' }
+            ].map((item) => (
+              <div key={item.title} className="flex gap-3 p-4 rounded-xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <item.icon className="h-5 w-5 text-primary-700" />
                 </div>
-                <div className="flex-1 pb-12">
-                  <h3 className="text-xl font-semibold text-stone-900 mb-2">{item.title}</h3>
-                  <p className="text-stone-600 leading-relaxed">{item.desc}</p>
+                <div>
+                  <h3 className="font-medium text-stone-900 text-sm">{item.title}</h3>
+                  <p className="text-stone-500 text-xs">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -170,174 +162,71 @@ export default async function GetVerifiedPage() {
         </div>
       </section>
 
-      {/* FEATURES - What Verified Members Get */}
-      <section className="py-20 md:py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-5">
-              What You Get as a Verified Member
-            </h2>
-            <p className="text-lg text-stone-600 max-w-2xl mx-auto">
-              Full access to everything you need to find your perfect match
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Eye className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Full Profile Access</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  See complete profiles including photos, names, and detailed information about potential matches.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Heart className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Express Interest</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Send and receive interests from matches. When it&apos;s mutual, you&apos;re both notified.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Private Messaging</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Message your matches directly within the platform after mutual interest.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Lock className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Privacy Protection</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Your contact details are only shared after both parties accept the match.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <BadgeCheck className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Verified Badge</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Your profile displays a badge showing you&apos;re a verified, serious member.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-5 p-6 rounded-2xl border border-stone-200 hover:border-primary-200 hover:bg-primary-50/30 transition-all">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <UserCheck className="h-6 w-6 text-primary-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-stone-900 mb-1">Verified Community</h3>
-                <p className="text-stone-600 text-sm leading-relaxed">
-                  Connect only with other verified members who have been reviewed by our team.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIAL/TRUST SECTION */}
-      <section className="py-20 md:py-24 bg-primary-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <blockquote className="text-2xl md:text-3xl font-medium text-white leading-relaxed mb-8">
-            &ldquo;Finding someone who shares your values and is genuinely ready for marriage
-            shouldn&apos;t feel like searching for a needle in a haystack.&rdquo;
+      {/* TESTIMONIAL - Compact */}
+      <section className="py-10 md:py-12 bg-primary-600">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <blockquote className="text-xl md:text-2xl font-medium text-white leading-relaxed mb-4">
+            &ldquo;Finding someone who shares your values shouldn&apos;t feel like searching for a needle in a haystack.&rdquo;
           </blockquote>
-          <p className="text-primary-100">
-            That&apos;s why we built VivaahReady — a place where every profile is real,
-            every member is verified, and everyone is here for the same reason.
+          <p className="text-primary-100 text-sm">
+            That&apos;s why we built VivaahReady — where every profile is real and everyone is here for the same reason.
           </p>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-20 md:py-24 bg-white">
+      {/* FAQ - Compact */}
+      <section className="py-10 md:py-12 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-5">
-              Questions? We Have Answers
-            </h2>
-          </div>
+          <h2 className="text-2xl font-bold text-stone-900 text-center mb-6">
+            Frequently Asked Questions
+          </h2>
 
           <div className="divide-y divide-stone-200">
             <FAQItem
               question="What does verification include?"
-              answer="Verification gives you full access to the platform: view complete profiles with photos and names, send and receive interests, message matches, and have your contact details shared when there's mutual interest."
+              answer="Full access: view profiles with photos/names, send interests, message matches, and share contact info on mutual match."
             />
             <FAQItem
               question="Is this a monthly subscription?"
-              answer="No. The verification fee is a one-time payment. Once verified, you have lifetime access with no recurring charges."
+              answer="No. One-time payment. Once verified, you have lifetime access with no recurring charges."
             />
             <FAQItem
-              question="How long does the review process take?"
+              question="How long does review take?"
               answer="Our team typically reviews and approves profiles within 24-48 hours."
             />
             <FAQItem
-              question="When can I see someone's contact information?"
-              answer="Contact details (phone and email) are only revealed after both you and your match have mutually accepted interest in each other."
-            />
-            <FAQItem
-              question="What if my profile isn't approved?"
-              answer="If your profile needs changes, we'll let you know exactly what to update. You can edit and resubmit for review."
+              question="When can I see contact information?"
+              answer="Contact details are revealed after both you and your match mutually accept interest."
             />
             <FAQItem
               question="Is the payment secure?"
-              answer="Yes. All payments are processed through Stripe, a trusted payment processor used by millions of businesses worldwide."
+              answer="Yes. All payments are processed through Stripe, a trusted payment processor."
             />
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA - Warm, Inviting */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-stone-50 to-stone-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-primary-600 font-medium tracking-wide uppercase text-sm mb-4">
-            Take the First Step
-          </p>
-
-          <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-6">
-            Ready to Find Someone Who&apos;s
-            <br />
-            Just as Serious as You?
+      {/* FINAL CTA - Compact */}
+      <section className="py-10 md:py-14 bg-gradient-to-b from-stone-50 to-stone-100">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-4">
+            Ready to Find Your Match?
           </h2>
 
-          <p className="text-lg text-stone-600 mb-10 max-w-xl mx-auto leading-relaxed">
-            Join a community of verified individuals who are ready for marriage,
-            not just dating.
+          <p className="text-stone-600 mb-6 max-w-lg mx-auto">
+            Join a community of verified individuals who are ready for marriage.
           </p>
 
           <Link
             href={verifyLink}
-            className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-10 py-4 rounded-full font-semibold text-lg shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-700/25 transition-all"
+            className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg shadow-primary-600/25 hover:shadow-xl transition-all"
           >
             Get Verified Now
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
 
-          <p className="mt-8 text-stone-500 text-sm">
-            One-time verification fee &middot; No subscriptions &middot; Lifetime access
+          <p className="mt-4 text-stone-500 text-sm">
+            One-time fee &middot; No subscriptions &middot; Lifetime access
           </p>
         </div>
       </section>
