@@ -109,15 +109,16 @@ function AdminProfilesContent() {
     isOpen: false,
     profile: null,
   })
+  const [tabCounts, setTabCounts] = useState<Record<string, number>>({})
 
   const tabs = [
-    { id: 'all', label: 'All Profiles' },
-    { id: 'pending', label: 'Pending' },
-    { id: 'approved', label: 'Approved' },
-    { id: 'suspended', label: 'Suspended' },
-    { id: 'no_photos', label: 'No Photos' },
-    { id: 'no_profile', label: 'No Profile' },
-    { id: 'deletions', label: 'Deletions' },
+    { id: 'all', label: 'All Profiles', count: tabCounts.all },
+    { id: 'pending', label: 'Pending', count: tabCounts.pending },
+    { id: 'approved', label: 'Approved', count: tabCounts.approved },
+    { id: 'suspended', label: 'Suspended', count: tabCounts.suspended },
+    { id: 'no_photos', label: 'No Photos', count: tabCounts.no_photos },
+    { id: 'no_profile', label: 'No Profile', count: tabCounts.no_profile },
+    { id: 'deletions', label: 'Deletions', count: tabCounts.deletions },
   ]
 
   useEffect(() => {
@@ -145,6 +146,10 @@ function AdminProfilesContent() {
       setProfiles(data.profiles || [])
       setTotalPages(data.totalPages || 1)
       setTotalCount(data.total || 0)
+      // Update tab counts if returned (only on first page)
+      if (data.tabCounts) {
+        setTabCounts(data.tabCounts)
+      }
     } catch (err) {
       console.error('Failed to fetch profiles:', err)
       showToast('Failed to load profiles. Please refresh the page.', 'error')

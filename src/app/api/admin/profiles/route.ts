@@ -83,11 +83,50 @@ export async function GET(request: Request) {
         deletionRequest: null,
       }))
 
+      // Get counts for all tabs (only on first page)
+      let tabCounts = null
+      if (page === 1) {
+        const [
+          allCount,
+          pendingCount,
+          approvedCount,
+          suspendedCount,
+          noPhotosCount,
+          deletionsCount,
+        ] = await Promise.all([
+          prisma.profile.count(),
+          prisma.profile.count({ where: { approvalStatus: 'pending' } }),
+          prisma.profile.count({ where: { approvalStatus: 'approved', isSuspended: false } }),
+          prisma.profile.count({ where: { isSuspended: true } }),
+          prisma.profile.count({
+            where: {
+              AND: [
+                { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+                { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+                { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+              ],
+            },
+          }),
+          prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
+        ])
+
+        tabCounts = {
+          all: allCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          suspended: suspendedCount,
+          no_photos: noPhotosCount,
+          no_profile: total, // Use the total from this query
+          deletions: deletionsCount,
+        }
+      }
+
       return NextResponse.json({
         profiles: profilesFromUsers,
         total,
         page,
         totalPages: Math.ceil(total / limit),
+        tabCounts,
       })
     }
 
@@ -157,11 +196,50 @@ export async function GET(request: Request) {
         }
       })
 
+      // Get counts for all tabs (only on first page)
+      let tabCounts = null
+      if (page === 1) {
+        const [
+          allCount,
+          pendingCount,
+          approvedCount,
+          suspendedCount,
+          noPhotosCount,
+          noProfileCount,
+        ] = await Promise.all([
+          prisma.profile.count(),
+          prisma.profile.count({ where: { approvalStatus: 'pending' } }),
+          prisma.profile.count({ where: { approvalStatus: 'approved', isSuspended: false } }),
+          prisma.profile.count({ where: { isSuspended: true } }),
+          prisma.profile.count({
+            where: {
+              AND: [
+                { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+                { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+                { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+              ],
+            },
+          }),
+          prisma.user.count({ where: { profile: null } }),
+        ])
+
+        tabCounts = {
+          all: allCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          suspended: suspendedCount,
+          no_photos: noPhotosCount,
+          no_profile: noProfileCount,
+          deletions: totalDeletions, // Use the total from this query
+        }
+      }
+
       return NextResponse.json({
         profiles: profilesFromDeletions,
         total: totalDeletions,
         page,
         totalPages: Math.ceil(totalDeletions / limit),
+        tabCounts,
       })
     }
 
@@ -296,11 +374,52 @@ export async function GET(request: Request) {
       }
     }))
 
+    // Get counts for all tabs (only on first page to avoid repeated queries)
+    let tabCounts = null
+    if (page === 1) {
+      const [
+        allCount,
+        pendingCount,
+        approvedCount,
+        suspendedCount,
+        noPhotosCount,
+        noProfileCount,
+        deletionsCount,
+      ] = await Promise.all([
+        prisma.profile.count(),
+        prisma.profile.count({ where: { approvalStatus: 'pending' } }),
+        prisma.profile.count({ where: { approvalStatus: 'approved', isSuspended: false } }),
+        prisma.profile.count({ where: { isSuspended: true } }),
+        prisma.profile.count({
+          where: {
+            AND: [
+              { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+              { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+              { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+            ],
+          },
+        }),
+        prisma.user.count({ where: { profile: null } }),
+        prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
+      ])
+
+      tabCounts = {
+        all: allCount,
+        pending: pendingCount,
+        approved: approvedCount,
+        suspended: suspendedCount,
+        no_photos: noPhotosCount,
+        no_profile: noProfileCount,
+        deletions: deletionsCount,
+      }
+    }
+
     return NextResponse.json({
       profiles: profilesWithStats,
       total,
       page,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
+      tabCounts,
     })
   } catch (error) {
     console.error('Admin profiles error:', error)
