@@ -20,6 +20,7 @@ import {
   Shield,
 } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
+import VerificationPaymentModal from '@/components/VerificationPaymentModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -56,6 +57,8 @@ function DashboardContent() {
   })
   const [loading, setLoading] = useState(true)
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [hasPaid, setHasPaid] = useState<boolean | null>(null)
   const [impersonatedUser, setImpersonatedUser] = useState<{
     name: string
     profile: { approvalStatus: string } | null
@@ -125,6 +128,22 @@ function DashboardContent() {
 
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
+
+  // Fetch payment status when user has a pending profile
+  useEffect(() => {
+    if (!isPending || isAdminView) return
+
+    fetch('/api/payment/status')
+      .then(res => res.json())
+      .then(data => {
+        setHasPaid(data.hasPaid === true)
+        // Auto-show payment modal if not paid
+        if (data.hasPaid !== true) {
+          setShowPaymentModal(true)
+        }
+      })
+      .catch(() => setHasPaid(false))
+  }, [isPending, isAdminView])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -331,7 +350,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {isPending && (
+        {isPending && hasPaid === true && (
           <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
               <Clock className="h-8 w-8 text-yellow-600" />
@@ -340,7 +359,7 @@ function DashboardContent() {
               Profile Pending Approval
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Thank you for creating your profile! Our team is reviewing it to ensure quality matches.
+              Thank you for completing verification! Our team is reviewing your profile to ensure quality matches.
               You'll be notified once your profile is approved. This usually takes 24-48 hours.
             </p>
             <Link
@@ -741,6 +760,12 @@ function DashboardContent() {
       <FindMatchModal
         isOpen={showCreateProfileModal}
         onClose={() => setShowCreateProfileModal(false)}
+      />
+
+      {/* Verification Payment Modal - shown when pending and not paid */}
+      <VerificationPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
       />
       </div>
   )
