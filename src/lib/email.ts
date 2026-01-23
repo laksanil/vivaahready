@@ -731,3 +731,184 @@ export async function sendNewMatchEmail(email: string, name: string, matchCount:
     html,
   })
 }
+
+// Profile deletion confirmation email
+export async function sendProfileDeletedEmail(
+  email: string,
+  name: string,
+  reason: string,
+  otherReason?: string | null
+) {
+  const firstName = name.split(' ')[0]
+  const isMarriageReason = reason === 'marriage_vivaahready' || reason === 'marriage_other'
+
+  // Get human-readable reason label
+  const reasonLabels: Record<string, string> = {
+    'marriage_vivaahready': 'Marriage Fixed via VivaahReady',
+    'marriage_other': 'Marriage Fixed via Other Sources',
+    'no_longer_looking': 'No Longer Looking',
+    'not_satisfied': 'Not Satisfied with Matches',
+    'privacy_concerns': 'Privacy Concerns',
+    'taking_break': 'Taking a Break',
+    'other': otherReason || 'Other',
+  }
+
+  const reasonLabel = reasonLabels[reason] || reason
+
+  // Different content for marriage vs other reasons
+  const marriageContent = `
+    <div style="text-align: center; margin-bottom: 24px;">
+      <span style="display: inline-block; background-color: #fce7f3; color: #be185d; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">Congratulations!</span>
+    </div>
+
+    <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; text-align: center;">Wishing You a Lifetime of Happiness!</h2>
+
+    <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+      Dear ${firstName}, we are thrilled to hear about your wonderful news! Congratulations on finding your life partner${reason === 'marriage_vivaahready' ? ' through VivaahReady' : ''}.
+    </p>
+
+    <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+      As requested, your profile has been successfully deleted from our platform. We are honored to have been part of your journey.
+    </p>
+
+    <!-- Marriage wishes box -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-radius: 12px; border: 1px solid #fbcfe8;">
+      <tr>
+        <td style="padding: 24px; text-align: center;">
+          <p style="margin: 0; color: #be185d; font-size: 18px; font-weight: 600;">May your journey together be filled with</p>
+          <p style="margin: 8px 0 0 0; color: #9d174d; font-size: 16px;">love, laughter, and endless happiness!</p>
+        </td>
+      </tr>
+    </table>
+  `
+
+  const regularContent = `
+    <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; text-align: center;">Your Profile Has Been Deleted</h2>
+
+    <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+      Dear ${firstName}, as per your request, your profile has been successfully deleted from VivaahReady.
+    </p>
+
+    <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+      We're sorry to see you go. If you ever decide to return to your search for a life partner, we'll be here to welcome you back.
+    </p>
+
+    <!-- Reason box -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; background-color: #f3f4f6; border-radius: 8px;">
+      <tr>
+        <td style="padding: 16px 20px;">
+          <p style="margin: 0; color: #6b7280; font-size: 14px;">
+            <strong>Reason for leaving:</strong> ${reasonLabel}
+          </p>
+        </td>
+      </tr>
+    </table>
+  `
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${isMarriageReason ? 'Congratulations!' : 'Profile Deleted'}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              ${isMarriageReason ? marriageContent : regularContent}
+
+              <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px; text-align: center;">
+                All your personal data has been removed from our systems.
+              </p>
+
+              <!-- Signature -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 15px;">${isMarriageReason ? 'With warm wishes,' : 'Best regards,'}</p>
+                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 15px; font-weight: 600;">The VivaahReady Team</p>
+                    <p style="margin: 0; color: #dc2626; font-size: 14px;">
+                      <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  const text = isMarriageReason
+    ? `Dear ${firstName},
+
+Congratulations on finding your life partner${reason === 'marriage_vivaahready' ? ' through VivaahReady' : ''}!
+
+As requested, your profile has been successfully deleted from our platform. We are honored to have been part of your journey.
+
+May your journey together be filled with love, laughter, and endless happiness!
+
+All your personal data has been removed from our systems.
+
+With warm wishes,
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+    : `Dear ${firstName},
+
+As per your request, your profile has been successfully deleted from VivaahReady.
+
+We're sorry to see you go. If you ever decide to return to your search for a life partner, we'll be here to welcome you back.
+
+Reason for leaving: ${reasonLabel}
+
+All your personal data has been removed from our systems.
+
+Best regards,
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+
+  return sendEmail({
+    to: email,
+    subject: isMarriageReason
+      ? `Congratulations from VivaahReady! Wishing you a lifetime of happiness`
+      : `Your VivaahReady profile has been deleted`,
+    html,
+    text,
+  })
+}

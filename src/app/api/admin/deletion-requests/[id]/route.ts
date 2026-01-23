@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
+import { sendProfileDeletedEmail } from '@/lib/email'
 
 // Process a deletion request (approve/reject/complete)
 export async function PATCH(
@@ -38,6 +39,12 @@ export async function PATCH(
     }
 
     if (action === 'complete') {
+      // Get user info before deletion for sending email
+      const user = await prisma.user.findUnique({
+        where: { id: deletionRequest.userId },
+        select: { email: true, name: true },
+      })
+
       // Actually delete the user and all related data
       // Prisma cascade will handle deleting profile, matches, messages, etc.
       await prisma.$transaction(async (tx) => {
@@ -51,6 +58,18 @@ export async function PATCH(
           where: { id },
         })
       })
+
+      // Send deletion confirmation email (after successful deletion)
+      if (user?.email) {
+        sendProfileDeletedEmail(
+          user.email,
+          user.name || 'there',
+          deletionRequest.reason,
+          deletionRequest.otherReason
+        ).catch((err) => {
+          console.error('Failed to send profile deleted email:', err)
+        })
+      }
 
       return NextResponse.json({
         success: true,
