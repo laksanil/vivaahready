@@ -106,37 +106,67 @@ export default function VerificationPaymentModal({
             </ul>
           </div>
 
+          {/* How It Works - Step by Step */}
+          <div className="mb-6">
+            <h3 className="font-semibold text-gray-900 mb-3">How It Works</h3>
+            <div className="relative">
+              {/* Vertical line connecting steps */}
+              <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-gray-200" />
+
+              <div className="space-y-4">
+                <div className="flex gap-3 relative">
+                  <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 z-10">1</div>
+                  <div className="pt-1">
+                    <p className="font-medium text-gray-900 text-sm">Complete Payment</p>
+                    <p className="text-xs text-gray-500">Pay the one-time $50 verification fee</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 relative">
+                  <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 z-10">2</div>
+                  <div className="pt-1">
+                    <p className="font-medium text-gray-900 text-sm">Profile Sent for Review</p>
+                    <p className="text-xs text-gray-500">Your profile is submitted to our admin team for verification</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 relative">
+                  <div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 z-10">3</div>
+                  <div className="pt-1">
+                    <p className="font-medium text-gray-900 text-sm">Admin Approval (24-48 hrs)</p>
+                    <p className="text-xs text-gray-500">Our team reviews and approves your profile</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 relative">
+                  <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center flex-shrink-0 z-10">
+                    <CheckCircle className="w-4 h-4" />
+                  </div>
+                  <div className="pt-1">
+                    <p className="font-medium text-gray-900 text-sm">Start Connecting!</p>
+                    <p className="text-xs text-gray-500">Express interest, view profiles, and find your match</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* What You Get */}
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-900 mb-3">What You Unlock</h3>
-            <div className="grid gap-3">
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">View Full Profiles</p>
-                  <p className="text-xs text-gray-500">See names, photos, and social media links of your matches</p>
-                </div>
+            <h3 className="font-semibold text-gray-900 mb-3">What You Unlock After Approval</h3>
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <p className="text-sm text-gray-700">View full profiles with names, photos & contact details</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Express Interest</p>
-                  <p className="text-xs text-gray-500">Send and receive interests from compatible matches</p>
-                </div>
+              <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <p className="text-sm text-gray-700">Send and receive interests from matches</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Profile Verification Badge</p>
-                  <p className="text-xs text-gray-500">Your profile gets verified status, building trust with others</p>
-                </div>
+              <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <p className="text-sm text-gray-700">Get verified badge on your profile</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                <Eye className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">Privacy Protected</p>
-                  <p className="text-xs text-gray-500">Contact details revealed only after mutual acceptance</p>
-                </div>
+              <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
+                <Eye className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <p className="text-sm text-gray-700">Contact details revealed only on mutual match</p>
               </div>
             </div>
           </div>
