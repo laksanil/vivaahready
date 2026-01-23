@@ -172,15 +172,6 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    // Check subscription - free users cannot send messages (premium feature)
-    // Note: Admins impersonating users bypass this check for testing
-    if (!targetUser.isAdminView && sender?.subscription?.plan === 'free') {
-      return NextResponse.json({
-        error: 'Upgrade to premium to send messages',
-        upgradeRequired: true
-      }, { status: 403 })
-    }
-
     // Create the message
     const message = await prisma.message.create({
       data: {

@@ -37,7 +37,6 @@ export default function MessageModal({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [upgradeRequired, setUpgradeRequired] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { buildApiUrl } = useImpersonation()
 
@@ -85,7 +84,6 @@ export default function MessageModal({
 
     setSending(true)
     setError(null)
-    setUpgradeRequired(false)
 
     try {
       const response = await fetch(buildApiUrl('/api/messages'), {
@@ -114,9 +112,6 @@ export default function MessageModal({
         setNewMessage('')
       } else {
         setError(data.error || 'Failed to send message')
-        if (data.upgradeRequired) {
-          setUpgradeRequired(true)
-        }
       }
     } catch (err) {
       console.error('Error sending message:', err)
@@ -159,14 +154,6 @@ export default function MessageModal({
             <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm text-red-600">{error}</p>
-              {upgradeRequired && (
-                <a
-                  href="/pricing"
-                  className="text-sm text-red-700 font-medium hover:underline mt-1 inline-block"
-                >
-                  Upgrade to Premium
-                </a>
-              )}
             </div>
           </div>
         )}
