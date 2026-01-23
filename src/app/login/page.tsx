@@ -3,8 +3,8 @@
 import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { Heart, Mail, Lock, Eye, EyeOff, Loader2, ChevronDown } from 'lucide-react'
+import { Heart, Mail, Lock, Eye, EyeOff, Loader2, ChevronDown, ArrowRight } from 'lucide-react'
+import FindMatchModal from '@/components/FindMatchModal'
 
 function LoginForm() {
   const router = useRouter()
@@ -20,6 +20,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -222,15 +223,22 @@ function LoginForm() {
         {/* Sign Up Link */}
         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
           <p className="text-gray-600 mb-3">Don&apos;t have an account?</p>
-          <Link
-            href="/register"
-            className="w-full inline-block py-3 px-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+          <button
+            onClick={() => setIsSignUpModalOpen(true)}
+            className="w-full py-3 px-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
           >
             Sign Up for Free
-          </Link>
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </button>
         </div>
 
       </div>
+
+      {/* Sign Up Modal */}
+      <FindMatchModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
+      />
     </div>
   )
 }
