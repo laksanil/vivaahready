@@ -54,6 +54,7 @@ export function DirectoryCard({
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false)
   const { buildUrl } = useImpersonation()
 
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
@@ -300,29 +301,12 @@ export function DirectoryCard({
               </div>
             ) : profile.theyLikedMeFirst && isRestricted ? (
               /* They liked me first but I'm not approved - can't create mutual match */
-              <div className="group relative">
-                <button
-                  disabled
-                  className="p-2.5 rounded-lg bg-gray-200 text-gray-400 cursor-not-allowed"
-                >
-                  <Heart className="h-5 w-5 fill-current" />
-                </button>
-                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    {hasPaid ? (
-                      <>
-                        <div className="font-semibold">Awaiting Admin Approval</div>
-                        <div className="text-gray-300">Payment received. Approval takes 24-48 hrs.</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="font-semibold">Verification Required</div>
-                        <div className="text-gray-300">Get verified to connect with this match</div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); setVerificationModalOpen(true) }}
+                className="p-2.5 rounded-lg bg-gray-200 text-gray-400 hover:bg-gray-300 transition-colors"
+              >
+                <Heart className="h-5 w-5 fill-current" />
+              </button>
             ) : (
               <div className="group relative">
                 <button
@@ -440,6 +424,68 @@ export function DirectoryCard({
               {currentPhotoIndex + 1} / {allPhotos.length}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Verification Modal */}
+      {verificationModalOpen && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setVerificationModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {hasPaid ? (
+              <>
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100">
+                  <Sparkles className="h-8 w-8 text-amber-600" />
+                </div>
+                <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+                  Awaiting Admin Approval
+                </h3>
+                <p className="text-center text-gray-600 mb-6">
+                  Your payment has been received! Our team is reviewing your profile.
+                  This typically takes 24-48 hours. Once approved, you&apos;ll be able to
+                  connect with this match.
+                </p>
+                <button
+                  onClick={() => setVerificationModalOpen(false)}
+                  className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Got it
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-primary-100">
+                  <Lock className="h-8 w-8 text-primary-600" />
+                </div>
+                <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+                  Verification Required
+                </h3>
+                <p className="text-center text-gray-600 mb-6">
+                  This person has expressed interest in you! To connect with them
+                  and reveal contact details, please verify your profile first.
+                </p>
+                <div className="space-y-3">
+                  <Link
+                    href={buildUrl('/payment')}
+                    className="block w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors text-center"
+                  >
+                    Get Verified
+                  </Link>
+                  <button
+                    onClick={() => setVerificationModalOpen(false)}
+                    className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>
