@@ -18,39 +18,17 @@ export async function POST(request: NextRequest) {
 
     // Handle incoming email event
     if (type === 'email.received') {
-      // Webhook only contains metadata, need to fetch full email via API
-      const emailId = data.email_id
+      // Resend inbound webhook includes the email content directly
       const from = data.from
       const to = data.to
       const subject = data.subject
+      // Content is included directly in the webhook payload for inbound emails
+      const emailHtml = data.html || ''
+      const emailText = data.text || ''
 
-      console.log('Incoming email:', { emailId, from, to, subject })
+      console.log('Incoming email:', { from, to, subject, hasHtml: !!emailHtml, hasText: !!emailText })
 
-      if (resend && emailId) {
-        // Fetch the full email content from Resend API
-        let emailContent = ''
-        let emailText = ''
-
-        try {
-          // Use fetch to get the email content since Resend SDK might not have this method
-          const response = await fetch(`https://api.resend.com/emails/${emailId}`, {
-            headers: {
-              'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-            },
-          })
-
-          if (response.ok) {
-            const emailData = await response.json()
-            emailContent = emailData.html || ''
-            emailText = emailData.text || ''
-            console.log('Fetched email content for:', emailId)
-          } else {
-            console.log('Could not fetch email content, status:', response.status)
-          }
-        } catch (fetchError) {
-          console.error('Error fetching email content:', fetchError)
-        }
-
+      if (resend) {
         // Forward the email to your personal Gmail
         await resend.emails.send({
           from: 'VivaahReady Support <noreply@vivaahready.com>',
@@ -65,7 +43,7 @@ export async function POST(request: NextRequest) {
               </div>
               <div style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
                 <h3 style="margin: 0 0 16px 0; color: #1f2937;">Message:</h3>
-                ${emailContent || `<pre style="white-space: pre-wrap;">${emailText || 'No content available - check Resend dashboard'}</pre>`}
+                ${emailHtml || `<pre style="white-space: pre-wrap;">${emailText || 'No content in email'}</pre>`}
               </div>
               <p style="margin-top: 20px; color: #6b7280; font-size: 12px;">
                 This email was forwarded from support@vivaahready.com
@@ -78,7 +56,7 @@ To: ${Array.isArray(to) ? to.join(', ') : to || 'Unknown'}
 Subject: ${subject || 'No Subject'}
 
 Message:
-${emailText || 'No content available - check Resend dashboard'}
+${emailText || emailHtml || 'No content in email'}
 
 ---
 This email was forwarded from support@vivaahready.com
