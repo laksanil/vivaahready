@@ -695,10 +695,15 @@ function DashboardContent() {
                     <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
                     <span className="text-green-700 font-medium">Approved</span>
                   </>
-                ) : isPending ? (
+                ) : isPending && hasPaid === true ? (
                   <>
                     <Clock className="h-5 w-5 text-yellow-600 mr-2" />
                     <span className="text-yellow-700 font-medium">Pending Review</span>
+                  </>
+                ) : isPending && hasPaid === false ? (
+                  <>
+                    <Shield className="h-5 w-5 text-primary-600 mr-2" />
+                    <span className="text-primary-700 font-medium">Verification Required</span>
                   </>
                 ) : isRejected ? (
                   <>
@@ -720,7 +725,15 @@ function DashboardContent() {
                   Create Profile
                 </button>
               )}
-              {hasProfile && !isApproved && (
+              {isPending && hasPaid === false && (
+                <button
+                  onClick={() => setShowPaymentModal(true)}
+                  className="btn-primary w-full text-center text-sm py-2"
+                >
+                  Get Verified
+                </button>
+              )}
+              {hasProfile && !isApproved && hasPaid !== false && (
                 <Link
                   href={buildUrl('/profile/edit')}
                   className="btn-outline w-full text-center text-sm py-2"
