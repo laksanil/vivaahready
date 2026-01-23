@@ -167,8 +167,15 @@ function PhotosUploadContent() {
         })
       }
 
-      // Send welcome email after successful profile completion (only for new signups)
+      // Mark signup as complete by setting signupStep to 10
       if (fromSignup) {
+        await fetch('/api/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signupStep: 10 }),
+        })
+
+        // Send welcome email after successful profile completion
         fetch('/api/profile/send-welcome-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
