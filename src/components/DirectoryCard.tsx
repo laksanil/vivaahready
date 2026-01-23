@@ -197,7 +197,7 @@ export function DirectoryCard({
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {profile.theyLikedMeFirst && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full text-xs font-semibold text-white">
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-primary-600 to-primary-700 rounded-full text-xs font-semibold text-white">
                   <Heart className="h-3 w-3 fill-current" />
                   <span className="hidden sm:inline">Likes You</span>
                 </span>
@@ -302,7 +302,7 @@ export function DirectoryCard({
                   disabled={isLoading}
                   className={`p-2.5 rounded-lg transition-colors disabled:opacity-50 ${
                     profile.theyLikedMeFirst
-                      ? 'text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
+                      ? 'text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800'
                       : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
                   }`}
                 >

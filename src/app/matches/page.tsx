@@ -282,7 +282,7 @@ function FeedPageContent() {
               <Inbox className="h-4 w-4" />
               <span className="hidden sm:inline">Received</span>
               {receivedInterests.length > 0 && (
-                <span className="bg-pink-100 text-pink-700 text-xs px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
+                <span className="bg-primary-100 text-primary-700 text-xs px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
               )}
             </button>
             <button
@@ -363,7 +363,7 @@ function FeedPageContent() {
                 {likedYouProfiles.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="p-1.5 bg-gradient-to-r from-pink-500 to-rose-500 rounded-lg">
+                      <div className="p-1.5 bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg">
                         <Sparkles className="h-4 w-4 text-white" />
                       </div>
                       <h2 className="text-lg font-bold text-gray-900">
@@ -712,7 +712,7 @@ function FeedPageContent() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 text-center max-w-md w-full animate-in zoom-in-95">
             <div className="relative">
-              <Heart className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
+              <Heart className="h-16 w-16 text-primary-500 mx-auto mb-4 animate-pulse" />
               <Sparkles className="h-6 w-6 text-yellow-400 absolute top-0 right-1/4 animate-bounce" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">It&apos;s a Match!</h2>
@@ -723,7 +723,7 @@ function FeedPageContent() {
             <div className="flex gap-3">
               <Link
                 href={buildUrl('/connections')}
-                className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-rose-600 transition-all"
+                className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-primary-800 transition-all"
               >
                 View Connections
               </Link>
