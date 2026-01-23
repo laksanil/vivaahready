@@ -20,116 +20,125 @@ export function Footer() {
     return null
   }
 
+  const currentYear = new Date().getFullYear()
+
   return (
-    <footer className="bg-gradient-to-b from-primary-800 via-primary-900 to-primary-950 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center mb-4">
-              <Image
-                src="/logo-banner.png"
-                alt="VivaahReady"
-                width={280}
-                height={107}
-                className="h-14 w-auto"
-              />
+    <footer className="relative bg-gradient-to-b from-[#8b0d0d] to-[#3a0707]" role="contentinfo">
+      {/* Subtle dark overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/20" />
+
+      <div className="relative">
+        {/* Main Footer Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
+            {/* Brand Section */}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <div className="mb-5">
+                <Image
+                  src="/logo-banner.png"
+                  alt="VivaahReady"
+                  width={200}
+                  height={77}
+                  className="h-12 w-auto brightness-110"
+                />
+              </div>
+              <p className="text-white/90 font-medium text-base mb-2">
+                Modern matchmaking with a traditional soul.
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Privacy-first matchmaking with verified profiles and mutual-interest connections.
+              </p>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Modern matchmaking with a traditional soul. Privacy-first, verification-based connections for serious relationships.
-            </p>
-          </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/#how-it-works" className="hover:text-primary-400 transition-colors">
-                  How it Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:text-primary-400 transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/matches" className="hover:text-primary-400 transition-colors">
-                  View Matches
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className="hover:text-primary-400 transition-colors">
-                  Sign In
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-primary-400 transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-primary-400 transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Quick Links */}
+            <nav aria-label="Quick Links">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/80 mb-4">
+                Quick Links
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/#how-it-works" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    How it Works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/matches" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    View Matches
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    Contact Us
+                  </Link>
+                </li>
+              </ul>
+            </nav>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/terms" className="hover:text-primary-400 transition-colors">
-                  Terms of Use
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-primary-400 transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Legal */}
+            <nav aria-label="Legal">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/80 mb-4">
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/terms" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    Terms of Use
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-white/70 hover:text-white text-sm transition-colors duration-200">
+                    Privacy Policy
+                  </Link>
+                </li>
+              </ul>
+            </nav>
 
-          {/* Contact */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-primary-400 flex-shrink-0" />
-                <a href="mailto:support@vivaahready.com" className="hover:text-primary-400 transition-colors">
-                  support@vivaahready.com
-                </a>
-              </li>
-              <li className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-primary-400 flex-shrink-0" />
-                <span>United States</span>
-              </li>
-            </ul>
+            {/* Contact & Social */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white/80 mb-4">
+                Contact Us
+              </h3>
+              <ul className="space-y-3 mb-6">
+                <li>
+                  <a
+                    href="mailto:support@vivaahready.com"
+                    className="flex items-center gap-2 text-white/70 hover:text-white text-sm transition-colors duration-200"
+                  >
+                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    <span>support@vivaahready.com</span>
+                  </a>
+                </li>
+                <li className="flex items-center gap-2 text-white/70 text-sm">
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                  <span>United States</span>
+                </li>
+              </ul>
 
-            {/* Social Media Links */}
-            <div className="mt-6">
-              <h4 className="text-white font-semibold mb-3">Follow Us</h4>
-              <div className="flex space-x-4">
-                <a
-                  href="https://www.facebook.com/profile.php?id=61577616417354"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-primary-400 transition-colors"
-                  aria-label="Facebook"
-                >
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </a>
+              {/* Social Media */}
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/80 mb-4">
+                Follow Us
+              </h4>
+              <div className="flex items-center gap-4">
                 <a
                   href="https://www.instagram.com/vivaahready"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                  className="text-white/60 hover:text-white transition-colors duration-200"
                   aria-label="Instagram"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -140,7 +149,7 @@ export function Footer() {
                   href="https://www.linkedin.com/company/vivaahready/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                  className="text-white/60 hover:text-white transition-colors duration-200"
                   aria-label="LinkedIn"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -151,7 +160,7 @@ export function Footer() {
                   href="https://wa.me/19258193653"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-primary-400 transition-colors"
+                  className="text-white/60 hover:text-white transition-colors duration-200"
                   aria-label="WhatsApp"
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -163,25 +172,29 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Legal consent line */}
-        <div className="mt-8 pt-6 border-t border-primary-800">
-          <p className="text-center text-xs text-gray-500">
-            By using VivaahReady you agree to our{' '}
-            <Link href="/terms" className="text-gray-400 hover:text-primary-400 underline transition-colors">
-              Terms of Use
-            </Link>
-            {' '}and{' '}
-            <Link href="/privacy" className="text-gray-400 hover:text-primary-400 underline transition-colors">
-              Privacy Policy
-            </Link>.
-          </p>
-        </div>
-
-        {/* Copyright */}
-        <div className="mt-6 pt-6 border-t border-primary-800">
-          <p className="text-center text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} VivaahReady. All rights reserved.
-          </p>
+        {/* Bottom Bar */}
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-white/50 text-sm">
+                &copy; {currentYear} VivaahReady. All rights reserved.
+              </p>
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/terms"
+                  className="text-white/50 hover:text-white text-sm transition-colors duration-200"
+                >
+                  Terms of Use
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="text-white/50 hover:text-white text-sm transition-colors duration-200"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
