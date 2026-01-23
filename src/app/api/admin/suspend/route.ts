@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
+import { sendAccountSuspendedEmail } from '@/lib/email'
 
 // POST - Suspend or unsuspend a profile
 export async function POST(request: Request) {
@@ -36,15 +37,28 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Profile is already suspended' }, { status: 400 })
       }
 
+      const suspendReason = reason || 'No reason provided'
+
       // Suspend the profile
       await prisma.profile.update({
         where: { id: profile.id },
         data: {
           isSuspended: true,
           suspendedAt: new Date(),
-          suspendedReason: reason || 'No reason provided',
+          suspendedReason: suspendReason,
         },
       })
+
+      // Send suspension notification email
+      if (profile.user.email) {
+        sendAccountSuspendedEmail(
+          profile.user.email,
+          profile.user.name || 'there',
+          suspendReason
+        ).catch((err) => {
+          console.error('Failed to send account suspended email:', err)
+        })
+      }
 
       return NextResponse.json({
         message: `Profile for ${profile.user.name} has been suspended`,

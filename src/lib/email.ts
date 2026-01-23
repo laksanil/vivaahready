@@ -912,3 +912,154 @@ support@vivaahready.com
     text,
   })
 }
+
+// Account suspended email
+export async function sendAccountSuspendedEmail(
+  email: string,
+  name: string,
+  reason: string
+) {
+  const firstName = name.split(' ')[0]
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Suspended</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <span style="display: inline-block; background-color: #fef2f2; color: #dc2626; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">Account Suspended</span>
+              </div>
+
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; text-align: center;">Your Account Has Been Suspended</h2>
+
+              <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                Dear ${firstName}, your VivaahReady account has been temporarily suspended.
+              </p>
+
+              <!-- Reason box -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                      <strong>Reason:</strong> ${reason}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                If you believe this was done in error or would like to discuss this matter, please contact our support team.
+              </p>
+
+              <!-- Contact options -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0 0 16px 0; color: #1f2937; font-size: 16px; font-weight: 600;">Contact Us</p>
+
+                    <!-- Email button -->
+                    <a href="mailto:support@vivaahready.com" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; margin: 8px;">
+                      Email Support
+                    </a>
+
+                    <!-- WhatsApp button -->
+                    <a href="https://wa.me/19258193653" style="display: inline-block; background-color: #25D366; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; margin: 8px;">
+                      WhatsApp Support
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Contact details -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; background-color: #f3f4f6; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 20px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+                      <strong>Email:</strong> <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                      <strong>WhatsApp:</strong> <a href="https://wa.me/19258193653" style="color: #25D366; text-decoration: none;">+1 (925) 819-3653</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Signature -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 15px;">Regards,</p>
+                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 15px; font-weight: 600;">The VivaahReady Team</p>
+                    <p style="margin: 0; color: #dc2626; font-size: 14px;">
+                      <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  const text = `Dear ${firstName},
+
+Your VivaahReady account has been temporarily suspended.
+
+Reason: ${reason}
+
+If you believe this was done in error or would like to discuss this matter, please contact our support team.
+
+Contact Us:
+- Email: support@vivaahready.com
+- WhatsApp: +1 (925) 819-3653
+
+Regards,
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+
+  return sendEmail({
+    to: email,
+    subject: `Your VivaahReady account has been suspended`,
+    html,
+    text,
+  })
+}
