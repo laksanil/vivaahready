@@ -116,7 +116,7 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {session && (
+            {(session || isAdminViewMode) && (
               <>
                 <Link href={buildUrl('/matches')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   My Matches
@@ -139,9 +139,9 @@ export function Navbar() {
               Contact Us
             </Link>
 
-            {status === 'loading' ? (
+            {status === 'loading' && !isAdminViewMode ? (
               <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
-            ) : session ? (
+            ) : (session || isAdminViewMode) ? (
               <div className="relative">
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
@@ -255,7 +255,7 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 py-3 space-y-1">
-            {session && (
+            {(session || isAdminViewMode) && (
               <>
                 <Link
                   href={buildUrl('/matches')}
@@ -302,7 +302,7 @@ export function Navbar() {
               Contact Us
             </Link>
 
-            {session ? (
+            {(session || isAdminViewMode) ? (
               <>
                 <hr className="my-2 border-gray-100" />
                 <Link
