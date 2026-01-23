@@ -139,13 +139,20 @@ export default function MessageModal({
               {recipientName}
             </h3>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close conversation"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="group relative">
+            <button
+              onClick={onClose}
+              className="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close conversation"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="absolute top-full right-0 mt-1 hidden group-hover:block z-50">
+              <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 whitespace-nowrap shadow-lg">
+                Close
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Error Display */}
@@ -210,18 +217,25 @@ export default function MessageModal({
               className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               aria-label="Type a message"
             />
-            <button
-              type="submit"
-              disabled={!newMessage.trim() || sending}
-              className="p-2 bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              aria-label="Send message"
-            >
-              {sending ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </button>
+            <div className="group relative">
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sending}
+                className="p-2.5 bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Send message"
+              >
+                {sending ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </button>
+              <div className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-50">
+                <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 whitespace-nowrap shadow-lg">
+                  Send message
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>

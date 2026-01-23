@@ -604,31 +604,57 @@ function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true
           <div className="mt-3 flex gap-2">
             {isApproved ? (
               <>
-                <button
-                  onClick={onMessage}
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Message
-                </button>
-                <Link
-                  href={buildUrl(`/profile/${profile.id}`)}
-                  className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                >
-                  <User className="h-4 w-4" />
-                  Profile
-                </Link>
-                <button
-                  onClick={onReport}
-                  className="flex items-center justify-center p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Report user"
-                >
-                  <Flag className="h-4 w-4" />
-                </button>
+                {/* Message Button */}
+                <div className="group relative flex-1">
+                  <button
+                    onClick={onMessage}
+                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    Message
+                  </button>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                      <div className="font-semibold">Send Message</div>
+                      <div className="text-gray-300">Start a conversation</div>
+                    </div>
+                  </div>
+                </div>
+                {/* View Profile Button */}
+                <div className="group relative">
+                  <Link
+                    href={buildUrl(`/profile/${profile.id}`)}
+                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    <User className="h-5 w-5" />
+                    Profile
+                  </Link>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                      <div className="font-semibold">View Profile</div>
+                      <div className="text-gray-300">See full details</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Report Button */}
+                <div className="group relative">
+                  <button
+                    onClick={onReport}
+                    className="flex items-center justify-center p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Flag className="h-5 w-5" />
+                  </button>
+                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                      <div className="font-semibold">Report Profile</div>
+                      <div className="text-gray-300">Flag inappropriate behavior</div>
+                    </div>
+                  </div>
+                </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 py-2 px-3 rounded-lg text-sm">
-                <Lock className="h-4 w-4" />
+              <div className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 py-2.5 px-3 rounded-lg text-sm">
+                <Lock className="h-5 w-5" />
                 Verify to unlock
               </div>
             )}

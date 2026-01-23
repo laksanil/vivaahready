@@ -256,24 +256,42 @@ function ReconsiderCard({ profile, onReconsider, isReconsidering }: ReconsiderCa
 
         {/* Actions */}
         <div className="mt-4 flex gap-2">
-          <button
-            onClick={onReconsider}
-            disabled={isReconsidering}
-            className="flex-1 flex items-center justify-center gap-2 bg-primary-600 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
-          >
-            {isReconsidering ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RotateCcw className="h-4 w-4" />
-            )}
-            Bring Back
-          </button>
-          <Link
-            href={buildUrl(`/profile/${profile.id}`)}
-            className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-          >
-            <User className="h-4 w-4" />
-          </Link>
+          {/* Bring Back Button */}
+          <div className="group relative flex-1">
+            <button
+              onClick={onReconsider}
+              disabled={isReconsidering}
+              className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
+            >
+              {isReconsidering ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-5 w-5" />
+              )}
+              Bring Back
+            </button>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+              <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                <div className="font-semibold">Reconsider Profile</div>
+                <div className="text-gray-300">Add back to your matches</div>
+              </div>
+            </div>
+          </div>
+          {/* View Profile Button */}
+          <div className="group relative">
+            <Link
+              href={buildUrl(`/profile/${profile.id}`)}
+              className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 p-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+            <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+              <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                <div className="font-semibold">View Profile</div>
+                <div className="text-gray-300">See full details</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

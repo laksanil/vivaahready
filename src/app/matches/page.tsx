@@ -23,7 +23,7 @@ interface FeedProfile extends ProfileData {
   approvalStatus?: string
 }
 
-type TabType = 'matches' | 'sent' | 'received'
+type TabType = 'matches' | 'sent' | 'received' | 'passed'
 
 function FeedPageContent() {
   const { data: session, status } = useSession()
@@ -45,7 +45,10 @@ function FeedPageContent() {
   const [activeTab, setActiveTab] = useState<TabType>('matches')
   const [sentInterests, setSentInterests] = useState<any[]>([])
   const [receivedInterests, setReceivedInterests] = useState<any[]>([])
+  const [passedProfiles, setPassedProfiles] = useState<any[]>([])
   const [interestsLoading, setInterestsLoading] = useState(false)
+  const [passedLoading, setPassedLoading] = useState(false)
+  const [reconsidering, setReconsidering] = useState<string | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -63,6 +66,7 @@ function FeedPageContent() {
     if (canAccess) {
       fetchProfiles()
       fetchInterests()
+      fetchPassedProfiles()
     }
   }, [canAccess, viewAsUser])
 
@@ -87,6 +91,35 @@ function FeedPageContent() {
       console.error('Error fetching interests:', error)
     } finally {
       setInterestsLoading(false)
+    }
+  }
+
+  const fetchPassedProfiles = async () => {
+    setPassedLoading(true)
+    try {
+      const response = await fetch(buildApiUrl('/api/matches/decline'))
+      const data = await response.json()
+      setPassedProfiles(data.profiles || [])
+    } catch (error) {
+      console.error('Error fetching passed profiles:', error)
+    } finally {
+      setPassedLoading(false)
+    }
+  }
+
+  const handleReconsider = async (declinedUserId: string) => {
+    setReconsidering(declinedUserId)
+    try {
+      await fetch(buildApiUrl(`/api/matches/decline?declinedUserId=${declinedUserId}`), {
+        method: 'DELETE',
+      })
+      setPassedProfiles(prev => prev.filter(p => p.userId !== declinedUserId))
+      // Refresh profiles to show the reconsidered one
+      fetchProfiles()
+    } catch (error) {
+      console.error('Error reconsidering profile:', error)
+    } finally {
+      setReconsidering(null)
     }
   }
 
@@ -205,60 +238,65 @@ function FeedPageContent() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Matches</h1>
-              <p className="text-gray-600 text-sm">
-                {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'} matching your preferences
-              </p>
-            </div>
-            <Link
-              href={buildUrl('/reconsider')}
-              className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 text-sm font-medium"
-            >
-              <RotateCcw className="h-4 w-4" />
-              <span className="hidden sm:inline">Reconsider</span>
-            </Link>
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">My Matches</h1>
+            <p className="text-gray-600 text-sm">
+              {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'} matching your preferences
+            </p>
           </div>
 
           {/* Tabs */}
           <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-4">
             <button
               onClick={() => setActiveTab('matches')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'matches'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Users className="h-4 w-4" />
-              <span>Matches</span>
+              <span className="hidden sm:inline">Matches</span>
               <span className="bg-primary-100 text-primary-700 text-xs px-1.5 py-0.5 rounded-full">{profiles.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('sent')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'sent'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Send className="h-4 w-4" />
-              <span>Sent</span>
+              <span className="hidden sm:inline">Sent</span>
               <span className="bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">{sentInterests.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('received')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'received'
                   ? 'bg-white text-primary-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <Inbox className="h-4 w-4" />
-              <span>Received</span>
+              <span className="hidden sm:inline">Received</span>
               {receivedInterests.length > 0 && (
                 <span className="bg-pink-100 text-pink-700 text-xs px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('passed')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'passed'
+                  ? 'bg-white text-primary-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden sm:inline">Passed</span>
+              {passedProfiles.length > 0 && (
+                <span className="bg-gray-200 text-gray-700 text-xs px-1.5 py-0.5 rounded-full">{passedProfiles.length}</span>
               )}
             </button>
           </div>
@@ -543,6 +581,96 @@ function FeedPageContent() {
                         >
                           Decline
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Passed Profiles Tab */}
+        {activeTab === 'passed' && (
+          <div>
+            {passedLoading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <DirectoryCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : passedProfiles.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+                <RotateCcw className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Passed Profiles</h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  You haven&apos;t passed on any profiles yet. When you do, they&apos;ll appear here.
+                </p>
+                <button
+                  onClick={() => setActiveTab('matches')}
+                  className="btn-primary text-sm py-2"
+                >
+                  Browse Matches
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {passedProfiles.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className="bg-white rounded-lg border border-gray-200 p-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <Link
+                        href={buildUrl(`/profile/${profile.id}`)}
+                        className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0"
+                      >
+                        {profile.profileImageUrl ? (
+                          <img
+                            src={profile.profileImageUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl font-semibold">
+                            {profile.user?.name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                      </Link>
+                      <Link href={buildUrl(`/profile/${profile.id}`)} className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{profile.user?.name}</h3>
+                        <p className="text-sm text-gray-600 truncate">
+                          {profile.currentLocation || 'Location not specified'}
+                          {profile.occupation && ` • ${profile.occupation}`}
+                        </p>
+                        {profile.declinedAt && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Passed on {new Date(profile.declinedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </Link>
+                      <div className="flex gap-2">
+                        {/* Reconsider Button */}
+                        <div className="group relative">
+                          <button
+                            onClick={() => handleReconsider(profile.userId)}
+                            disabled={reconsidering === profile.userId}
+                            className="px-4 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {reconsidering === profile.userId ? (
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                              <RotateCcw className="h-5 w-5" />
+                            )}
+                            Bring Back
+                          </button>
+                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                            <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                              <div className="font-semibold">Reconsider Profile</div>
+                              <div className="text-gray-300">Add back to your matches</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
