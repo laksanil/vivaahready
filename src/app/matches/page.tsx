@@ -50,6 +50,7 @@ function FeedPageContent() {
   const [interestsLoading, setInterestsLoading] = useState(false)
   const [passedLoading, setPassedLoading] = useState(false)
   const [reconsidering, setReconsidering] = useState<string | null>(null)
+  const [hasPaid, setHasPaid] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -127,14 +128,23 @@ function FeedPageContent() {
   const fetchProfiles = async () => {
     setLoading(true)
     try {
-      const response = await fetch(buildApiUrl('/api/matches/auto'))
-      const data = await response.json()
+      const [matchesRes, paymentRes] = await Promise.all([
+        fetch(buildApiUrl('/api/matches/auto')),
+        fetch(buildApiUrl('/api/payment/status'))
+      ])
+
+      const data = await matchesRes.json()
 
       setProfiles(data.freshMatches || [])
       setLikedYouCount(data.stats?.likedYouCount || 0)
 
       if (data.userStatus) {
         setUserStatus(data.userStatus)
+      }
+
+      if (paymentRes.ok) {
+        const paymentData = await paymentRes.json()
+        setHasPaid(paymentData.hasPaid === true)
       }
     } catch (error) {
       console.error('Error fetching profiles:', error)
@@ -381,6 +391,7 @@ function FeedPageContent() {
                           isLoading={loadingProfileId === profile.id}
                           canLike={userStatus?.canExpressInterest ?? false}
                           isRestricted={!userStatus?.isApproved}
+                          hasPaid={hasPaid}
                         />
                       ))}
                     </div>
@@ -405,6 +416,7 @@ function FeedPageContent() {
                           isLoading={loadingProfileId === profile.id}
                           canLike={userStatus?.canExpressInterest ?? false}
                           isRestricted={!userStatus?.isApproved}
+                          hasPaid={hasPaid}
                         />
                       ))}
                     </div>

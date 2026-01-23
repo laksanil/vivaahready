@@ -30,6 +30,8 @@ interface DirectoryCardProps {
   showActions?: boolean
   /** If true, photos are blurred and names/contact/social are masked */
   isRestricted?: boolean
+  /** If true, user has paid but awaiting admin approval */
+  hasPaid?: boolean
 }
 
 // Helper to mask sensitive text
@@ -47,6 +49,7 @@ export function DirectoryCard({
   canLike = true,
   showActions = true,
   isRestricted = false,
+  hasPaid = false,
 }: DirectoryCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
@@ -306,8 +309,17 @@ export function DirectoryCard({
                 </button>
                 <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
                   <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    <div className="font-semibold">Verification Required</div>
-                    <div className="text-gray-300">Get verified to connect with this match</div>
+                    {hasPaid ? (
+                      <>
+                        <div className="font-semibold">Awaiting Admin Approval</div>
+                        <div className="text-gray-300">Payment received. Approval takes 24-48 hrs.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-semibold">Verification Required</div>
+                        <div className="text-gray-300">Get verified to connect with this match</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
