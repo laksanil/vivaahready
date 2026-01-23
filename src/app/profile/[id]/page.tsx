@@ -687,52 +687,105 @@ function ProfileCard({
                 </div>
               </div>
               {/* Action Buttons */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {isMutual ? (
                   <>
-                    <div className="w-8 h-8 bg-green-500 flex items-center justify-center" title="Connected">
-                      <Check className="h-4 w-4 text-white" />
+                    <div className="group relative">
+                      <div className="w-11 h-11 bg-green-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <Check className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                          <div className="font-semibold mb-1">Connected!</div>
+                          <div className="text-gray-300">You both expressed mutual interest</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-8 h-8 bg-white/20 flex items-center justify-center hover:bg-white/30 cursor-pointer" title="Message">
-                      <MessageCircle className="h-4 w-4 text-white" />
+                    <div className="group relative">
+                      <div className="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 cursor-pointer shadow-lg transition-colors">
+                        <MessageCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                          <div className="font-semibold mb-1">Send Message</div>
+                          <div className="text-gray-300">Start a conversation with your match</div>
+                        </div>
+                      </div>
                     </div>
                   </>
                 ) : interestSent ? (
-                  <div className="w-8 h-8 bg-yellow-500 flex items-center justify-center" title="Interest Sent">
-                    <Clock className="h-4 w-4 text-white" />
+                  <div className="group relative">
+                    <div className="w-11 h-11 bg-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
+                      <Clock className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                      <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                        <div className="font-semibold mb-1">Interest Sent</div>
+                        <div className="text-gray-300">Waiting for them to respond</div>
+                      </div>
+                    </div>
                   </div>
                 ) : interestReceived ? (
                   canAcceptInterest ? (
+                    <div className="group relative">
+                      <button
+                        onClick={onSendInterest}
+                        disabled={isSending}
+                        className="w-11 h-11 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center shadow-lg transition-colors"
+                      >
+                        {isSending ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Heart className="h-6 w-6 text-white" />}
+                      </button>
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                          <div className="font-semibold mb-1">Accept Interest</div>
+                          <div className="text-gray-300">They&apos;re interested! Click to connect</div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="group relative">
+                      <button
+                        onClick={onOpenPayment}
+                        className="w-11 h-11 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center shadow-lg transition-colors"
+                      >
+                        <Heart className="h-6 w-6 text-white" />
+                      </button>
+                      <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                        <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                          <div className="font-semibold mb-1">They&apos;re Interested!</div>
+                          <div className="text-gray-300">Get verified to accept and connect</div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="group relative">
                     <button
                       onClick={onSendInterest}
                       disabled={isSending}
-                      className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
-                      title="Accept Interest"
+                      className="w-11 h-11 bg-white/20 hover:bg-pink-500 rounded-lg flex items-center justify-center shadow-lg transition-colors"
                     >
-                      {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
+                      {isSending ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Heart className="h-6 w-6 text-white" />}
                     </button>
-                  ) : (
-                    <button
-                      onClick={onOpenPayment}
-                      className="w-8 h-8 bg-green-500 hover:bg-green-600 flex items-center justify-center"
-                      title="Get Verified to Accept Interest"
-                    >
-                      <Heart className="h-4 w-4 text-white" />
-                    </button>
-                  )
-                ) : (
-                  <button
-                    onClick={onSendInterest}
-                    disabled={isSending}
-                    className="w-8 h-8 bg-white/20 hover:bg-white/30 flex items-center justify-center"
-                    title="Like"
-                  >
-                    {isSending ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Heart className="h-4 w-4 text-white" />}
-                  </button>
+                    <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                      <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                        <div className="font-semibold mb-1">Express Interest</div>
+                        <div className="text-gray-300">Let them know you&apos;re interested</div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-                <button onClick={onReport} className="w-8 h-8 bg-white/10 hover:bg-white/20 flex items-center justify-center" title="Report">
-                  <Flag className="h-3.5 w-3.5 text-white/70" />
-                </button>
+                <div className="group relative">
+                  <button onClick={onReport} className="w-11 h-11 bg-white/10 hover:bg-red-500/80 rounded-lg flex items-center justify-center shadow-lg transition-colors">
+                    <Flag className="h-5 w-5 text-white/70 group-hover:text-white" />
+                  </button>
+                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                      <div className="font-semibold mb-1">Report Profile</div>
+                      <div className="text-gray-300">Flag inappropriate content or behavior</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             {/* Quick Info Tags */}
