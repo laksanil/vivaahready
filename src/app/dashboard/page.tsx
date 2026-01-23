@@ -351,20 +351,20 @@ function DashboardContent() {
         )}
 
         {isPending && hasPaid === true && (
-          <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
-              <Clock className="h-8 w-8 text-yellow-600" />
+          <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Profile Pending Approval
+              Payment Received - Awaiting Approval
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Thank you for completing verification! Our team is reviewing your profile to ensure quality matches.
-              You'll be notified once your profile is approved. This usually takes 24-48 hours.
+              Thank you for completing verification! Your payment has been received. Our admin team will review
+              your profile and approve it within 24-48 hours. You'll be notified once approved.
             </p>
             <Link
               href={buildUrl('/profile/edit')}
-              className="inline-flex items-center mt-6 text-yellow-700 hover:text-yellow-800 font-medium"
+              className="inline-flex items-center mt-6 text-green-700 hover:text-green-800 font-medium"
             >
               Edit Profile
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -697,8 +697,8 @@ function DashboardContent() {
                   </>
                 ) : isPending && hasPaid === true ? (
                   <>
-                    <Clock className="h-5 w-5 text-yellow-600 mr-2" />
-                    <span className="text-yellow-700 font-medium">Pending Review</span>
+                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                    <span className="text-green-700 font-medium">Paid - Awaiting Approval</span>
                   </>
                 ) : isPending && hasPaid === false ? (
                   <>
