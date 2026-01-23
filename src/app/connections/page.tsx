@@ -77,6 +77,7 @@ function ConnectionsPageContent() {
   const [connections, setConnections] = useState<ConnectionProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [isApproved, setIsApproved] = useState(true) // Default to true, will be updated from API
+  const [hasPaid, setHasPaid] = useState(false)
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
     recipientId: string
@@ -129,11 +130,20 @@ function ConnectionsPageContent() {
   const fetchConnections = async () => {
     setLoading(true)
     try {
-      const response = await fetch(buildApiUrl('/api/matches/auto'))
-      const data = await response.json()
+      const [matchesRes, paymentRes] = await Promise.all([
+        fetch(buildApiUrl('/api/matches/auto')),
+        fetch(buildApiUrl('/api/payment/status'))
+      ])
+
+      const data = await matchesRes.json()
       setConnections(data.mutualMatches || [])
       // Track user's approval status
       setIsApproved(data.userStatus?.isApproved ?? true)
+
+      if (paymentRes.ok) {
+        const paymentData = await paymentRes.json()
+        setHasPaid(paymentData.hasPaid === true)
+      }
     } catch (error) {
       console.error('Error fetching connections:', error)
     } finally {
@@ -265,24 +275,40 @@ function ConnectionsPageContent() {
           <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
             <div className="flex items-start gap-3">
               <div className="p-2 bg-amber-100 rounded-lg">
-                <Lock className="h-5 w-5 text-amber-600" />
+                {hasPaid ? <Clock className="h-5 w-5 text-amber-600" /> : <Lock className="h-5 w-5 text-amber-600" />}
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-amber-800">Profile Pending Verification</h3>
-                <p className="text-sm text-amber-700 mt-1">
-                  Complete your profile verification ($50) to unlock full access to your connections.
-                  Once verified, you&apos;ll be able to see photos, names, and contact information of your matches.
-                </p>
-                <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
-                  <Lock className="h-3.5 w-3.5" />
-                  <span>Photos, names, and contact details are blurred until verification</span>
-                </div>
-                <Link
-                  href={buildUrl('/profile/verify')}
-                  className="mt-3 inline-flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-                >
-                  Verify Now - $50
-                </Link>
+                {hasPaid ? (
+                  <>
+                    <h3 className="font-semibold text-amber-800">Payment Received - Awaiting Admin Approval</h3>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Thank you for your payment! Your profile is currently under review by our admin team.
+                      This typically takes 24-48 hours. Once approved, you&apos;ll have full access to view photos, names, and contact information of your matches.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>Approval typically takes 24-48 hours</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="font-semibold text-amber-800">Profile Pending Verification</h3>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Complete your profile verification to unlock full access to your connections.
+                      Once verified, you&apos;ll be able to see photos, names, and contact information of your matches.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
+                      <Lock className="h-3.5 w-3.5" />
+                      <span>Photos, names, and contact details are blurred until verification</span>
+                    </div>
+                    <Link
+                      href={buildUrl('/payment')}
+                      className="mt-3 inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                    >
+                      Get Verified
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -307,9 +333,9 @@ function ConnectionsPageContent() {
             {newMatches.length > 0 && (
               <div className="mb-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <Sparkles className="h-6 w-6 text-yellow-500" />
+                  <Sparkles className="h-6 w-6 text-primary-500" />
                   <h2 className="text-xl font-bold text-gray-900">New Matches</h2>
-                  <span className="bg-pink-500 text-white text-sm px-3 py-1 rounded-full">
+                  <span className="bg-primary-600 text-white text-sm px-3 py-1 rounded-full">
                     {newMatches.length} new
                   </span>
                 </div>
@@ -504,10 +530,10 @@ function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm overflow-hidden ${isNew ? 'ring-2 ring-pink-500' : ''}`}>
+    <div className={`bg-white rounded-xl shadow-sm overflow-hidden ${isNew ? 'ring-2 ring-primary-500' : ''}`}>
       {/* New Badge */}
       {isNew && (
-        <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white py-1 px-4 text-center text-xs font-medium">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-1 px-4 text-center text-xs font-medium">
           New Match!
         </div>
       )}
