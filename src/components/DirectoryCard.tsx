@@ -263,53 +263,84 @@ export function DirectoryCard({
         {/* Actions Column */}
         {showActions && (
           <div className="flex flex-col justify-center gap-2 p-3 border-l border-gray-100">
-            <Link
-              href={buildUrl(`/profile/${profile.id}`)}
-              className="p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-              title="View Profile"
-            >
-              <Eye className="h-5 w-5" />
-            </Link>
-
-            {!canLike ? (
+            {/* View Profile Button */}
+            <div className="group relative">
               <Link
-                href={buildUrl('/profile')}
-                className="p-2.5 text-gray-400 bg-gray-100 rounded-lg"
-                title="Verify to Like"
+                href={buildUrl(`/profile/${profile.id}`)}
+                className="block p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
               >
-                <Lock className="h-5 w-5" />
+                <Eye className="h-5 w-5" />
               </Link>
+              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
+                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                  <div className="font-semibold">View Profile</div>
+                  <div className="text-gray-300">See full details</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Like Button */}
+            {!canLike ? (
+              <div className="group relative">
+                <Link
+                  href={buildUrl('/profile')}
+                  className="block p-2.5 text-gray-400 bg-gray-100 rounded-lg"
+                >
+                  <Lock className="h-5 w-5" />
+                </Link>
+                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
+                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                    <div className="font-semibold">Verification Required</div>
+                    <div className="text-gray-300">Get verified to express interest</div>
+                  </div>
+                </div>
+              </div>
             ) : (
+              <div className="group relative">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onLike?.() }}
+                  disabled={isLoading}
+                  className={`p-2.5 rounded-lg transition-colors disabled:opacity-50 ${
+                    profile.theyLikedMeFirst
+                      ? 'text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
+                      : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
+                  }`}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Heart className={`h-5 w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
+                  )}
+                </button>
+                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
+                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                    <div className="font-semibold">{profile.theyLikedMeFirst ? 'Accept Interest' : 'Express Interest'}</div>
+                    <div className="text-gray-300">{profile.theyLikedMeFirst ? 'They like you! Click to connect' : 'Let them know you\'re interested'}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pass Button */}
+            <div className="group relative">
               <button
-                onClick={(e) => { e.stopPropagation(); onLike?.() }}
+                onClick={(e) => { e.stopPropagation(); onPass?.() }}
                 disabled={isLoading}
-                className={`p-2.5 rounded-lg transition-colors disabled:opacity-50 ${
-                  profile.theyLikedMeFirst
-                    ? 'text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
-                    : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
-                }`}
-                title={profile.theyLikedMeFirst ? 'Like Back' : 'Like'}
+                className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Heart className={`h-5 w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
+                  <X className="h-5 w-5" />
                 )}
               </button>
-            )}
-
-            <button
-              onClick={(e) => { e.stopPropagation(); onPass?.() }}
-              disabled={isLoading}
-              className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              title="Pass"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <X className="h-5 w-5" />
-              )}
-            </button>
+              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
+                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
+                  <div className="font-semibold">Skip Profile</div>
+                  <div className="text-gray-300">You can reconsider later</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
