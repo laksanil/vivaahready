@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -69,6 +69,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showEmailForm, setShowEmailForm] = useState(false)
 
   // Profile form data - initialize with defaults for fields that have default UI values
   const [formData, setFormData] = useState<Record<string, unknown>>({
@@ -576,7 +577,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 Create your account to save your profile
               </p>
 
-              {/* Google Sign In */}
+              {/* Google Sign In - Primary Option */}
               <button
                 type="button"
                 onClick={() => {
@@ -584,7 +585,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   sessionStorage.setItem('signupFormData', JSON.stringify(formData))
                   signIn('google', { callbackUrl: '/dashboard?createProfile=true' })
                 }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium"
+                className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -595,103 +596,128 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 Continue with Google
               </button>
 
-              {/* Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">or sign up with email</span>
-                </div>
+              <p className="text-center text-xs text-gray-500 mt-3">
+                Recommended - Quick and secure sign up
+              </p>
+
+              {/* Email Sign Up Toggle */}
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowEmailForm(!showEmailForm)}
+                  className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <span>Don&apos;t have Gmail? Sign up with email</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showEmailForm ? 'rotate-180' : ''}`} />
+                </button>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-field"
-                    placeholder="you@example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="form-label">Phone *</label>
-                  <div className="flex gap-2">
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="input-field w-24"
-                    >
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={c.code} value={c.code}>{c.code}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                      className="input-field flex-1"
-                      placeholder="Phone number"
-                      maxLength={10}
-                    />
+              {/* Email Form - Collapsible */}
+              {showEmailForm && (
+                <>
+                  {/* Divider */}
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-400">Email Sign Up</span>
+                    </div>
                   </div>
-                  {countryCode === '+1' && (
-                    <p className="text-gray-500 text-xs mt-1">10 digits for US phone number</p>
-                  )}
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="form-label">Password *</label>
-                    <input
-                      type="text"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input-field"
-                      placeholder="Enter password"
-                    />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="form-label">Email *</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input-field"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="form-label">Phone *</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="input-field w-24"
+                        >
+                          {COUNTRY_CODES.map((c) => (
+                            <option key={c.code} value={c.code}>{c.code}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          className="input-field flex-1"
+                          placeholder="Phone number"
+                          maxLength={10}
+                        />
+                      </div>
+                      {countryCode === '+1' && (
+                        <p className="text-gray-500 text-xs mt-1">10 digits for US phone number</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="form-label">Password *</label>
+                        <input
+                          type="text"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="input-field"
+                          placeholder="Enter password"
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label">Confirm Password *</label>
+                        <input
+                          type="text"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="input-field"
+                          placeholder="Re-enter password"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-gray-500 text-xs mt-1">Minimum 8 characters</p>
+                    {password && confirmPassword && password !== confirmPassword && (
+                      <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
+                    )}
                   </div>
-                  <div>
-                    <label className="form-label">Confirm Password *</label>
-                    <input
-                      type="text"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="input-field"
-                      placeholder="Re-enter password"
-                    />
-                  </div>
-                </div>
-                <p className="text-gray-500 text-xs mt-1">Minimum 8 characters</p>
-                {password && confirmPassword && password !== confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
-                )}
-              </div>
 
-              <button
-                onClick={handleCreateAccount}
-                disabled={!email || !phone || !password || password.length < 8 || password !== confirmPassword || loading}
-                className={`mt-6 w-full py-3.5 font-semibold text-lg shadow-lg transition-all ${
-                  email && phone && password && password.length >= 8 && password === confirmPassword && !loading
-                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                    Creating Account...
-                  </span>
-                ) : (
-                  'Create Account & Continue'
-                )}
-              </button>
+                  <button
+                    onClick={handleCreateAccount}
+                    disabled={!email || !phone || !password || password.length < 8 || password !== confirmPassword || loading}
+                    className={`mt-6 w-full py-3 px-4 font-medium rounded-lg transition-colors flex items-center justify-center ${
+                      email && phone && password && password.length >= 8 && password === confirmPassword && !loading
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                        Creating Account...
+                      </span>
+                    ) : (
+                      'Create Account & Continue'
+                    )}
+                  </button>
 
-              <p className="mt-4 text-center text-sm text-gray-500">
-                By creating account, you agree to our{' '}
+                  <p className="text-center text-xs text-gray-500 mt-3">
+                    Email sign up requires email verification
+                  </p>
+                </>
+              )}
+
+              <p className="mt-6 text-center text-xs text-gray-500">
+                By creating an account, you agree to our{' '}
                 <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
                 {' '}and{' '}
                 <Link href="/terms" className="text-primary-600 hover:underline">T&C</Link>.
