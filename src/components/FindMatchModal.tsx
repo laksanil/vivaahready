@@ -183,6 +183,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       sessionStorage.setItem('newUserId', data.userId)
       sessionStorage.setItem('newUserEmail', email)
+      // Store password in sessionStorage for auto-login after photo upload
+      sessionStorage.setItem('newUserPassword', password)
 
       // Step 2: Create partial profile with basics data only
       // Account is now created at step 2 (right after basics), so only basics data is available
@@ -387,20 +389,25 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setUploadingPhotos(true)
 
     try {
-      // Upload photos
+      // Upload photos with proper error handling
       for (const photo of photos) {
         const photoFormData = new FormData()
         photoFormData.append('file', photo.file)
         photoFormData.append('profileId', createdProfileId)
 
-        await fetch('/api/profile/upload-photo', {
+        const uploadResponse = await fetch('/api/profile/upload-photo', {
           method: 'POST',
           body: photoFormData,
         })
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to upload photo')
+        }
       }
 
-      // Update photo visibility setting
-      await fetch('/api/profile/update-visibility', {
+      // Update photo visibility setting with error handling
+      const visibilityResponse = await fetch('/api/profile/update-visibility', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -408,6 +415,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           photoVisibility,
         }),
       })
+
+      if (!visibilityResponse.ok) {
+        // Non-critical error, log but continue
+        console.error('Failed to update photo visibility')
+      }
 
       if (isAdminMode) {
         // Get stored temp password and email for callback
@@ -422,19 +434,22 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         onClose()
       } else {
         // Welcome email already sent after account creation (step 3)
-        // Get stored email and sign in the user automatically
+        // Get stored email and password from sessionStorage for auto-login
         const storedEmail = sessionStorage.getItem('newUserEmail')
-        if (storedEmail && password) {
+        const storedPassword = sessionStorage.getItem('newUserPassword')
+
+        if (storedEmail && storedPassword) {
           // Sign in with credentials
           const result = await signIn('credentials', {
             email: storedEmail,
-            password: password,
+            password: storedPassword,
             redirect: false,
           })
 
           // Clean up session storage
           sessionStorage.removeItem('newUserId')
           sessionStorage.removeItem('newUserEmail')
+          sessionStorage.removeItem('newUserPassword')
 
           if (result?.ok) {
             onClose()
@@ -448,6 +463,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           // Fallback to login page if no stored credentials
           sessionStorage.removeItem('newUserId')
           sessionStorage.removeItem('newUserEmail')
+          sessionStorage.removeItem('newUserPassword')
           onClose()
           router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
         }

@@ -291,17 +291,17 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           </div>
           <div>
             <label className="form-label">Languages Known</label>
-            <div className="p-2 border bg-gray-50 max-h-32 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-1">
+            <div className="p-2 border bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {LANGUAGES.map(lang => (
-                  <label key={lang} className="flex items-center text-sm">
-                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="mr-1" />
-                    {lang}
+                  <label key={lang} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 transition-colors">
+                    <input type="checkbox" checked={(formData.languagesKnown as string || '').includes(lang)} onChange={(e) => handleLanguageCheckbox(lang, e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 flex-shrink-0" />
+                    <span className="text-gray-700">{lang}</span>
                   </label>
                 ))}
-                <label className="flex items-center text-sm">
-                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="mr-1" />
-                  Other
+                <label className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white p-1.5 transition-colors">
+                  <input type="checkbox" checked={(formData.languagesKnown as string || '').includes('Other')} onChange={(e) => handleLanguageCheckbox('Other', e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 flex-shrink-0" />
+                  <span className="text-gray-700 font-medium">Other</span>
                 </label>
               </div>
             </div>
