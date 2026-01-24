@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { PRICING, isPromoActive, getPromoTimeRemaining } from '@/lib/pricing'
 import {
   Shield,
   Users,
@@ -12,7 +13,35 @@ import {
   ArrowRight,
   MessageCircle,
   BadgeCheck,
+  Clock,
 } from 'lucide-react'
+
+// Pricing display component
+function PricingDisplay() {
+  const promoActive = isPromoActive()
+  const timeRemaining = getPromoTimeRemaining()
+
+  if (promoActive && timeRemaining) {
+    return (
+      <div className="inline-block">
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <span className="text-2xl text-stone-400 line-through">${PRICING.regularPrice}</span>
+          <span className="text-4xl font-bold text-primary-600">${PRICING.currentPrice}</span>
+        </div>
+        <div className="flex items-center justify-center gap-2 text-sm text-stone-600">
+          <Clock className="h-4 w-4" />
+          <span>
+            {PRICING.promo.name} ends in {timeRemaining.days} days
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <span className="text-4xl font-bold text-stone-900">${PRICING.regularPrice}</span>
+  )
+}
 
 // FAQ Accordion Component
 function FAQItem({ question, answer }: { question: string; answer: string }) {
@@ -54,9 +83,14 @@ export default async function GetVerifiedPage() {
               Where Serious People Find Real Connections
             </h1>
 
-            <p className="text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto mb-4">
+            <p className="text-lg text-stone-600 leading-relaxed max-w-2xl mx-auto mb-6">
               VivaahReady is built for people ready for marriage. Every member is verified. Every profile is real.
             </p>
+
+            {/* Pricing Display */}
+            <div className="mb-6">
+              <PricingDisplay />
+            </div>
 
             <p className="text-stone-500 text-sm">
               One-time fee &middot; No subscriptions &middot; Lifetime access

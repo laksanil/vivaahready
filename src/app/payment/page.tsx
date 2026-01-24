@@ -13,7 +13,9 @@ import {
   MessageCircle,
   Loader2,
   ArrowLeft,
+  Clock,
 } from 'lucide-react'
+import { PRICING, isPromoActive, getPromoTimeRemaining, getActivePrice } from '@/lib/pricing'
 
 export default function PaymentPage() {
   const { data: session, status } = useSession()
@@ -52,7 +54,7 @@ export default function PaymentPage() {
       const response = await fetch('/api/payment/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 50 }),
+        body: JSON.stringify({ amount: getActivePrice() }),
       })
 
       const data = await response.json()
@@ -93,8 +95,8 @@ export default function PaymentPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Complete!</h1>
             <p className="text-gray-600 mb-6">
-              Your $50 payment has been received. Your profile is now pending admin approval.
-              Once approved, you'll be able to accept interests and connect with matching profiles.
+              Your payment has been received. Your profile is now pending admin approval.
+              Once approved, you&apos;ll be able to accept interests and connect with matching profiles.
             </p>
             <div className="flex justify-center gap-4">
               <Link href="/matches" className="btn-primary">
@@ -130,10 +132,26 @@ export default function PaymentPage() {
             </div>
 
             <div className="mb-8">
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold text-gray-900">$50</span>
-                <span className="text-gray-500">one-time payment</span>
-              </div>
+              {isPromoActive() ? (
+                <>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="text-2xl text-gray-400 line-through">${PRICING.regularPrice}</span>
+                    <span className="text-4xl font-bold text-primary-600">${PRICING.currentPrice}</span>
+                    <span className="text-gray-500">one-time</span>
+                  </div>
+                  {getPromoTimeRemaining() && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                      <Clock className="h-4 w-4" />
+                      <span>{PRICING.promo.name} - {getPromoTimeRemaining()?.days} days left</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-4xl font-bold text-gray-900">${PRICING.regularPrice}</span>
+                  <span className="text-gray-500">one-time payment</span>
+                </div>
+              )}
               <p className="text-gray-600">
                 Complete your profile verification to unlock the ability to accept interests
                 and connect with matching profiles.
@@ -171,7 +189,7 @@ export default function PaymentPage() {
               ) : (
                 <>
                   <CreditCard className="h-5 w-5" />
-                  Pay $50 Now
+                  Pay ${getActivePrice()} Now
                 </>
               )}
             </button>

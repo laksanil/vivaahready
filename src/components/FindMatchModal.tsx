@@ -50,12 +50,13 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Steps for user: basics → location → account (early save!) → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → photos
-// Account creation moved to step 3 so users can save their data early and not lose it
-const SECTION_ORDER = ['basics', 'location_education', 'account', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
+// Steps for user: basics → account (early save!) → location → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → photos
+// Account creation moved to step 2 so users create account right after basics - ALL subsequent data saved to DB immediately
+// This prevents data loss like what happened with Rounak (referral user)
+const SECTION_ORDER = ['basics', 'account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 // Admin mode skips account creation (handled separately) and referral
-const ADMIN_SECTION_ORDER = ['basics', 'location_education', 'admin_account', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
+const ADMIN_SECTION_ORDER = ['basics', 'admin_account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -183,14 +184,25 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       sessionStorage.setItem('newUserId', data.userId)
       sessionStorage.setItem('newUserEmail', email)
 
-      // Step 2: Create partial profile with basics + location/education data
-      // This ensures user data is saved early and won't be lost
+      // Step 2: Create partial profile with basics data only
+      // Account is now created at step 2 (right after basics), so only basics data is available
+      // All subsequent sections will be saved via handleUpdateProfile
       const profileResponse = await fetch('/api/profile/create-from-modal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          ...formData,
+          // Only include basics fields that are filled at this point
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          gender: formData.gender,
+          dateOfBirth: formData.dateOfBirth,
+          age: formData.age,
+          height: formData.height,
+          maritalStatus: formData.maritalStatus,
+          motherTongue: formData.motherTongue,
+          anyDisability: formData.anyDisability,
+          createdBy: formData.createdBy,
           // Mark as incomplete so we know to update it later
           _isPartialSave: true,
         }),

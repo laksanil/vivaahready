@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Phone, Ban } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Ban } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
@@ -71,13 +71,13 @@ export default async function HomePage() {
                 </div>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center">
-                  <Phone className="h-4 w-4 text-green-500 mr-1.5" />
-                  Phone verification
+                  <Shield className="h-4 w-4 text-green-500 mr-1.5" />
+                  Verified to connect
                 </div>
                 <span className="text-gray-300">•</span>
                 <div className="flex items-center">
                   <Ban className="h-4 w-4 text-green-500 mr-1.5" />
-                  No tracking or ads
+                  Essential cookies only
                 </div>
               </div>
             </div>

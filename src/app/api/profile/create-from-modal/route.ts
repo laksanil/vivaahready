@@ -198,14 +198,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check if email is verified (only for email/password users, not Google OAuth)
-    // Google OAuth users have emailVerified set automatically
-    if (user.password && !user.emailVerified) {
-      return NextResponse.json(
-        { error: 'Please verify your email before creating a profile', requiresEmailVerification: true },
-        { status: 403 }
-      )
-    }
+    // Note: Email verification check removed - we allow profile creation immediately
+    // to prevent data loss (like what happened with Rounak). Email verification can
+    // happen later. The profile will be marked as pending approval anyway.
 
     // Check if profile already exists
     if (user.profile) {
