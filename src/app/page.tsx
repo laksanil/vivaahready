@@ -7,6 +7,114 @@ import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
 import FindMatchButton from '@/components/FindMatchButton'
 
+// JSON-LD Structured Data for SEO
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': 'https://vivaahready.com/#website',
+      url: 'https://vivaahready.com',
+      name: 'VivaahReady',
+      description: 'Premium Indian Matchmaking & Matrimony Service for US Diaspora',
+      publisher: {
+        '@id': 'https://vivaahready.com/#organization',
+      },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://vivaahready.com/search?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Organization',
+      '@id': 'https://vivaahready.com/#organization',
+      name: 'VivaahReady',
+      url: 'https://vivaahready.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://vivaahready.com/logo-banner.png',
+        width: 2460,
+        height: 936,
+      },
+      sameAs: [
+        // Add your social media URLs here
+        // 'https://www.facebook.com/vivaahready',
+        // 'https://www.instagram.com/vivaahready',
+        // 'https://twitter.com/vivaahready',
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'customer service',
+        email: 'support@vivaahready.com',
+        availableLanguage: ['English', 'Hindi'],
+      },
+    },
+    {
+      '@type': 'Service',
+      '@id': 'https://vivaahready.com/#service',
+      name: 'Indian Matchmaking Service',
+      description: 'Premium matrimony and matchmaking service for Indian singles in the United States. Verified profiles, privacy-first approach, and meaningful connections.',
+      provider: {
+        '@id': 'https://vivaahready.com/#organization',
+      },
+      serviceType: 'Matchmaking',
+      areaServed: {
+        '@type': 'Country',
+        name: 'United States',
+      },
+      audience: {
+        '@type': 'Audience',
+        audienceType: 'Indian Singles in USA',
+      },
+      offers: {
+        '@type': 'Offer',
+        price: '50',
+        priceCurrency: 'USD',
+        description: 'One-time verification fee for lifetime access',
+        availability: 'https://schema.org/InStock',
+      },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is VivaahReady?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'VivaahReady is a premium Indian matchmaking and matrimony service designed for the US diaspora. We offer verified profiles, privacy-first matching, and meaningful connections for serious relationship seekers.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does VivaahReady work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Create your profile for free, set your preferences and deal-breakers, and see mutual matches only. Photos and contact details are shared after verification and mutual interest.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is VivaahReady free?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Creating a profile and viewing matches is free. A one-time verification fee is required to unlock full features like messaging and contact sharing.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How are profiles verified?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Our team manually reviews every profile to ensure authenticity. We verify identity and ensure genuine intent for marriage.',
+          },
+        },
+      ],
+    },
+  ],
+}
+
 async function getPreviewProfiles() {
   try {
     const profiles = await prisma.profile.findMany({
@@ -38,7 +146,14 @@ export default async function HomePage() {
   const previewProfiles = await getPreviewProfiles()
 
   return (
-    <div>
+    <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <div>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-white via-silver-50 to-silver-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
@@ -355,5 +470,6 @@ export default async function HomePage() {
         </div>
       </section>
     </div>
+    </>
   )
 }

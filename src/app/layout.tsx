@@ -11,12 +11,80 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
 
 export const metadata: Metadata = {
-  title: 'VivaahReady - Modern Indian Matchmaking for the US Diaspora',
-  description: 'Find your perfect life partner with VivaahReady. Authentic connections through human-curated profiles, not algorithms. Modern matchmaking with a traditional soul.',
-  keywords: ['Indian matchmaking', 'matrimony', 'US diaspora', 'marriage', 'VivaahReady'],
+  // Primary Meta Tags
+  title: {
+    default: 'VivaahReady - Indian Matchmaking & Matrimony for US Diaspora',
+    template: '%s | VivaahReady',
+  },
+  description: 'Find your perfect life partner with VivaahReady. Premium Indian matchmaking service for US diaspora. Verified profiles, privacy-first approach. Join thousands finding meaningful connections. Free to start.',
+  keywords: [
+    // Primary keywords
+    'Indian matchmaking',
+    'Indian matrimony',
+    'Indian matrimonial site',
+    'Indian marriage',
+    'Hindu matrimony',
+    'Sikh matrimony',
+    'Muslim matrimony',
+    'Christian matrimony',
+    // Location-specific
+    'Indian matchmaking USA',
+    'Indian matrimony America',
+    'NRI matrimony',
+    'US Indian matrimony',
+    'Indian singles USA',
+    // Community-specific
+    'Telugu matrimony',
+    'Tamil matrimony',
+    'Punjabi matrimony',
+    'Gujarati matrimony',
+    'Bengali matrimony',
+    'Marathi matrimony',
+    'South Indian matrimony',
+    'North Indian matrimony',
+    // Intent-based
+    'find Indian spouse',
+    'Indian bride',
+    'Indian groom',
+    'Indian wedding',
+    'arranged marriage',
+    'marriage partner',
+    'life partner',
+    // Brand
+    'VivaahReady',
+    'Vivaah Ready',
+  ],
+
+  // Robots & Indexing
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+
+  // Verification (add your codes after registering)
+  verification: {
+    google: 'your-google-verification-code', // Get from Google Search Console
+    // yandex: 'your-yandex-code',
+    // bing: 'your-bing-code',
+  },
+
+  // Canonical & Alternates
+  metadataBase: new URL('https://vivaahready.com'),
+  alternates: {
+    canonical: '/',
+  },
+
+  // Open Graph
   openGraph: {
-    title: 'VivaahReady - Modern Indian Matchmaking',
-    description: 'Find your perfect life partner. Authentic connections through human-curated profiles, not algorithms.',
+    title: 'VivaahReady - Indian Matchmaking & Matrimony for US Diaspora',
+    description: 'Find your perfect life partner. Premium Indian matchmaking with verified profiles. Privacy-first, mutual-match only. Free to start.',
     url: 'https://vivaahready.com',
     siteName: 'VivaahReady',
     images: [
@@ -30,11 +98,30 @@ export const metadata: Metadata = {
     locale: 'en_US',
     type: 'website',
   },
+
+  // Twitter
   twitter: {
     card: 'summary_large_image',
-    title: 'VivaahReady - Modern Indian Matchmaking',
-    description: 'Find your perfect life partner. Authentic connections through human-curated profiles.',
+    title: 'VivaahReady - Indian Matchmaking & Matrimony',
+    description: 'Find your perfect life partner. Premium Indian matchmaking with verified profiles. Free to start.',
     images: ['https://vivaahready.com/logo-banner.png'],
+    creator: '@vivaahready',
+  },
+
+  // App Links
+  applicationName: 'VivaahReady',
+  authors: [{ name: 'VivaahReady', url: 'https://vivaahready.com' }],
+  creator: 'VivaahReady',
+  publisher: 'VivaahReady',
+
+  // Category
+  category: 'Matchmaking',
+
+  // Other
+  other: {
+    'geo.region': 'US',
+    'geo.placename': 'United States',
+    'rating': 'general',
   },
 }
 
