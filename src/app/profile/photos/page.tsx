@@ -237,15 +237,6 @@ function PhotosUploadContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ signupStep: 9 }),
         })
-
-        // Send welcome email after successful profile completion
-        fetch('/api/profile/send-welcome-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profileId }),
-        }).catch((err) => {
-          console.error('Failed to send welcome email:', err)
-        })
       }
 
       // Redirect to dashboard with success message

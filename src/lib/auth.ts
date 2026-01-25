@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import { compare } from 'bcryptjs'
 import { prisma } from './prisma'
+import { sendWelcomeEmail } from './email'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -98,6 +99,11 @@ export const authOptions: NextAuthOptions = {
                 lastLogin: new Date(),
               },
               include: { profile: true, subscription: true },
+            })
+
+            // Send welcome email for new users (fire and forget)
+            sendWelcomeEmail(email, user.name || 'there').catch((err) => {
+              console.error('Failed to send welcome email:', err)
             })
           } else {
             // Update lastLogin and email verification status
