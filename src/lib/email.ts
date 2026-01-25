@@ -323,6 +323,131 @@ export async function sendProfileApprovedEmail(email: string, name: string) {
   })
 }
 
+// New match available email (sent when a new profile is approved that matches the user)
+export async function sendNewMatchAvailableEmail(
+  email: string,
+  recipientName: string,
+  matchCount: number = 1
+) {
+  const recipientFirstName = recipientName.split(' ')[0]
+  const matchText = matchCount === 1 ? 'a new potential match' : `${matchCount} new potential matches`
+  const matchTextCapitalized = matchCount === 1 ? 'A New Match' : `${matchCount} New Matches`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You Have ${matchTextCapitalized} on VivaahReady!</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #f43f5e 50%, #ec4899 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
+            </td>
+          </tr>
+
+          <!-- Announcement banner -->
+          <tr>
+            <td style="background: linear-gradient(90deg, #fef2f2 0%, #fff1f2 50%, #fef2f2 100%); padding: 20px 40px; text-align: center; border-bottom: 1px solid #fecaca;">
+              <p style="margin: 0; color: #dc2626; font-size: 18px; font-weight: 600;">
+                🎉 Good News! 🎉
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px; text-align: center; line-height: 1.4;">
+                Hi ${recipientFirstName}, you have ${matchText}!
+              </h2>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.7; text-align: center;">
+                Great news! We've found ${matchText} that ${matchCount === 1 ? 'aligns' : 'align'} with your preferences. Log in to see who might be waiting to connect with you.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="https://vivaahready.com/matches" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      View Your Matches
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 28px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
+                Don't miss out on a potential connection. The right person could be just a click away!
+              </p>
+
+              <!-- Signature -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 15px;">Wishing you the best,</p>
+                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 15px; font-weight: 600;">The VivaahReady Team</p>
+                    <p style="margin: 0; color: #dc2626; font-size: 14px;">
+                      <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  const text = `Hi ${recipientFirstName},
+
+Good news! You have ${matchText} on VivaahReady!
+
+We've found ${matchText} that ${matchCount === 1 ? 'aligns' : 'align'} with your preferences. Log in to see who might be waiting to connect with you.
+
+View Your Matches: https://vivaahready.com/matches
+
+Don't miss out on a potential connection. The right person could be just a click away!
+
+Wishing you the best,
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+
+  return sendEmail({
+    to: email,
+    subject: `🎉 You have ${matchText} on VivaahReady!`,
+    html,
+    text,
+  })
+}
+
 // New interest received email
 export async function sendNewInterestEmail(
   email: string,

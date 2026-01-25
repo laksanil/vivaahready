@@ -18,6 +18,7 @@ model User {
   emailVerified DateTime?
   phoneVerified DateTime?
   lastLogin     DateTime?
+  lastNewMatchNotificationAt DateTime? // Track when user was last notified of new matches
   mustChangePassword Boolean @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

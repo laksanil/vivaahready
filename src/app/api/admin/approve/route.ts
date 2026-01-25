@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
+import { isMutualMatch } from '@/lib/matching'
+import { sendNewMatchAvailableEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
+
+// Minimum hours between new match notifications to avoid spam
+const MIN_HOURS_BETWEEN_NOTIFICATIONS = 24
 
 // GET - List pending profiles for approval
 export async function GET(request: Request) {
@@ -117,6 +122,19 @@ export async function POST(request: Request) {
       },
     })
 
+    // If approving profiles, notify matching users who haven't logged in recently
+    if (action === 'approve') {
+      // Get the full approved profiles for matching
+      const approvedProfiles = await prisma.profile.findMany({
+        where: { id: { in: idsToProcess } },
+      })
+
+      // Notify matching users in the background (don't block the response)
+      notifyMatchingUsers(approvedProfiles).catch(err => {
+        console.error('Error notifying matching users:', err)
+      })
+    }
+
     // For single profile, fetch and return the updated profile
     if (!isBulk) {
       const updatedProfile = await prisma.profile.findUnique({
@@ -141,5 +159,94 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Admin approve POST error:', error)
     return NextResponse.json({ error: 'Failed to update profile status' }, { status: 500 })
+  }
+}
+
+/**
+ * Notify users who match with newly approved profiles and haven't logged in recently
+ * This runs in the background to avoid blocking the approval response
+ */
+async function notifyMatchingUsers(approvedProfiles: any[]) {
+  const now = new Date()
+  const notificationCutoff = new Date(now.getTime() - MIN_HOURS_BETWEEN_NOTIFICATIONS * 60 * 60 * 1000)
+  const loginCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000) // 24 hours ago
+
+  for (const approvedProfile of approvedProfiles) {
+    try {
+      // Find all active profiles of the opposite gender
+      const potentialMatches = await prisma.profile.findMany({
+        where: {
+          gender: approvedProfile.gender === 'male' ? 'female' : 'male',
+          isActive: true,
+          approvalStatus: 'approved',
+          userId: { not: approvedProfile.userId },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              lastLogin: true,
+              lastNewMatchNotificationAt: true,
+            }
+          }
+        }
+      })
+
+      // Filter to users who:
+      // 1. Match with the approved profile (mutual preferences)
+      // 2. Haven't logged in in the last 24 hours
+      // 3. Haven't been notified about new matches in the last 24 hours
+      const usersToNotify = potentialMatches.filter(candidate => {
+        // Check mutual match
+        if (!isMutualMatch(approvedProfile, candidate)) {
+          return false
+        }
+
+        // Check if user hasn't logged in recently (or never logged in)
+        const lastLogin = candidate.user.lastLogin
+        if (lastLogin && lastLogin > loginCutoff) {
+          return false // User logged in recently, skip notification
+        }
+
+        // Check if user hasn't been notified recently
+        const lastNotification = candidate.user.lastNewMatchNotificationAt
+        if (lastNotification && lastNotification > notificationCutoff) {
+          return false // User was notified recently, skip
+        }
+
+        return true
+      })
+
+      console.log(`[NEW MATCH NOTIFICATION] Approved profile ${approvedProfile.id} matches ${usersToNotify.length} users to notify`)
+
+      // Send emails to matching users
+      for (const match of usersToNotify) {
+        if (!match.user.email) continue
+
+        try {
+          console.log(`[NEW MATCH NOTIFICATION] Sending email to ${match.user.email}`)
+
+          await sendNewMatchAvailableEmail(
+            match.user.email,
+            match.user.name || 'there',
+            1
+          )
+
+          // Update the user's last notification timestamp
+          await prisma.user.update({
+            where: { id: match.user.id },
+            data: { lastNewMatchNotificationAt: now }
+          })
+
+          console.log(`[NEW MATCH NOTIFICATION] Email sent successfully to ${match.user.email}`)
+        } catch (emailError) {
+          console.error(`[NEW MATCH NOTIFICATION] Failed to send email to ${match.user.email}:`, emailError)
+        }
+      }
+    } catch (profileError) {
+      console.error(`[NEW MATCH NOTIFICATION] Error processing approved profile ${approvedProfile.id}:`, profileError)
+    }
   }
 }
