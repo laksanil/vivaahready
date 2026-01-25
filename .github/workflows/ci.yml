@@ -90,6 +90,8 @@ jobs:
           CI: true
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
           DATABASE_URL_E2E: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
+          E2E_TEST: "true"
+          PLAYWRIGHT_TEST: "true"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
