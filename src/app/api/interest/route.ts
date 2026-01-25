@@ -339,15 +339,21 @@ export async function POST(request: Request) {
       const senderFirstName = senderUser.profile?.firstName || senderUser.name?.split(' ')[0] || 'Someone'
       const senderProfileId = senderUser.profile?.id || ''
 
+      console.log('Sending new interest email to:', targetProfile.user.email, 'from:', senderFirstName)
+
       // Send email (don't block the response if email fails)
       sendNewInterestEmail(
         targetProfile.user.email,
         targetProfile.user.name || 'there',
         senderFirstName,
         senderProfileId
-      ).catch((err) => {
+      ).then((result) => {
+        console.log('New interest email result:', result)
+      }).catch((err) => {
         console.error('Failed to send new interest email:', err)
       })
+    } else {
+      console.warn('Skipping interest email - senderUser:', !!senderUser, 'targetEmail:', targetProfile.user.email)
     }
 
     return NextResponse.json({
