@@ -241,7 +241,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         console.error('Failed to send welcome email:', err)
       })
 
-      setStep(step + 1) // Move to next section (religion)
+      setStep(step + 1) // Move to next section (location_education)
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
