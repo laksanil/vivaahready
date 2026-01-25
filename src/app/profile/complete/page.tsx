@@ -83,6 +83,7 @@ function ProfileCompleteContent() {
           // Populate form with existing data
           setFormData({
             // Basic fields (already filled)
+            createdBy: data.createdBy,
             firstName: data.firstName,
             lastName: data.lastName,
             gender: data.gender,
@@ -92,6 +93,7 @@ function ProfileCompleteContent() {
             maritalStatus: data.maritalStatus,
             hasChildren: data.hasChildren,
             motherTongue: data.motherTongue,
+            languagesKnown: data.languagesKnown,
             // Location & Education (already filled)
             country: data.country || 'USA',
             grewUpIn: data.grewUpIn || 'USA',
