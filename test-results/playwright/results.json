@@ -1,0 +1,158 @@
+{
+  "config": {
+    "configFile": "/Users/lakshminagasamudra/Desktop/vivaahready/playwright.config.ts",
+    "rootDir": "/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/playwright/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/lakshminagasamudra/Desktop/vivaahready/test-results/playwright",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- -p 3001 -H 127.0.0.1",
+      "url": "http://127.0.0.1:3001",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "env": {
+        "NVM_INC": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/include/node",
+        "NoDefaultCurrentDirectoryInExePath": "1",
+        "CLAUDE_CODE_ENTRYPOINT": "claude-vscode",
+        "VSCODE_CRASH_REPORTER_PROCESS_TYPE": "extensionHost",
+        "NODE": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/bin/node",
+        "INIT_CWD": "/Users/lakshminagasamudra/Desktop/vivaahready",
+        "NVM_CD_FLAGS": "-q",
+        "SHELL": "/bin/zsh",
+        "TMPDIR": "/var/folders/f4/hhtfln2s27n98y0ckbpj_z640000gn/T/",
+        "npm_config_global_prefix": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6",
+        "CLAUDE_AGENT_SDK_VERSION": "0.2.11",
+        "MallocNanoZone": "0",
+        "COLOR": "0",
+        "npm_config_noproxy": "",
+        "npm_config_local_prefix": "/Users/lakshminagasamudra/Desktop/vivaahready",
+        "GIT_EDITOR": "true",
+        "USER": "lakshminagasamudra",
+        "NVM_DIR": "/Users/lakshminagasamudra/.nvm",
+        "COMMAND_MODE": "unix2003",
+        "npm_config_globalconfig": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/etc/npmrc",
+        "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.VqsnMfCTWl/Listeners",
+        "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0",
+        "npm_execpath": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/lib/node_modules/npm/bin/npm-cli.js",
+        "DATABASE_URL_E2E": "postgresql://postgres:postgres@localhost:5432/test?schema=playwright",
+        "ELECTRON_RUN_AS_NODE": "1",
+        "PATH": "/Users/lakshminagasamudra/Desktop/vivaahready/node_modules/.bin:/Users/lakshminagasamudra/Desktop/node_modules/.bin:/Users/lakshminagasamudra/node_modules/.bin:/Users/node_modules/.bin:/node_modules/.bin:/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/bin:/Users/lakshminagasamudra/.local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin",
+        "npm_package_json": "/Users/lakshminagasamudra/Desktop/vivaahready/package.json",
+        "_": "/Users/lakshminagasamudra/Desktop/vivaahready/node_modules/.bin/playwright",
+        "npm_config_userconfig": "/Users/lakshminagasamudra/.npmrc",
+        "npm_config_init_module": "/Users/lakshminagasamudra/.npm-init.js",
+        "__CFBundleIdentifier": "com.microsoft.VSCode",
+        "npm_command": "run-script",
+        "PWD": "/Users/lakshminagasamudra/Desktop/vivaahready",
+        "VSCODE_HANDLES_UNCAUGHT_ERRORS": "true",
+        "npm_lifecycle_event": "test:e2e",
+        "EDITOR": "vi",
+        "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "delta",
+        "VSCODE_ESM_ENTRYPOINT": "vs/workbench/api/node/extensionHostProcess",
+        "npm_package_name": "vivaahready",
+        "npm_config_npm_version": "10.8.2",
+        "XPC_FLAGS": "0x0",
+        "npm_config_node_gyp": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+        "npm_package_version": "1.0.0",
+        "XPC_SERVICE_NAME": "0",
+        "CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING": "true",
+        "SHLVL": "2",
+        "HOME": "/Users/lakshminagasamudra",
+        "VSCODE_NLS_CONFIG": "{\"userLocale\":\"en-us\",\"osLocale\":\"en-us\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"/private/var/folders/f4/hhtfln2s27n98y0ckbpj_z640000gn/T/AppTranslocation/F5EAB03B-D042-4F42-B2D2-339105A7FD1E/d/Visual Studio Code.app/Contents/Resources/app/out/nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}",
+        "NARRATIVE_CLIENT_SOCK": "/private/tmp/com.apple.launchd.VHWUnp7ZH7/Listeners",
+        "APPLICATION_INSIGHTS_NO_STATSBEAT": "true",
+        "npm_config_cache": "/Users/lakshminagasamudra/.npm",
+        "LOGNAME": "lakshminagasamudra",
+        "npm_lifecycle_script": "playwright test",
+        "VSCODE_IPC_HOOK": "/Users/lakshminagasamudra/Library/Application Support/Code/1.10-main.sock",
+        "VSCODE_CODE_CACHE_PATH": "/Users/lakshminagasamudra/Library/Application Support/Code/CachedData/994fd12f8d3a5aa16f17d42c041e5809167e845a",
+        "COREPACK_ENABLE_AUTO_PIN": "0",
+        "NVM_BIN": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/bin",
+        "npm_config_user_agent": "npm/10.8.2 node/v20.19.6 darwin x64 workspaces/false",
+        "VSCODE_PID": "1805",
+        "CLAUDECODE": "1",
+        "VSCODE_L10N_BUNDLE_LOCATION": "",
+        "VSCODE_CWD": "/",
+        "npm_node_execpath": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6/bin/node",
+        "npm_config_prefix": "/Users/lakshminagasamudra/.nvm/versions/node/v20.19.6",
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/test?schema=playwright",
+        "PLAYWRIGHT_TEST": "true",
+        "NEXT_PUBLIC_E2E_TEST": "true",
+        "NEXTAUTH_URL": "http://127.0.0.1:3001"
+      }
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Command failed: npx prisma db push",
+      "stack": "Error: Command failed: npx prisma db push\n    at globalSetup (/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/global-setup.ts:31:3)",
+      "location": {
+        "file": "/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/global-setup.ts",
+        "column": 3,
+        "line": 31
+      },
+      "snippet": "   at global-setup.ts:31\n\n  29 |   ensureSafeDatabase(databaseUrl)\n  30 |\n> 31 |   execSync('npx prisma db push', {\n     |   ^\n  32 |     stdio: 'inherit',\n  33 |     env: {\n  34 |       ...process.env,"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-01-25T18:04:54.846Z",
+    "duration": 13819.527,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
