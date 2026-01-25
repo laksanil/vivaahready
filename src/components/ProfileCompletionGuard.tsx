@@ -19,8 +19,14 @@ interface ProfileCompletionStatus {
  * Component that checks if user has completed their profile
  * and redirects to the appropriate completion page if not.
  *
- * - If signup is incomplete (signupStep < 10), redirect to /profile/complete
- * - If only photos/phone missing, redirect to /profile/photos
+ * signupStep mapping:
+ * - 3: Account created (from FindMatchModal step 2)
+ * - 4-8: Profile sections (location, religion, family, lifestyle, aboutme, preferences)
+ * - 9: All profile sections done, ready for photos
+ * - 10: Complete (photos uploaded)
+ *
+ * - If signupStep < 9, redirect to /profile/complete (profile sections incomplete)
+ * - If signupStep >= 9, redirect to /profile/photos (just need photos/phone)
  *
  * This runs globally on all pages except explicitly excluded ones.
  */
@@ -86,12 +92,13 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
         // Redirect if profile exists but is incomplete
         if (data.hasProfile && !data.isComplete && data.profileId) {
           setIsRedirecting(true)
-          // If signup flow not finished (step < 10), redirect to complete profile page
-          if (data.signupStep < 10) {
+          // signupStep < 9 means profile sections still incomplete
+          // signupStep >= 9 means all sections done, just need photos
+          if (data.signupStep < 9) {
             router.replace(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep}`)
             return
           }
-          // Otherwise just missing photos/phone, redirect to photos page
+          // signupStep >= 9 means profile sections done, redirect to photos page
           router.replace(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
           return
         }
