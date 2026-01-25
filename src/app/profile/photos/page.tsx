@@ -169,7 +169,7 @@ function PhotosUploadContent() {
 
       // Mark signup as complete by setting signupStep to 10
       if (fromSignup) {
-        await fetch('/api/profile', {
+        await fetch(`/api/profile/${profileId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ signupStep: 10 }),

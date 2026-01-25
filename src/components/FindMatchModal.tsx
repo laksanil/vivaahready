@@ -155,6 +155,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const communityValue = formData.community as string || ''
   const isReligionComplete = religionValue !== '' && communityValue !== ''
 
+  // Preferences Page 1 validation - Diet, Smoking, Drinking are required
+  const prefDietValue = formData.prefDiet as string || ''
+  const prefSmokingValue = formData.prefSmoking as string || ''
+  const prefDrinkingValue = formData.prefDrinking as string || ''
+  const isPreferences1Complete = prefDietValue !== '' && prefSmokingValue !== '' && prefDrinkingValue !== ''
+
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
     setError('')
@@ -814,7 +820,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'preferences_1' && (
             <div className="space-y-4">
               <PreferencesPage1Section {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isPreferences1Complete)}
             </div>
           )}
 

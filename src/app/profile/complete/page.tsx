@@ -310,6 +310,12 @@ function ProfileCompleteContent() {
     !formData.linkedinError
   )
 
+  // Preferences Page 1 validation - Diet, Smoking, Drinking are required
+  const prefDietValue = formData.prefDiet as string || ''
+  const prefSmokingValue = formData.prefSmoking as string || ''
+  const prefDrinkingValue = formData.prefDrinking as string || ''
+  const isPreferences1Complete = prefDietValue !== '' && prefSmokingValue !== '' && prefDrinkingValue !== ''
+
   const currentSection = SECTION_ORDER[step - 1]
   const totalSteps = SECTION_ORDER.length
   const progress = Math.round((step / totalSteps) * 100)
@@ -484,7 +490,7 @@ function ProfileCompleteContent() {
             {currentSection === 'preferences_1' && (
               <div className="space-y-4">
                 <PreferencesPage1Section {...sectionProps} />
-                {renderContinueButton(handleSectionContinue)}
+                {renderContinueButton(handleSectionContinue, !isPreferences1Complete)}
               </div>
             )}
 
