@@ -750,7 +750,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       <div>
                         <label className="form-label">Password *</label>
                         <input
-                          type="text"
+                          type="password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           className="input-field"
@@ -760,7 +760,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       <div>
                         <label className="form-label">Confirm Password *</label>
                         <input
-                          type="text"
+                          type="password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="input-field"
