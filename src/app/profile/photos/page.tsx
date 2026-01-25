@@ -8,6 +8,54 @@ import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft, Phone, Shield,
 import Link from 'next/link'
 import { useFaceDetection } from '@/hooks/useFaceDetection'
 
+// Compress image to reduce file size for upload (avoids Vercel 4.5MB limit)
+const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img')
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    img.onload = () => {
+      let { width, height } = img
+
+      // Scale down if image is too large
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width
+        width = maxWidth
+      }
+
+      canvas.width = width
+      canvas.height = height
+
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'))
+        return
+      }
+
+      ctx.drawImage(img, 0, 0, width, height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Could not compress image'))
+            return
+          }
+          const compressedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          })
+          resolve(compressedFile)
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+
+    img.onerror = () => reject(new Error('Could not load image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
+
 // Country codes for phone number with expected digit lengths
 const countryCodes = [
   { code: '+1', country: 'USA', flag: '🇺🇸', digits: 10 },
@@ -155,16 +203,30 @@ function PhotosUploadContent() {
         body: JSON.stringify({ phone: fullPhoneNumber }),
       })
 
-      // Upload photos
+      // Upload photos (compress before upload to avoid Vercel 4.5MB limit)
       for (const photo of photos) {
         const photoFormData = new FormData()
-        photoFormData.append('file', photo.file)
+
+        // Compress image before upload
+        let fileToUpload = photo.file
+        try {
+          fileToUpload = await compressImage(photo.file)
+        } catch (compressionError) {
+          console.warn('Image compression failed, using original:', compressionError)
+        }
+
+        photoFormData.append('file', fileToUpload)
         photoFormData.append('profileId', profileId)
 
-        await fetch('/api/profile/upload-photo', {
+        const uploadResponse = await fetch('/api/profile/upload-photo', {
           method: 'POST',
           body: photoFormData,
         })
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to upload photo')
+        }
       }
 
       // Mark signup as complete by setting signupStep to 9
@@ -188,8 +250,9 @@ function PhotosUploadContent() {
 
       // Redirect to dashboard with success message
       router.push('/dashboard?status=pending')
-    } catch {
-      setError('Failed to save. Please try again.')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save. Please try again.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
       setUploadingPhotos(false)
