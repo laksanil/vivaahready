@@ -161,10 +161,15 @@ function PhotosUploadContent() {
         photoFormData.append('file', photo.file)
         photoFormData.append('profileId', profileId)
 
-        await fetch('/api/profile/upload-photo', {
+        const uploadResponse = await fetch('/api/profile/upload-photo', {
           method: 'POST',
           body: photoFormData,
         })
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to upload photo')
+        }
       }
 
       // Mark signup as complete by setting signupStep to 9
