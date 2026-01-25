@@ -193,8 +193,9 @@ function PhotosUploadContent() {
 
       // Redirect to dashboard with success message
       router.push('/dashboard?status=pending')
-    } catch {
-      setError('Failed to save. Please try again.')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save. Please try again.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
       setUploadingPhotos(false)
