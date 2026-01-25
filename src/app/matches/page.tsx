@@ -51,6 +51,7 @@ function FeedPageContent() {
   const [passedLoading, setPassedLoading] = useState(false)
   const [reconsidering, setReconsidering] = useState<string | null>(null)
   const [hasPaid, setHasPaid] = useState(false)
+  const [hasConnections, setHasConnections] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -137,6 +138,7 @@ function FeedPageContent() {
 
       setProfiles(data.freshMatches || [])
       setLikedYouCount(data.stats?.likedYouCount || 0)
+      setHasConnections((data.mutualMatches?.length || 0) > 0)
 
       if (data.userStatus) {
         setUserStatus(data.userStatus)
@@ -352,12 +354,16 @@ function FeedPageContent() {
                     </button>
                   ) : (
                     <>
-                      <Link href={buildUrl('/connections')} className="btn-primary text-sm py-2">
-                        View Connections
-                      </Link>
-                      <Link href={buildUrl('/reconsider')} className="btn-secondary text-sm py-2">
-                        Reconsider Passed
-                      </Link>
+                      {hasConnections && (
+                        <Link href={buildUrl('/connections')} className="btn-primary text-sm py-2">
+                          View Connections
+                        </Link>
+                      )}
+                      {passedProfiles.length > 0 && (
+                        <Link href={buildUrl('/reconsider')} className="btn-secondary text-sm py-2">
+                          Reconsider Passed
+                        </Link>
+                      )}
                       <Link
                         href={buildUrl('/profile?tab=preferences&edit=preferences_1')}
                         className="btn-secondary text-sm py-2"
