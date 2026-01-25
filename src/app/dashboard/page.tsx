@@ -203,9 +203,10 @@ function DashboardContent() {
           // Clear the stored form data
           sessionStorage.removeItem('signupFormData')
 
-          // Redirect to profile complete page to continue signup from step 4 (religion)
-          // User has completed steps 1 (basics), 2 (location/education), and 3 (account via Google)
-          router.push(`/profile/complete?profileId=${profileData.profileId}&step=4`)
+          // Redirect to profile complete page to continue signup from step 2 (location_education)
+          // User has completed step 1 (basics) before Google auth, account creation is not numbered
+          // signupStep 2 = location_education is the next step to complete
+          router.push(`/profile/complete?profileId=${profileData.profileId}&step=2`)
         } else {
           // If profile creation fails, show the modal to let user complete manually
           sessionStorage.removeItem('signupFormData')
