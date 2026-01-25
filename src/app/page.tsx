@@ -195,6 +195,20 @@ export default async function HomePage() {
                   Essential cookies only
                 </div>
               </div>
+
+              {/* Founding Member Pricing Banner */}
+              <div className="mt-5 inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg px-4 py-2.5">
+                <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                <div className="text-sm">
+                  <span className="font-semibold text-amber-800">Founding Member Pricing</span>
+                  <span className="text-amber-700"> ends March 1, 2026</span>
+                  <span className="mx-2 text-amber-400">|</span>
+                  <span className="text-amber-700">$50 through March 1</span>
+                  <span className="mx-1 text-amber-500">•</span>
+                  <span className="text-amber-600">$100 after</span>
+                  <span className="text-amber-500 text-xs ml-1">(one-time)</span>
+                </div>
+              </div>
             </div>
 
             <div className="relative">
