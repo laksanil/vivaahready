@@ -54,9 +54,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
 }
 
 // Welcome email for new users
-export async function sendWelcomeEmail(email: string, name: string) {
-  const firstName = name.split(' ')[0]
-
+export async function sendWelcomeEmail(email: string, _name?: string) {
   const html = `
 <!DOCTYPE html>
 <html>
@@ -87,15 +85,11 @@ export async function sendWelcomeEmail(email: string, name: string) {
                 Hello,
               </p>
 
-              <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
-                Welcome to VivaahReady, and thank you for submitting your profile.
-              </p>
-
               <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
-                You've taken the first step toward finding a meaningful, serious connection. We're here to help make that journey private, intentional, and respectful.
+                Welcome to VivaahReady — and thank you for creating your account.
               </p>
 
-              <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: 600;">What happens next:</h3>
+              <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 18px; font-weight: 600;">Here's what to do next:</h3>
 
               <!-- Steps -->
               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -103,12 +97,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
                   <td style="padding: 12px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="width: 8px; vertical-align: top; padding-top: 8px;">
-                          <span style="color: #dc2626; font-size: 16px;">•</span>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">1</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Your profile is received</p>
-                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">We'll review it to ensure it meets our community standards. You'll receive a confirmation once it's approved.</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Complete your profile (photos required)</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Finish the remaining profile steps in your account. Photos are required to support authenticity and meaningful connections.</p>
                         </td>
                       </tr>
                     </table>
@@ -118,12 +112,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
                   <td style="padding: 12px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="width: 8px; vertical-align: top; padding-top: 8px;">
-                          <span style="color: #dc2626; font-size: 16px;">•</span>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">2</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Privacy by default</p>
-                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Your photos, name, and contact details are never shown publicly. Only mutual matches—based on your preferences—can see your profile.</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Start viewing mutual-preference matches</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Once complete, you'll see matches where your preferences match their profile and their preferences match yours.</p>
                         </td>
                       </tr>
                     </table>
@@ -133,12 +127,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
                   <td style="padding: 12px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="width: 8px; vertical-align: top; padding-top: 8px;">
-                          <span style="color: #dc2626; font-size: 16px;">•</span>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">3</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Connect when you're ready</p>
-                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">If both you and a match express interest, we'll facilitate a connection. A one-time $50 verification fee applies before sharing contact details—this ensures only serious, committed individuals proceed.</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Express or respond to interest</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">You can view profile details, but photo, name, and contact info stay hidden until you accept an interest.</p>
                         </td>
                       </tr>
                     </table>
@@ -148,12 +142,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
                   <td style="padding: 12px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                       <tr>
-                        <td style="width: 8px; vertical-align: top; padding-top: 8px;">
-                          <span style="color: #dc2626; font-size: 16px;">•</span>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">4</span>
                         </td>
                         <td style="padding-left: 12px;">
-                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">More intentional matchmaking</p>
-                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">We focus on compatibility, not endless browsing. You'll receive curated matches—not a sea of profiles—so every suggestion counts.</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Verification is required to accept interest</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Before you can accept an interest and move forward, you'll be asked to complete verification.</p>
                         </td>
                       </tr>
                     </table>
@@ -161,13 +155,23 @@ export async function sendWelcomeEmail(email: string, name: string) {
                 </tr>
               </table>
 
-              <!-- Privacy Promise -->
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+              <!-- Privacy by design -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px; background-color: #f3f4f6; border-radius: 8px;">
                 <tr>
                   <td style="padding: 20px;">
-                    <p style="margin: 0 0 8px 0; color: #1f2937; font-size: 15px; font-weight: 600;">Our privacy promise:</p>
                     <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">
-                      We do not share your photos or personal contact information unless you choose to proceed with a match. Your trust and safety are our top priorities.
+                      <strong style="color: #1f2937;">Privacy by design:</strong> We do not track you, and we do not run advertising or tracking cookies.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Privacy Promise -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 16px; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+                <tr>
+                  <td style="padding: 20px;">
+                    <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">
+                      <strong style="color: #1f2937;">Our privacy promise:</strong> We do not sell your data. Personal details remain private unless you choose to proceed after verification.
                     </p>
                   </td>
                 </tr>
@@ -207,26 +211,25 @@ export async function sendWelcomeEmail(email: string, name: string) {
 
   const text = `Hello,
 
-Welcome to VivaahReady, and thank you for submitting your profile.
+Welcome to VivaahReady — and thank you for creating your account.
 
-You've taken the first step toward finding a meaningful, serious connection. We're here to help make that journey private, intentional, and respectful.
+Here's what to do next:
 
-What happens next:
+1) Complete your profile (photos required)
+Finish the remaining profile steps in your account. Photos are required to support authenticity and meaningful connections.
 
-• Your profile is received
-  We'll review it to ensure it meets our community standards. You'll receive a confirmation once it's approved.
+2) Start viewing mutual-preference matches
+Once complete, you'll see matches where your preferences match their profile and their preferences match yours.
 
-• Privacy by default
-  Your photos, name, and contact details are never shown publicly. Only mutual matches—based on your preferences—can see your profile.
+3) Express or respond to interest
+You can view profile details, but photo, name, and contact info stay hidden until you accept an interest.
 
-• Connect when you're ready
-  If both you and a match express interest, we'll facilitate a connection. A one-time $50 verification fee applies before sharing contact details—this ensures only serious, committed individuals proceed.
+4) Verification is required to accept interest
+Before you can accept an interest and move forward, you'll be asked to complete verification.
 
-• More intentional matchmaking
-  We focus on compatibility, not endless browsing. You'll receive curated matches—not a sea of profiles—so every suggestion counts.
+Privacy by design: We do not track you, and we do not run advertising or tracking cookies.
 
-Our privacy promise:
-We do not share your photos or personal contact information unless you choose to proceed with a match. Your trust and safety are our top priorities.
+Our privacy promise: We do not sell your data. Personal details remain private unless you choose to proceed after verification.
 
 Warm regards,
 VivaahReady Support
