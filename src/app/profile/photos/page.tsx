@@ -161,15 +161,10 @@ function PhotosUploadContent() {
         photoFormData.append('file', photo.file)
         photoFormData.append('profileId', profileId)
 
-        const uploadResponse = await fetch('/api/profile/upload-photo', {
+        await fetch('/api/profile/upload-photo', {
           method: 'POST',
           body: photoFormData,
         })
-
-        if (!uploadResponse.ok) {
-          const errorData = await uploadResponse.json().catch(() => ({}))
-          throw new Error(errorData.error || 'Failed to upload photo')
-        }
       }
 
       // Mark signup as complete by setting signupStep to 9
@@ -193,9 +188,8 @@ function PhotosUploadContent() {
 
       // Redirect to dashboard with success message
       router.push('/dashboard?status=pending')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save. Please try again.'
-      setError(errorMessage)
+    } catch {
+      setError('Failed to save. Please try again.')
     } finally {
       setLoading(false)
       setUploadingPhotos(false)
