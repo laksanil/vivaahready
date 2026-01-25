@@ -3,10 +3,6 @@ import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
 import { isTestMode } from '@/lib/testMode'
 
-// Set max duration and body size for file uploads
-export const maxDuration = 60 // 60 seconds timeout
-export const dynamic = 'force-dynamic'
-
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
 
@@ -33,9 +29,8 @@ export async function POST(request: Request) {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(2)
       return NextResponse.json({
-        error: `File size (${sizeMB}MB) exceeds 10MB limit. Please use a smaller image.`
+        error: 'File exceeds 10MB limit'
       }, { status: 400 })
     }
 
