@@ -19,14 +19,18 @@ interface ProfileCompletionStatus {
  * Component that checks if user has completed their profile
  * and redirects to the appropriate completion page if not.
  *
- * signupStep mapping:
- * - 3: Account created (from FindMatchModal step 2)
- * - 4-8: Profile sections (location, religion, family, lifestyle, aboutme, preferences)
- * - 9: All profile sections done, ready for photos
- * - 10: Complete (photos uploaded)
+ * signupStep mapping (matches FindMatchModal UI step numbers):
+ * - 3: location_education (after account creation at step 2)
+ * - 4: religion
+ * - 5: family
+ * - 6: lifestyle
+ * - 7: aboutme
+ * - 8: preferences_1
+ * - 9: preferences_2
+ * - 10: photos done (complete)
  *
- * - If signupStep < 9, redirect to /profile/complete (profile sections incomplete)
- * - If signupStep >= 9, redirect to /profile/photos (just need photos/phone)
+ * - If signupStep < 10, redirect to /profile/complete (profile sections incomplete)
+ * - If signupStep >= 10 but missing photos/phone, redirect to /profile/photos
  *
  * This runs globally on all pages except explicitly excluded ones.
  */
@@ -92,13 +96,13 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
         // Redirect if profile exists but is incomplete
         if (data.hasProfile && !data.isComplete && data.profileId) {
           setIsRedirecting(true)
-          // signupStep < 9 means profile sections still incomplete
-          // signupStep >= 9 means all sections done, just need photos
-          if (data.signupStep < 9) {
+          // signupStep < 10 means profile sections still incomplete
+          // signupStep >= 10 means all sections done, just need photos/phone
+          if (data.signupStep < 10) {
             router.replace(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep}`)
             return
           }
-          // signupStep >= 9 means profile sections done, redirect to photos page
+          // signupStep >= 10 means profile sections done, redirect to photos page
           router.replace(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
           return
         }

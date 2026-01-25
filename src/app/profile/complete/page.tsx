@@ -16,9 +16,9 @@ import {
   PreferencesPage2Section,
 } from '@/components/ProfileFormSections'
 
-// Full step order including all sections
-// Steps: 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2
-// Note: Account creation (original step 3) is already done when user reaches this page
+// Local step order for /profile/complete page (8 steps)
+// This page is used when users need to complete their profile after Google OAuth signup
+// or when redirected by ProfileCompletionGuard
 // Photos are handled separately on /profile/photos page (with phone number)
 const SECTION_ORDER = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
 
@@ -34,21 +34,18 @@ const SECTION_TITLES: Record<string, string> = {
 }
 
 // Map signupStep (database value) to local step index
-// Database signupStep: 4=religion done, 5=family done, etc.
-// Local step: 1=basics, 2=location_education, 3=religion, etc.
+// signupStep matches FindMatchModal UI steps (account step is skipped here)
+// signupStep 3 → local step 2 (location_education)
+// signupStep 4 → local step 3 (religion)
+// signupStep 9 → local step 8 (preferences_2)
 const getLocalStepFromSignupStep = (signupStep: number): number => {
-  // signupStep 4 means user should start at religion (local step 3)
-  // signupStep is the NEXT step to complete, so:
-  // signupStep 4 → local step 3 (religion)
-  // signupStep 5 → local step 4 (family)
-  // etc.
   return Math.max(1, Math.min(signupStep - 1, SECTION_ORDER.length))
 }
 
 // Map local step to signupStep (database value)
+// local step 2 (location_education) → signupStep 3
+// local step 3 (religion) → signupStep 4
 const getSignupStepFromLocalStep = (localStep: number): number => {
-  // local step 3 (religion) = signupStep 4
-  // local step 4 (family) = signupStep 5
   return localStep + 1
 }
 
