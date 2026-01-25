@@ -26,12 +26,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check if welcome email was already sent (signupStep >= 9 means profile is complete)
-    if (profile.signupStep >= 9) {
-      console.log('Welcome email already sent for profile:', profileId)
-      return NextResponse.json({ success: true, alreadySent: true })
-    }
-
     // Send welcome email
     await sendWelcomeEmail(profile.user.email, profile.user.name || profile.firstName || 'there')
 
