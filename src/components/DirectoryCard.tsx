@@ -338,6 +338,7 @@ export function DirectoryCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onPass?.() }}
                 disabled={isLoading}
+                title="Pass"
                 className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 {isLoading ? (
