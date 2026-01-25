@@ -421,6 +421,22 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         console.error('Failed to update photo visibility')
       }
 
+      // Mark signup as complete by setting signupStep to 10
+      // This prevents ProfileCompletionGuard from redirecting back to /profile/complete
+      const newUserId = sessionStorage.getItem('newUserId')
+      const stepResponse = await fetch(`/api/profile/${createdProfileId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(newUserId && { 'x-new-user-id': newUserId }),
+        },
+        body: JSON.stringify({ signupStep: 10 }),
+      })
+
+      if (!stepResponse.ok) {
+        console.error('Failed to update signup step')
+      }
+
       if (isAdminMode) {
         // Get stored temp password and email for callback
         const tempPassword = sessionStorage.getItem('adminTempPassword') || ''
