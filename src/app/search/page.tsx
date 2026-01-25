@@ -52,6 +52,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true)
   const [matchStatus, setMatchStatus] = useState<string | null>(null)
   const [matchMessage, setMatchMessage] = useState<string>('')
+  const [hasPaid, setHasPaid] = useState<boolean | null>(null)
 
   // Get user state
   const hasProfile = (session?.user as any)?.hasProfile || false
@@ -67,9 +68,16 @@ export default function SearchPage() {
       // Fetch public profiles (blurred) for non-logged-in or users without profiles
       fetchPublicProfiles()
     } else {
-      // User has profile but not approved - show appropriate message
+      // User has profile but not approved - check payment status and show appropriate message
       setLoading(false)
       setMatchStatus(approvalStatus)
+      // Fetch payment status for pending users
+      if (approvalStatus === 'pending') {
+        fetch('/api/user/verification-status')
+          .then(res => res.json())
+          .then(data => setHasPaid(data.hasPaid === true))
+          .catch(() => setHasPaid(false))
+      }
     }
   }, [session, sessionStatus, hasProfile, approvalStatus])
 
@@ -179,17 +187,36 @@ export default function SearchPage() {
           </p>
         </div>
 
-        {/* Pending Approval Status */}
-        {isPending && (
+        {/* Pending Approval Status - Paid and being reviewed */}
+        {isPending && hasPaid && (
           <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-4">
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profile Pending Approval</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profile Being Reviewed</h3>
             <p className="text-gray-600 max-w-md mx-auto">
               Your profile is being reviewed by our team. You'll be able to see your matches once approved.
               This usually takes 24-48 hours.
             </p>
+          </div>
+        )}
+
+        {/* Pending Approval Status - Not paid yet */}
+        {isPending && hasPaid === false && (
+          <div className="mb-8 bg-primary-50 border border-primary-200 rounded-xl p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 mb-4">
+              <CheckCircle className="h-8 w-8 text-primary-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Profile Complete!</h3>
+            <p className="text-gray-600 max-w-md mx-auto mb-4">
+              Your profile is ready. Complete verification to unlock full access to matches and start connecting.
+            </p>
+            <Link
+              href="/payment"
+              className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Get Verified
+            </Link>
           </div>
         )}
 

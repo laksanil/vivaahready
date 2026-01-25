@@ -314,8 +314,10 @@ function DashboardContent() {
           <p className="text-gray-600 mt-1">
             {isApproved
               ? "Here's what's happening with your profile"
-              : isPending
+              : isPending && hasPaid
               ? 'Your profile is being reviewed'
+              : isPending
+              ? 'Profile complete. Next step: Get verified.'
               : "Let's get your profile set up"}
           </p>
           <div className="flex items-center gap-4 mt-2">
