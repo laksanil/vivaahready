@@ -268,11 +268,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       const nextInternalStep = step + 1
       const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
 
-      // Calculate signupStep for DB (1-8 maps to profile sections, not counting account step)
-      // Internal step 3 (location_education) = signupStep 2
-      // Internal step 4 (religion) = signupStep 3, etc.
-      // For regular flow: signupStep = internal step - 1 (because account is step 2)
-      const nextSignupStep = nextInternalStep > 2 ? nextInternalStep - 1 : nextInternalStep
+      // signupStep tracks WHICH STEP USER NEEDS TO COMPLETE NEXT (not what they've done)
+      // Internal step 3 (location_education) -> after completing, next is religion (signupStep 3)
+      // Internal step 4 (religion) -> after completing, next is family (signupStep 4)
+      // Formula: nextSignupStep = nextInternalStep - 1 (subtracting 1 for account step)
+      const nextSignupStep = nextInternalStep - 1
 
       // Check if this is the last profile section (preferences_2)
       const isLastSection = sectionOrder[step - 1] === 'preferences_2'
@@ -285,7 +285,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         },
         body: JSON.stringify({
           ...formData,
-          signupStep: nextSignupStep, // Track progress for returning users (1-8)
+          signupStep: nextSignupStep, // Track which step to complete next (1-8, 9=complete)
         }),
       })
 
