@@ -11,7 +11,9 @@ export const dynamic = 'force-dynamic'
  * 1. Profile exists
  * 2. User has a phone number
  * 3. Profile has at least one photo (profileImageUrl or photoUrls)
- * 4. Signup flow is complete (signupStep >= 10)
+ * 4. Signup flow is complete (signupStep >= 9)
+ *
+ * signupStep mapping: 1-8 = profile sections, 9 = complete (photos done)
  */
 export async function GET() {
   try {
@@ -50,10 +52,10 @@ export async function GET() {
     const hasProfile = !!user.profile
     const hasPhone = !!user.phone && user.phone.trim() !== ''
     const hasPhotos = !!(user.profile?.profileImageUrl || user.profile?.photoUrls)
-    const signupStep = user.profile?.signupStep || 3 // Default to 3 (account created)
+    const signupStep = user.profile?.signupStep || 2 // Default to 2 (basics done, need location_education)
 
-    // Profile is complete only if all requirements met AND signup flow finished (step 10 = photos)
-    const isComplete = hasProfile && hasPhone && hasPhotos && signupStep >= 10
+    // Profile is complete only if all requirements met AND signup flow finished (step 9 = photos done)
+    const isComplete = hasProfile && hasPhone && hasPhotos && signupStep >= 9
 
     return NextResponse.json({
       isComplete,
@@ -65,7 +67,7 @@ export async function GET() {
       reason: !isComplete
         ? !hasProfile
           ? 'no_profile'
-          : signupStep < 10
+          : signupStep < 9
             ? 'signup_incomplete'
             : !hasPhone
               ? 'no_phone'

@@ -167,12 +167,13 @@ function PhotosUploadContent() {
         })
       }
 
-      // Mark signup as complete by setting signupStep to 10
+      // Mark signup as complete by setting signupStep to 9
+      // signupStep 9 = complete (photos done)
       if (fromSignup) {
         await fetch(`/api/profile/${profileId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ signupStep: 10 }),
+          body: JSON.stringify({ signupStep: 9 }),
         })
 
         // Send welcome email after successful profile completion

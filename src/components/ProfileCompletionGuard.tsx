@@ -19,18 +19,19 @@ interface ProfileCompletionStatus {
  * Component that checks if user has completed their profile
  * and redirects to the appropriate completion page if not.
  *
- * signupStep mapping (matches FindMatchModal UI step numbers):
- * - 3: location_education (after account creation at step 2)
- * - 4: religion
- * - 5: family
- * - 6: lifestyle
- * - 7: aboutme
- * - 8: preferences_1
- * - 9: preferences_2
- * - 10: photos done (complete)
+ * signupStep mapping (profile data sections only, account creation is not numbered):
+ * - 1: basics
+ * - 2: location_education
+ * - 3: religion
+ * - 4: family
+ * - 5: lifestyle
+ * - 6: aboutme
+ * - 7: preferences_1
+ * - 8: preferences_2
+ * - 9: complete (photos done on /profile/photos page)
  *
- * - If signupStep < 10, redirect to /profile/complete (profile sections incomplete)
- * - If signupStep >= 10 but missing photos/phone, redirect to /profile/photos
+ * - If signupStep < 9, redirect to /profile/complete (profile sections incomplete)
+ * - If signupStep >= 9 but missing photos/phone, redirect to /profile/photos
  *
  * This runs globally on all pages except explicitly excluded ones.
  */
@@ -96,13 +97,13 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
         // Redirect if profile exists but is incomplete
         if (data.hasProfile && !data.isComplete && data.profileId) {
           setIsRedirecting(true)
-          // signupStep < 10 means profile sections still incomplete
-          // signupStep >= 10 means all sections done, just need photos/phone
-          if (data.signupStep < 10) {
+          // signupStep < 9 means profile sections still incomplete (1-8 are profile sections)
+          // signupStep >= 9 means all sections done, just need photos/phone
+          if (data.signupStep < 9) {
             router.replace(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep}`)
             return
           }
-          // signupStep >= 10 means profile sections done, redirect to photos page
+          // signupStep >= 9 means profile sections done, redirect to photos page
           router.replace(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
           return
         }

@@ -371,9 +371,10 @@ export async function POST(request: Request) {
         // Status
         approvalStatus: 'pending',
 
-        // Signup progress - signupStep tracks the next step to complete
-        // After account creation (step 2), user needs to complete step 3 (location_education)
-        signupStep: 3,
+        // Signup progress - signupStep tracks the next profile section to complete
+        // 1=basics(done), 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2, 9=complete
+        // After account creation, basics is done, so next step is 2 (location_education)
+        signupStep: 2,
       },
     })
 

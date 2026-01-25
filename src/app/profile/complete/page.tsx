@@ -33,20 +33,19 @@ const SECTION_TITLES: Record<string, string> = {
   preferences_2: 'More Preferences',
 }
 
-// Map signupStep (database value) to local step index
-// signupStep matches FindMatchModal UI steps (account step is skipped here)
-// signupStep 3 → local step 2 (location_education)
-// signupStep 4 → local step 3 (religion)
-// signupStep 9 → local step 8 (preferences_2)
+// signupStep now maps directly to local step (1:1 mapping)
+// signupStep 1 = local step 1 (basics)
+// signupStep 2 = local step 2 (location_education)
+// signupStep 3 = local step 3 (religion)
+// ... etc up to signupStep 8 = local step 8 (preferences_2)
+// signupStep 9 = complete (photos done)
 const getLocalStepFromSignupStep = (signupStep: number): number => {
-  return Math.max(1, Math.min(signupStep - 1, SECTION_ORDER.length))
+  return Math.max(1, Math.min(signupStep, SECTION_ORDER.length))
 }
 
-// Map local step to signupStep (database value)
-// local step 2 (location_education) → signupStep 3
-// local step 3 (religion) → signupStep 4
+// Map local step to signupStep (database value) - now 1:1
 const getSignupStepFromLocalStep = (localStep: number): number => {
-  return localStep + 1
+  return localStep
 }
 
 function ProfileCompleteContent() {
@@ -55,7 +54,7 @@ function ProfileCompleteContent() {
   const { status } = useSession()
 
   const profileId = searchParams.get('profileId')
-  const initialStep = parseInt(searchParams.get('step') || '4', 10)
+  const initialStep = parseInt(searchParams.get('step') || '1', 10) // Default to step 1 (basics)
 
   const [step, setStep] = useState(() => getLocalStepFromSignupStep(initialStep))
   const [loading, setLoading] = useState(false)

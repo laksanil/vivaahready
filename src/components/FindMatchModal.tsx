@@ -50,12 +50,18 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Steps for user: basics → account (early save!) → location → religion → family → lifestyle → aboutme → preferences_1 → preferences_2 → photos
-// Account creation moved to step 2 so users create account right after basics - ALL subsequent data saved to DB immediately
-// This prevents data loss like what happened with Rounak (referral user)
-const SECTION_ORDER = ['basics', 'account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
+// Profile data steps (numbered 1-8 in UI):
+// 1: basics, 2: location_education, 3: religion, 4: family, 5: lifestyle, 6: aboutme, 7: preferences_1, 8: preferences_2
+// Account creation is shown BETWEEN step 1 and 2 but is NOT numbered (it's a gate, not a data step)
+// signupStep in DB maps directly to these numbers (1-8 = profile sections, 9 = complete after photos page)
+// Photos are uploaded on a separate /profile/photos page, not in this modal
+const PROFILE_SECTIONS = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
 
-// Admin mode skips account creation (handled separately) and referral
+// Internal section order includes account page (shown after basics for non-authenticated users)
+// Photos removed - handled separately on /profile/photos page
+const SECTION_ORDER = ['basics', 'account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
+
+// Admin mode has admin_account instead of account, and includes photos for admin flow
 const ADMIN_SECTION_ORDER = ['basics', 'admin_account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
@@ -258,8 +264,18 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Get the newUserId from sessionStorage for authorization
       const newUserId = sessionStorage.getItem('newUserId')
 
-      // Calculate next step number (step + 1) to save progress
-      const nextStep = step + 1
+      // Calculate next internal step
+      const nextInternalStep = step + 1
+      const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
+
+      // Calculate signupStep for DB (1-8 maps to profile sections, not counting account step)
+      // Internal step 3 (location_education) = signupStep 2
+      // Internal step 4 (religion) = signupStep 3, etc.
+      // For regular flow: signupStep = internal step - 1 (because account is step 2)
+      const nextSignupStep = nextInternalStep > 2 ? nextInternalStep - 1 : nextInternalStep
+
+      // Check if this is the last profile section (preferences_2)
+      const isLastSection = sectionOrder[step - 1] === 'preferences_2'
 
       const response = await fetch(`/api/profile/${createdProfileId}`, {
         method: 'PUT',
@@ -269,7 +285,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         },
         body: JSON.stringify({
           ...formData,
-          signupStep: nextStep, // Track progress for returning users
+          signupStep: nextSignupStep, // Track progress for returning users (1-8)
         }),
       })
 
@@ -280,7 +296,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         return
       }
 
-      setStep(nextStep)
+      // If last section, redirect to photos page
+      if (isLastSection && !isAdminMode) {
+        router.push(`/profile/photos?profileId=${createdProfileId}&fromSignup=true`)
+        onClose()
+        return
+      }
+
+      setStep(nextInternalStep)
     } catch {
       setError('Failed to save. Please try again.')
     } finally {
@@ -427,7 +450,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         console.error('Failed to update photo visibility')
       }
 
-      // Mark signup as complete by setting signupStep to 10
+      // Mark signup as complete by setting signupStep to 9
+      // signupStep 9 = complete (photos done)
       // This prevents ProfileCompletionGuard from redirecting back to /profile/complete
       const newUserId = sessionStorage.getItem('newUserId')
       const stepResponse = await fetch(`/api/profile/${createdProfileId}`, {
@@ -436,7 +460,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           'Content-Type': 'application/json',
           ...(newUserId && { 'x-new-user-id': newUserId }),
         },
-        body: JSON.stringify({ signupStep: 10 }),
+        body: JSON.stringify({ signupStep: 9 }),
       })
 
       if (!stepResponse.ok) {
@@ -500,8 +524,15 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   const activeSectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
   const currentSection = activeSectionOrder[step - 1]
-  const totalSteps = activeSectionOrder.length
-  const progress = Math.round((step / totalSteps) * 100)
+
+  // For display purposes, don't count account/admin_account as a numbered step
+  // Account step is a gate between step 1 (basics) and step 2 (location_education)
+  const isAccountStep = currentSection === 'account' || currentSection === 'admin_account'
+  // For regular users: internal step 1=basics(display 1), 2=account(display 1), 3+=display step-1
+  // For admin: similar logic with admin_account
+  const displayStepNumber = isAccountStep ? 1 : (step > 2 ? step - 1 : step)
+  const totalDisplaySteps = PROFILE_SECTIONS.length // 8 profile sections (not counting account or photos)
+  const progress = Math.round((displayStepNumber / totalDisplaySteps) * 100)
 
   const sectionProps = { formData, handleChange, setFormData }
 
@@ -558,10 +589,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </button>
           </div>
 
-          {/* Progress indicator */}
+          {/* Progress indicator - don't show step number during account creation */}
           <div className="px-6 pb-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-500">Step {step} of {totalSteps}</span>
+              <span className="text-xs font-medium text-gray-500">
+                {isAccountStep ? 'Create Account' : `Step ${displayStepNumber} of ${totalDisplaySteps}`}
+              </span>
               <span className="text-xs font-semibold text-primary-600">{progress}% Complete</span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

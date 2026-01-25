@@ -346,16 +346,18 @@ describe('Form Validation', () => {
 })
 
 describe('Signup Step Completion', () => {
-  const FINAL_SIGNUP_STEP = 10 // Step 10 marks signup as complete
+  // signupStep mapping: 1-8 = profile sections, 9 = complete (photos done)
+  // Account creation is NOT a numbered step
+  const FINAL_SIGNUP_STEP = 9 // Step 9 marks signup as complete
 
-  it('should mark signup complete with step 10 after photo upload', () => {
-    // After successful photo upload, signupStep should be set to 10
+  it('should mark signup complete with step 9 after photo upload', () => {
+    // After successful photo upload, signupStep should be set to 9
     // This prevents ProfileCompletionGuard from redirecting to /profile/complete
-    expect(FINAL_SIGNUP_STEP).toBe(10)
+    expect(FINAL_SIGNUP_STEP).toBe(9)
   })
 
   it('should redirect to dashboard after successful signup', () => {
-    // After photo upload with signupStep=10:
+    // After photo upload with signupStep=9:
     // - User should be signed in automatically
     // - User should be redirected to /dashboard?status=pending
     const expectedRedirect = '/dashboard?status=pending'
@@ -363,16 +365,16 @@ describe('Signup Step Completion', () => {
   })
 
   it('should not redirect incomplete signups to profile complete page', () => {
-    // ProfileCompletionGuard checks signupStep < 10
-    // If signupStep >= 10, user stays on dashboard
-    const signupStep = 10
+    // ProfileCompletionGuard checks signupStep < 9
+    // If signupStep >= 9, user stays on dashboard
+    const signupStep = 9
     const isComplete = signupStep >= FINAL_SIGNUP_STEP
     expect(isComplete).toBe(true)
   })
 
   it('should redirect incomplete signups to profile complete page', () => {
-    // If signupStep < 10, user is redirected to /profile/complete
-    const signupStep = 8
+    // If signupStep < 9, user is redirected to /profile/complete
+    const signupStep = 7 // preferences_1
     const isComplete = signupStep >= FINAL_SIGNUP_STEP
     expect(isComplete).toBe(false)
   })
