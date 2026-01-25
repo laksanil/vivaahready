@@ -290,15 +290,18 @@ export async function POST(request: Request) {
       if (targetProfile.user.email && currentUserProfile) {
         const currentUserFirstName = currentUserProfile.firstName || currentUser?.name?.split(' ')[0] || 'Someone'
 
-        // Send email notification (don't block the response)
-        sendInterestAcceptedEmail(
-          targetProfile.user.email,
-          targetProfile.user.name || 'there',
-          currentUserFirstName,
-          currentUserProfile.id
-        ).catch((err) => {
-          console.error('Failed to send mutual match email:', err)
-        })
+        // Await email to ensure it completes before serverless function ends
+        try {
+          const emailResult = await sendInterestAcceptedEmail(
+            targetProfile.user.email,
+            targetProfile.user.name || 'there',
+            currentUserFirstName,
+            currentUserProfile.id
+          )
+          console.log('Mutual match email result:', emailResult)
+        } catch (emailError) {
+          console.error('Failed to send mutual match email:', emailError)
+        }
       }
 
       return NextResponse.json({
@@ -341,17 +344,19 @@ export async function POST(request: Request) {
 
       console.log('Sending new interest email to:', targetProfile.user.email, 'from:', senderFirstName)
 
-      // Send email (don't block the response if email fails)
-      sendNewInterestEmail(
-        targetProfile.user.email,
-        targetProfile.user.name || 'there',
-        senderFirstName,
-        senderProfileId
-      ).then((result) => {
-        console.log('New interest email result:', result)
-      }).catch((err) => {
-        console.error('Failed to send new interest email:', err)
-      })
+      // Await email to ensure it completes before serverless function ends
+      try {
+        const emailResult = await sendNewInterestEmail(
+          targetProfile.user.email,
+          targetProfile.user.name || 'there',
+          senderFirstName,
+          senderProfileId
+        )
+        console.log('New interest email result:', emailResult)
+      } catch (emailError) {
+        // Log but don't fail the interest creation
+        console.error('Failed to send new interest email:', emailError)
+      }
     } else {
       console.warn('Skipping interest email - senderUser:', !!senderUser, 'targetEmail:', targetProfile.user.email)
     }
@@ -547,15 +552,18 @@ export async function PATCH(request: Request) {
       if (interest.sender.email && receiverProfile) {
         const receiverFirstName = receiverProfile.firstName || interest.receiver.name?.split(' ')[0] || 'Someone'
 
-        // Send email notification (don't block the response)
-        sendInterestAcceptedEmail(
-          interest.sender.email,
-          interest.sender.name || 'there',
-          receiverFirstName,
-          receiverProfile.id
-        ).catch((err) => {
-          console.error('Failed to send interest accepted email:', err)
-        })
+        // Await email to ensure it completes before serverless function ends
+        try {
+          const emailResult = await sendInterestAcceptedEmail(
+            interest.sender.email,
+            interest.sender.name || 'there',
+            receiverFirstName,
+            receiverProfile.id
+          )
+          console.log('Interest accepted email result:', emailResult)
+        } catch (emailError) {
+          console.error('Failed to send interest accepted email:', emailError)
+        }
       }
     }
 
