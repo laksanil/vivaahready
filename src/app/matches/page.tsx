@@ -15,6 +15,7 @@ import {
   Users,
   Clock,
   Eye,
+  XCircle,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
@@ -54,6 +55,7 @@ function FeedPageContent() {
   const [hasPaid, setHasPaid] = useState(false)
   const [connections, setConnections] = useState<FeedProfile[]>([])
   const [hasConnections, setHasConnections] = useState(false)
+  const [removingConnectionId, setRemovingConnectionId] = useState<string | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -206,6 +208,28 @@ function FeedPageContent() {
 
   const removeProfile = (profileId: string) => {
     setProfiles((prev) => prev.filter((p) => p.id !== profileId))
+  }
+
+  const handleRemoveConnection = async (connection: FeedProfile) => {
+    if (!connection.userId) return
+    setRemovingConnectionId(connection.id)
+
+    try {
+      // Add to declined list so they don't reappear in matches
+      await fetch(buildApiUrl('/api/matches/decline'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ declinedUserId: connection.userId }),
+      })
+
+      // Remove from local connections state
+      setConnections((prev) => prev.filter((c) => c.id !== connection.id))
+      setHasConnections(connections.length > 1)
+    } catch (error) {
+      console.error('Error removing connection:', error)
+    } finally {
+      setRemovingConnectionId(null)
+    }
   }
 
   // Filter profiles by search
@@ -741,44 +765,57 @@ function FeedPageContent() {
             ) : (
               <div className="space-y-2">
                 {connections.map((connection) => (
-                  <Link
+                  <div
                     key={connection.id}
-                    href={buildUrl(`/profile/${connection.id}`)}
-                    className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-green-300 transition-colors"
+                    className="bg-white rounded-lg border border-gray-200 p-4 hover:border-green-300 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 ring-2 ring-green-400 ring-offset-2">
-                        {connection.profileImageUrl ? (
-                          <img
-                            src={connection.profileImageUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl font-semibold">
-                            {connection.user?.name?.charAt(0) || '?'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{connection.user?.name}</h3>
-                        <p className="text-sm text-gray-600 truncate">
-                          {connection.currentLocation || 'Location not specified'}
-                          {connection.occupation && ` • ${connection.occupation}`}
-                        </p>
-                        {connection.matchScore && (
-                          <p className="text-xs text-green-600 mt-1">
-                            {connection.matchScore.percentage}% match
+                      <Link href={buildUrl(`/profile/${connection.id}`)} className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 ring-2 ring-green-400 ring-offset-2">
+                          {connection.profileImageUrl ? (
+                            <img
+                              src={connection.profileImageUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl font-semibold">
+                              {connection.user?.name?.charAt(0) || '?'}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{connection.user?.name}</h3>
+                          <p className="text-sm text-gray-600 truncate">
+                            {connection.currentLocation || 'Location not specified'}
+                            {connection.occupation && ` • ${connection.occupation}`}
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
+                          {connection.matchScore && (
+                            <p className="text-xs text-green-600 mt-1">
+                              {connection.matchScore.percentage}% match
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                           Connected
                         </span>
+                        <button
+                          onClick={() => handleRemoveConnection(connection)}
+                          disabled={removingConnectionId === connection.id}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                          title="Remove connection"
+                        >
+                          {removingConnectionId === connection.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}
