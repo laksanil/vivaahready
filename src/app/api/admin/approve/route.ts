@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 import { isMutualMatch } from '@/lib/matching'
-import { sendNewMatchAvailableEmail } from '@/lib/email'
+import { sendNewMatchAvailableEmail, sendProfileApprovedEmail } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -122,12 +122,26 @@ export async function POST(request: Request) {
       },
     })
 
-    // If approving profiles, notify matching users who haven't logged in recently
+    // If approving profiles, send approval emails and notify matching users
     if (action === 'approve') {
       // Get the full approved profiles for matching
       const approvedProfiles = await prisma.profile.findMany({
         where: { id: { in: idsToProcess } },
+        include: {
+          user: {
+            select: { email: true, name: true }
+          }
+        }
       })
+
+      // Send approval email to each approved user (in background)
+      for (const profile of approvedProfiles) {
+        if (profile.user.email) {
+          sendProfileApprovedEmail(profile.user.email, profile.user.name || 'there')
+            .then(() => console.log(`[APPROVAL EMAIL] Sent to ${profile.user.email}`))
+            .catch(err => console.error(`[APPROVAL EMAIL] Failed for ${profile.user.email}:`, err))
+        }
+      }
 
       // Notify matching users in the background (don't block the response)
       notifyMatchingUsers(approvedProfiles).catch(err => {
