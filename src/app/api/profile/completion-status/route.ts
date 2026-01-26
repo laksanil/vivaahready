@@ -54,8 +54,9 @@ export async function GET() {
     const hasPhotos = !!(user.profile?.profileImageUrl || user.profile?.photoUrls)
     const signupStep = user.profile?.signupStep || 2 // Default to 2 (basics done, need location_education)
 
-    // Profile is complete only if all requirements met AND signup flow finished (step 9 = photos done)
-    const isComplete = hasProfile && hasPhone && hasPhotos && signupStep >= 9
+    // Profile is complete if all requirements met AND signup flow finished (step 9 = photos done)
+    // Existing users who already have photos are considered complete regardless of signupStep
+    const isComplete = hasProfile && hasPhone && (signupStep >= 9 || hasPhotos)
 
     return NextResponse.json({
       isComplete,
