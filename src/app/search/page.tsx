@@ -212,7 +212,7 @@ export default function SearchPage() {
               Your profile is ready. Complete verification to unlock full access to matches and start connecting.
             </p>
             <Link
-              href="/payment"
+              href="/get-verified"
               className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
             >
               Get Verified

@@ -489,7 +489,7 @@ function FeedPageContent() {
                           Great news! A match is waiting to connect with you. Get verified to view their profile and start messaging.
                         </p>
                         <Link
-                          href={buildUrl('/payment')}
+                          href={buildUrl('/get-verified')}
                           className="inline-flex items-center mt-2 text-sm font-medium text-green-700 hover:text-green-800"
                         >
                           Get Verified Now →
@@ -509,7 +509,7 @@ function FeedPageContent() {
                           Your interests are waiting! Once you&apos;re verified, matches can accept and you can start messaging.
                         </p>
                         <Link
-                          href={buildUrl('/payment')}
+                          href={buildUrl('/get-verified')}
                           className="inline-flex items-center mt-2 text-sm font-medium text-primary-700 hover:text-primary-800"
                         >
                           Get Verified Now →
@@ -600,7 +600,7 @@ function FeedPageContent() {
                           See full photos, names, LinkedIn profiles, and accept interests.
                         </p>
                         <Link
-                          href={buildUrl('/payment')}
+                          href={buildUrl('/get-verified')}
                           className="inline-flex items-center mt-2 text-sm font-medium text-primary-700 hover:text-primary-800"
                         >
                           Get Verified Now →
@@ -700,7 +700,7 @@ function FeedPageContent() {
                         </div>
                         {!userStatus?.isApproved && (
                           <Link
-                            href={buildUrl('/payment')}
+                            href={buildUrl('/get-verified')}
                             className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                           >
                             Get verified to accept →

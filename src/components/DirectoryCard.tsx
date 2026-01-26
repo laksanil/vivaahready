@@ -472,7 +472,7 @@ export function DirectoryCard({
                 </p>
                 <div className="space-y-3">
                   <Link
-                    href={buildUrl('/payment')}
+                    href={buildUrl('/get-verified')}
                     className="block w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors text-center"
                   >
                     Get Verified

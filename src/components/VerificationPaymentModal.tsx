@@ -17,7 +17,7 @@ export default function VerificationPaymentModal({
 
   const handleGetVerified = () => {
     onClose()
-    router.push('/payment')
+    router.push('/get-verified')
   }
 
   if (!isOpen) return null

@@ -302,7 +302,7 @@ function ConnectionsPageContent() {
                       <span>Photos, names, and contact details are blurred until verification</span>
                     </div>
                     <Link
-                      href={buildUrl('/payment')}
+                      href={buildUrl('/get-verified')}
                       className="mt-3 inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
                     >
                       Get Verified
