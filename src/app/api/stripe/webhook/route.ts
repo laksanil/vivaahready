@@ -55,11 +55,15 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     return
   }
 
-  // Check if this is a $50 verification payment (amount is in cents)
-  const amountPaid = session.amount_total
-  if (amountPaid === 5000) {
+  // Check if this is a verification payment via metadata or amount
+  const isVerificationPayment =
+    session.metadata?.type === 'verification_payment' ||
+    session.amount_total === 5000 ||
+    session.amount_total === 10000
+
+  if (isVerificationPayment) {
     await markPaymentComplete(user.id, session.id)
-    console.log(`Verification payment completed for user: ${user.id}`)
+    console.log(`Verification payment completed for user: ${user.id} (amount: $${(session.amount_total || 0) / 100})`)
   }
 }
 

@@ -5,24 +5,19 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  CreditCard,
   Check,
   Shield,
-  Heart,
-  Users,
-  MessageCircle,
   Loader2,
   ArrowLeft,
-  Clock,
 } from 'lucide-react'
-import { PRICING, isPromoActive, getPromoTimeRemaining, getActivePrice } from '@/lib/pricing'
 
 export default function PaymentPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'error'>('pending')
   const [hasPaid, setHasPaid] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -41,42 +36,59 @@ export default function PaymentPage() {
       const response = await fetch('/api/payment/status')
       const data = await response.json()
       setHasPaid(data.hasPaid)
-    } catch (error) {
-      console.error('Error checking payment status:', error)
+    } catch (err) {
+      console.error('Error checking payment status:', err)
+    } finally {
+      setCheckingStatus(false)
     }
   }
 
-  const handlePayment = async () => {
+  // Redirect to Stripe checkout on mount if not already paid
+  useEffect(() => {
+    if (!checkingStatus && !hasPaid && session) {
+      redirectToStripe()
+    }
+  }, [checkingStatus, hasPaid, session])
+
+  const redirectToStripe = async () => {
+    if (loading) return
     setLoading(true)
-    setPaymentStatus('processing')
+    setError(null)
 
     try {
-      const response = await fetch('/api/payment/process', {
+      const response = await fetch('/api/stripe/verify-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getActivePrice() }),
       })
 
       const data = await response.json()
 
-      if (data.success) {
-        setPaymentStatus('success')
+      if (data.alreadyPaid) {
         setHasPaid(true)
-      } else {
-        setPaymentStatus('error')
+        setLoading(false)
+        return
       }
-    } catch (error) {
-      console.error('Payment error:', error)
-      setPaymentStatus('error')
-    } finally {
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error || 'Failed to start payment. Please try again.')
+        setLoading(false)
+      }
+    } catch (err) {
+      console.error('Payment error:', err)
+      setError('Something went wrong. Please try again.')
       setLoading(false)
     }
   }
 
-  if (status === 'loading') {
+  if (status === 'loading' || checkingStatus) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-3" />
+          <p className="text-gray-600 text-sm">Checking payment status...</p>
+        </div>
       </div>
     )
   }
@@ -113,155 +125,38 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <Link
-          href="/matches"
-          className="inline-flex items-center text-gray-600 hover:text-primary-600 mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Matches
-        </Link>
-
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Payment Form */}
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <CreditCard className="h-8 w-8 text-primary-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Profile Verification</h1>
-            </div>
-
-            <div className="mb-8">
-              {isPromoActive() ? (
-                <>
-                  <div className="flex items-baseline gap-3 mb-2">
-                    <span className="text-2xl text-gray-400 line-through">${PRICING.regularPrice}</span>
-                    <span className="text-4xl font-bold text-primary-600">${PRICING.currentPrice}</span>
-                    <span className="text-gray-500">one-time</span>
-                  </div>
-                  {getPromoTimeRemaining() && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                      <Clock className="h-4 w-4" />
-                      <span>{PRICING.promo.name} - {getPromoTimeRemaining()?.days} days left</span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-4xl font-bold text-gray-900">${PRICING.regularPrice}</span>
-                  <span className="text-gray-500">one-time payment</span>
-                </div>
-              )}
-              <p className="text-gray-600">
-                Complete your profile verification to unlock the ability to accept interests
-                and connect with matching profiles.
-              </p>
-            </div>
-
-            {paymentStatus === 'success' ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center gap-2 text-green-700">
-                  <Check className="h-5 w-5" />
-                  <span className="font-medium">Payment successful!</span>
-                </div>
-                <p className="text-green-600 text-sm mt-1">
-                  Your profile is now pending admin approval.
-                </p>
-              </div>
-            ) : paymentStatus === 'error' ? (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-700">
-                  Payment failed. Please try again or contact support.
-                </p>
-              </div>
-            ) : null}
-
-            <button
-              onClick={handlePayment}
-              disabled={loading || paymentStatus === 'success'}
-              className="w-full py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="h-5 w-5" />
-                  Pay ${getActivePrice()} Now
-                </>
-              )}
-            </button>
-
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center max-w-md mx-auto px-4">
+        {loading && !error ? (
+          <>
+            <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-3" />
+            <p className="text-gray-700 font-medium">Redirecting to secure payment...</p>
+            <p className="text-gray-500 text-sm mt-1">You&apos;ll be taken to Stripe to complete your payment.</p>
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-400">
               <Shield className="h-4 w-4" />
-              <span>Secure payment processing</span>
+              <span>Secure payment by Stripe</span>
             </div>
-          </div>
-
-          {/* Benefits */}
-          <div className="bg-gradient-to-br from-primary-50 to-accent-50 rounded-2xl p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">What You Get</h2>
-
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Check className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Profile Verification</h3>
-                  <p className="text-gray-600 text-sm">
-                    Your profile will be reviewed and verified by our team
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Heart className="h-5 w-5 text-pink-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Express Interest</h3>
-                  <p className="text-gray-600 text-sm">
-                    Send interest to profiles that match your preferences
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">View Full Profiles</h3>
-                  <p className="text-gray-600 text-sm">
-                    Access complete profile information of matching candidates
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Connect with Matches</h3>
-                  <p className="text-gray-600 text-sm">
-                    Get contact details when there's mutual interest
-                  </p>
-                </div>
-              </div>
+          </>
+        ) : error ? (
+          <>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-red-700">{error}</p>
             </div>
-
-            <div className="mt-8 p-4 bg-white/50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                <strong>Note:</strong> After payment, your profile will be reviewed by our admin team.
-                Once approved, you'll be able to accept interests and view contact details of your matches.
-              </p>
-            </div>
-          </div>
-        </div>
+            <button
+              onClick={redirectToStripe}
+              className="btn-primary mb-3"
+            >
+              Try Again
+            </button>
+            <Link
+              href="/get-verified"
+              className="inline-flex items-center text-gray-600 hover:text-primary-600 text-sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to Get Verified
+            </Link>
+          </>
+        ) : null}
       </div>
     </div>
   )
