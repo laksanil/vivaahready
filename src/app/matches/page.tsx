@@ -571,14 +571,24 @@ function FeedPageContent() {
               <div className="space-y-3">
                 {/* Verification Required Banner */}
                 {!userStatus?.isApproved && receivedInterests.length > 0 && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-2">
+                  <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-4 mb-2">
                     <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-amber-800">Awaiting Admin Approval</h4>
-                        <p className="text-sm text-amber-700 mt-1">
-                          Your profile is pending verification. Once approved (typically 24-48 hours), you&apos;ll be able to accept interests and connect with matches.
+                      <Heart className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-primary-900">
+                          {receivedInterests.length === 1
+                            ? 'Someone is interested in you!'
+                            : `${receivedInterests.length} people are interested in you!`}
+                        </h4>
+                        <p className="text-sm text-primary-700 mt-1">
+                          Get verified to accept their interest and start connecting.
                         </p>
+                        <Link
+                          href={buildUrl('/payment')}
+                          className="inline-flex items-center mt-2 text-sm font-medium text-primary-700 hover:text-primary-800"
+                        >
+                          Get Verified Now →
+                        </Link>
                       </div>
                     </div>
                   </div>
