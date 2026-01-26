@@ -206,10 +206,10 @@ function AdminProfilesContent() {
       })
       if (res.ok) {
         fetchProfiles()
-        showToast('Profile deleted', 'success')
+        showToast('User account deleted successfully', 'success')
       } else {
         const error = await res.json()
-        showToast(error.error || 'Failed to delete profile', 'error')
+        showToast(error.error || 'Failed to delete user account', 'error')
       }
     } catch (err) {
       console.error('Failed to delete profile:', err)
@@ -837,9 +837,9 @@ function AdminProfilesContent() {
         isOpen={deleteConfirmModal.isOpen}
         onClose={() => setDeleteConfirmModal({ isOpen: false, profile: null })}
         onConfirm={handleDeleteConfirm}
-        title="Delete Profile"
-        message={`Are you sure you want to delete ${deleteConfirmModal.profile?.user.name}'s profile? This action cannot be undone.`}
-        confirmText="Delete"
+        title="Delete User Account"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.profile?.user.name}'s account? This will remove their profile, login, messages, connections, and all associated data. This action cannot be undone.`}
+        confirmText="Delete Account"
         confirmVariant="danger"
         isLoading={actionLoading === deleteConfirmModal.profile?.id}
         icon={<Trash2 className="h-5 w-5 text-red-500" />}

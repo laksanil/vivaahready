@@ -144,12 +144,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Delete the profile (user deletion is optional)
-    await prisma.profile.delete({
-      where: { id: params.id }
+    // Delete the entire user account (cascades to profile, matches, messages, etc.)
+    await prisma.user.delete({
+      where: { id: profile.userId }
     })
 
-    return NextResponse.json({ message: 'Profile deleted' })
+    return NextResponse.json({ message: 'Profile and user account deleted' })
   } catch (error) {
     console.error('Admin profile delete error:', error)
     return NextResponse.json({ error: 'Failed to delete profile' }, { status: 500 })

@@ -16,9 +16,11 @@ import {
   Clock,
   Eye,
   XCircle,
+  MessageCircle,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
+import MessageModal from '@/components/MessageModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -55,7 +57,8 @@ function FeedPageContent() {
   const [hasPaid, setHasPaid] = useState(false)
   const [connections, setConnections] = useState<FeedProfile[]>([])
   const [hasConnections, setHasConnections] = useState(false)
-  const [removingConnectionId, setRemovingConnectionId] = useState<string | null>(null)
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+  const [messageRecipient, setMessageRecipient] = useState<{ id: string; name: string; photo?: string | null } | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -210,12 +213,12 @@ function FeedPageContent() {
     setProfiles((prev) => prev.filter((p) => p.id !== profileId))
   }
 
-  const handleRemoveConnection = async (connection: FeedProfile) => {
+  const handleWithdrawInterest = async (connection: FeedProfile) => {
     if (!connection.userId) return
-    setRemovingConnectionId(connection.id)
+    setWithdrawingId(connection.id)
 
     try {
-      // Add to declined list so they don't reappear in matches
+      // Add to declined list so they appear in Passed tab
       await fetch(buildApiUrl('/api/matches/decline'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -225,10 +228,12 @@ function FeedPageContent() {
       // Remove from local connections state
       setConnections((prev) => prev.filter((c) => c.id !== connection.id))
       setHasConnections(connections.length > 1)
+      // Refresh passed profiles so the withdrawn connection appears there
+      fetchPassedProfiles()
     } catch (error) {
-      console.error('Error removing connection:', error)
+      console.error('Error withdrawing interest:', error)
     } finally {
-      setRemovingConnectionId(null)
+      setWithdrawingId(null)
     }
   }
 
@@ -801,18 +806,25 @@ function FeedPageContent() {
                         <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                           Connected
                         </span>
-                        <button
-                          onClick={() => handleRemoveConnection(connection)}
-                          disabled={removingConnectionId === connection.id}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                          title="Remove connection"
-                        >
-                          {removingConnectionId === connection.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                        </button>
+                        <div className="group relative">
+                          <button
+                            onClick={() => handleWithdrawInterest(connection)}
+                            disabled={withdrawingId === connection.id}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                            title="Withdraw Interest"
+                          >
+                            {withdrawingId === connection.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <XCircle className="h-4 w-4" />
+                            )}
+                          </button>
+                          <div className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-50">
+                            <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 whitespace-nowrap shadow-lg">
+                              Withdraw Interest
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -882,6 +894,24 @@ function FeedPageContent() {
                         )}
                       </Link>
                       <div className="flex gap-2">
+                        {/* View Messages Button */}
+                        <div className="group relative">
+                          <button
+                            onClick={() => setMessageRecipient({
+                              id: profile.userId,
+                              name: profile.user?.name || 'Unknown',
+                              photo: profile.profileImageUrl,
+                            })}
+                            className="p-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 hover:text-gray-800 transition-colors"
+                          >
+                            <MessageCircle className="h-5 w-5" />
+                          </button>
+                          <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                            <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 whitespace-nowrap shadow-lg">
+                              View Messages
+                            </div>
+                          </div>
+                        </div>
                         {/* Reconsider Button */}
                         <div className="group relative">
                           <button
@@ -945,6 +975,17 @@ function FeedPageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Message Modal for viewing messages from Passed tab */}
+      {messageRecipient && (
+        <MessageModal
+          isOpen={!!messageRecipient}
+          onClose={() => setMessageRecipient(null)}
+          recipientId={messageRecipient.id}
+          recipientName={messageRecipient.name}
+          recipientPhoto={messageRecipient.photo}
+        />
       )}
       </div>
   )
