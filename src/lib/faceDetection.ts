@@ -58,7 +58,7 @@ export async function detectFacesInImage(imageFile: File): Promise<{
       img,
       new faceapi.TinyFaceDetectorOptions({
         inputSize: 416,
-        scoreThreshold: 0.5
+        scoreThreshold: 0.3
       })
     )
 
@@ -122,11 +122,11 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
     const faceResult = await detectFacesInImage(imageFile)
 
     if (faceResult.error) {
-      // Face detection failed - do not allow upload
+      // Face detection failed - allow upload, admin will review manually
       console.log('Face detection error:', faceResult.error)
       return {
-        isValid: false,
-        message: faceResult.error
+        isValid: true,
+        message: 'Photo accepted (face detection unavailable)'
       }
     }
 
@@ -143,10 +143,10 @@ export async function validateProfilePhoto(imageFile: File): Promise<{
     }
   } catch (error) {
     console.error('Face detection error during validation:', error)
-    // Do not allow upload if face detection fails
+    // Allow upload if face detection fails - admin will review manually
     return {
-      isValid: false,
-      message: 'Unable to validate photo. Please try again or use a different photo.'
+      isValid: true,
+      message: 'Photo accepted (face detection unavailable)'
     }
   }
 }
