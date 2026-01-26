@@ -578,7 +578,7 @@ function FeedPageContent() {
                       <div className="flex-1">
                         <h4 className="font-semibold text-primary-900">Get verified to view photos and accept</h4>
                         <p className="text-sm text-primary-700 mt-1">
-                          See their full profile, photos, and connect with your matches.
+                          See full photos, names, LinkedIn profiles, and accept interests.
                         </p>
                         <Link
                           href={buildUrl('/payment')}
