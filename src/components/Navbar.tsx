@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2, Edit } from 'lucide-react'
 import DeleteProfileModal from './DeleteProfileModal'
@@ -18,6 +18,21 @@ export function Navbar() {
   const viewAsUser = searchParams.get('viewAsUser')
   const [viewedUserName, setViewedUserName] = useState<string | null>(null)
   const [profileDisplayName, setProfileDisplayName] = useState<string | null>(null)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    if (!isProfileMenuOpen) return
+
+    function handleClickOutside(event: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isProfileMenuOpen])
 
   // Helper to build URLs with viewAsUser preserved
   const buildUrl = useCallback((path: string) => {
@@ -144,7 +159,7 @@ export function Navbar() {
             {status === 'loading' && !isAdminViewMode ? (
               <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
             ) : (session || isAdminViewMode) ? (
-              <div className="relative">
+              <div className="relative" ref={profileMenuRef}>
                 <button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                   className={`flex items-center space-x-2 ${isAdminViewMode ? 'text-purple-200' : 'text-white'} hover:text-white/80`}
