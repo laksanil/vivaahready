@@ -14,6 +14,7 @@ import {
   Inbox,
   Users,
   Clock,
+  Eye,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
@@ -573,15 +574,11 @@ function FeedPageContent() {
                 {!userStatus?.isApproved && receivedInterests.length > 0 && (
                   <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-4 mb-2">
                     <div className="flex items-start gap-3">
-                      <Heart className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                      <Eye className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h4 className="font-semibold text-primary-900">
-                          {receivedInterests.length === 1
-                            ? 'Someone is interested in you!'
-                            : `${receivedInterests.length} people are interested in you!`}
-                        </h4>
+                        <h4 className="font-semibold text-primary-900">Get verified to view photos and accept</h4>
                         <p className="text-sm text-primary-700 mt-1">
-                          Get verified to accept their interest and start connecting.
+                          See their full profile, photos, and connect with your matches.
                         </p>
                         <Link
                           href={buildUrl('/payment')}
