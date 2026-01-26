@@ -1897,43 +1897,34 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const userReligion = formData.religion as string || ''
   const isEditingProfile = Boolean(formData.id)
 
+  // Sync fallback defaults into formData so saved values always match what's displayed.
+  // Without this, selects can show a fallback value (e.g. user's own religion) while
+  // formData remains null — causing the saved value to not match what the user sees.
   useEffect(() => {
-    if (showOnlyOptional || isEditingProfile || !userAge) return
+    if (showOnlyOptional) return
 
     setFormData(prev => {
       const updates: Record<string, unknown> = {}
 
-      if (!prev.prefAgeMin && userGender === 'female') {
+      // Age defaults: use user's own age as starting point
+      if (!prev.prefAgeMin && userGender === 'female' && userAge) {
         updates.prefAgeMin = userAge
       }
-
-      if (!prev.prefAgeMax && userGender === 'male') {
+      if (!prev.prefAgeMax && userGender === 'male' && userAge) {
         updates.prefAgeMax = userAge
+      }
+
+      // Religion default: use user's own religion
+      if (!prev.prefReligion && userReligion) {
+        updates.prefReligion = userReligion
       }
 
       if (Object.keys(updates).length === 0) return prev
       return { ...prev, ...updates }
     })
-  }, [showOnlyOptional, isEditingProfile, userAge, userGender, setFormData])
+  }, [showOnlyOptional, userAge, userGender, userReligion, setFormData])
 
-  const getDefaultAgeMin = () => {
-    if (formData.prefAgeMin) return formData.prefAgeMin as string
-    if (userGender === 'female' && userAge) return userAge
-    return ''
-  }
-
-  const getDefaultAgeMax = () => {
-    if (formData.prefAgeMax) return formData.prefAgeMax as string
-    if (userGender === 'male' && userAge) return userAge
-    return ''
-  }
-
-  const getDefaultReligion = () => {
-    if (formData.prefReligion) return formData.prefReligion as string
-    return userReligion || ''
-  }
-
-  const prefReligion = getDefaultReligion()
+  const prefReligion = (formData.prefReligion as string) || userReligion || ''
   const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
   const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
   const prefCitizenshipIsDealbreaker = isDealbreaker(formData, 'prefCitizenship')
@@ -2009,11 +2000,11 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
                 <DealBreakerToggle field="prefAge" formData={formData} setFormData={setFormData} />
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <select name="prefAgeMin" value={getDefaultAgeMin()} onChange={handleChange} className="input-field" required>
+                <select name="prefAgeMin" value={formData.prefAgeMin as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Min Age</option>
                   {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                 </select>
-                <select name="prefAgeMax" value={getDefaultAgeMax()} onChange={handleChange} className="input-field" required>
+                <select name="prefAgeMax" value={formData.prefAgeMax as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Max Age</option>
                   {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                 </select>

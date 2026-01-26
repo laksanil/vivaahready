@@ -745,7 +745,7 @@ function AdminProfilesContent() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSearchSubmit={handleSearch}
-          placeholder="Search by name, email, VR ID..."
+          placeholder="Search by name, email, phone, VR ID..."
         >
           {activeTab !== 'no_profile' && activeTab !== 'deletions' && (
             <select

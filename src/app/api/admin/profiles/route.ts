@@ -276,13 +276,23 @@ export async function GET(request: Request) {
     }
 
     if (search) {
-      where.OR = [
+      // Strip non-digit chars for phone search (e.g. "+91 963-269-8613" → "919632698613")
+      const phoneDigits = search.replace(/[^0-9]/g, '')
+      const searchConditions: any[] = [
         { odNumber: { contains: search, mode: 'insensitive' } },
         { user: { name: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
         { currentLocation: { contains: search, mode: 'insensitive' } },
         { occupation: { contains: search, mode: 'insensitive' } },
       ]
+      // Add phone search if input looks like it could be a phone number (has digits)
+      if (phoneDigits.length >= 4) {
+        searchConditions.push(
+          { user: { phone: { contains: search, mode: 'insensitive' } } },
+          { user: { phone: { contains: phoneDigits, mode: 'insensitive' } } },
+        )
+      }
+      where.OR = searchConditions
     }
 
     const [profiles, total] = await Promise.all([
