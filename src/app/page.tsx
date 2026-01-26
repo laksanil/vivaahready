@@ -261,7 +261,7 @@ export default async function HomePage() {
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">1</span>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Create Profile</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Create Profile (Free)</h3>
               <p className="text-gray-600 text-sm">
                 Create your profile and preferences. Add deal-breakers and match preferences.
               </p>
@@ -271,7 +271,7 @@ export default async function HomePage() {
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">2</span>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Find Matches</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Find Matches (Free)</h3>
               <p className="text-gray-600 text-sm">
                 See curated matches where both sides&apos; preferences align. Identity stays hidden.
               </p>
@@ -281,7 +281,7 @@ export default async function HomePage() {
               <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-xl font-bold text-primary-600">3</span>
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Express Interest</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Express Interest (Free)</h3>
               <p className="text-gray-600 text-sm">
                 Express interest to signal intent.
               </p>
