@@ -114,6 +114,7 @@ const profileSchema = z.object({
   pets: z.string().optional(),
   allergiesOrMedical: z.string().optional(),
   aboutMe: z.string().optional(),
+  referralSource: z.string().optional(),
 
   // Partner Preferences
   prefAgeDiff: z.string().optional(),
@@ -311,6 +312,7 @@ export async function POST(request: Request) {
         pets: data.pets,
         allergiesOrMedical: data.allergiesOrMedical,
         aboutMe: data.aboutMe,
+        referralSource: data.referralSource,
 
         // Partner Preferences
         prefAgeDiff: data.prefAgeDiff,

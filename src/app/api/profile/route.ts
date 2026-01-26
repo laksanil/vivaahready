@@ -319,6 +319,7 @@ export async function PUT(request: Request) {
     if (body.interests !== undefined) updateData.interests = body.interests
     if (body.pets !== undefined) updateData.pets = body.pets
     if (body.allergiesOrMedical !== undefined) updateData.allergiesOrMedical = body.allergiesOrMedical
+    if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
 
     // Additional fields
     if (body.religion !== undefined) updateData.religion = body.religion
