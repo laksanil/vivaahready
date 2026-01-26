@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import ReportModal from '@/components/ReportModal'
 import VerificationPaymentModal from '@/components/VerificationPaymentModal'
+import MessageModal from '@/components/MessageModal'
 import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
@@ -226,6 +227,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   } | null>(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showMessageModal, setShowMessageModal] = useState(false)
   const [blockedByDealbreaker, setBlockedByDealbreaker] = useState(false)
   const [matchScoreChecked, setMatchScoreChecked] = useState(false)
 
@@ -440,6 +442,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           viewerIsApproved={userStatus?.isApproved ?? false}
           onReport={() => setShowReportModal(true)}
           onOpenPayment={() => setShowPaymentModal(true)}
+          onMessage={() => setShowMessageModal(true)}
           buildUrl={buildUrl}
         />
 
@@ -456,6 +459,17 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
         />
+
+        {/* Message Modal */}
+        {profile && (
+          <MessageModal
+            isOpen={showMessageModal}
+            onClose={() => setShowMessageModal(false)}
+            recipientId={profile.userId}
+            recipientName={profile.user.name}
+            recipientPhoto={profile.profileImageUrl}
+          />
+        )}
       </div>
     </div>
   )
@@ -493,6 +507,7 @@ interface ProfileCardProps {
   viewerIsApproved?: boolean
   onReport?: () => void
   onOpenPayment?: () => void
+  onMessage?: () => void
   buildUrl: (path: string) => string
 }
 
@@ -505,6 +520,7 @@ function ProfileCard({
   theirMatchScore,
   onReport,
   onOpenPayment,
+  onMessage,
   yourMatchScore,
   matchProfiles,
   buildUrl,
@@ -702,9 +718,12 @@ function ProfileCard({
                       </div>
                     </div>
                     <div className="group relative">
-                      <div className="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 cursor-pointer shadow-lg transition-colors">
+                      <button
+                        onClick={onMessage}
+                        className="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 cursor-pointer shadow-lg transition-colors"
+                      >
                         <MessageCircle className="h-6 w-6 text-white" />
-                      </div>
+                      </button>
                       <div className="absolute top-full right-0 mt-2 hidden group-hover:block z-50">
                         <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
                           <div className="font-semibold mb-1">Send Message</div>
