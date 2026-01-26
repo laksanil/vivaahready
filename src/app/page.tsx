@@ -475,7 +475,7 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <FindMatchButton variant="primary" />
             <Link
-              href="/pricing"
+              href="/get-verified"
               className="border-2 border-gray-300 text-gray-700 px-8 py-3.5 rounded-lg font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all flex items-center justify-center"
             >
               View Pricing

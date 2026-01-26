@@ -130,7 +130,7 @@ export function Navbar() {
               </>
             )}
             {(session || isAdminViewMode) && (
-              <Link href="/pricing" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+              <Link href="/get-verified" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                 Get Verified
               </Link>
             )}
@@ -284,7 +284,7 @@ export function Navbar() {
             )}
             {(session || isAdminViewMode) && (
               <Link
-                href="/pricing"
+                href="/get-verified"
                 className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
                 onClick={() => setIsMenuOpen(false)}
               >

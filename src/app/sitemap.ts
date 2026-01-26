@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/pricing`,
+      url: `${baseUrl}/get-verified`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.9,

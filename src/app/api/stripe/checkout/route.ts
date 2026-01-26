@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const priceConfig = PRICE_MAP[priceId]
 
     if (isTestMode) {
-      return NextResponse.json({ url: '/pricing?subscription=mock' })
+      return NextResponse.json({ url: '/get-verified?subscription=mock' })
     }
 
     // Create Stripe checkout session
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
         },
       ],
       success_url: `${process.env.NEXTAUTH_URL}/dashboard?subscription=success`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/pricing?subscription=cancelled`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/get-verified?subscription=cancelled`,
       metadata: {
         userId: session.user.id,
         priceId,
