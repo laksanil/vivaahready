@@ -1521,194 +1521,140 @@ function ViewProfilePageContent() {
           ) : (
             /* Partner Preferences Tab - Split into 2 sections */
             <div className="divide-y divide-gray-100">
+              {/* Preference row helper with deal-breaker indicator */}
+              {(() => {
+                const p = profile as unknown as Record<string, unknown>
+                const isDealbreaker = (field: string) => p[`${field}IsDealbreaker`] === true
+                const PrefRow = ({ label, value, field }: { label: string; value: string; field: string }) => {
+                  const db = isDealbreaker(field)
+                  return (
+                    <div className={`flex items-start py-1.5 px-2 rounded ${db ? 'bg-red-50/60' : ''}`}>
+                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0 text-sm">{label}</span>
+                      <span className="text-gray-400 mr-2 text-sm">:</span>
+                      <span className={`text-sm flex-1 ${db ? 'text-gray-900 font-medium' : 'text-gray-800'}`}>{value}</span>
+                      {db && <span className="text-[10px] font-semibold text-red-600 bg-red-100 px-1.5 py-0.5 rounded ml-2 flex-shrink-0 uppercase tracking-wide">Must-have</span>}
+                    </div>
+                  )
+                }
+                const dealBreakerCount = [
+                  'prefAge', 'prefHeight', 'prefMaritalStatus', 'prefHasChildren',
+                  'prefReligion', 'prefCommunity', 'prefGotra',
+                  'prefDiet', 'prefSmoking', 'prefDrinking',
+                  'prefLocation', 'prefCitizenship', 'prefGrewUpIn', 'prefRelocation',
+                  'prefEducation', 'prefIncome', 'prefOccupation',
+                  'prefFamilyValues', 'prefFamilyLocation',
+                  'prefMotherTongue', 'prefSubCommunity', 'prefPets',
+                ].filter(f => isDealbreaker(f)).length
+
+                return (
+                  <>
               {/* 8. Partner Preferences - matches PreferencesPage1Section fields */}
               <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-primary-600 font-semibold text-lg">Partner Preferences</h2>
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <h2 className="text-primary-600 font-semibold text-lg">Partner Preferences</h2>
+                    {dealBreakerCount > 0 && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        <span className="text-red-600 font-medium">{dealBreakerCount} must-have{dealBreakerCount > 1 ? 's' : ''}</span> set — profiles that don&apos;t match won&apos;t be shown
+                      </p>
+                    )}
+                  </div>
                   <button onClick={() => setEditSection('preferences_1')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
-                    Edit <span className="text-xs">▶</span>
+                    Edit <span className="text-xs">&#9654;</span>
                   </button>
                 </div>
                 {/* Age & Height */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Age & Height</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Age Range</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">
-                        {profile.prefAgeMin && profile.prefAgeMax
-                          ? `${profile.prefAgeMin} - ${profile.prefAgeMax} years`
-                          : profile.prefAgeMin
-                            ? `${profile.prefAgeMin}+ years`
-                            : profile.prefAgeMax
-                              ? `Up to ${profile.prefAgeMax} years`
-                              : profile.prefAgeDiff || "Doesn't matter"}
-                      </span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Height Range</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">
-                        {profile.prefHeightMin && profile.prefHeightMax
-                          ? `${profile.prefHeightMin} - ${profile.prefHeightMax}`
-                          : profile.prefHeight || "Doesn't matter"}
-                      </span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Age & Height</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Age Range" field="prefAge" value={
+                      profile.prefAgeMin && profile.prefAgeMax
+                        ? `${profile.prefAgeMin} - ${profile.prefAgeMax} years`
+                        : profile.prefAgeMin
+                          ? `${profile.prefAgeMin}+ years`
+                          : profile.prefAgeMax
+                            ? `Up to ${profile.prefAgeMax} years`
+                            : (profile.prefAgeDiff as string) || "Doesn't matter"
+                    } />
+                    <PrefRow label="Height Range" field="prefHeight" value={
+                      profile.prefHeightMin && profile.prefHeightMax
+                        ? `${profile.prefHeightMin} - ${profile.prefHeightMax}`
+                        : (profile.prefHeight as string) || "Doesn't matter"
+                    } />
                   </div>
                 </div>
                 {/* Marital Status */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Marital Status</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Marital Status</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefMaritalStatus ? formatValue(profile.prefMaritalStatus) : "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Marital Status</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Marital Status" field="prefMaritalStatus" value={profile.prefMaritalStatus ? formatValue(profile.prefMaritalStatus) : "Doesn't matter"} />
                     {profile.prefHasChildren && (
-                      <div className="flex">
-                        <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Partner&apos;s Children</span>
-                        <span className="text-gray-400 mr-2">:</span>
-                        <span className="text-gray-800">{formatValue(profile.prefHasChildren)}</span>
-                      </div>
+                      <PrefRow label="Partner's Children" field="prefHasChildren" value={formatValue(profile.prefHasChildren)} />
                     )}
                   </div>
                 </div>
                 {/* Religion & Community */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Religion & Community</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Religion</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefReligion ? formatValue(profile.prefReligion) : "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Community</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefCommunity ? formatValue(profile.prefCommunity) : "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Gotra Preference</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefGotra ? formatValue(profile.prefGotra) : "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Religion & Community</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Religion" field="prefReligion" value={profile.prefReligion ? formatValue(profile.prefReligion) : "Doesn't matter"} />
+                    <PrefRow label="Community" field="prefCommunity" value={profile.prefCommunity ? formatValue(profile.prefCommunity) : "Doesn't matter"} />
+                    <PrefRow label="Gotra Preference" field="prefGotra" value={profile.prefGotra ? formatValue(profile.prefGotra) : "Doesn't matter"} />
                   </div>
                 </div>
                 {/* Lifestyle */}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Lifestyle</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Diet</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefDiet ? formatValue(profile.prefDiet) : "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Smoking</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefSmoking ? formatValue(profile.prefSmoking) : "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Drinking</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefDrinking ? formatValue(profile.prefDrinking) : "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Lifestyle</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Diet" field="prefDiet" value={profile.prefDiet ? formatValue(profile.prefDiet) : "Doesn't matter"} />
+                    <PrefRow label="Smoking" field="prefSmoking" value={profile.prefSmoking ? formatValue(profile.prefSmoking) : "Doesn't matter"} />
+                    <PrefRow label="Drinking" field="prefDrinking" value={profile.prefDrinking ? formatValue(profile.prefDrinking) : "Doesn't matter"} />
                   </div>
                 </div>
               </div>
 
               {/* 9. More Preferences - matches PreferencesPage2Section fields */}
               <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-3">
                   <h2 className="text-primary-600 font-semibold text-lg">More Preferences</h2>
                   <button onClick={() => setEditSection('preferences_2')} className="text-cyan-500 text-sm hover:underline flex items-center gap-1">
-                    Edit <span className="text-xs">▶</span>
+                    Edit <span className="text-xs">&#9654;</span>
                   </button>
                 </div>
                 {/* Location */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Location</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Preferred Locations</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefLocationList || profile.prefLocation || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Citizenship</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefCitizenship || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Grew Up In</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefGrewUpIn) || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Open to Relocation</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefRelocation) || "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Location</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Preferred Locations" field="prefLocation" value={(p.prefLocationList as string) || (profile.prefLocation as string) || "Doesn't matter"} />
+                    <PrefRow label="Citizenship" field="prefCitizenship" value={(p.prefCitizenship as string) || "Doesn't matter"} />
+                    <PrefRow label="Grew Up In" field="prefGrewUpIn" value={formatValue(p.prefGrewUpIn as string) || "Doesn't matter"} />
+                    <PrefRow label="Open to Relocation" field="prefRelocation" value={formatValue(p.prefRelocation as string) || "Doesn't matter"} />
                   </div>
                 </div>
                 {/* Education & Career */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Education & Career</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Min Education</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue(profile.prefQualification) || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Min Income</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.prefIncome || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Occupations</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefOccupationList || "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Education & Career</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Min Education" field="prefEducation" value={formatValue(profile.prefQualification) || "Doesn't matter"} />
+                    <PrefRow label="Min Income" field="prefIncome" value={(profile.prefIncome as string) || "Doesn't matter"} />
+                    <PrefRow label="Occupations" field="prefOccupation" value={(p.prefOccupationList as string) || "Doesn't matter"} />
                   </div>
                 </div>
                 {/* Family */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Family Preferences</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Family Values</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefFamilyValues) || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Family Location</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefFamilyLocationCountry || "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Family Preferences</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Family Values" field="prefFamilyValues" value={formatValue(p.prefFamilyValues as string) || "Doesn't matter"} />
+                    <PrefRow label="Family Location" field="prefFamilyLocation" value={(p.prefFamilyLocationCountry as string) || "Doesn't matter"} />
                   </div>
                 </div>
                 {/* Other */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Other Preferences</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-2 text-sm">
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Mother Tongue</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefMotherTongueList || formatValue((profile as unknown as Record<string, string>).prefMotherTongue) || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Sub-Community</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{(profile as unknown as Record<string, string>).prefSubCommunityList || "Doesn't matter"}</span>
-                    </div>
-                    <div className="flex">
-                      <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Pets</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatValue((profile as unknown as Record<string, string>).prefPets) || "Doesn't matter"}</span>
-                    </div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Other Preferences</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-0.5">
+                    <PrefRow label="Mother Tongue" field="prefMotherTongue" value={(p.prefMotherTongueList as string) || formatValue(p.prefMotherTongue as string) || "Doesn't matter"} />
+                    <PrefRow label="Sub-Community" field="prefSubCommunity" value={(p.prefSubCommunityList as string) || "Doesn't matter"} />
+                    <PrefRow label="Pets" field="prefPets" value={formatValue(p.prefPets as string) || "Doesn't matter"} />
                   </div>
                 </div>
                 {/* Notes */}
@@ -1719,6 +1665,9 @@ function ViewProfilePageContent() {
                   </div>
                 )}
               </div>
+                  </>
+                )
+              })()}
             </div>
           )}
         </div>
