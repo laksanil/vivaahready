@@ -3,7 +3,7 @@
 
 export const PRICING = {
   // Regular price (shown as strikethrough during promos)
-  regularPrice: 99,
+  regularPrice: 100,
 
   // Current active price
   currentPrice: 50,
@@ -11,9 +11,9 @@ export const PRICING = {
   // Promotion details
   promo: {
     active: true,
-    name: 'Launch Special',
-    endDate: new Date('2025-03-01T00:00:00'),
-    savings: 49, // regularPrice - currentPrice
+    name: 'Founding Member',
+    endDate: new Date('2026-03-01T00:00:00'),
+    savings: 50, // regularPrice - currentPrice
   },
 }
 
