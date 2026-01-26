@@ -308,6 +308,8 @@ export async function GET(request: Request) {
         profileImageUrl: myProfile.profileImageUrl,
         photoUrls: myProfile.photoUrls,
         userName: targetUserName,
+        firstName: myProfile.firstName,
+        odNumber: myProfile.odNumber,
       }
     })
   } catch (error) {

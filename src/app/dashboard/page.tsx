@@ -64,6 +64,7 @@ function DashboardContent() {
     profile: { approvalStatus: string } | null
   } | null>(null)
   const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
+  const [profileInfo, setProfileInfo] = useState<{ firstName?: string; odNumber?: string } | null>(null)
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
@@ -280,6 +281,14 @@ function DashboardContent() {
           profileViews: lifetimeStats.profileViews || 0,
         },
       })
+
+      // Capture profile info for display
+      if (matchesData.myProfile) {
+        setProfileInfo({
+          firstName: matchesData.myProfile.firstName,
+          odNumber: matchesData.myProfile.odNumber,
+        })
+      }
     } catch (error) {
       console.error('Error fetching stats:', error)
     } finally {
@@ -309,7 +318,10 @@ function DashboardContent() {
           {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {displayName.split(' ')[0]}!
+            Welcome back, {profileInfo?.firstName || displayName.split(' ')[0]}!
+            {profileInfo?.odNumber && (
+              <span className="text-lg font-normal text-gray-500 ml-2">({profileInfo.odNumber})</span>
+            )}
           </h1>
           <p className="text-gray-600 mt-1">
             {isApproved
