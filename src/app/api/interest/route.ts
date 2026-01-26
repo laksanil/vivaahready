@@ -133,10 +133,13 @@ export async function GET(request: Request) {
     }
 
     if (type === 'sent') {
-      // Get all interests sent - show ALL with their status
-      // Status can be: pending, accepted, rejected
+      // Get sent interests excluding accepted ones (those appear in Connections tab)
+      // Status can be: pending, rejected
       const allSentInterests = await prisma.match.findMany({
-        where: { senderId: currentUserId },
+        where: {
+          senderId: currentUserId,
+          status: { not: 'accepted' },
+        },
         orderBy: { createdAt: 'desc' },
         include: {
           receiver: {
@@ -158,10 +161,6 @@ export async function GET(request: Request) {
         }
       })
 
-      // Return all sent interests - the status field tells the story:
-      // - 'pending': Waiting for their response
-      // - 'accepted': They accepted (mutual match - also in connections)
-      // - 'rejected': They declined your interest
       return NextResponse.json({ interests: allSentInterests })
     }
 
