@@ -213,7 +213,7 @@ export default function GetVerifiedPage() {
           <div className="border border-stone-200 rounded-lg px-4 divide-y divide-stone-200">
             <FAQItem
               question="Is this a monthly subscription?"
-              answer="No. It's a one-time fee. Once verified, you have lifetime access with no recurring charges."
+              answer="No. It's a one-time verification fee with no recurring charges or subscriptions."
             />
             <FAQItem
               question="What unlocks after verification?"
@@ -242,7 +242,7 @@ export default function GetVerifiedPage() {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
           <p className="mt-3 text-xs text-stone-500">
-            One-time fee &middot; No subscriptions &middot; Lifetime access
+            One-time fee &middot; No subscriptions &middot; Full access
           </p>
         </div>
       </section>

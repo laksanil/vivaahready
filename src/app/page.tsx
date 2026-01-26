@@ -71,7 +71,7 @@ const jsonLd = {
         '@type': 'Offer',
         price: '50',
         priceCurrency: 'USD',
-        description: 'One-time verification fee for lifetime access',
+        description: 'One-time verification fee to unlock full features',
         availability: 'https://schema.org/InStock',
       },
     },

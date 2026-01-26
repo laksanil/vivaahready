@@ -74,7 +74,7 @@ export async function POST() {
             currency: 'usd',
             product_data: {
               name: 'VivaahReady Verification',
-              description: 'One-time verification fee — lifetime access, no subscriptions',
+              description: 'One-time verification fee — unlock full features, no subscriptions',
             },
             unit_amount: priceInCents,
           },

@@ -93,7 +93,7 @@ export default async function GetVerifiedPage() {
             </div>
 
             <p className="text-stone-500 text-sm">
-              One-time fee &middot; No subscriptions &middot; Lifetime access
+              One-time fee &middot; No subscriptions &middot; Full access
             </p>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default async function GetVerifiedPage() {
             />
             <FAQItem
               question="Is this a monthly subscription?"
-              answer="No. One-time payment. Once verified, you have lifetime access with no recurring charges."
+              answer="No. It's a one-time verification fee with no recurring charges or subscriptions."
             />
             <FAQItem
               question="How long does review take?"
@@ -260,7 +260,7 @@ export default async function GetVerifiedPage() {
           </Link>
 
           <p className="mt-4 text-stone-500 text-sm">
-            One-time fee &middot; No subscriptions &middot; Lifetime access
+            One-time fee &middot; No subscriptions &middot; Full access
           </p>
         </div>
       </section>
