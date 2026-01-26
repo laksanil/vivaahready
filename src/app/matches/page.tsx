@@ -25,7 +25,7 @@ interface FeedProfile extends ProfileData {
   approvalStatus?: string
 }
 
-type TabType = 'matches' | 'sent' | 'received' | 'passed'
+type TabType = 'matches' | 'sent' | 'received' | 'connections' | 'passed'
 
 function FeedPageContent() {
   const { data: session, status } = useSession()
@@ -52,6 +52,7 @@ function FeedPageContent() {
   const [passedLoading, setPassedLoading] = useState(false)
   const [reconsidering, setReconsidering] = useState<string | null>(null)
   const [hasPaid, setHasPaid] = useState(false)
+  const [connections, setConnections] = useState<FeedProfile[]>([])
   const [hasConnections, setHasConnections] = useState(false)
 
   const canAccess = !!session || (isAdminView && isAdmin)
@@ -139,6 +140,7 @@ function FeedPageContent() {
 
       setProfiles(data.freshMatches || [])
       setLikedYouCount(data.stats?.likedYouCount || 0)
+      setConnections(data.mutualMatches || [])
       setHasConnections((data.mutualMatches?.length || 0) > 0)
 
       if (data.userStatus) {
@@ -300,6 +302,20 @@ function FeedPageContent() {
               )}
             </button>
             <button
+              onClick={() => setActiveTab('connections')}
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                activeTab === 'connections'
+                  ? 'bg-white text-primary-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Heart className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Connections</span>
+              {connections.length > 0 && (
+                <span className="bg-green-100 text-green-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{connections.length}</span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab('passed')}
               className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1.5 sm:px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === 'passed'
@@ -356,9 +372,12 @@ function FeedPageContent() {
                   ) : (
                     <>
                       {hasConnections && (
-                        <Link href={buildUrl('/connections')} className="btn-primary text-sm py-2">
+                        <button
+                          onClick={() => setActiveTab('connections')}
+                          className="btn-primary text-sm py-2"
+                        >
                           View Connections
-                        </Link>
+                        </button>
                       )}
                       {passedProfiles.length > 0 && (
                         <Link href={buildUrl('/reconsider')} className="btn-secondary text-sm py-2">
@@ -696,6 +715,76 @@ function FeedPageContent() {
           </div>
         )}
 
+        {/* Connections Tab */}
+        {activeTab === 'connections' && (
+          <div>
+            {loading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <DirectoryCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : connections.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+                <Heart className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Connections Yet</h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  When you and someone both express interest, they&apos;ll appear here as a connection.
+                </p>
+                <button
+                  onClick={() => setActiveTab('matches')}
+                  className="btn-primary text-sm py-2"
+                >
+                  Browse Matches
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {connections.map((connection) => (
+                  <Link
+                    key={connection.id}
+                    href={buildUrl(`/profile/${connection.id}`)}
+                    className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-green-300 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 ring-2 ring-green-400 ring-offset-2">
+                        {connection.profileImageUrl ? (
+                          <img
+                            src={connection.profileImageUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xl font-semibold">
+                            {connection.user?.name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{connection.user?.name}</h3>
+                        <p className="text-sm text-gray-600 truncate">
+                          {connection.currentLocation || 'Location not specified'}
+                          {connection.occupation && ` • ${connection.occupation}`}
+                        </p>
+                        {connection.matchScore && (
+                          <p className="text-xs text-green-600 mt-1">
+                            {connection.matchScore.percentage}% match
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                          Connected
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Passed Profiles Tab */}
         {activeTab === 'passed' && (
           <div>
@@ -801,12 +890,15 @@ function FeedPageContent() {
               You can now message them.
             </p>
             <div className="flex gap-3">
-              <Link
-                href={buildUrl('/connections')}
+              <button
+                onClick={() => {
+                  setShowMatchModal(null)
+                  setActiveTab('connections')
+                }}
                 className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-primary-800 transition-all"
               >
                 View Connections
-              </Link>
+              </button>
               <button
                 onClick={() => setShowMatchModal(null)}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
