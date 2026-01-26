@@ -478,6 +478,26 @@ function FeedPageContent() {
                     </div>
                   </div>
                 )}
+                {/* Verification Prompt for pending interests (only if no accepted interests shown above) */}
+                {!userStatus?.isApproved && sentInterests.some(i => i.status === 'pending') && !sentInterests.some(i => i.status === 'accepted') && (
+                  <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-4 mb-3">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-primary-900">Get verified to connect faster</h4>
+                        <p className="text-sm text-primary-700 mt-1">
+                          Your interests are waiting! Once you&apos;re verified, matches can accept and you can start messaging.
+                        </p>
+                        <Link
+                          href={buildUrl('/payment')}
+                          className="inline-flex items-center mt-2 text-sm font-medium text-primary-700 hover:text-primary-800"
+                        >
+                          Get Verified Now →
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {sentInterests.map((interest) => (
                   <Link
                     key={interest.id}
