@@ -458,19 +458,19 @@ function FeedPageContent() {
               </div>
             ) : (
               <div className="space-y-2">
-                {/* Verification Prompt for pending interests */}
-                {!userStatus?.isApproved && sentInterests.some(i => i.status === 'pending') && (
-                  <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-4 mb-3">
+                {/* Verification Prompt when someone accepted your interest */}
+                {!userStatus?.isApproved && sentInterests.some(i => i.status === 'accepted') && (
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-3">
                     <div className="flex items-start gap-3">
-                      <Sparkles className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                      <Heart className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
-                        <h4 className="font-semibold text-primary-900">Get verified to connect faster</h4>
-                        <p className="text-sm text-primary-700 mt-1">
-                          Your interests are waiting! Once you&apos;re verified, matches can accept and you can start messaging.
+                        <h4 className="font-semibold text-green-900">Someone accepted your interest!</h4>
+                        <p className="text-sm text-green-700 mt-1">
+                          Great news! A match is waiting to connect with you. Get verified to view their profile and start messaging.
                         </p>
                         <Link
                           href={buildUrl('/payment')}
-                          className="inline-flex items-center mt-2 text-sm font-medium text-primary-700 hover:text-primary-800"
+                          className="inline-flex items-center mt-2 text-sm font-medium text-green-700 hover:text-green-800"
                         >
                           Get Verified Now →
                         </Link>
