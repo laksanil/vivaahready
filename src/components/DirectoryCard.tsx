@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Heart,
@@ -56,6 +57,9 @@ export function DirectoryCard({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [verificationModalOpen, setVerificationModalOpen] = useState(false)
   const { buildUrl } = useImpersonation()
+  const router = useRouter()
+
+  const profileUrl = buildUrl(`/profile/${profile.id}`)
 
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
 
@@ -100,7 +104,10 @@ export function DirectoryCard({
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200">
+      <div
+        className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+        onClick={() => router.push(profileUrl)}
+      >
         <div className="flex items-stretch">
           {/* Photo with Carousel */}
           <div className="flex-shrink-0 relative group">
