@@ -208,6 +208,39 @@ function DashboardContent() {
           // User has completed step 1 (basics) before Google auth, account creation is not numbered
           // signupStep 2 = location_education is the next step to complete
           router.push(`/profile/complete?profileId=${profileData.profileId}&step=2`)
+        } else if (profileResponse.status === 409) {
+          // Duplicate profile detected — allow user to confirm
+          const data = await profileResponse.json()
+          if (data.error === 'duplicate_profile') {
+            const confirmed = window.confirm(
+              `${data.message}\n\nClick OK to continue creating this profile, or Cancel to go back.`
+            )
+            if (confirmed) {
+              const retryResponse = await fetch('/api/profile/create-from-modal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email: session.user.email,
+                  ...formData,
+                  skipDuplicateCheck: true,
+                }),
+              })
+              if (retryResponse.ok) {
+                const retryData = await retryResponse.json()
+                setCreatedProfileId(retryData.profileId)
+                sessionStorage.removeItem('signupFormData')
+                router.push(`/profile/complete?profileId=${retryData.profileId}&step=2`)
+              } else {
+                sessionStorage.removeItem('signupFormData')
+                setShowCreateProfileModal(true)
+              }
+            } else {
+              sessionStorage.removeItem('signupFormData')
+            }
+          } else {
+            sessionStorage.removeItem('signupFormData')
+            setShowCreateProfileModal(true)
+          }
         } else {
           // If profile creation fails, show the modal to let user complete manually
           sessionStorage.removeItem('signupFormData')

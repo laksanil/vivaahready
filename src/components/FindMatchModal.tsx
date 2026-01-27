@@ -224,6 +224,59 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       if (!profileResponse.ok) {
         const profileData = await profileResponse.json()
+
+        // Handle duplicate profile warning
+        if (profileResponse.status === 409 && profileData.error === 'duplicate_profile') {
+          const confirmed = window.confirm(
+            `${profileData.message}\n\nClick OK to continue creating this profile, or Cancel to go back.`
+          )
+          if (confirmed) {
+            // Retry with skipDuplicateCheck
+            const retryResponse = await fetch('/api/profile/create-from-modal', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                gender: formData.gender,
+                dateOfBirth: formData.dateOfBirth,
+                age: formData.age,
+                height: formData.height,
+                maritalStatus: formData.maritalStatus,
+                motherTongue: formData.motherTongue,
+                anyDisability: formData.anyDisability,
+                createdBy: formData.createdBy,
+                _isPartialSave: true,
+                skipDuplicateCheck: true,
+              }),
+            })
+            if (!retryResponse.ok) {
+              const retryData = await retryResponse.json()
+              setError(retryData.error || 'Failed to create profile')
+              setLoading(false)
+              return
+            }
+            const retryData = await retryResponse.json()
+            setCreatedProfileId(retryData.profileId)
+
+            fetch('/api/profile/send-welcome-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ profileId: retryData.profileId }),
+            }).catch((err) => {
+              console.error('Failed to send welcome email:', err)
+            })
+
+            setStep(step + 1)
+            setLoading(false)
+            return
+          } else {
+            setLoading(false)
+            return
+          }
+        }
+
         setError(profileData.error || 'Failed to create profile')
         setLoading(false)
         return
@@ -360,6 +413,42 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       const data = await response.json()
 
       if (!response.ok) {
+        // Handle duplicate profile warning
+        if (response.status === 409 && data.error === 'duplicate_profile') {
+          const confirmed = window.confirm(
+            `${data.message}\n\nClick OK to continue creating this profile, or Cancel to go back.`
+          )
+          if (confirmed) {
+            const retryResponse = await fetch('/api/admin/create-profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: `${formData.firstName} ${formData.lastName}`,
+                email,
+                phone: phone ? `${countryCode}${phone}` : null,
+                tempPassword,
+                profileData: formData,
+                skipDuplicateCheck: true,
+              }),
+            })
+            const retryData = await retryResponse.json()
+            if (!retryResponse.ok) {
+              setError(retryData.error || 'Failed to create profile')
+              setLoading(false)
+              return
+            }
+            setCreatedProfileId(retryData.profileId)
+            sessionStorage.setItem('adminTempPassword', tempPassword)
+            sessionStorage.setItem('adminCreatedEmail', email)
+            setStep(step + 1)
+            setLoading(false)
+            return
+          } else {
+            setLoading(false)
+            return
+          }
+        }
+
         setError(data.error || 'Failed to create profile')
         setLoading(false)
         return

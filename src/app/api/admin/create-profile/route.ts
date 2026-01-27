@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, email, phone, tempPassword, profileData } = body
+    const { name, email, phone, tempPassword, profileData, skipDuplicateCheck } = body
 
     if (!email || !name || !tempPassword) {
       return NextResponse.json(
@@ -41,6 +41,34 @@ export async function POST(request: NextRequest) {
         { error: 'A user with this email already exists' },
         { status: 400 }
       )
+    }
+
+    // Check for duplicate profile (same firstName + lastName + dateOfBirth)
+    if (!skipDuplicateCheck && profileData?.firstName && profileData?.lastName && profileData?.dateOfBirth) {
+      const duplicateProfile = await prisma.profile.findFirst({
+        where: {
+          firstName: { equals: profileData.firstName, mode: 'insensitive' },
+          lastName: { equals: profileData.lastName, mode: 'insensitive' },
+          dateOfBirth: profileData.dateOfBirth,
+        },
+        include: {
+          user: { select: { email: true } },
+        },
+      })
+
+      if (duplicateProfile) {
+        return NextResponse.json(
+          {
+            error: 'duplicate_profile',
+            message: `A profile with the same name and date of birth already exists (${duplicateProfile.odNumber}). This could be a duplicate.`,
+            duplicate: {
+              vrId: duplicateProfile.odNumber,
+              email: duplicateProfile.user?.email,
+            },
+          },
+          { status: 409 }
+        )
+      }
     }
 
     // Hash the temporary password

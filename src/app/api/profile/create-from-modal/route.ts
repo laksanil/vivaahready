@@ -179,6 +179,7 @@ const profileSchema = z.object({
   prefSubCommunityIsDealbreaker: z.boolean().optional(),
   prefPetsIsDealbreaker: z.boolean().optional(),
   prefRelocationIsDealbreaker: z.boolean().optional(),
+  skipDuplicateCheck: z.boolean().optional(),
 })
 
 export async function POST(request: Request) {
@@ -209,6 +210,34 @@ export async function POST(request: Request) {
         { error: 'Profile already exists for this user.' },
         { status: 400 }
       )
+    }
+
+    // Check for duplicate profile (same firstName + lastName + dateOfBirth)
+    if (data.firstName && data.lastName && data.dateOfBirth && !data.skipDuplicateCheck) {
+      const duplicateProfile = await prisma.profile.findFirst({
+        where: {
+          firstName: { equals: data.firstName, mode: 'insensitive' },
+          lastName: { equals: data.lastName, mode: 'insensitive' },
+          dateOfBirth: data.dateOfBirth,
+        },
+        include: {
+          user: { select: { email: true } },
+        },
+      })
+
+      if (duplicateProfile) {
+        return NextResponse.json(
+          {
+            error: 'duplicate_profile',
+            message: `A profile with the same name and date of birth already exists (${duplicateProfile.odNumber}). This could be a duplicate. Do you want to continue?`,
+            duplicate: {
+              vrId: duplicateProfile.odNumber,
+              email: duplicateProfile.user?.email,
+            },
+          },
+          { status: 409 }
+        )
+      }
     }
 
     // Generate VR ID
