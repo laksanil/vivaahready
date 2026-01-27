@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -15,6 +16,16 @@ import {
   BadgeCheck,
   Clock,
 } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Get Verified',
+  description: 'One-time verification fee for full access to VivaahReady. Verified profiles, private messaging, and meaningful connections. No subscriptions.',
+  openGraph: {
+    title: 'Get Verified | VivaahReady',
+    description: 'One-time verification fee for full access. Verified profiles, private messaging, and meaningful connections.',
+    url: 'https://vivaahready.com/get-verified',
+  },
+}
 
 // Pricing display component
 function PricingDisplay() {

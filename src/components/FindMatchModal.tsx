@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle, ChevronDown } from 'lucide-react'
@@ -69,6 +69,15 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Capture referral code from URL params into sessionStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) {
+      sessionStorage.setItem('referredBy', ref)
+    }
+  }, [])
 
   // Account creation data
   const [email, setEmail] = useState('')
@@ -217,6 +226,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           motherTongue: formData.motherTongue,
           anyDisability: formData.anyDisability,
           createdBy: formData.createdBy,
+          referredBy: sessionStorage.getItem('referredBy') || undefined,
           // Mark as incomplete so we know to update it later
           _isPartialSave: true,
         }),
@@ -247,6 +257,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 motherTongue: formData.motherTongue,
                 anyDisability: formData.anyDisability,
                 createdBy: formData.createdBy,
+                referredBy: sessionStorage.getItem('referredBy') || undefined,
                 _isPartialSave: true,
                 skipDuplicateCheck: true,
               }),

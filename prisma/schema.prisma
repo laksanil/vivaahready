@@ -219,6 +219,9 @@ model Profile {
   openToRelocation  String?  // yes, no, depends - User's willingness to relocate
   promoCode         String?
   referralSource    String?
+  referralCode      String?  @unique // Auto-generated code for sharing referral links
+  referredBy        String?  // Referral code of the user who referred this profile
+  referralBoostStart DateTime? // When the referral boost (3+ referrals) was activated
   isImported        Boolean  @default(false)
 
   // Lifetime Stats (never decrease, used to showcase platform value)

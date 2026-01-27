@@ -1,5 +1,16 @@
+import type { Metadata } from 'next'
 import { Heart, Users, Shield, Target, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Learn about VivaahReady — bridging traditional matchmaking values with modern preferences for Indian singles in the US. Verified profiles, privacy-first approach.',
+  openGraph: {
+    title: 'About Us | VivaahReady',
+    description: 'Learn about VivaahReady — bridging traditional matchmaking values with modern preferences for Indian singles in the US.',
+    url: 'https://vivaahready.com/about',
+  },
+}
 
 export default function AboutPage() {
   return (

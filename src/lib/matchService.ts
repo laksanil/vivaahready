@@ -212,16 +212,68 @@ export async function getMatchResultsForUser(
       })
   )
 
+  // Batch-fetch referral counts for all candidate profiles (single query)
+  const allCandidates = [...matchesWithInterest, ...mutualMatches]
+  const allReferralCodes = allCandidates
+    .map((m) => m.referralCode)
+    .filter((code): code is string => !!code)
+  const referralCountMap = new Map<string, number>()
+  if (allReferralCodes.length > 0) {
+    const counts = await prisma.profile.groupBy({
+      by: ['referredBy'],
+      where: { referredBy: { in: allReferralCodes } },
+      _count: true,
+    })
+    for (const row of counts) {
+      if (row.referredBy) referralCountMap.set(row.referredBy, row._count)
+    }
+  }
+
+  // Determine active referral boosts (3+ referrals, within 30 days of activation)
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const activeBoostedUserIds = new Set<string>()
+  const profilesToActivateBoost: string[] = []
+
+  for (const match of allCandidates) {
+    const count = referralCountMap.get(match.referralCode || '') || 0
+    if (count >= 3) {
+      if (!match.referralBoostStart) {
+        profilesToActivateBoost.push(match.id)
+        activeBoostedUserIds.add(match.userId)
+      } else if (new Date(match.referralBoostStart) > thirtyDaysAgo) {
+        activeBoostedUserIds.add(match.userId)
+      }
+    }
+  }
+
+  if (profilesToActivateBoost.length > 0) {
+    await prisma.profile.updateMany({
+      where: { id: { in: profilesToActivateBoost } },
+      data: { referralBoostStart: now },
+    })
+  }
+
   const sortedFreshMatches = matchesWithInterest.sort((a, b) => {
+    // Priority 1: Profiles with active referral boost (3+ referrals, within 30 days)
+    const aReferralBoost = activeBoostedUserIds.has(a.userId) ? 1 : 0
+    const bReferralBoost = activeBoostedUserIds.has(b.userId) ? 1 : 0
+    if (bReferralBoost !== aReferralBoost) return bReferralBoost - aReferralBoost
+
+    // Priority 2: Profiles that liked me first
     const aLikedMe = a.theyLikedMeFirst ? 1 : 0
     const bLikedMe = b.theyLikedMeFirst ? 1 : 0
     if (bLikedMe !== aLikedMe) return bLikedMe - aLikedMe
+
     return (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
   })
 
-  const sortedMutualMatches = mutualMatches.sort((a, b) =>
-    (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
-  )
+  const sortedMutualMatches = mutualMatches.sort((a, b) => {
+    const aReferralBoost = activeBoostedUserIds.has(a.userId) ? 1 : 0
+    const bReferralBoost = activeBoostedUserIds.has(b.userId) ? 1 : 0
+    if (bReferralBoost !== aReferralBoost) return bReferralBoost - aReferralBoost
+    return (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
+  })
 
   const allMatches = [...sortedFreshMatches, ...sortedMutualMatches]
 

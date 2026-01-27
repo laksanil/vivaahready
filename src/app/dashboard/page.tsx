@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
 import VerificationPaymentModal from '@/components/VerificationPaymentModal'
+import ReferralCard from '@/components/ReferralCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -188,12 +189,14 @@ function DashboardContent() {
         const formData = JSON.parse(storedFormData)
 
         // Create profile with stored form data
+        const referredBy = sessionStorage.getItem('referredBy') || undefined
         const profileResponse = await fetch('/api/profile/create-from-modal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: session.user.email,
             ...formData,
+            referredBy,
           }),
         })
 
@@ -222,6 +225,7 @@ function DashboardContent() {
                 body: JSON.stringify({
                   email: session.user.email,
                   ...formData,
+                  referredBy,
                   skipDuplicateCheck: true,
                 }),
               })
@@ -896,6 +900,9 @@ function DashboardContent() {
                 </Link>
               )}
             </div>
+
+            {/* Referral */}
+            {hasProfile && <ReferralCard />}
 
             {/* Tips */}
             <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-6 text-white">

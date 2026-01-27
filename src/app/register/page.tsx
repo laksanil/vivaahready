@@ -216,6 +216,14 @@ const countryCodes = [
 
 export default function RegisterPage() {
   const router = useRouter()
+  // Capture referral code from URL and store in sessionStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) {
+      sessionStorage.setItem('referredBy', ref)
+    }
+  }, [])
 
   const [formData, setFormData] = useState({
     name: '',

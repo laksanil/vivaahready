@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
+import { sendReferralThankYouEmail } from '@/lib/email'
+import { getReferralCount } from '@/lib/referral'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -115,6 +117,7 @@ const profileSchema = z.object({
   allergiesOrMedical: z.string().optional(),
   aboutMe: z.string().optional(),
   referralSource: z.string().optional(),
+  referredBy: z.string().optional(),
 
   // Partner Preferences
   prefAgeDiff: z.string().optional(),
@@ -342,6 +345,7 @@ export async function POST(request: Request) {
         allergiesOrMedical: data.allergiesOrMedical,
         aboutMe: data.aboutMe,
         referralSource: data.referralSource,
+        referredBy: data.referredBy,
 
         // Partner Preferences
         prefAgeDiff: data.prefAgeDiff,
@@ -416,6 +420,28 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: { name: formattedName },
       })
+    }
+
+    // Send thank-you email to referrer (fire and forget)
+    if (data.referredBy) {
+      (async () => {
+        try {
+          const referrerProfile = await prisma.profile.findFirst({
+            where: { referralCode: data.referredBy },
+            include: { user: { select: { email: true, name: true } } },
+          })
+          if (referrerProfile?.user?.email) {
+            const count = await getReferralCount(data.referredBy!)
+            await sendReferralThankYouEmail(
+              referrerProfile.user.email,
+              referrerProfile.user.name || 'User',
+              count
+            )
+          }
+        } catch (err) {
+          console.error('Failed to send referral thank-you email:', err)
+        }
+      })()
     }
 
     return NextResponse.json(

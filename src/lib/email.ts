@@ -1298,3 +1298,416 @@ support@vivaahready.com
     text,
   })
 }
+
+// Bulk announcement email for existing profile holders
+export async function sendAnnouncementEmail(email: string) {
+  const isGmail = email.toLowerCase().endsWith('@gmail.com') || email.toLowerCase().endsWith('@googlemail.com')
+
+  const loginInstructions = isGmail
+    ? `<strong>Since your email is a Gmail address:</strong> Click "Continue with Google" on the login page — this is the quickest way to get started.`
+    : `<strong>Since your email is not Gmail:</strong> Click "Sign in with Email" on the login page, enter this email address, and set a password on your first login.`
+
+  const loginInstructionsText = isGmail
+    ? `Since your email is a Gmail address: Click "Continue with Google" on the login page — this is the quickest way to get started.`
+    : `Since your email is not Gmail: Click "Sign in with Email" on the login page, enter this email address, and set a password on your first login.`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Profile is Live on VivaahReady</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 32px 40px; text-align: center;">
+              <img src="https://vivaahready.com/logo-icon.png" alt="VivaahReady" style="height: 60px; width: auto; margin-bottom: 8px;" />
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+              <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">Meaningful Connections</p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px; text-align: center; line-height: 1.4;">
+                Welcome to the New VivaahReady!
+              </h2>
+
+              <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                Hello,
+              </p>
+
+              <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                We owe you an apology. It's been a while since we last reached out, and we're sorry for the delay. We've been working hard behind the scenes to build something truly meaningful for your search — and we're excited to share it with you.
+              </p>
+
+              <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                <strong style="color: #1f2937;">Your profile is now live on our brand-new platform at <a href="https://vivaahready.com" style="color: #dc2626; text-decoration: none;">vivaahready.com</a>.</strong> You can log in today to explore your matches, express interest, and start connecting.
+              </p>
+
+              <!-- Fee Waiver Box -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 12px; border: 1px solid #6ee7b7;">
+                <tr>
+                  <td style="padding: 24px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #065f46; font-size: 18px; font-weight: 700;">A Special Note for You</p>
+                    <p style="margin: 0; color: #047857; font-size: 15px; line-height: 1.6;">
+                      As an apology for the delayed communication, <strong>we have waived the verification fee for your profile.</strong> Your profile has already been verified and approved — no payment required. You have full access to all features from the moment you log in.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- What's New Section -->
+              <h3 style="margin: 32px 0 16px 0; color: #1f2937; font-size: 20px; font-weight: 600;">What's New?</h3>
+
+              <!-- Feature 1 -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">1</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Mutual-Preference Matching</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">You only see profiles where your preferences match theirs and theirs match yours. No wasted time.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">2</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Express & Receive Interest</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Send interest to profiles you like. When both sides express interest, it's a connection!</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">3</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Privacy-First Design</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Your photo, name, and contact details stay hidden until you choose to connect. No tracking, no ads.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">4</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">In-App Messaging</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Message your connections directly within the platform.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">5</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Verified Profiles Only</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Every profile is reviewed and approved before going live, so you can trust who you're seeing.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="width: 28px; vertical-align: top;">
+                          <span style="display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">6</span>
+                        </td>
+                        <td style="padding-left: 12px;">
+                          <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">Deal-Breaker Preferences</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Set must-have criteria so you only see profiles that truly match what you're looking for.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- How to Log In Section -->
+              <h3 style="margin: 32px 0 16px 0; color: #1f2937; font-size: 20px; font-weight: 600;">How to Log In</h3>
+
+              <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
+                Visit <a href="https://vivaahready.com/login" style="color: #dc2626; text-decoration: none; font-weight: 600;">vivaahready.com/login</a> and sign in using <strong>the same email address your profile was created with</strong> — this is the email you're receiving this message on.
+              </p>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 16px 0; background-color: #f3f4f6; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6;">
+                      ${loginInstructions}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 16px 0; background-color: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+                <tr>
+                  <td style="padding: 16px 20px;">
+                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
+                      <strong>Important:</strong> You must use this email address to log in. Using a different email will create a new, empty account instead of connecting you to your existing profile.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 32px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="https://vivaahready.com/login" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
+                      Log In & Explore Your Matches
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Contact info -->
+              <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
+                If you have any questions or need help logging in, don't hesitate to reach out:
+              </p>
+
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 16px 0; background-color: #f3f4f6; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 16px 20px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">
+                      <strong>Email:</strong> <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                      <strong>WhatsApp:</strong> <a href="https://wa.me/19258193653" style="color: #25D366; text-decoration: none;">+1 (925) 819-3653</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin: 24px 0 0 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
+                We're grateful for your patience and excited to have you on board. Your perfect match could be just a click away.
+              </p>
+
+              <!-- Signature -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 15px;">Warm regards,</p>
+                    <p style="margin: 0 0 4px 0; color: #1f2937; font-size: 15px; font-weight: 600;">The VivaahReady Team</p>
+                    <p style="margin: 0; color: #dc2626; font-size: 14px;">
+                      <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  const text = `Welcome to the New VivaahReady!
+
+Hello,
+
+We owe you an apology. It's been a while since we last reached out, and we're sorry for the delay. We've been working hard behind the scenes to build something truly meaningful for your search — and we're excited to share it with you.
+
+Your profile is now live on our brand-new platform at vivaahready.com. You can log in today to explore your matches, express interest, and start connecting.
+
+---
+
+A SPECIAL NOTE FOR YOU
+
+As an apology for the delayed communication, we have waived the verification fee for your profile. Your profile has already been verified and approved — no payment required. You have full access to all features from the moment you log in.
+
+---
+
+WHAT'S NEW?
+
+1. Mutual-Preference Matching
+   You only see profiles where your preferences match theirs and theirs match yours. No wasted time.
+
+2. Express & Receive Interest
+   Send interest to profiles you like. When both sides express interest, it's a connection!
+
+3. Privacy-First Design
+   Your photo, name, and contact details stay hidden until you choose to connect. No tracking, no ads.
+
+4. In-App Messaging
+   Message your connections directly within the platform.
+
+5. Verified Profiles Only
+   Every profile is reviewed and approved before going live, so you can trust who you're seeing.
+
+6. Deal-Breaker Preferences
+   Set must-have criteria so you only see profiles that truly match what you're looking for.
+
+---
+
+HOW TO LOG IN
+
+Visit vivaahready.com/login and sign in using the same email address your profile was created with — this is the email you're receiving this message on.
+
+${loginInstructionsText}
+
+IMPORTANT: You must use this email address to log in. Using a different email will create a new, empty account instead of connecting you to your existing profile.
+
+Log In & Explore Your Matches: https://vivaahready.com/login
+
+---
+
+If you have any questions or need help logging in, don't hesitate to reach out:
+- Email: support@vivaahready.com
+- WhatsApp: +1 (925) 819-3653
+
+We're grateful for your patience and excited to have you on board. Your perfect match could be just a click away.
+
+Warm regards,
+The VivaahReady Team
+support@vivaahready.com
+
+© ${new Date().getFullYear()} VivaahReady. All rights reserved.
+`
+
+  return sendEmail({
+    to: email,
+    subject: `Your Profile is Live on VivaahReady — Log In and Explore!`,
+    html,
+    text,
+  })
+}
+
+// Thank-you email sent to referrer when someone joins via their referral link
+export async function sendReferralThankYouEmail(
+  email: string,
+  name: string,
+  referralCount: number
+) {
+  const firstName = name.split(' ')[0]
+  const boostUnlocked = referralCount >= 3
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 32px 40px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">VivaahReady</h1>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px; text-align: center;">
+              <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px;">Someone joined via your referral!</h2>
+
+              <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                Hi ${firstName}, thank you for spreading the word! A new member just signed up using your referral link.
+              </p>
+
+              <p style="margin: 0 0 24px 0; color: #1f2937; font-size: 18px; font-weight: 600;">
+                Total referrals: ${referralCount}
+              </p>
+
+              ${boostUnlocked ? `
+              <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 0 0 24px 0;">
+                <p style="margin: 0; color: #92400e; font-size: 16px; font-weight: 600;">
+                  &#9889; Profile Boost Unlocked!
+                </p>
+                <p style="margin: 8px 0 0 0; color: #92400e; font-size: 14px;">
+                  Your profile will appear at the top of match results for 30 days.
+                </p>
+              </div>
+              ` : `
+              <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 14px;">
+                ${3 - referralCount > 0 ? `Refer ${3 - referralCount} more to unlock a 30-day profile boost in match results!` : ''}
+              </p>
+              `}
+
+              <a href="https://vivaahready.com/dashboard" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">Go to Dashboard</a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f9fafb; padding: 24px 40px; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                © ${new Date().getFullYear()} VivaahReady. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+
+  return sendEmail({
+    to: email,
+    subject: boostUnlocked
+      ? `Profile Boost Unlocked! ${referralCount} people joined via your link`
+      : `Thank you! ${referralCount} ${referralCount === 1 ? 'person has' : 'people have'} joined via your referral`,
+    html,
+  })
+}
