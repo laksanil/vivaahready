@@ -352,14 +352,14 @@ const EDUCATION_CATEGORIES: Record<string, string[]> = {
   'medical_undergrad': ['mbbs', 'bds'],
   'medical_masters': ['md', 'ms_medical'],
   'medical': ['mbbs', 'bds', 'md', 'ms_medical', 'dm_mch'],  // All medical
-  // Engineering
-  'eng_undergrad': ['undergrad_eng', 'bachelors_eng', 'be', 'btech'],
-  'eng_masters': ['masters_eng', 'me', 'mtech'],
-  'engineering': ['undergrad_eng', 'bachelors_eng', 'masters_eng', 'be', 'btech', 'me', 'mtech'],  // All engineering
-  // Computer Science
-  'cs_undergrad': ['undergrad_cs', 'bachelors_cs', 'bca', 'bsc cs'],
-  'cs_masters': ['masters_cs', 'mca', 'msc cs'],
-  'computer_science': ['undergrad_cs', 'bachelors_cs', 'masters_cs', 'bca', 'mca'],  // All CS
+  // Engineering (includes CS since CS is a branch of engineering)
+  'eng_undergrad': ['undergrad_eng', 'bachelors_eng', 'be', 'btech', 'undergrad_cs', 'bachelors_cs', 'bca'],
+  'eng_masters': ['masters_eng', 'me', 'mtech', 'masters_cs', 'mca'],
+  'engineering': ['undergrad_eng', 'bachelors_eng', 'masters_eng', 'be', 'btech', 'me', 'mtech', 'undergrad_cs', 'bachelors_cs', 'masters_cs', 'bca', 'mca'],
+  // Computer Science (includes engineering since CS is a branch of engineering)
+  'cs_undergrad': ['undergrad_cs', 'bachelors_cs', 'bca', 'bsc cs', 'undergrad_eng', 'bachelors_eng', 'be', 'btech'],
+  'cs_masters': ['masters_cs', 'mca', 'msc cs', 'masters_eng', 'me', 'mtech'],
+  'computer_science': ['undergrad_cs', 'bachelors_cs', 'masters_cs', 'bca', 'mca', 'undergrad_eng', 'bachelors_eng', 'masters_eng', 'be', 'btech', 'me', 'mtech'],
   // Other Professional
   'ca_professional': ['ca_cpa', 'ca', 'cpa', 'cs'],
   'mba': ['mba'],
@@ -377,14 +377,14 @@ const PREF_EDUCATION_CONFIG: Record<string, { type: string; minLevel?: number; c
   'undergrad': { type: 'level', minLevel: 2 },
   'masters': { type: 'level', minLevel: 3 },
   'bachelors': { type: 'level', minLevel: 2 },
-  // Engineering
-  'eng_undergrad': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'be', 'btech'] },
-  'eng_masters': { type: 'category', categories: ['masters_eng', 'me', 'mtech'] },
-  'eng_bachelors': { type: 'category', categories: ['bachelors_eng', 'be', 'btech'] },
-  // Computer Science
-  'cs_undergrad': { type: 'category', categories: ['undergrad_cs', 'bachelors_cs', 'bca'] },
-  'cs_masters': { type: 'category', categories: ['masters_cs', 'mca'] },
-  'cs_bachelors': { type: 'category', categories: ['bachelors_cs', 'bca'] },
+  // Engineering (includes CS since CS is a branch of engineering)
+  'eng_undergrad': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'be', 'btech', 'undergrad_cs', 'bachelors_cs', 'bca'] },
+  'eng_masters': { type: 'category', categories: ['masters_eng', 'me', 'mtech', 'masters_cs', 'mca'] },
+  'eng_bachelors': { type: 'category', categories: ['bachelors_eng', 'be', 'btech', 'bachelors_cs', 'bca'] },
+  // Computer Science (includes engineering since CS is a branch of engineering)
+  'cs_undergrad': { type: 'category', categories: ['undergrad_cs', 'bachelors_cs', 'bca', 'undergrad_eng', 'bachelors_eng', 'be', 'btech'] },
+  'cs_masters': { type: 'category', categories: ['masters_cs', 'mca', 'masters_eng', 'me', 'mtech'] },
+  'cs_bachelors': { type: 'category', categories: ['bachelors_cs', 'bca', 'bachelors_eng', 'be', 'btech'] },
   // Medical
   'medical_undergrad': { type: 'category', categories: ['mbbs', 'bds'] },
   'medical_masters': { type: 'category', categories: ['md', 'ms_medical'] },
@@ -400,13 +400,13 @@ const PREF_EDUCATION_CONFIG: Record<string, { type: string; minLevel?: number; c
   'graduate': { type: 'level', minLevel: 2 },  // Legacy
   'post_graduate': { type: 'level', minLevel: 3 },  // Legacy
   'phd': { type: 'category', categories: ['phd'] },
-  'eng_bachelor': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'be', 'btech'] },  // Legacy
-  'eng_master': { type: 'category', categories: ['masters_eng', 'me', 'mtech'] },  // Legacy
-  'cs_bachelor': { type: 'category', categories: ['undergrad_cs', 'bachelors_cs', 'bca'] },  // Legacy
-  'cs_master': { type: 'category', categories: ['masters_cs', 'mca'] },  // Legacy
+  'eng_bachelor': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'be', 'btech', 'bachelors_cs', 'bca'] },  // Legacy
+  'eng_master': { type: 'category', categories: ['masters_eng', 'me', 'mtech', 'masters_cs', 'mca'] },  // Legacy
+  'cs_bachelor': { type: 'category', categories: ['undergrad_cs', 'bachelors_cs', 'bca', 'undergrad_eng', 'bachelors_eng', 'be', 'btech'] },  // Legacy
+  'cs_master': { type: 'category', categories: ['masters_cs', 'mca', 'masters_eng', 'me', 'mtech'] },  // Legacy
   'medical_bachelor': { type: 'category', categories: ['mbbs', 'bds'] },  // Legacy
   'medical_master': { type: 'category', categories: ['md', 'ms_medical'] },  // Legacy
-  'engineering': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'masters_eng'] },  // Legacy
+  'engineering': { type: 'category', categories: ['undergrad_eng', 'bachelors_eng', 'masters_eng', 'undergrad_cs', 'bachelors_cs', 'masters_cs', 'bca', 'mca'] },  // Legacy
   'medical_legacy': { type: 'category', categories: ['mbbs', 'bds', 'md', 'dm_mch'] },  // Legacy
   'md': { type: 'category', categories: ['md', 'ms_medical'] },  // Legacy
 }
