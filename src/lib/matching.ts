@@ -24,6 +24,7 @@ interface ProfileForMatching {
   userId: string
   gender: string
   dateOfBirth: string | null
+  age?: string | number | null  // Used when dateOfBirth is not available
   currentLocation: string | null
   caste: string | null
   community: string | null
@@ -168,6 +169,23 @@ export function calculateAgeFromDOB(dob: string | null): number | null {
       age--
     }
     return age
+  }
+
+  return null
+}
+
+/**
+ * Get age from profile - uses dateOfBirth if available, otherwise falls back to age field
+ */
+export function getProfileAge(profile: { dateOfBirth?: string | null; age?: string | number | null }): number | null {
+  // First try to calculate from dateOfBirth
+  const ageFromDOB = calculateAgeFromDOB(profile.dateOfBirth || null)
+  if (ageFromDOB !== null) return ageFromDOB
+
+  // Fall back to age field if available
+  if (profile.age !== null && profile.age !== undefined) {
+    const ageNum = typeof profile.age === 'string' ? parseInt(profile.age, 10) : profile.age
+    if (!isNaN(ageNum)) return ageNum
   }
 
   return null
@@ -1687,9 +1705,9 @@ export function matchesSeekerPreferences(
   // 1. Gender check (required) - Must be opposite gender
   if (seeker.gender === candidate.gender) return false
 
-  // Get ages for comparison
-  const seekerAge = calculateAgeFromDOB(seeker.dateOfBirth)
-  const candidateAge = calculateAgeFromDOB(candidate.dateOfBirth)
+  // Get ages for comparison (use age field if dateOfBirth not available)
+  const seekerAge = getProfileAge(seeker)
+  const candidateAge = getProfileAge(candidate)
 
   // 2. Age check - use prefAgeMin/Max if available, otherwise legacy prefAgeDiff
   // STRICT: No buffer - respect exact user preferences
