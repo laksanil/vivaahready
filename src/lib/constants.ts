@@ -169,7 +169,6 @@ export const PREF_LOCATION_OPTIONS = [
   { value: "within_50_miles", label: "Within 50 miles" },
   { value: "within_100_miles", label: "Within 100 miles" },
   { value: "within_200_miles", label: "Within 200 miles" },
-  { value: "same_state", label: "Same state as me" },
   { value: "usa", label: "Anywhere in USA" },
   // Specific regions
   { value: "bay_area", label: "Bay Area, CA" },

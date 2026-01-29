@@ -24,8 +24,10 @@ Disallow: /settings/
 
 # Allow public pages for indexing
 Allow: /
-Allow: /pricing
-Allow: /login
+Allow: /about
+Allow: /contact
 Allow: /register
+Allow: /get-verified
+Allow: /login
 Allow: /privacy
 Allow: /terms

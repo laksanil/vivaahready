@@ -72,6 +72,21 @@ function FeedPageContent() {
     }
   }, [status, router, isAdminView, adminChecked, isAdmin])
 
+  // Check if photo upload is required (profile exists but no photos uploaded)
+  useEffect(() => {
+    if (status !== 'authenticated' || isAdminView) return
+
+    fetch('/api/profile/completion-status')
+      .then(res => res.json())
+      .then(data => {
+        // If profile exists but photos not uploaded, redirect to photos page
+        if (data.hasProfile && !data.hasPhotos && data.signupStep < 9) {
+          router.push(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
+        }
+      })
+      .catch(() => {})
+  }, [status, isAdminView, router])
+
   useEffect(() => {
     if (canAccess) {
       fetchProfiles()

@@ -727,11 +727,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           </div>
         )}
 
-        {/* Info Banner - Different message for preferences section */}
-        {currentSection !== 'preferences_1' && currentSection !== 'preferences_2' && (
-          <div className="mx-6 mt-4 p-3 bg-primary-50 border border-primary-200">
-            <p className="text-primary-800 text-xs">
-              <strong>Important:</strong> All information provided must be accurate and truthful. Submission of false or misleading information is a violation of our terms of service and may result in permanent account suspension.
+        {/* Info Banner - Legal notice for all profile sections */}
+        {currentSection !== 'account' && currentSection !== 'admin_account' && currentSection !== 'photos' && (
+          <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200">
+            <p className="text-amber-800 text-xs">
+              <strong>⚠️ Important:</strong> All information provided must be accurate and truthful. Falsification, misrepresentation, or submission of fraudulent details may result in immediate account suspension. By proceeding, you confirm that all details are genuine.
             </p>
           </div>
         )}

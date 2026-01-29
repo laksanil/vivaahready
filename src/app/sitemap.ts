@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next'
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://vivaahready.com'
 
-  // Static pages
+  // Static pages - ordered by SEO priority
   const staticPages = [
     {
       url: baseUrl,
@@ -12,22 +12,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/get-verified`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/login`,
+      url: `${baseUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
-      priority: 0.7,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/register`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/get-verified`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/login`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/privacy`,

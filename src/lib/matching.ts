@@ -739,20 +739,20 @@ function isLocationMatch(
   if (prefLower === 'same_state') {
     const seekerState = seekerLocation ? extractUSState(seekerLocation) : null
     const candState = extractUSState(candidateLocation)
-    if (!seekerState || !candState) return true
+    if (!seekerState || !candState) return false  // Reject if state cannot be determined
     return seekerState === candState
   }
 
   // Multi-state regions
   if (prefLower === 'tri_state') {
     const candState = extractUSState(candidateLocation)
-    if (!candState) return true
+    if (!candState) return false  // Reject if state cannot be determined
     return ['new york', 'new jersey', 'connecticut'].includes(candState)
   }
 
   if (prefLower === 'dmv_area') {
     const candState = extractUSState(candidateLocation)
-    if (!candState) return true
+    if (!candState) return false  // Reject if state cannot be determined
     return ['district of columbia', 'maryland', 'virginia'].includes(candState)
   }
 
@@ -791,6 +791,7 @@ function isLocationMatch(
   if (prefState !== undefined) {
     if (prefState === null) return true  // doesnt_matter, usa, etc already handled above
     const candState = extractUSState(candidateLocation)
+    if (!candState) return false  // Reject if state cannot be determined
     return candState === prefState
   }
 

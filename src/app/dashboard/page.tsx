@@ -171,6 +171,21 @@ function DashboardContent() {
       .catch(() => {})
   }, [status, isAdminView, router])
 
+  // Check if photo upload is required (profile exists but no photos uploaded)
+  useEffect(() => {
+    if (status !== 'authenticated' || isAdminView || !hasProfile) return
+
+    fetch('/api/profile/completion-status')
+      .then(res => res.json())
+      .then(data => {
+        // If profile exists but photos not uploaded (signupStep < 9 and no photos), redirect to photos page
+        if (data.hasProfile && !data.hasPhotos && data.signupStep < 9) {
+          router.push(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
+        }
+      })
+      .catch(() => {})
+  }, [status, isAdminView, hasProfile, router])
+
   // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
     const handleGoogleAuthCallback = async () => {
