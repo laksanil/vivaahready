@@ -250,29 +250,34 @@ export async function GET(request: Request) {
       where.userId = userId
     }
 
-    // Apply filter based on tab
-    if (filter === 'pending') {
-      where.approvalStatus = 'pending'
-    } else if (filter === 'approved') {
-      where.approvalStatus = 'approved'
-      where.isSuspended = false
-    } else if (filter === 'verified') {
-      where.isVerified = true
-    } else if (filter === 'unverified') {
-      where.isVerified = false
-    } else if (filter === 'suspended') {
-      where.isSuspended = true
-    } else if (filter === 'no_photos') {
-      // Profiles with no photos at all
-      where.AND = [
-        { OR: [{ photoUrls: null }, { photoUrls: '' }] },
-        { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
-        { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
-      ]
-    }
+    // Check if search is a VR ID (skip filters to search across all profiles)
+    const isVrIdSearch = search && search.toUpperCase().startsWith('VR')
 
-    if (gender) {
-      where.gender = gender
+    // Apply filter based on tab (skip if searching for VR ID)
+    if (!isVrIdSearch) {
+      if (filter === 'pending') {
+        where.approvalStatus = 'pending'
+      } else if (filter === 'approved') {
+        where.approvalStatus = 'approved'
+        where.isSuspended = false
+      } else if (filter === 'verified') {
+        where.isVerified = true
+      } else if (filter === 'unverified') {
+        where.isVerified = false
+      } else if (filter === 'suspended') {
+        where.isSuspended = true
+      } else if (filter === 'no_photos') {
+        // Profiles with no photos at all
+        where.AND = [
+          { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+          { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+          { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+        ]
+      }
+
+      if (gender) {
+        where.gender = gender
+      }
     }
 
     if (search) {
