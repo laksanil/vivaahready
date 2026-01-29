@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(npx next build --no-lint)"
     ]
   }
 }
