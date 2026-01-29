@@ -305,6 +305,31 @@ function FeedPageContent() {
             </p>
           </div>
 
+          {/* Verification Banner for unpaid users */}
+          {!hasPaid && (
+            <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary-100 rounded-lg">
+                    <Eye className="h-5 w-5 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-900">Get Verified to See Full Profiles</h3>
+                    <p className="text-sm text-primary-700 mt-0.5">
+                      Unlock photos, names, and send interests to your matches.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={buildUrl('/get-verified')}
+                  className="flex-shrink-0 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Get Verified
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="flex gap-0.5 sm:gap-1 p-1 bg-gray-100 rounded-lg mb-4 overflow-x-auto">
             <button
