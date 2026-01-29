@@ -12,8 +12,8 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Create PayPal order - TESTING: $1 (change back to 50.00 after testing)
-    const order = await createPayPalOrder('1.00', session.user.email, session.user.id)
+    // Create PayPal order for $50 verification payment
+    const order = await createPayPalOrder('50.00', session.user.email, session.user.id)
 
     // Track the pending payment for recovery if capture fails
     await prisma.pendingPayment.upsert({
@@ -25,7 +25,7 @@ export async function POST() {
       create: {
         userId: session.user.id,
         paypalOrderId: order.id,
-        amount: '1.00',
+        amount: '50.00',
         status: 'pending',
       },
     })

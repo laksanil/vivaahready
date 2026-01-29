@@ -326,10 +326,10 @@ export default function GetVerifiedPage() {
                 <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-lg">
                   <h2 className="text-lg font-semibold text-stone-900 mb-4 text-center">Complete Verification</h2>
 
-                  {/* Price - TESTING: $1 (change back to $50 after testing) */}
+                  {/* Price */}
                   <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-stone-900">$1</div>
-                    <p className="text-xs text-stone-500 mt-1">One-time payment (TEST MODE)</p>
+                    <div className="text-3xl font-bold text-stone-900">$50</div>
+                    <p className="text-xs text-stone-500 mt-1">One-time payment</p>
                   </div>
 
                   {/* Error message with retry button */}
