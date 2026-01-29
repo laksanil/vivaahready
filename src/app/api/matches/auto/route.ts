@@ -47,17 +47,17 @@ export async function GET(request: Request) {
         gender: myProfile.gender === 'male' ? 'female' : 'male',
         isActive: true,
         userId: { not: targetUserId },
-        // Required fields for a complete profile
-        firstName: { not: null },
+        // Required fields for a complete profile (not null and not empty string)
+        firstName: { notIn: [null as any, ''] },
         dateOfBirth: { not: null },
-        height: { not: null },
-        currentLocation: { not: null },
-        qualification: { not: null },
-        occupation: { not: null },
-        religion: { not: null },
-        caste: { not: null },
-        motherTongue: { not: null },
-        maritalStatus: { not: null },
+        height: { notIn: [null as any, ''] },
+        currentLocation: { notIn: [null as any, ''] },
+        qualification: { notIn: [null as any, ''] },
+        occupation: { notIn: [null as any, ''] },
+        religion: { notIn: [null as any, ''] },
+        caste: { notIn: [null as any, ''] },
+        motherTongue: { notIn: [null as any, ''] },
+        maritalStatus: { notIn: [null as any, ''] },
       },
       include: {
         user: {
