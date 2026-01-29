@@ -705,9 +705,9 @@ function isLocationMatch(
     return true
   }
 
-  // No candidate location - can't verify
-  if (!candidateLocation) {
-    return true // Missing data never blocks a match
+  // No candidate location - reject if seeker has location preference
+  if (!candidateLocation || candidateLocation.trim() === '') {
+    return false // Can't match location preference without candidate location
   }
 
   const prefList = parsePreferenceList(preference)
