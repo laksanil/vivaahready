@@ -41,11 +41,23 @@ export async function GET(request: Request) {
     const isApproved = myProfile.approvalStatus === 'approved'
 
     // Get all profiles (opposite gender) that match partner preferences - show regardless of approval status
+    // Only include profiles with essential fields filled (so matches have meaningful info to display)
     const candidates = await prisma.profile.findMany({
       where: {
         gender: myProfile.gender === 'male' ? 'female' : 'male',
         isActive: true,
         userId: { not: targetUserId },
+        // Required fields for a complete profile
+        firstName: { not: null },
+        dateOfBirth: { not: null },
+        height: { not: null },
+        currentLocation: { not: null },
+        qualification: { not: null },
+        occupation: { not: null },
+        religion: { not: null },
+        caste: { not: null },
+        motherTongue: { not: null },
+        maritalStatus: { not: null },
       },
       include: {
         user: {
