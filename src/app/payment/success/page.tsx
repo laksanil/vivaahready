@@ -89,7 +89,7 @@ function PaymentSuccessContent() {
           <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Confirming Your Payment</h2>
           <p className="text-gray-600 mb-4">
-            Please wait while we verify your payment with Stripe...
+            Please wait while we verify your payment...
           </p>
           <p className="text-sm text-gray-400">
             This usually takes a few seconds
