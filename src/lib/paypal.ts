@@ -101,20 +101,38 @@ export async function capturePayPalOrder(orderId: string): Promise<{ success: bo
   if (!response.ok) {
     const error = await response.text()
     console.error('PayPal capture error:', error)
-    return { success: false }
+    console.error('PayPal capture status:', response.status)
+    return { success: false, error: error }
   }
 
   const data = await response.json()
+  console.log('PayPal capture response:', JSON.stringify(data, null, 2))
 
   // Get the custom_id (user ID) from the purchase unit
   const customId = data.purchase_units?.[0]?.payments?.captures?.[0]?.custom_id
     || data.purchase_units?.[0]?.custom_id
 
-  return {
-    success: data.status === 'COMPLETED',
-    customId,
-    payerId: data.payer?.payer_id,
+  // Check if order was already captured
+  if (data.status === 'COMPLETED') {
+    return {
+      success: true,
+      customId,
+      payerId: data.payer?.payer_id,
+    }
   }
+
+  // Order might already be captured - check for captures
+  const captures = data.purchase_units?.[0]?.payments?.captures
+  if (captures && captures.length > 0 && captures[0].status === 'COMPLETED') {
+    return {
+      success: true,
+      customId: captures[0].custom_id,
+      payerId: data.payer?.payer_id,
+    }
+  }
+
+  console.error('PayPal order status not COMPLETED:', data.status)
+  return { success: false, error: `Order status: ${data.status}` }
 }
 
 // Verify webhook signature

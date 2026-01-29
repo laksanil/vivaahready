@@ -22,8 +22,9 @@ export async function POST(request: Request) {
     const result = await capturePayPalOrder(orderId)
 
     if (!result.success) {
+      console.error('PayPal capture failed for order:', orderId, 'error:', (result as any).error)
       return NextResponse.json(
-        { error: 'Payment capture failed' },
+        { error: 'Payment capture failed. The order may have already been processed or expired. Please try again.' },
         { status: 400 }
       )
     }
