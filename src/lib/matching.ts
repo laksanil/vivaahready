@@ -348,7 +348,7 @@ const EDUCATION_LEVELS: Record<string, number> = {
 
   // Level 4: Doctorate / Super-specialty
   'md': 4,    // Medical Doctorate (professional degree)
-  'do': 4,
+  'do': 3,    // Doctor of Osteopathy (equivalent to masters)
   'dds': 4,
   'pharmd': 4,
   'jd': 4,

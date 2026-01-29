@@ -41,6 +41,18 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Also reject any pending interest from this user
+    await prisma.match.updateMany({
+      where: {
+        senderId: declinedUserId,
+        receiverId: currentUserId,
+        status: 'pending',
+      },
+      data: {
+        status: 'rejected',
+      },
+    })
+
     return NextResponse.json({ success: true, declined })
   } catch (error) {
     console.error('Error declining profile:', error)

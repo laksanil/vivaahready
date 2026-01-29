@@ -765,9 +765,9 @@ function ProfileCard({
                     <div className="group relative">
                       <button
                         onClick={onOpenPayment}
-                        className="w-11 h-11 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center shadow-lg transition-colors"
+                        className="w-11 h-11 bg-gray-400 hover:bg-gray-500 rounded-lg flex items-center justify-center shadow-lg transition-colors cursor-pointer"
                       >
-                        <Heart className="h-6 w-6 text-white" />
+                        <Heart className="h-6 w-6 text-white/70" />
                       </button>
                       <div className="absolute top-full right-0 mt-2 hidden group-hover:block z-50">
                         <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">

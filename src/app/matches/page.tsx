@@ -341,9 +341,7 @@ function FeedPageContent() {
             >
               <Inbox className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Received</span>
-              {receivedInterests.length > 0 && (
-                <span className="bg-primary-100 text-primary-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
-              )}
+              <span className="bg-purple-100 text-purple-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{receivedInterests.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('connections')}
@@ -355,9 +353,7 @@ function FeedPageContent() {
             >
               <Heart className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Connections</span>
-              {connections.length > 0 && (
-                <span className="bg-green-100 text-green-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{connections.length}</span>
-              )}
+              <span className="bg-green-100 text-green-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{connections.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('passed')}
@@ -369,9 +365,7 @@ function FeedPageContent() {
             >
               <RotateCcw className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Passed</span>
-              {passedProfiles.length > 0 && (
-                <span className="bg-gray-200 text-gray-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{passedProfiles.length}</span>
-              )}
+              <span className="bg-gray-200 text-gray-700 text-xs px-1 sm:px-1.5 py-0.5 rounded-full">{passedProfiles.length}</span>
             </button>
           </div>
 

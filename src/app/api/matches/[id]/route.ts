@@ -79,6 +79,33 @@ export async function PATCH(
       data: { status: finalStatus },
     })
 
+    // If rejecting, also add to DeclinedProfile so they appear in "Passed Profiles"
+    if (finalStatus === 'rejected') {
+      await prisma.declinedProfile.upsert({
+        where: {
+          userId_declinedUserId: {
+            userId: currentUserId,
+            declinedUserId: match.senderId,
+          }
+        },
+        create: {
+          userId: currentUserId,
+          declinedUserId: match.senderId,
+        },
+        update: {} // Already exists, no update needed
+      })
+    }
+
+    // If accepting after previous rejection, remove from DeclinedProfile
+    if (finalStatus === 'accepted') {
+      await prisma.declinedProfile.deleteMany({
+        where: {
+          userId: currentUserId,
+          declinedUserId: match.senderId,
+        }
+      })
+    }
+
     // If accepted (or reconsidered), check if there's a reverse interest
     if (finalStatus === 'accepted') {
       const reverseInterest = await prisma.match.findUnique({
