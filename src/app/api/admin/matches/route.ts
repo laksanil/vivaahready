@@ -63,6 +63,7 @@ export async function GET(request: Request) {
 
     if (search) {
       where.OR = [
+        { odNumber: { contains: search, mode: 'insensitive' } },
         { user: { name: { contains: search, mode: 'insensitive' } } },
         { user: { email: { contains: search, mode: 'insensitive' } } },
         { currentLocation: { contains: search, mode: 'insensitive' } },
