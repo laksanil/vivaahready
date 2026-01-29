@@ -328,7 +328,24 @@ export async function GET(request: Request) {
     const currentPotentialMatches = sortedFreshMatches.length
     await updateLifetimeMatches(targetUserId, currentPotentialMatches)
 
-    // Re-fetch lifetime stats to get updated matches value
+    // Sync lifetime stats with real-time if lifetime is lower (backfill for pre-existing data)
+    const needsSync = lifetimeStats && (
+      lifetimeStats.lifetimeInterestsSent < interestsSentStats.total ||
+      lifetimeStats.lifetimeInterestsReceived < interestsReceivedStats.total ||
+      lifetimeStats.lifetimeMutualMatches < sortedMutualMatches.length
+    )
+    if (needsSync) {
+      await prisma.profile.update({
+        where: { userId: targetUserId },
+        data: {
+          lifetimeInterestsSent: Math.max(lifetimeStats.lifetimeInterestsSent, interestsSentStats.total),
+          lifetimeInterestsReceived: Math.max(lifetimeStats.lifetimeInterestsReceived, interestsReceivedStats.total),
+          lifetimeMutualMatches: Math.max(lifetimeStats.lifetimeMutualMatches, sortedMutualMatches.length),
+        }
+      })
+    }
+
+    // Re-fetch lifetime stats to get updated values
     const updatedLifetimeStats = await getLifetimeStats(targetUserId)
 
     return NextResponse.json({
