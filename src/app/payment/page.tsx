@@ -11,11 +11,11 @@ import {
   Loader2,
   ArrowLeft,
   CreditCard,
-  Clock,
+  AlertCircle,
 } from 'lucide-react'
 
-const PAYPAL_CLIENT_ID = 'BAA2bQdg8XChuxjCrEc7y0eKKd0xkmtWlGLGu8_cU0w69TNzYa2D0vtrMqva9LWcjQyrV_qHXLvNdEeAlA'
-const PAYPAL_BUTTON_ID = 'D3MQVBJT53SGU'
+// Use the same Client ID for SDK - this is the public client ID
+const PAYPAL_CLIENT_ID = 'AUst3rQh1ToLnUe254mQGG4GCs6dnfmIghPbAY7YNsXi3GGpYaxD8D_2itXDO2XXTM9o9jgBH3gOC4iu'
 
 export default function PaymentPage() {
   const { data: session, status } = useSession()
@@ -23,8 +23,10 @@ export default function PaymentPage() {
   const [hasPaid, setHasPaid] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [paypalLoaded, setPaypalLoaded] = useState(false)
-  const [paymentInitiated, setPaymentInitiated] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const paypalContainerRef = useRef<HTMLDivElement>(null)
+  const buttonsRendered = useRef(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -50,25 +52,91 @@ export default function PaymentPage() {
     }
   }
 
-  // Render PayPal button when SDK is loaded
+  // Render PayPal buttons when SDK is loaded
   useEffect(() => {
-    if (paypalLoaded && !hasPaid && paypalContainerRef.current) {
-      // Clear container first
-      paypalContainerRef.current.innerHTML = ''
+    if (paypalLoaded && !hasPaid && paypalContainerRef.current && !buttonsRendered.current) {
+      buttonsRendered.current = true
 
-      // Create the PayPal button container
-      const container = document.createElement('div')
-      container.id = `paypal-container-${PAYPAL_BUTTON_ID}`
-      paypalContainerRef.current.appendChild(container)
+      const paypal = (window as unknown as { paypal?: {
+        Buttons: (config: {
+          style?: {
+            layout?: string
+            color?: string
+            shape?: string
+            label?: string
+            height?: number
+          }
+          createOrder: () => Promise<string>
+          onApprove: (data: { orderID: string }) => Promise<void>
+          onError: (err: unknown) => void
+          onCancel: () => void
+        }) => { render: (selector: string | HTMLElement) => void }
+      }}).paypal
 
-      // Render the hosted button
-      if ((window as unknown as { paypal?: { HostedButtons?: (config: { hostedButtonId: string }) => { render: (selector: string) => void } } }).paypal?.HostedButtons) {
-        (window as unknown as { paypal: { HostedButtons: (config: { hostedButtonId: string }) => { render: (selector: string) => void } } }).paypal.HostedButtons({
-          hostedButtonId: PAYPAL_BUTTON_ID,
-        }).render(`#paypal-container-${PAYPAL_BUTTON_ID}`)
+      if (paypal?.Buttons) {
+        paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal',
+            height: 45,
+          },
+          createOrder: async () => {
+            setError(null)
+            setProcessing(true)
+            try {
+              const response = await fetch('/api/paypal/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+              })
+              const data = await response.json()
+              if (data.error) {
+                throw new Error(data.error)
+              }
+              return data.orderId
+            } catch (err) {
+              console.error('Error creating order:', err)
+              setError('Failed to create order. Please try again.')
+              setProcessing(false)
+              throw err
+            }
+          },
+          onApprove: async (data: { orderID: string }) => {
+            try {
+              // Capture the order on our server
+              const response = await fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: data.orderID }),
+              })
+              const result = await response.json()
+
+              if (result.success) {
+                // Redirect to success page
+                router.push('/payment/success')
+              } else {
+                setError('Payment verification failed. Please contact support.')
+                setProcessing(false)
+              }
+            } catch (err) {
+              console.error('Error capturing order:', err)
+              setError('Payment processing failed. Please contact support.')
+              setProcessing(false)
+            }
+          },
+          onError: (err: unknown) => {
+            console.error('PayPal error:', err)
+            setError('Payment failed. Please try again.')
+            setProcessing(false)
+          },
+          onCancel: () => {
+            setProcessing(false)
+          },
+        }).render(paypalContainerRef.current!)
       }
     }
-  }, [paypalLoaded, hasPaid])
+  }, [paypalLoaded, hasPaid, router])
 
   if (status === 'loading' || checkingStatus) {
     return (
@@ -116,7 +184,7 @@ export default function PaymentPage() {
     <>
       {/* PayPal SDK Script */}
       <Script
-        src={`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&components=hosted-buttons&enable-funding=venmo&currency=USD`}
+        src={`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`}
         onLoad={() => setPaypalLoaded(true)}
       />
 
@@ -170,6 +238,32 @@ export default function PaymentPage() {
                 </ul>
               </div>
 
+              {/* Error message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-red-800">{error}</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        If the issue persists, contact{' '}
+                        <a href="mailto:support@vivaahready.com" className="underline">
+                          support@vivaahready.com
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Processing state */}
+              {processing && (
+                <div className="flex items-center justify-center py-4 mb-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary-600 mr-2" />
+                  <span className="text-gray-600 text-sm">Processing payment...</span>
+                </div>
+              )}
+
               {/* PayPal Button Container */}
               <div className="mb-4">
                 {!paypalLoaded ? (
@@ -194,31 +288,9 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              {/* Post-payment note */}
-              {paymentInitiated && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-start gap-2">
-                    <Clock className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-blue-800">Payment completed?</p>
-                      <p className="text-xs text-blue-600 mt-1">
-                        Your profile will be verified within a few hours.
-                        You&apos;ll receive an email once approved.
-                      </p>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="mt-2 text-xs text-blue-700 underline hover:no-underline"
-                      >
-                        Refresh to check status
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Help text */}
               <p className="text-xs text-gray-400 text-center">
-                After payment, your profile will be reviewed and verified.
+                After payment, your profile will be automatically verified.
                 <br />
                 Questions? Email{' '}
                 <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:underline">
@@ -227,12 +299,6 @@ export default function PaymentPage() {
               </p>
             </div>
           </div>
-
-          {/* Click tracker for post-payment state */}
-          <div
-            className="fixed inset-0 pointer-events-none"
-            onClick={() => setPaymentInitiated(true)}
-          />
         </div>
       </div>
     </>
