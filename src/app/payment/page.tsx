@@ -14,8 +14,8 @@ import {
   AlertCircle,
 } from 'lucide-react'
 
-// Use the same Client ID for SDK - this is the public client ID
-const PAYPAL_CLIENT_ID = 'AUst3rQh1ToLnUe254mQGG4GCs6dnfmIghPbAY7YNsXi3GGpYaxD8D_2itXDO2XXTM9o9jgBH3gOC4iu'
+// PayPal Client ID from environment variable (public, safe to expose in frontend)
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'AQaudKo50ofbHjXkE91kbhzdPGji-Jk9b1tMzG89KjhROwnvZLVv6DKXZUAK99ZvJQvxDa-X_LFLwrfD'
 
 export default function PaymentPage() {
   const { data: session, status } = useSession()
@@ -113,8 +113,8 @@ export default function PaymentPage() {
               const result = await response.json()
 
               if (result.success) {
-                // Redirect to success page
-                router.push('/payment/success')
+                // Redirect to dashboard - it will show payment success banner
+                router.push('/dashboard')
               } else {
                 setError('Payment verification failed. Please contact support.')
                 setProcessing(false)
