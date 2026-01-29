@@ -63,11 +63,27 @@ export async function getMatchResultsForUser(
   const hasPaid = userSubscription?.profilePaid === true
   const isApproved = myProfile.approvalStatus === 'approved'
 
+  // Only include profiles with essential fields filled (so matches have meaningful info to display)
   const candidates = await prisma.profile.findMany({
     where: {
       gender: myProfile.gender === 'male' ? 'female' : 'male',
       isActive: true,
       userId: { not: userId },
+      // Required fields for a complete profile (not null and not empty string)
+      firstName: { notIn: [null as any, ''] },
+      // Age: either dateOfBirth or age field must be set
+      OR: [
+        { dateOfBirth: { notIn: [null as any, ''] } },
+        { age: { not: null } },
+      ],
+      height: { notIn: [null as any, ''] },
+      currentLocation: { notIn: [null as any, ''] },
+      qualification: { notIn: [null as any, ''] },
+      occupation: { notIn: [null as any, ''] },
+      religion: { notIn: [null as any, ''] },
+      caste: { notIn: [null as any, ''] },
+      motherTongue: { notIn: [null as any, ''] },
+      maritalStatus: { notIn: [null as any, ''] },
     },
     include: {
       user: {

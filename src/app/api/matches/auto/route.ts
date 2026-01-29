@@ -49,7 +49,11 @@ export async function GET(request: Request) {
         userId: { not: targetUserId },
         // Required fields for a complete profile (not null and not empty string)
         firstName: { notIn: [null as any, ''] },
-        dateOfBirth: { not: null },
+        // Age: either dateOfBirth or age field must be set
+        OR: [
+          { dateOfBirth: { notIn: [null as any, ''] } },
+          { age: { not: null } },
+        ],
         height: { notIn: [null as any, ''] },
         currentLocation: { notIn: [null as any, ''] },
         qualification: { notIn: [null as any, ''] },
