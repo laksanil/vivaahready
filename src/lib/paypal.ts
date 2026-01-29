@@ -87,7 +87,7 @@ export async function createPayPalOrder(amount: string, userEmail: string, userI
 }
 
 // Capture a PayPal order (after user approves)
-export async function capturePayPalOrder(orderId: string): Promise<{ success: boolean; customId?: string; payerId?: string }> {
+export async function capturePayPalOrder(orderId: string): Promise<{ success: boolean; customId?: string; payerId?: string; error?: string }> {
   const accessToken = await getPayPalAccessToken()
 
   const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}/capture`, {

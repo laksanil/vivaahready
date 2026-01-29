@@ -57,16 +57,36 @@ async function handlePaymentCaptured(resource: {
     }
   }
 }) {
-  const userId = resource.custom_id
+  let userId = resource.custom_id
   const paymentId = resource.id
   const orderId = resource.supplementary_data?.related_ids?.order_id
 
+  // If no custom_id, try to find user from pending payments table
+  if (!userId && orderId) {
+    const pendingPayment = await prisma.pendingPayment.findUnique({
+      where: { paypalOrderId: orderId },
+    })
+    if (pendingPayment) {
+      userId = pendingPayment.userId
+      console.log(`Found user ${userId} from pending payment for order ${orderId}`)
+    }
+  }
+
   if (!userId) {
-    console.error('No user ID in payment capture webhook')
+    console.error('No user ID in payment capture webhook and not found in pending payments')
     return
   }
 
   await markPaymentComplete(userId, `paypal_${orderId || paymentId}`)
+
+  // Update pending payment status
+  if (orderId) {
+    await prisma.pendingPayment.updateMany({
+      where: { paypalOrderId: orderId },
+      data: { status: 'captured', capturedAt: new Date() },
+    })
+  }
+
   console.log(`Payment captured via webhook for user: ${userId}`)
 }
 
@@ -82,15 +102,35 @@ async function handleOrderCompleted(resource: {
   }>
 }) {
   const orderId = resource.id
-  const customId = resource.purchase_units?.[0]?.custom_id
+  let userId = resource.purchase_units?.[0]?.custom_id
 
-  if (!customId) {
-    console.error('No custom_id in order completed webhook')
+  // If no custom_id, try to find user from pending payments table
+  if (!userId && orderId) {
+    const pendingPayment = await prisma.pendingPayment.findUnique({
+      where: { paypalOrderId: orderId },
+    })
+    if (pendingPayment) {
+      userId = pendingPayment.userId
+      console.log(`Found user ${userId} from pending payment for order ${orderId}`)
+    }
+  }
+
+  if (!userId) {
+    console.error('No user ID in order completed webhook and not found in pending payments')
     return
   }
 
-  await markPaymentComplete(customId, `paypal_${orderId}`)
-  console.log(`Order completed via webhook for user: ${customId}`)
+  await markPaymentComplete(userId, `paypal_${orderId}`)
+
+  // Update pending payment status
+  if (orderId) {
+    await prisma.pendingPayment.updateMany({
+      where: { paypalOrderId: orderId },
+      data: { status: 'captured', capturedAt: new Date() },
+    })
+  }
+
+  console.log(`Order completed via webhook for user: ${userId}`)
 }
 
 async function markPaymentComplete(userId: string, paymentId: string) {

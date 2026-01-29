@@ -358,3 +358,24 @@ model DeletionRequest {
   @@index([status])
   @@index([createdAt])
 }
+
+// Tracks PayPal orders for payment recovery
+// If client-side capture fails, we can retry or match via webhook
+model PendingPayment {
+  id              String   @id @default(cuid())
+  userId          String   // User who initiated payment
+  paypalOrderId   String   @unique // PayPal order ID
+  amount          String   // Payment amount
+
+  status          String   @default("pending") // pending, captured, failed, expired
+  captureAttempts Int      @default(0) // Number of capture attempts
+  lastError       String?  // Last error message
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  capturedAt      DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([paypalOrderId])
+}

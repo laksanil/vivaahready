@@ -332,12 +332,31 @@ export default function GetVerifiedPage() {
                     <p className="text-xs text-stone-500 mt-1">One-time payment</p>
                   </div>
 
-                  {/* Error message */}
+                  {/* Error message with retry button */}
                   {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                       <div className="flex items-start gap-2">
                         <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-red-800">{error}</p>
+                        <div className="flex-1">
+                          <p className="text-sm text-red-800">{error}</p>
+                          <button
+                            onClick={() => {
+                              setError(null)
+                              setProcessing(false)
+                              // Re-render PayPal buttons by resetting the ref
+                              buttonsRendered.current = false
+                              if (paypalContainerRef.current) {
+                                paypalContainerRef.current.innerHTML = ''
+                              }
+                              // Trigger re-render
+                              setPaypalLoaded(false)
+                              setTimeout(() => setPaypalLoaded(true), 100)
+                            }}
+                            className="mt-2 inline-flex items-center text-sm text-red-700 hover:text-red-800 font-medium underline underline-offset-2"
+                          >
+                            Try Again
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}

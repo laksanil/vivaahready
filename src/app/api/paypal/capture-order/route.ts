@@ -4,6 +4,34 @@ import { authOptions } from '@/lib/auth'
 import { capturePayPalOrder } from '@/lib/paypal'
 import { prisma } from '@/lib/prisma'
 
+// Retry helper with exponential backoff
+async function captureWithRetry(orderId: string, maxRetries: number = 3): Promise<{ success: boolean; error?: string; customId?: string; payerId?: string }> {
+  let lastError = ''
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const result = await capturePayPalOrder(orderId)
+
+    if (result.success) {
+      return result
+    }
+
+    lastError = (result as { error?: string }).error || 'Unknown error'
+    console.log(`PayPal capture attempt ${attempt}/${maxRetries} failed:`, lastError)
+
+    // Don't retry if order is already captured or invalid
+    if (lastError.includes('ORDER_ALREADY_CAPTURED') || lastError.includes('INVALID_RESOURCE_ID')) {
+      break
+    }
+
+    // Wait before retrying (exponential backoff: 1s, 2s, 4s)
+    if (attempt < maxRetries) {
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
+    }
+  }
+
+  return { success: false, error: lastError }
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -18,11 +46,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order ID required' }, { status: 400 })
     }
 
-    // Capture the PayPal order
-    const result = await capturePayPalOrder(orderId)
+    // Update pending payment attempt count
+    await prisma.pendingPayment.updateMany({
+      where: { paypalOrderId: orderId },
+      data: { captureAttempts: { increment: 1 } },
+    })
+
+    // Capture the PayPal order with retry logic
+    const result = await captureWithRetry(orderId)
 
     if (!result.success) {
-      console.error('PayPal capture failed for order:', orderId, 'error:', (result as any).error)
+      const errorMsg = (result as { error?: string }).error || 'Unknown error'
+      console.error('PayPal capture failed for order:', orderId, 'error:', errorMsg)
+
+      // Update pending payment with error
+      await prisma.pendingPayment.updateMany({
+        where: { paypalOrderId: orderId },
+        data: {
+          status: 'failed',
+          lastError: errorMsg.substring(0, 500), // Truncate long errors
+        },
+      })
+
       return NextResponse.json(
         { error: 'Payment capture failed. The order may have already been processed or expired. Please try again.' },
         { status: 400 }
@@ -51,6 +96,14 @@ export async function POST(request: Request) {
         where: { userId },
         data: {
           approvalStatus: 'pending',
+        },
+      }),
+      // Mark pending payment as captured
+      prisma.pendingPayment.updateMany({
+        where: { paypalOrderId: orderId },
+        data: {
+          status: 'captured',
+          capturedAt: new Date(),
         },
       }),
     ])
