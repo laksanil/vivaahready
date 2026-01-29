@@ -28,8 +28,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify the custom_id matches the current user
-    const userId = result.customId || session.user.id
+    // Always use the current session user - don't rely on customId from PayPal
+    // This ensures the logged-in user gets credited, not whoever created the order
+    const userId = session.user.id
 
     // Mark payment as complete in database
     await prisma.$transaction([
