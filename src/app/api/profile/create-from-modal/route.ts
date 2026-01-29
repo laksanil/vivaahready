@@ -216,7 +216,8 @@ export async function POST(request: Request) {
     }
 
     // Check for duplicate profile (same firstName + lastName + dateOfBirth)
-    if (data.firstName && data.lastName && data.dateOfBirth && !data.skipDuplicateCheck) {
+    // This is a HARD BLOCK - no duplicate profiles allowed
+    if (data.firstName && data.lastName && data.dateOfBirth) {
       const duplicateProfile = await prisma.profile.findFirst({
         where: {
           firstName: { equals: data.firstName, mode: 'insensitive' },
@@ -229,14 +230,12 @@ export async function POST(request: Request) {
       })
 
       if (duplicateProfile) {
+        // Mask email for privacy: ab***@gmail.com
+        const maskedEmail = duplicateProfile.user?.email?.replace(/(.{2})(.*)(@.*)/, '$1***$3') || 'your existing account'
         return NextResponse.json(
           {
             error: 'duplicate_profile',
-            message: `A profile with the same name and date of birth already exists (${duplicateProfile.odNumber}). This could be a duplicate. Do you want to continue?`,
-            duplicate: {
-              vrId: duplicateProfile.odNumber,
-              email: duplicateProfile.user?.email,
-            },
+            message: `A profile with this name and date of birth already exists. If this is you, please login with your existing account (${maskedEmail}).`,
           },
           { status: 409 }
         )
