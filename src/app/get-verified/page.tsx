@@ -123,7 +123,7 @@ export default function GetVerifiedPage() {
           },
           createOrder: async () => {
             setError(null)
-            setProcessing(true)
+            // Don't set processing here - user still needs to fill in card details
             try {
               const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
@@ -137,11 +137,12 @@ export default function GetVerifiedPage() {
             } catch (err) {
               console.error('Error creating order:', err)
               setError('Failed to create order. Please try again.')
-              setProcessing(false)
               throw err
             }
           },
           onApprove: async (data: { orderID: string }) => {
+            // Now show processing - user has submitted payment
+            setProcessing(true)
             try {
               const response = await fetch('/api/paypal/capture-order', {
                 method: 'POST',
