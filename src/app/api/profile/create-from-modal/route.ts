@@ -377,12 +377,12 @@ export async function POST(request: Request) {
         prefInterests: data.prefInterests,
         idealPartnerDesc: data.idealPartnerDesc,
 
-        // Deal-breaker flags
-        prefAgeIsDealbreaker: data.prefAgeIsDealbreaker ?? false,
-        prefHeightIsDealbreaker: data.prefHeightIsDealbreaker ?? false,
-        prefMaritalStatusIsDealbreaker: data.prefMaritalStatusIsDealbreaker ?? false,
+        // Deal-breaker flags (age, height, marital status, religion default to true)
+        prefAgeIsDealbreaker: data.prefAgeIsDealbreaker ?? true,
+        prefHeightIsDealbreaker: data.prefHeightIsDealbreaker ?? true,
+        prefMaritalStatusIsDealbreaker: data.prefMaritalStatusIsDealbreaker ?? true,
         prefHasChildrenIsDealbreaker: data.prefHasChildrenIsDealbreaker ?? false,
-        prefReligionIsDealbreaker: data.prefReligionIsDealbreaker ?? false,
+        prefReligionIsDealbreaker: data.prefReligionIsDealbreaker ?? true,
         prefCommunityIsDealbreaker: data.prefCommunityIsDealbreaker ?? false,
         prefGotraIsDealbreaker: data.prefGotraIsDealbreaker ?? false,
         prefDietIsDealbreaker: data.prefDietIsDealbreaker ?? false,

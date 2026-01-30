@@ -187,9 +187,9 @@ model Profile {
   // Deal-breaker flags for partner preferences
   // If true, the preference is a deal-breaker (hard filter)
   // If false/null, the preference is optional (soft preference)
-  prefAgeIsDealbreaker          Boolean @default(false)
-  prefHeightIsDealbreaker       Boolean @default(false)
-  prefMaritalStatusIsDealbreaker Boolean @default(false)
+  prefAgeIsDealbreaker          Boolean @default(true)
+  prefHeightIsDealbreaker       Boolean @default(true)
+  prefMaritalStatusIsDealbreaker Boolean @default(true)
   prefHasChildrenIsDealbreaker  Boolean @default(false)
   prefCommunityIsDealbreaker    Boolean @default(false)
   prefGotraIsDealbreaker        Boolean @default(false)
@@ -209,7 +209,7 @@ model Profile {
   prefMotherTongueIsDealbreaker Boolean @default(false)
   prefSubCommunityIsDealbreaker Boolean @default(false)
   prefPetsIsDealbreaker         Boolean @default(false)
-  prefReligionIsDealbreaker     Boolean @default(false)
+  prefReligionIsDealbreaker     Boolean @default(true)
 
   // Metadata
   citizenship       String?
