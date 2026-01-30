@@ -393,7 +393,7 @@ export default function GetVerifiedPage() {
                         <span className="text-sm font-semibold text-stone-600">All Cards Accepted</span>
                       </div>
                     </div>
-                    <p className="text-center text-xs text-stone-400 mt-2">
+                    <p className="text-center text-sm font-medium text-stone-500 mt-2">
                       Powered by PayPal. Your card details are never stored on our servers.
                     </p>
                   </div>
