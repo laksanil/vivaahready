@@ -18,7 +18,6 @@ import {
   Users,
   Loader2,
   AlertCircle,
-  CreditCard,
   Check,
 } from 'lucide-react'
 
@@ -385,24 +384,24 @@ export default function GetVerifiedPage() {
                   {/* Trust badges */}
                   <div className="border-t border-stone-100 pt-4 mt-2">
                     {/* Accepted cards */}
-                    <div className="flex items-center justify-center flex-wrap gap-1.5 mb-3">
-                      <span className="text-[10px] text-stone-400">Accepts:</span>
-                      <span className="px-1.5 py-0.5 bg-[#1a1f71] text-white text-[9px] font-bold rounded">VISA</span>
-                      <span className="px-1.5 py-0.5 bg-gradient-to-r from-[#eb001b] to-[#f79e1b] text-white text-[9px] font-bold rounded">MC</span>
-                      <span className="px-1.5 py-0.5 bg-[#006fcf] text-white text-[9px] font-bold rounded">AMEX</span>
-                      <span className="px-1.5 py-0.5 bg-[#ff6000] text-white text-[9px] font-bold rounded">DISCOVER</span>
+                    <div className="flex items-center justify-center flex-wrap gap-2 mb-3">
+                      <span className="text-xs text-stone-500">Accepts:</span>
+                      <span className="px-2 py-1 bg-[#1a1f71] text-white text-xs font-bold rounded">VISA</span>
+                      <span className="px-2 py-1 bg-gradient-to-r from-[#eb001b] to-[#f79e1b] text-white text-xs font-bold rounded">MC</span>
+                      <span className="px-2 py-1 bg-[#006fcf] text-white text-xs font-bold rounded">AMEX</span>
+                      <span className="px-2 py-1 bg-[#ff6000] text-white text-xs font-bold rounded">DISCOVER</span>
                     </div>
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      <Lock className="h-3.5 w-3.5 text-green-600" />
-                      <span className="text-xs font-medium text-green-700">256-bit SSL Encrypted</span>
+                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                      <Lock className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-700">256-bit SSL Encrypted</span>
                     </div>
-                    <div className="flex items-center justify-center gap-3 text-xs text-stone-500">
-                      <div className="flex items-center gap-1">
-                        <Shield className="h-3.5 w-3.5 text-stone-400" />
+                    <div className="flex items-center justify-center gap-3 text-sm text-stone-500">
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="h-4 w-4 text-stone-400" />
                         <span>Secure checkout</span>
                       </div>
                     </div>
-                    <p className="text-center text-[10px] text-stone-400 mt-3">
+                    <p className="text-center text-xs text-stone-400 mt-3">
                       Powered by PayPal. Your card details are never stored on our servers.
                     </p>
                   </div>
