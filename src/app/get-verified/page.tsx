@@ -384,22 +384,26 @@ export default function GetVerifiedPage() {
 
                   {/* Trust badges */}
                   <div className="border-t border-stone-100 pt-4 mt-2">
-                    <div className="flex items-center justify-center gap-1 mb-3">
+                    {/* Accepted cards */}
+                    <div className="flex items-center justify-center flex-wrap gap-1.5 mb-3">
+                      <span className="text-[10px] text-stone-400">Accepts:</span>
+                      <span className="px-1.5 py-0.5 bg-[#1a1f71] text-white text-[9px] font-bold rounded">VISA</span>
+                      <span className="px-1.5 py-0.5 bg-gradient-to-r from-[#eb001b] to-[#f79e1b] text-white text-[9px] font-bold rounded">MC</span>
+                      <span className="px-1.5 py-0.5 bg-[#006fcf] text-white text-[9px] font-bold rounded">AMEX</span>
+                      <span className="px-1.5 py-0.5 bg-[#ff6000] text-white text-[9px] font-bold rounded">DISCOVER</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 mb-2">
                       <Lock className="h-3.5 w-3.5 text-green-600" />
                       <span className="text-xs font-medium text-green-700">256-bit SSL Encrypted</span>
                     </div>
-                    <div className="flex items-center justify-center gap-4 text-xs text-stone-500">
+                    <div className="flex items-center justify-center gap-3 text-xs text-stone-500">
                       <div className="flex items-center gap-1">
                         <Shield className="h-3.5 w-3.5 text-stone-400" />
                         <span>Secure checkout</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <CreditCard className="h-3.5 w-3.5 text-stone-400" />
-                        <span>All cards accepted</span>
-                      </div>
                     </div>
                     <p className="text-center text-[10px] text-stone-400 mt-3">
-                      Payments processed securely by PayPal. Your card details are never stored on our servers.
+                      Powered by PayPal. Your card details are never stored on our servers.
                     </p>
                   </div>
                 </div>
