@@ -6,7 +6,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Download, Trash2, RefreshCw, Ban, UserCheck, ShieldCheck, ImageOff,
-  ExternalLink, Eye, Loader2, Users, UserX, Heart, AlertTriangle,
+  ExternalLink, Eye, Loader2, Users, Heart, AlertTriangle,
   Check, X, Edit, LayoutDashboard, MessageCircle, CreditCard
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
@@ -15,7 +15,6 @@ import {
   AdminTabs,
   AdminSearchFilter,
   AdminTable,
-  AdminTableEmpty,
   AdminPagination,
   AdminBadge,
   AdminIconButton,
@@ -71,7 +70,7 @@ interface Profile {
   } | null
 }
 
-type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'no_profile' | 'deletions'
+type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'deletions'
 
 const REASON_LABELS: Record<string, string> = {
   marriage_vivaahready: 'Marriage Fixed via VivaahReady',
@@ -120,7 +119,6 @@ function AdminProfilesContent() {
     { id: 'approved', label: 'Approved', count: tabCounts.approved },
     { id: 'suspended', label: 'Suspended', count: tabCounts.suspended },
     { id: 'no_photos', label: 'No Photos', count: tabCounts.no_photos },
-    { id: 'no_profile', label: 'No Profile', count: tabCounts.no_profile },
     { id: 'deletions', label: 'Deletions', count: tabCounts.deletions },
   ]
 
@@ -317,9 +315,6 @@ function AdminProfilesContent() {
   }
 
   const getStatusBadge = (profile: Profile) => {
-    if (!profile.hasProfile || profile.approvalStatus === 'no_profile') {
-      return <AdminBadge variant="gray">No Profile</AdminBadge>
-    }
     if (profile.isSuspended) {
       return <AdminBadge variant="suspended">Suspended</AdminBadge>
     }
@@ -367,15 +362,6 @@ function AdminProfilesContent() {
         { key: 'reason', label: 'Reason' },
         { key: 'status', label: 'Status' },
         { key: 'requested', label: 'Requested' },
-        { key: 'actions', label: 'Actions' },
-      ]
-    }
-    if (activeTab === 'no_profile') {
-      return [
-        { key: 'user', label: 'User' },
-        { key: 'contact', label: 'Contact' },
-        { key: 'lastLogin', label: 'Last Login' },
-        { key: 'joined', label: 'Joined' },
         { key: 'actions', label: 'Actions' },
       ]
     }
@@ -489,47 +475,6 @@ function AdminProfilesContent() {
                 </AdminButton>
               )
             ) : null}
-          </td>
-        </tr>
-      )
-    }
-
-    // No profile tab view
-    if (activeTab === 'no_profile') {
-      return (
-        <tr key={profile.user.id} className="hover:bg-gray-50">
-          <td className="px-4 py-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-600 font-semibold text-sm">
-                  {profile.user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">{profile.user.name}</div>
-                <AdminBadge variant="gray">No Profile</AdminBadge>
-              </div>
-            </div>
-          </td>
-          <td className="px-4 py-4">
-            <div className="text-sm text-gray-600">{profile.user.email}</div>
-            {profile.user.phone && (
-              <div className="text-xs text-gray-500">{profile.user.phone}</div>
-            )}
-          </td>
-          <td className="px-4 py-4 text-sm text-gray-600">
-            {formatRelativeDate(profile.user.lastLogin)}
-          </td>
-          <td className="px-4 py-4 text-sm text-gray-600">
-            {formatDate(profile.createdAt)}
-          </td>
-          <td className="px-4 py-4">
-            <AdminIconButton
-              icon={<Eye className="h-4 w-4" />}
-              href={adminLinks.userDetail(profile.user.id)}
-              title="View user details"
-              variant="purple"
-            />
           </td>
         </tr>
       )
@@ -721,7 +666,21 @@ function AdminProfilesContent() {
     <div>
       <AdminPageHeader
         title="Profiles"
-        description="Manage all user profiles and accounts"
+        description={
+          <span className="flex items-center gap-4">
+            <span>Manage all user profiles and accounts</span>
+            {tabCounts.brides !== undefined && tabCounts.grooms !== undefined && (
+              <span className="flex items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full font-medium">
+                  👰 {tabCounts.brides} Brides
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
+                  🤵 {tabCounts.grooms} Grooms
+                </span>
+              </span>
+            )}
+          </span>
+        }
         actions={
           <>
             <AdminButton variant="secondary" onClick={fetchProfiles}>
@@ -747,7 +706,7 @@ function AdminProfilesContent() {
           onSearchSubmit={handleSearch}
           placeholder="Search by name, email, phone, VR ID..."
         >
-          {activeTab !== 'no_profile' && activeTab !== 'deletions' && (
+          {activeTab !== 'deletions' && (
             <select
               value={genderFilter}
               onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
@@ -762,11 +721,11 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : activeTab === 'no_profile' ? 5 : 7} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : 7} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : <Users className="h-12 w-12" />}
-          title={activeTab === 'deletions' ? 'No deletion requests' : activeTab === 'no_profile' ? 'All users have profiles' : 'No profiles found'}
+          title={activeTab === 'deletions' ? 'No deletion requests' : 'No profiles found'}
           description={`No ${activeTab === 'all' ? '' : activeTab.replace('_', ' ')} items to display.`}
         />
       ) : (
@@ -779,7 +738,7 @@ function AdminProfilesContent() {
             totalPages={totalPages}
             totalCount={totalCount}
             itemsShown={profiles.length}
-            itemLabel={activeTab === 'no_profile' ? 'users' : activeTab === 'deletions' ? 'requests' : 'profiles'}
+            itemLabel={activeTab === 'deletions' ? 'requests' : 'profiles'}
             onPageChange={setPage}
           />
         </>

@@ -524,7 +524,7 @@ export function AdminEmptyState({ icon, title, description }: AdminEmptyStatePro
 // ============================================
 interface AdminPageHeaderProps {
   title: string
-  description?: string
+  description?: ReactNode
   actions?: ReactNode
 }
 
