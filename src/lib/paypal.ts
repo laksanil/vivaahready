@@ -2,7 +2,9 @@
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!
-const PAYPAL_API_URL = 'https://api-m.paypal.com' // Live API
+const PAYPAL_API_URL = process.env.PAYPAL_SANDBOX === 'true'
+  ? 'https://api-m.sandbox.paypal.com'
+  : 'https://api-m.paypal.com'
 
 // Get PayPal access token
 export async function getPayPalAccessToken(): Promise<string> {

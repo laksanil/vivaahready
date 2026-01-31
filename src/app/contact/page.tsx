@@ -8,7 +8,8 @@ export default function ContactPage() {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
+    website: '' // Honeypot field - should stay empty
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -28,7 +29,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         setIsSubmitted(true)
-        setFormData({ name: '', email: '', subject: '', message: '' })
+        setFormData({ name: '', email: '', subject: '', message: '', website: '' })
       } else {
         const data = await response.json()
         setError(data.error || 'Failed to send message. Please try again.')
@@ -226,6 +227,20 @@ export default function ContactPage() {
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
                         placeholder="How can we help you?"
+                      />
+                    </div>
+
+                    {/* Honeypot field - hidden from humans, bots will fill it */}
+                    <div className="absolute -left-[9999px]" aria-hidden="true">
+                      <label htmlFor="website">Website</label>
+                      <input
+                        type="text"
+                        id="website"
+                        name="website"
+                        autoComplete="off"
+                        tabIndex={-1}
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                       />
                     </div>
 
