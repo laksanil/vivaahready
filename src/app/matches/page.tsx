@@ -305,8 +305,8 @@ function FeedPageContent() {
             </p>
           </div>
 
-          {/* Verification Banner for unpaid users */}
-          {!hasPaid && (
+          {/* Verification Banner for unpaid/unapproved users */}
+          {!hasPaid && !userStatus?.isApproved && (
             <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-xl p-4 mb-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-start gap-3">
