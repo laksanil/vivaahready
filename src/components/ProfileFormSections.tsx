@@ -30,14 +30,26 @@ const PHONE_COUNTRY_CODES = [
   { code: '+49', country: 'Germany', flag: '🇩🇪', digits: 10 },
   { code: '+33', country: 'France', flag: '🇫🇷', digits: 9 },
   { code: '+81', country: 'Japan', flag: '🇯🇵', digits: 10 },
+  { code: 'other', country: 'Other', flag: '🌍', digits: 0 }, // For countries not in list
 ]
 
 // Validate phone number based on country
-const validatePhoneNumber = (phone: string, country: typeof PHONE_COUNTRY_CODES[0]): { valid: boolean; message: string } => {
+const validatePhoneNumber = (phone: string, country: typeof PHONE_COUNTRY_CODES[0], customCode?: string): { valid: boolean; message: string } => {
   const digitsOnly = phone.replace(/\D/g, '')
 
   if (!digitsOnly) {
     return { valid: false, message: 'Please enter your phone number' }
+  }
+
+  // For "Other" country, validate custom code and phone length
+  if (country.code === 'other') {
+    if (!customCode || !customCode.startsWith('+') || customCode.length < 2) {
+      return { valid: false, message: 'Please enter a valid country code (e.g., +52)' }
+    }
+    if (digitsOnly.length < 6 || digitsOnly.length > 15) {
+      return { valid: false, message: 'Phone number must be 6-15 digits' }
+    }
+    return { valid: true, message: '' }
   }
 
   if (digitsOnly.length !== country.digits) {
@@ -88,6 +100,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
   const [ageError, setAgeError] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(PHONE_COUNTRY_CODES[0])
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [customCountryCode, setCustomCountryCode] = useState('')
   const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [phoneError, setPhoneError] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -96,11 +109,23 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
   useEffect(() => {
     const existingPhone = formData.phone as string
     if (existingPhone) {
-      // Try to match country code
-      const matched = PHONE_COUNTRY_CODES.find(c => existingPhone.startsWith(c.code))
+      // Try to match known country code (skip "other")
+      const matched = PHONE_COUNTRY_CODES.find(c => c.code !== 'other' && existingPhone.startsWith(c.code))
       if (matched) {
         setSelectedCountry(matched)
         setPhoneNumber(existingPhone.substring(matched.code.length))
+      } else if (existingPhone.startsWith('+')) {
+        // Unknown country code - use "Other" option
+        const otherCountry = PHONE_COUNTRY_CODES.find(c => c.code === 'other')!
+        setSelectedCountry(otherCountry)
+        // Extract country code (digits after + until we hit the phone number)
+        const match = existingPhone.match(/^(\+\d{1,4})(\d+)$/)
+        if (match) {
+          setCustomCountryCode(match[1])
+          setPhoneNumber(match[2])
+        } else {
+          setPhoneNumber(existingPhone)
+        }
       } else {
         setPhoneNumber(existingPhone)
       }
@@ -118,6 +143,11 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Get the effective country code (custom or from selected country)
+  const getEffectiveCode = () => {
+    return selectedCountry.code === 'other' ? customCountryCode : selectedCountry.code
+  }
+
   // Update formData when phone changes
   const handlePhoneChange = (value: string) => {
     const digitsOnly = value.replace(/\D/g, '')
@@ -125,8 +155,29 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
     setPhoneError('')
 
     // Store full phone number with country code in formData
-    const fullPhone = digitsOnly ? `${selectedCountry.code}${digitsOnly}` : ''
+    const code = getEffectiveCode()
+    const fullPhone = digitsOnly && code ? `${code}${digitsOnly}` : ''
     setFormData(prev => ({ ...prev, phone: fullPhone }))
+  }
+
+  // Handle custom country code change
+  const handleCustomCodeChange = (value: string) => {
+    // Ensure it starts with + and only contains digits after
+    let formatted = value
+    if (!formatted.startsWith('+')) {
+      formatted = '+' + formatted.replace(/[^0-9]/g, '')
+    } else {
+      formatted = '+' + formatted.substring(1).replace(/[^0-9]/g, '')
+    }
+    // Limit to 5 characters (+1234)
+    formatted = formatted.substring(0, 5)
+    setCustomCountryCode(formatted)
+    setPhoneError('')
+
+    // Update formData with new country code
+    if (phoneNumber && formatted.length >= 2) {
+      setFormData(prev => ({ ...prev, phone: `${formatted}${phoneNumber}` }))
+    }
   }
 
   const handleCountrySelect = (country: typeof PHONE_COUNTRY_CODES[0]) => {
@@ -135,8 +186,10 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
     setPhoneError('')
 
     // Update formData with new country code
-    if (phoneNumber) {
+    if (phoneNumber && country.code !== 'other') {
       setFormData(prev => ({ ...prev, phone: `${country.code}${phoneNumber}` }))
+    } else if (phoneNumber && country.code === 'other' && customCountryCode) {
+      setFormData(prev => ({ ...prev, phone: `${customCountryCode}${phoneNumber}` }))
     }
   }
 
@@ -312,7 +365,9 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               className="h-10 px-3 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors min-w-[100px]"
             >
               <span className="text-lg">{selectedCountry.flag}</span>
-              <span className="text-sm text-gray-700">{selectedCountry.code}</span>
+              <span className="text-sm text-gray-700">
+                {selectedCountry.code === 'other' ? (customCountryCode || 'Code') : selectedCountry.code}
+              </span>
               <ChevronDown className="h-4 w-4 text-gray-400" />
             </button>
             {showCountryDropdown && (
@@ -322,16 +377,30 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
                     key={`${country.code}-${country.country}-${index}`}
                     type="button"
                     onClick={() => handleCountrySelect(country)}
-                    className="w-full px-3 py-2 flex items-center gap-3 hover:bg-gray-50 text-left"
+                    className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-gray-50 text-left ${country.code === 'other' ? 'border-t border-gray-100' : ''}`}
                   >
                     <span className="text-lg">{country.flag}</span>
                     <span className="text-sm text-gray-700">{country.country}</span>
-                    <span className="text-sm text-gray-400 ml-auto">{country.code}</span>
+                    {country.code !== 'other' && (
+                      <span className="text-sm text-gray-400 ml-auto">{country.code}</span>
+                    )}
                   </button>
                 ))}
               </div>
             )}
           </div>
+
+          {/* Custom Country Code Input (when "Other" is selected) */}
+          {selectedCountry.code === 'other' && (
+            <input
+              type="text"
+              value={customCountryCode}
+              onChange={(e) => handleCustomCodeChange(e.target.value)}
+              placeholder="+XX"
+              className="w-20 h-10 px-2 border border-gray-300 rounded-lg text-center text-sm"
+              maxLength={5}
+            />
+          )}
 
           {/* Phone Number Input */}
           <div className="flex-1">
@@ -339,13 +408,16 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               type="tel"
               value={phoneNumber}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              placeholder={`${selectedCountry.digits}-digit number`}
+              placeholder={selectedCountry.code === 'other' ? 'Phone number (6-15 digits)' : `${selectedCountry.digits}-digit number`}
               className={`input-field ${phoneError ? 'border-red-500' : ''}`}
-              maxLength={selectedCountry.digits + 2}
+              maxLength={selectedCountry.code === 'other' ? 15 : selectedCountry.digits + 2}
             />
           </div>
         </div>
         {phoneError && <p className="text-red-500 text-xs">{phoneError}</p>}
+        {selectedCountry.code === 'other' && (
+          <p className="text-xs text-gray-500">Enter your country code (e.g., +52 for Mexico) and phone number</p>
+        )}
       </div>
 
       {/* Age & Physical Attributes */}
