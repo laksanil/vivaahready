@@ -2649,6 +2649,22 @@ export function findNearMatches(
       NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
     )
 
+    // NEW: Skip profile if candidate has ANY non-critical preferences that seeker can't fix
+    // Only Location/Relocation is fixable (if seeker is open to relocate)
+    // All other preferences (Height, Age, etc.) are NOT fixable - seeker can't change their own attributes
+    const seekerOpenToRelocateEarly = seeker.openToRelocation?.toLowerCase() !== 'no'
+    const candidateHasUnfixableNonCritical = candidateFailedNonCritical.some(c => {
+      // Location/Relocation is fixable only if seeker is open to relocate
+      if (c.name === 'Location' || c.name === 'Relocation') {
+        return !seekerOpenToRelocateEarly
+      }
+      // All other candidate preferences (Height, Age, Education, etc.) are NOT fixable by seeker
+      return true
+    })
+
+    // Skip this profile - seeker can't fix candidate's preferences (one-way mismatch only)
+    if (candidateHasUnfixableNonCritical) continue
+
     // Check deal-breakers, but allow location to be relaxed if seeker is open to relocation
     const seekerOpenToRelocation = seeker.openToRelocation?.toLowerCase() !== 'no'
     const candidateOpenToRelocation = candidate.openToRelocation?.toLowerCase() !== 'no'
@@ -2839,17 +2855,11 @@ export function findNearMatches(
       return true
     })
 
-    // NEW LOGIC: Only include candidate's failed criteria that SEEKER can fix
-    // - Location/Relocation: fixable if seeker is open to relocate
-    // - Everything else (Age, Height, etc.): NOT fixable - seeker can't change their own attributes
+    // At this point, candidateFailedNonCritical only contains Location/Relocation
+    // (all other unfixable criteria caused early skip above)
+    // Filter to only include Location/Relocation if seeker is open to relocate
     const filteredCandidateFailedNonCritical = candidateFailedNonCritical.filter(c => {
-      // Location is only fixable if seeker is open to relocate
-      if (c.name === 'Location' || c.name === 'Relocation') {
-        return seekerOpenToRelocate
-      }
-      // All other candidate preferences that fail on seeker are NOT fixable by seeker
-      // (seeker can't change their own age, height, smoking status, etc.)
-      return false
+      return (c.name === 'Location' || c.name === 'Relocation') && seekerOpenToRelocate
     })
 
     // Count UNIQUE failed criteria names (don't double-count Location if it fails both directions)

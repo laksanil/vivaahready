@@ -342,11 +342,13 @@ describe('matchesSeekerPreferences', () => {
 
 describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
   test('near match only shows when SEEKER can fix - not symmetric when candidate has unfixable preferences', () => {
-    // Priyanka: wants age 24-27 (deal-breaker), California (deal-breaker)
+    // Priyanka: age 24 (using dateOfBirth), wants age 24-27 (deal-breaker), California (deal-breaker)
+    // Her age MUST be within Subodh's preference range for her to see him
     const priyanka = createProfile({
       id: 'priyanka-id',
       userId: 'priyanka-user',
       gender: 'female',
+      dateOfBirth: '2002-01-01', // Age 24 in 2026
       age: 24,
       currentLocation: 'California',
       prefAgeMin: '24',
@@ -359,14 +361,16 @@ describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
     })
 
     // Subodh: age 28 (1 year over Priyanka's max), Illinois
+    // Has no restrictive preferences that would exclude Priyanka
     const subodh = createProfile({
       id: 'subodh-id',
       userId: 'subodh-user',
       gender: 'male',
+      dateOfBirth: '1998-01-01', // Age 28 in 2026
       age: 28,
       currentLocation: 'Illinois',
-      prefAgeMin: '22',
-      prefAgeMax: '28',
+      prefAgeMin: '20',
+      prefAgeMax: '30', // Priyanka (24) is within this range
       prefAgeIsDealbreaker: false,
       prefLocation: 'Any',
       prefLocationIsDealbreaker: false,
@@ -374,13 +378,13 @@ describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
     })
 
     // From Priyanka's view - Subodh should be a near match
-    // (Priyanka CAN adjust her age/location preferences)
+    // (Priyanka CAN adjust her age/location preferences, and she MEETS Subodh's preferences)
     const nearMatchesForPriyanka = findNearMatches(priyanka, [subodh], 2)
     const subodhInPriyankaMatches = nearMatchesForPriyanka.some(nm => nm.profile.userId === 'subodh-user')
     expect(subodhInPriyankaMatches).toBe(true)
 
     // From Subodh's view - Priyanka should NOT be a near match
-    // (Subodh CANNOT change his age to satisfy Priyanka's age preference)
+    // (Subodh CANNOT change his age to satisfy Priyanka's age deal-breaker preference)
     const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
     const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
     expect(priyankaInSubodhMatches).toBe(false)
