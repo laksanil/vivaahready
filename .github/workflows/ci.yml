@@ -16,6 +16,13 @@ env:
   PAYPAL_CLIENT_SECRET: "dummy-paypal-secret"
   STRIPE_SECRET_KEY: "sk_test_dummy_stripe_key"
   STRIPE_WEBHOOK_SECRET: "whsec_dummy_webhook_secret"
+  # Cloudinary dummy values (for photo uploads)
+  CLOUDINARY_CLOUD_NAME: "dummy-cloud"
+  CLOUDINARY_API_KEY: "dummy-api-key"
+  CLOUDINARY_API_SECRET: "dummy-api-secret"
+  # Google OAuth (optional but prevents warnings)
+  GOOGLE_CLIENT_ID: "dummy-google-client-id"
+  GOOGLE_CLIENT_SECRET: "dummy-google-secret"
 
 jobs:
   lint:
