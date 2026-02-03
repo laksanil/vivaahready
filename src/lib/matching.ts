@@ -2731,9 +2731,9 @@ export function findNearMatches(
     // Debug logging for near matches
     console.log(`[NEAR MATCH] Candidate ${candidate.userId}: seekerRelaxedDealbreakers=[${seekerRelaxedDealbreakers.map(c => c.name).join(', ')}], candidateRelaxedDealbreakers=[${candidateRelaxedDealbreakers.map(c => c.name).join(', ')}]`)
 
-    // Filter out location-related failures if candidate explicitly won't relocate
-    // Don't suggest "open to relocation" for someone who said "No"
+    // Filter out location-related failures if the person who would need to relocate says "No"
     const candidateWontRelocate = candidate.openToRelocation?.toLowerCase() === 'no'
+    const seekerWontRelocate = seeker.openToRelocation?.toLowerCase() === 'no'
 
     // Helper to check if age difference is within 1 year tolerance
     const isAgeWithinTolerance = (c: typeof seekerFailedNonCritical[0]): boolean => {
@@ -2812,8 +2812,9 @@ export function findNearMatches(
     })
 
     const filteredCandidateFailedNonCritical = candidateFailedNonCritical.filter(c => {
-      // If seeker's location preference fails vs candidate, and candidate won't relocate
-      if ((c.name === 'Location' || c.name === 'Relocation') && candidateWontRelocate) {
+      // If candidate's (Priyanka's) location preference fails vs seeker (Subodh),
+      // check if seeker (Subodh) won't relocate - since they would need to move
+      if ((c.name === 'Location' || c.name === 'Relocation') && seekerWontRelocate) {
         return false
       }
       // Check age tolerance (1 year)
