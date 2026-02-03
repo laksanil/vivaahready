@@ -45,6 +45,7 @@ interface NearMatchCardProps {
     maxScore: number
   }
   failedDirection: 'seeker' | 'candidate' | 'both'
+  isVerified?: boolean
 }
 
 // Map criterion names to preference edit URLs
@@ -156,6 +157,7 @@ export function NearMatchCard({
   failedCriteria,
   matchScore,
   failedDirection,
+  isVerified = true,
 }: NearMatchCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -167,7 +169,9 @@ export function NearMatchCard({
     ? parseInt(profile.age)
     : null
 
-  const name = profile.firstName || profile.user?.name || 'Profile'
+  const fullName = profile.firstName || profile.user?.name || 'Profile'
+  // For unverified users, hide the name
+  const name = isVerified ? fullName : 'Profile'
   const initials = getInitials(name)
 
   // Get profile photo
@@ -200,16 +204,20 @@ export function NearMatchCard({
             <img
               src={photoUrl}
               alt={name}
-              className="h-full w-full object-cover blur-sm"
+              className={`h-full w-full object-cover ${isVerified ? 'blur-sm' : 'blur-md'}`}
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center text-amber-700 font-semibold">
-              {initials}
+              {isVerified ? initials : '?'}
             </div>
           )}
           {/* Overlay badge */}
           <div className="absolute inset-0 flex items-center justify-center bg-amber-900/30">
-            <AlertCircle className="h-5 w-5 text-amber-100" />
+            {isVerified ? (
+              <AlertCircle className="h-5 w-5 text-amber-100" />
+            ) : (
+              <Lock className="h-5 w-5 text-amber-100" />
+            )}
           </div>
         </div>
 
@@ -305,87 +313,6 @@ export function NearMatchCard({
   )
 }
 
-// Teaser card for unverified users - shows aggregate counts per preference
-function NearMatchTeaser({
-  nearMatches,
-}: {
-  nearMatches: Array<{
-    profile: NearMatchProfile
-    failedCriteria: FailedCriterion[]
-    matchScore: { percentage: number; totalScore: number; maxScore: number }
-    failedDirection: 'seeker' | 'candidate' | 'both'
-  }>
-}) {
-  // Aggregate by preference type
-  const preferenceCountMap = new Map<string, Set<string>>()
-
-  nearMatches.forEach(nm => {
-    nm.failedCriteria.forEach(criterion => {
-      if (!preferenceCountMap.has(criterion.name)) {
-        preferenceCountMap.set(criterion.name, new Set())
-      }
-      preferenceCountMap.get(criterion.name)!.add(nm.profile.userId)
-    })
-  })
-
-  // Convert to sorted array (most common preferences first)
-  const sortedPreferences = Array.from(preferenceCountMap.entries())
-    .map(([name, userIds]) => ({ name, count: userIds.size }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3) // Show top 3 preferences
-
-  return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
-      <div className="flex items-start gap-4">
-        <div className="p-3 bg-amber-100 rounded-xl flex-shrink-0">
-          <Sparkles className="h-6 w-6 text-amber-600" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-gray-900">
-              No Exact Matches Yet
-            </h3>
-          </div>
-          <p className="text-sm text-gray-600 mb-2">
-            We don't have profiles that exactly match your preferences right now.
-          </p>
-          <p className="text-sm text-amber-700 font-medium mb-4">
-            But there are {nearMatches.length} profile{nearMatches.length !== 1 ? 's' : ''} close to what you're looking for!
-            Get verified to see them.
-          </p>
-
-          <div className="space-y-2 mb-4">
-            {sortedPreferences.map(({ name, count }) => (
-              <div key={name} className="flex items-center justify-between bg-white/60 rounded-lg px-3 py-2">
-                <span className="text-sm text-gray-700">
-                  <span className="font-medium text-amber-700">{count}</span> profile{count !== 1 ? 's' : ''} if you adjust {criterionDescriptions[name] || name.toLowerCase()}
-                </span>
-                {criterionToEditUrl[name] && (
-                  <Link
-                    href={criterionToEditUrl[name]}
-                    className="text-xs text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1"
-                  >
-                    <Settings className="h-3 w-3" />
-                    Edit
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <Link
-            href="/get-verified"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors text-sm"
-          >
-            <Lock className="h-4 w-4" />
-            Get Verified to See Profiles
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function NearMatchesSection({
   nearMatches,
   showNearMatches,
@@ -404,16 +331,7 @@ export function NearMatchesSection({
     return null
   }
 
-  // Unverified users: Show teaser only
-  if (!isVerified) {
-    return (
-      <section className="mt-8">
-        <NearMatchTeaser nearMatches={nearMatches} />
-      </section>
-    )
-  }
-
-  // Aggregate preferences blocking matches (for verified users summary)
+  // Aggregate preferences blocking matches (for summary)
   const preferenceCountMap = new Map<string, Set<string>>()
   nearMatches.forEach(nm => {
     nm.failedCriteria.forEach(criterion => {
@@ -430,24 +348,46 @@ export function NearMatchesSection({
     .sort((a, b) => b.count - a.count)
     .slice(0, 4) // Show top 4 preferences
 
-  // Verified users: Show actual profiles
   return (
     <section className="mt-8">
-      {/* Info banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm text-amber-900 font-medium">
-              Want to see more profiles?
-            </p>
-            <p className="text-sm text-amber-700 mt-1">
-              Here are profiles that are close to your preferences.
-              A small adjustment could make them a perfect match!
-            </p>
+      {/* Info banner - different for verified vs unverified */}
+      {isVerified ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-amber-900 font-medium">
+                Want to see more profiles?
+              </p>
+              <p className="text-sm text-amber-700 mt-1">
+                Here are profiles that are close to your preferences.
+                A small adjustment could make them a perfect match!
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <Lock className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-amber-900 font-medium">
+                Get verified to see full profiles!
+              </p>
+              <p className="text-sm text-amber-700 mt-1">
+                These profiles are close to your preferences. Verify your profile to see their photos and names.
+              </p>
+              <Link
+                href="/get-verified"
+                className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors text-sm"
+              >
+                <Lock className="h-4 w-4" />
+                Get Verified
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preference adjustment summary */}
       {sortedPreferences.length > 0 && (
@@ -495,6 +435,7 @@ export function NearMatchesSection({
             failedCriteria={nearMatch.failedCriteria}
             matchScore={nearMatch.matchScore}
             failedDirection={nearMatch.failedDirection}
+            isVerified={isVerified}
           />
         ))}
       </div>
