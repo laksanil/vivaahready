@@ -11,6 +11,11 @@ env:
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
   NEXTAUTH_URL: "http://localhost:3000"
   NEXTAUTH_SECRET: "ci-test-secret-not-for-production"
+  # Payment provider dummy values (required for API routes to load)
+  PAYPAL_CLIENT_ID: "dummy-paypal-client-id"
+  PAYPAL_CLIENT_SECRET: "dummy-paypal-secret"
+  STRIPE_SECRET_KEY: "sk_test_dummy_stripe_key"
+  STRIPE_WEBHOOK_SECRET: "whsec_dummy_webhook_secret"
 
 jobs:
   lint:
