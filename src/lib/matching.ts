@@ -2728,6 +2728,9 @@ export function findNearMatches(
     const locationRelaxedForSeeker = seekerRelaxedDealbreakers.some(c => c.name === 'Location')
     const locationRelaxedForCandidate = candidateRelaxedDealbreakers.some(c => c.name === 'Location')
 
+    // Debug logging for near matches
+    console.log(`[NEAR MATCH] Candidate ${candidate.userId}: seekerRelaxedDealbreakers=[${seekerRelaxedDealbreakers.map(c => c.name).join(', ')}], candidateRelaxedDealbreakers=[${candidateRelaxedDealbreakers.map(c => c.name).join(', ')}]`)
+
     // Filter out location-related failures if candidate explicitly won't relocate
     // Don't suggest "open to relocation" for someone who said "No"
     const candidateWontRelocate = candidate.openToRelocation?.toLowerCase() === 'no'
@@ -2872,6 +2875,8 @@ export function findNearMatches(
         isDealbreaker: true
       }))
     ]
+
+    console.log(`[NEAR MATCH] Adding ${candidate.userId} with failedCriteria=[${allFailedCriteria.map(c => c.name).join(', ')}]`)
 
     nearMatches.push({
       profile: candidate,
