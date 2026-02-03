@@ -2827,14 +2827,17 @@ export function findNearMatches(
       return true
     })
 
-    // Count all relaxed deal-breaker failures (Location, Age, Height)
-    const relaxedDealbreakersCount = seekerRelaxedDealbreakers.length + candidateRelaxedDealbreakers.length
-
-    // Calculate total failed criteria (non-critical + relaxed deal-breakers)
-    const totalFailedNonCritical = filteredSeekerFailedNonCritical.length + filteredCandidateFailedNonCritical.length + relaxedDealbreakersCount
+    // Count UNIQUE failed criteria names (don't double-count Location if it fails both directions)
+    const allCriteriaNames = new Set([
+      ...filteredSeekerFailedNonCritical.map(c => c.name),
+      ...filteredCandidateFailedNonCritical.map(c => c.name),
+      ...seekerRelaxedDealbreakers.map(c => c.name),
+      ...candidateRelaxedDealbreakers.map(c => c.name)
+    ])
+    const uniqueFailedCount = allCriteriaNames.size
 
     // Skip if too many failures or no failures (already a match)
-    if (totalFailedNonCritical === 0 || totalFailedNonCritical > maxFailedCriteria) continue
+    if (uniqueFailedCount === 0 || uniqueFailedCount > maxFailedCriteria) continue
 
     // Determine which direction failed
     const seekerHasFailures = filteredSeekerFailedNonCritical.length > 0 || seekerRelaxedDealbreakers.length > 0
