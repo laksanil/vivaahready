@@ -317,8 +317,30 @@ function PhotosUploadContent() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Contact Number</h3>
-                <p className="text-sm text-gray-500">Required for profile verification</p>
+                <p className="text-sm text-gray-500">Required for profile verification and match communication</p>
               </div>
+            </div>
+
+            {/* Why Phone Number Matters */}
+            <div className="mb-4 bg-green-50 p-4 rounded-lg border border-green-100">
+              <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                <Shield className="h-4 w-4 text-green-600" />
+                Your Number is Safe With Us
+              </h4>
+              <ul className="text-sm text-gray-700 space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span><strong>Never shared publicly</strong> — Only visible to matches you connect with</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span><strong>Verification only</strong> — Used to verify you&apos;re a real person</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span><strong>No spam calls</strong> — We never share your number with third parties</span>
+                </li>
+              </ul>
             </div>
 
             {/* Phone Input with Country Code */}
@@ -375,10 +397,9 @@ function PhotosUploadContent() {
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-2">Your phone number will only be shared with verified matches</p>
-            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-              <AlertCircle className="h-3 w-3" />
-              SMS verification is available for US numbers only
+            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+              <Shield className="h-3 w-3 text-green-500" />
+              Your phone number is encrypted and only shared with matches you accept
             </p>
           </div>
 
