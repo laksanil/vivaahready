@@ -340,8 +340,8 @@ describe('matchesSeekerPreferences', () => {
   })
 })
 
-describe('findNearMatches - Symmetry', () => {
-  test('near match should be symmetric - if A is near match for B, B should be near match for A', () => {
+describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
+  test('near match only shows when SEEKER can fix - not symmetric when candidate has unfixable preferences', () => {
     // Priyanka: wants age 24-27 (deal-breaker), California (deal-breaker)
     const priyanka = createProfile({
       id: 'priyanka-id',
@@ -374,17 +374,42 @@ describe('findNearMatches - Symmetry', () => {
     })
 
     // From Priyanka's view - Subodh should be a near match
+    // (Priyanka CAN adjust her age/location preferences)
     const nearMatchesForPriyanka = findNearMatches(priyanka, [subodh], 2)
-
-    // From Subodh's view - Priyanka should ALSO be a near match (symmetry)
-    const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
-
-    // Both should find each other as near matches
     const subodhInPriyankaMatches = nearMatchesForPriyanka.some(nm => nm.profile.userId === 'subodh-user')
-    const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
-
     expect(subodhInPriyankaMatches).toBe(true)
-    expect(priyankaInSubodhMatches).toBe(true)
+
+    // From Subodh's view - Priyanka should NOT be a near match
+    // (Subodh CANNOT change his age to satisfy Priyanka's age preference)
+    const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
+    const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
+    expect(priyankaInSubodhMatches).toBe(false)
+  })
+
+  test('near match shows when seeker can fix by relocating', () => {
+    // Priyanka wants California only
+    const priyanka = createProfile({
+      userId: 'priyanka',
+      gender: 'female',
+      currentLocation: 'California',
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'no' // Priyanka won't move
+    })
+
+    // Subodh is in Illinois but open to relocation
+    const subodh = createProfile({
+      userId: 'subodh',
+      gender: 'male',
+      currentLocation: 'Illinois',
+      openToRelocation: 'yes' // Subodh CAN move
+    })
+
+    // From Subodh's view - Priyanka should be a near match
+    // because Subodh can relocate to California
+    const result = findNearMatches(subodh, [priyanka], 2)
+    expect(result.some(nm => nm.profile.userId === 'priyanka')).toBe(true)
   })
 
   test('symmetric near match when both have location deal-breakers but open to relocation', () => {
@@ -663,6 +688,39 @@ describe('findNearMatches - Relocation Logic', () => {
     const result = findNearMatches(seeker, [candidate], 2)
     expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
   })
+
+  test('excludes near match when candidate has non-location deal-breaker that seeker fails', () => {
+    // User A (seeker) wants to see near matches
+    // User B (candidate) has age deal-breaker that User A fails
+    // Even if User A adjusts their preferences, User B would still reject User A
+    // So don't show User B as near match for User A
+
+    const userA = createProfile({
+      userId: 'user-a',
+      gender: 'male',
+      age: 35, // User A's age
+      currentLocation: 'California',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: false // User A's preference (not relevant here)
+    })
+
+    const userB = createProfile({
+      userId: 'user-b',
+      gender: 'female',
+      age: 28,
+      currentLocation: 'California',
+      prefAgeMin: '26',
+      prefAgeMax: '32',
+      prefAgeIsDealbreaker: true // User B wants 26-32, User A is 35 - FAILS
+    })
+
+    // User A sees User B - but User B's age deal-breaker fails on User A (35 > 32)
+    // User A cannot change their age, so don't show User B as near match
+    const result = findNearMatches(userA, [userB], 2)
+    expect(result.some(nm => nm.profile.userId === 'user-b')).toBe(false)
+  })
+
 })
 
 describe('findNearMatches - Deal-breaker Relaxation', () => {
