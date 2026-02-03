@@ -381,6 +381,22 @@ export default function GetVerifiedPage() {
                     )}
                   </div>
 
+                  {/* Alternative: Direct PayPal Link (supports cards) */}
+                  <div className="text-center mb-4">
+                    <p className="text-xs text-stone-500 mb-2">Or pay with credit/debit card:</p>
+                    <a
+                      href="https://www.paypal.com/ncp/payment/NK87NK7WFTP8L"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                      </svg>
+                      Pay with Card
+                    </a>
+                  </div>
+
                   {/* Trust badges */}
                   <div className="border-t border-stone-100 pt-3 mt-2">
                     <div className="flex items-center justify-center gap-4 mb-2">
