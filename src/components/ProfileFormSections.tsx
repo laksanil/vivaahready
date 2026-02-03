@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { Phone, Shield, CheckCircle, ChevronDown } from 'lucide-react'
 import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
@@ -16,6 +17,35 @@ const US_STATES = [
 ]
 
 const LANGUAGES = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Marathi', 'Gujarati', 'Punjabi', 'Bengali', 'Tulu', 'Urdu']
+
+// Country codes for phone number with expected digit lengths
+const PHONE_COUNTRY_CODES = [
+  { code: '+1', country: 'USA', flag: '🇺🇸', digits: 10 },
+  { code: '+1', country: 'Canada', flag: '🇨🇦', digits: 10 },
+  { code: '+91', country: 'India', flag: '🇮🇳', digits: 10 },
+  { code: '+44', country: 'UK', flag: '🇬🇧', digits: 10 },
+  { code: '+61', country: 'Australia', flag: '🇦🇺', digits: 9 },
+  { code: '+971', country: 'UAE', flag: '🇦🇪', digits: 9 },
+  { code: '+65', country: 'Singapore', flag: '🇸🇬', digits: 8 },
+  { code: '+49', country: 'Germany', flag: '🇩🇪', digits: 10 },
+  { code: '+33', country: 'France', flag: '🇫🇷', digits: 9 },
+  { code: '+81', country: 'Japan', flag: '🇯🇵', digits: 10 },
+]
+
+// Validate phone number based on country
+const validatePhoneNumber = (phone: string, country: typeof PHONE_COUNTRY_CODES[0]): { valid: boolean; message: string } => {
+  const digitsOnly = phone.replace(/\D/g, '')
+
+  if (!digitsOnly) {
+    return { valid: false, message: 'Please enter your phone number' }
+  }
+
+  if (digitsOnly.length !== country.digits) {
+    return { valid: false, message: `${country.country} phone numbers must be ${country.digits} digits` }
+  }
+
+  return { valid: true, message: '' }
+}
 
 // Normalize marital status values - handles legacy data where 'Single' was used instead of 'never_married'
 const normalizeMaritalStatus = (status: string | null | undefined): string => {
@@ -56,6 +86,59 @@ interface SectionProps {
 export function BasicsSection({ formData, handleChange, setFormData }: SectionProps) {
   const [dobError, setDobError] = useState('')
   const [ageError, setAgeError] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState(PHONE_COUNTRY_CODES[0])
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
+  const [phoneError, setPhoneError] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Parse existing phone number from formData on mount
+  useEffect(() => {
+    const existingPhone = formData.phone as string
+    if (existingPhone) {
+      // Try to match country code
+      const matched = PHONE_COUNTRY_CODES.find(c => existingPhone.startsWith(c.code))
+      if (matched) {
+        setSelectedCountry(matched)
+        setPhoneNumber(existingPhone.substring(matched.code.length))
+      } else {
+        setPhoneNumber(existingPhone)
+      }
+    }
+  }, []) // Only run once on mount
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Update formData when phone changes
+  const handlePhoneChange = (value: string) => {
+    const digitsOnly = value.replace(/\D/g, '')
+    setPhoneNumber(digitsOnly)
+    setPhoneError('')
+
+    // Store full phone number with country code in formData
+    const fullPhone = digitsOnly ? `${selectedCountry.code}${digitsOnly}` : ''
+    setFormData(prev => ({ ...prev, phone: fullPhone }))
+  }
+
+  const handleCountrySelect = (country: typeof PHONE_COUNTRY_CODES[0]) => {
+    setSelectedCountry(country)
+    setShowCountryDropdown(false)
+    setPhoneError('')
+
+    // Update formData with new country code
+    if (phoneNumber) {
+      setFormData(prev => ({ ...prev, phone: `${country.code}${phoneNumber}` }))
+    }
+  }
 
   const handleLanguageCheckbox = (language: string, checked: boolean) => {
     const current = (formData.languagesKnown as string || '').split(', ').filter(l => l)
@@ -185,6 +268,84 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
             <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" required />
           </div>
         </div>
+      </div>
+
+      {/* Contact Number */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+            <Phone className="h-4 w-4 text-primary-500" />
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-gray-700">Contact Number <span className="text-red-500">*</span></h4>
+            <p className="text-xs text-gray-500">Required for profile verification</p>
+          </div>
+        </div>
+
+        {/* Trust Signals */}
+        <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+          <div className="flex items-start gap-2">
+            <Shield className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-gray-900 text-sm">Your Number is Safe</p>
+              <ul className="text-xs text-gray-600 mt-1 space-y-0.5">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                  Never shared publicly — Only visible to matches you connect with
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle className="h-3 w-3 text-green-500 flex-shrink-0" />
+                  Used for verification only — We never spam or share with third parties
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Phone Input */}
+        <div className="flex gap-2">
+          {/* Country Code Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+              className="h-10 px-3 border border-gray-300 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors min-w-[100px]"
+            >
+              <span className="text-lg">{selectedCountry.flag}</span>
+              <span className="text-sm text-gray-700">{selectedCountry.code}</span>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </button>
+            {showCountryDropdown && (
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                {PHONE_COUNTRY_CODES.map((country, index) => (
+                  <button
+                    key={`${country.code}-${country.country}-${index}`}
+                    type="button"
+                    onClick={() => handleCountrySelect(country)}
+                    className="w-full px-3 py-2 flex items-center gap-3 hover:bg-gray-50 text-left"
+                  >
+                    <span className="text-lg">{country.flag}</span>
+                    <span className="text-sm text-gray-700">{country.country}</span>
+                    <span className="text-sm text-gray-400 ml-auto">{country.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Phone Number Input */}
+          <div className="flex-1">
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              placeholder={`${selectedCountry.digits}-digit number`}
+              className={`input-field ${phoneError ? 'border-red-500' : ''}`}
+              maxLength={selectedCountry.digits + 2}
+            />
+          </div>
+        </div>
+        {phoneError && <p className="text-red-500 text-xs">{phoneError}</p>}
       </div>
 
       {/* Age & Physical Attributes */}
@@ -1791,6 +1952,104 @@ function isDealbreaker(formData: Record<string, unknown>, field: string): boolea
   return formData[fieldName] === true || formData[fieldName] === 'true'
 }
 
+// Multi-select pills component for religion preferences (mobile-friendly)
+function ReligionPillSelector({
+  selectedReligions,
+  onSelectionChange,
+  isDealbreaker,
+  showDoesntMatter = true
+}: {
+  selectedReligions: string[]
+  onSelectionChange: (religions: string[]) => void
+  isDealbreaker: boolean
+  showDoesntMatter?: boolean
+}) {
+  const isDoesntMatter = selectedReligions.length === 0
+
+  const handlePillClick = (religion: string) => {
+    if (selectedReligions.includes(religion)) {
+      // Remove religion
+      onSelectionChange(selectedReligions.filter(r => r !== religion))
+    } else {
+      // Add religion
+      onSelectionChange([...selectedReligions, religion])
+    }
+  }
+
+  const handleDoesntMatterClick = () => {
+    // Clear all selections (empty array = doesn't matter)
+    onSelectionChange([])
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Doesn't Matter toggle - shown unless deal-breaker is enabled */}
+      {showDoesntMatter && !isDealbreaker && (
+        <button
+          type="button"
+          onClick={handleDoesntMatterClick}
+          className={`w-full px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+            isDoesntMatter
+              ? 'bg-primary-100 border-primary-500 text-primary-700'
+              : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'
+          }`}
+        >
+          Doesn&apos;t Matter (Any Religion)
+        </button>
+      )}
+
+      {/* Info text when doesn't matter is selected */}
+      {isDoesntMatter && !isDealbreaker && (
+        <p className="text-xs text-gray-500 text-center">
+          Or select specific religions below
+        </p>
+      )}
+
+      {/* Religion pills - responsive grid */}
+      <div className="flex flex-wrap gap-2">
+        {RELIGIONS.map((religion) => {
+          const isSelected = selectedReligions.includes(religion)
+          return (
+            <button
+              key={religion}
+              type="button"
+              onClick={() => handlePillClick(religion)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                isSelected
+                  ? 'bg-primary-600 border-primary-600 text-white shadow-sm'
+                  : 'bg-white border-gray-300 text-gray-700 hover:border-primary-400 hover:text-primary-600'
+              }`}
+            >
+              {religion}
+              {isSelected && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/20 text-xs">
+                  ✓
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Selection summary */}
+      {selectedReligions.length > 0 && (
+        <p className="text-xs text-gray-600 mt-1">
+          {selectedReligions.length === 1
+            ? `Selected: ${selectedReligions[0]}`
+            : `Selected: ${selectedReligions.join(', ')}`}
+        </p>
+      )}
+
+      {/* Validation message for deal-breaker */}
+      {isDealbreaker && selectedReligions.length === 0 && (
+        <p className="text-xs text-red-500 mt-1">
+          Deal-breaker: Must select at least one religion
+        </p>
+      )}
+    </div>
+  )
+}
+
 // Section header with deal-breaker toggle
 function PreferenceHeader({
   title,
@@ -1914,9 +2173,13 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
         updates.prefAgeMax = userAge
       }
 
-      // Religion default: use user's own religion
-      if (!prev.prefReligion && userReligion) {
-        updates.prefReligion = userReligion
+      // Religion default: use user's own religion (for both legacy and new field)
+      // Initialize prefReligions array from prefReligion if not set
+      const existingReligions = prev.prefReligions as string[] | undefined
+      const existingReligion = prev.prefReligion as string | undefined
+      if ((!existingReligions || existingReligions.length === 0) && !existingReligion && userReligion) {
+        updates.prefReligions = [userReligion]
+        updates.prefReligion = userReligion // Keep legacy field in sync
       }
 
       if (Object.keys(updates).length === 0) return prev
@@ -1924,9 +2187,41 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     })
   }, [showOnlyOptional, userAge, userGender, userReligion, setFormData])
 
-  const prefReligion = (formData.prefReligion as string) || userReligion || ''
-  const showGotra = prefReligion === 'Hindu' || prefReligion === 'Jain'
-  const communitiesForReligion = prefReligion ? getCommunities(prefReligion) : []
+  // Get selected religions from the new array field, falling back to legacy field
+  const selectedReligions: string[] = (() => {
+    const religions = formData.prefReligions as string[] | undefined
+    if (religions && religions.length > 0) return religions
+    // Fallback to legacy field
+    const legacyReligion = formData.prefReligion as string | undefined
+    if (legacyReligion && legacyReligion !== 'doesnt_matter') return [legacyReligion]
+    return []
+  })()
+
+  // For backwards compatibility and community selection
+  const prefReligion = selectedReligions.length === 1 ? selectedReligions[0] : ''
+  const hasMultipleReligions = selectedReligions.length > 1
+  const showGotra = !hasMultipleReligions && (selectedReligions.includes('Hindu') || selectedReligions.includes('Jain'))
+  const communitiesForReligion = !hasMultipleReligions && selectedReligions.length === 1 ? getCommunities(selectedReligions[0]) : []
+
+  // Handle religion selection changes
+  const handleReligionSelectionChange = (religions: string[]) => {
+    setFormData(prev => {
+      const updates: Record<string, unknown> = {
+        prefReligions: religions,
+        // Keep legacy field in sync (single value or empty)
+        prefReligion: religions.length === 1 ? religions[0] : (religions.length === 0 ? 'doesnt_matter' : '')
+      }
+      // If multiple religions selected, clear community and sub-community preferences
+      if (religions.length > 1) {
+        updates.prefCommunity = 'doesnt_matter'
+        updates.prefSubCommunity = null
+        updates.prefCommunityIsDealbreaker = false
+        updates.prefGotra = ''
+        updates.prefGotraIsDealbreaker = false
+      }
+      return { ...prev, ...updates }
+    })
+  }
   const prefCitizenshipIsDealbreaker = isDealbreaker(formData, 'prefCitizenship')
   const prefGrewUpInIsDealbreaker = isDealbreaker(formData, 'prefGrewUpIn')
   const prefRelocationIsDealbreaker = isDealbreaker(formData, 'prefRelocation')
@@ -2103,50 +2398,63 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
       {/* Religion & Community */}
       {!showOnlyOptional && (
         <div className="space-y-3 p-3 rounded-lg border bg-white">
-          <h4 className="text-sm font-semibold text-gray-800">Religion & Community <span className="text-red-500">*</span></h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Religion <span className="text-red-500">*</span></label>
-                <DealBreakerToggle field="prefReligion" formData={formData} setFormData={setFormData} />
-              </div>
-              <select name="prefReligion" value={prefReligion} onChange={handlePreferenceChange} className="input-field" required>
-                <option value="">Select Religion</option>
-                {!isDealbreaker(formData, 'prefReligion') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
-                {RELIGIONS.map((r) => (<option key={r} value={r}>{r}</option>))}
-              </select>
-              {isDealbreaker(formData, 'prefReligion') && (!prefReligion || prefReligion === 'doesnt_matter') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific religion</p>}
-            </div>
-            {prefReligion && prefReligion !== 'doesnt_matter' && (
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                  <label className="form-label mb-0">Community</label>
-                  <DealBreakerToggle field="prefCommunity" formData={formData} setFormData={setFormData} />
-                </div>
-                <select name="prefCommunity" value={formData.prefCommunity as string || (isDealbreaker(formData, 'prefCommunity') ? '' : 'doesnt_matter')} onChange={handlePreferenceChange} className="input-field">
-                  {!isDealbreaker(formData, 'prefCommunity') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
-                  <option value="">Select</option>
-                  <option value="same_as_mine">Same as Mine</option>
-                  {communitiesForReligion.map((c) => (<option key={c} value={c}>{c}</option>))}
-                </select>
-                {isDealbreaker(formData, 'prefCommunity') && (!formData.prefCommunity || formData.prefCommunity === 'doesnt_matter') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific community</p>}
-              </div>
-            )}
-            {showGotra && (
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                  <label className="form-label mb-0">Gothra</label>
-                  <DealBreakerToggle field="prefGotra" formData={formData} setFormData={setFormData} />
-                </div>
-                <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handlePreferenceChange} className="input-field">
-                  {!isDealbreaker(formData, 'prefGotra') && <option value="">Doesn&apos;t Matter</option>}
-                  {isDealbreaker(formData, 'prefGotra') && <option value="">Select</option>}
-                  <option value="different">Different Gothra Only</option>
-                </select>
-                {isDealbreaker(formData, 'prefGotra') && !formData.prefGotra && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
-              </div>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+            <h4 className="text-sm font-semibold text-gray-800">Religion Preference <span className="text-red-500">*</span></h4>
+            <DealBreakerToggle field="prefReligion" formData={formData} setFormData={setFormData} />
           </div>
+
+          {/* Multi-select religion pills */}
+          <ReligionPillSelector
+            selectedReligions={selectedReligions}
+            onSelectionChange={handleReligionSelectionChange}
+            isDealbreaker={isDealbreaker(formData, 'prefReligion')}
+            showDoesntMatter={!isDealbreaker(formData, 'prefReligion')}
+          />
+
+          {/* Community & Gotra - only shown when single religion selected */}
+          {selectedReligions.length === 1 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <h5 className="text-sm font-medium text-gray-700 mb-3">Community Preferences</h5>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+                    <label className="form-label mb-0 text-sm">Community</label>
+                    <DealBreakerToggle field="prefCommunity" formData={formData} setFormData={setFormData} />
+                  </div>
+                  <select name="prefCommunity" value={formData.prefCommunity as string || (isDealbreaker(formData, 'prefCommunity') ? '' : 'doesnt_matter')} onChange={handlePreferenceChange} className="input-field">
+                    {!isDealbreaker(formData, 'prefCommunity') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
+                    <option value="">Select</option>
+                    <option value="same_as_mine">Same as Mine</option>
+                    {communitiesForReligion.map((c) => (<option key={c} value={c}>{c}</option>))}
+                  </select>
+                  {isDealbreaker(formData, 'prefCommunity') && (!formData.prefCommunity || formData.prefCommunity === 'doesnt_matter') && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific community</p>}
+                </div>
+                {showGotra && (
+                  <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+                      <label className="form-label mb-0 text-sm">Gothra</label>
+                      <DealBreakerToggle field="prefGotra" formData={formData} setFormData={setFormData} />
+                    </div>
+                    <select name="prefGotra" value={formData.prefGotra as string || ''} onChange={handlePreferenceChange} className="input-field">
+                      {!isDealbreaker(formData, 'prefGotra') && <option value="">Doesn&apos;t Matter</option>}
+                      {isDealbreaker(formData, 'prefGotra') && <option value="">Select</option>}
+                      <option value="different">Different Gothra Only</option>
+                    </select>
+                    {isDealbreaker(formData, 'prefGotra') && !formData.prefGotra && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Info message when multiple religions selected */}
+          {hasMultipleReligions && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800">
+                <span className="font-medium">Note:</span> Community preferences are not available when multiple religions are selected.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

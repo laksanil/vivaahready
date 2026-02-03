@@ -118,6 +118,34 @@ function PhotosUploadContent() {
     }
   }, [profileId, status, router])
 
+  // Fetch existing phone number from profile
+  useEffect(() => {
+    const fetchExistingPhone = async () => {
+      if (!profileId || status !== 'authenticated') return
+
+      try {
+        const response = await fetch(`/api/profile/${profileId}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.phone) {
+            // Try to match country code and parse phone
+            const matched = countryCodes.find(c => data.phone.startsWith(c.code))
+            if (matched) {
+              setSelectedCountry(matched)
+              setPhoneNumber(data.phone.substring(matched.code.length))
+            } else {
+              setPhoneNumber(data.phone)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch phone:', error)
+      }
+    }
+
+    fetchExistingPhone()
+  }, [profileId, status])
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

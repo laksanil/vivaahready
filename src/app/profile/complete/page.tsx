@@ -93,6 +93,7 @@ function ProfileCompleteContent() {
             hasChildren: data.hasChildren,
             motherTongue: data.motherTongue,
             languagesKnown: data.languagesKnown,
+            phone: data.phone, // Contact number
             // Location & Education (already filled)
             country: data.country || 'USA',
             grewUpIn: data.grewUpIn || 'USA',
@@ -259,6 +260,8 @@ function ProfileCompleteContent() {
   // Section validations
   // Basics validation
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
+  const phoneValue = formData.phone as string || ''
+  const hasValidPhone = phoneValue.length >= 8 // At minimum: +XX + 6 digits
   const isBasicsComplete = !!(
     formData.createdBy &&
     formData.firstName &&
@@ -267,7 +270,8 @@ function ProfileCompleteContent() {
     hasAgeOrDOB &&
     formData.height &&
     formData.maritalStatus &&
-    formData.motherTongue
+    formData.motherTongue &&
+    hasValidPhone
   )
 
   // Location & Education validation
