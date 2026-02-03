@@ -186,7 +186,7 @@ export default function GetVerifiedPage() {
       {/* PayPal SDK Script - only load if needed */}
       {showPayPal && (
         <Script
-          src={`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&disable-funding=card`}
+          src={`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`}
           onLoad={() => setPaypalLoaded(true)}
         />
       )}
