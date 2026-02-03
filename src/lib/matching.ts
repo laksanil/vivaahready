@@ -2638,29 +2638,95 @@ export function findNearMatches(
     const seekerOpenToRelocation = seeker.openToRelocation?.toLowerCase() !== 'no'
     const candidateOpenToRelocation = candidate.openToRelocation?.toLowerCase() !== 'no'
 
-    // Find failed deal-breakers (excluding location if relocation is possible)
+    // Find failed deal-breakers
     const seekerFailedDealbreakers = seekerScore.criteria.filter(c => c.isDealbreaker && !c.matched)
     const candidateFailedDealbreakers = candidateScore.criteria.filter(c => c.isDealbreaker && !c.matched)
 
-    // Check if location is the ONLY failed deal-breaker and relocation is possible
-    const seekerOnlyLocationFails = seekerFailedDealbreakers.length > 0 &&
-      seekerFailedDealbreakers.every(c => c.name === 'Location') &&
-      (seekerOpenToRelocation || candidateOpenToRelocation)
+    // Helper to check if an age deal-breaker is within 1-year tolerance
+    const isAgeDealBreakerWithinTolerance = (criterion: typeof seekerFailedDealbreakers[0], targetAge: string | null): boolean => {
+      if (criterion.name !== 'Age') return false
+      const age = parseInt(targetAge || '0')
+      if (!age) return false
 
-    const candidateOnlyLocationFails = candidateFailedDealbreakers.length > 0 &&
-      candidateFailedDealbreakers.every(c => c.name === 'Location') &&
-      (seekerOpenToRelocation || candidateOpenToRelocation)
+      // Parse the age range from preference (format: "min-max" or "XX - YY")
+      const prefMatch = criterion.seekerPref?.match(/(\d+)\s*[-–]\s*(\d+)/)
+      if (!prefMatch) return false
 
-    // Determine if deal-breakers pass (or only location fails with relocation possible)
-    const seekerDealbreakersPass = seekerFailedDealbreakers.length === 0 || seekerOnlyLocationFails
-    const candidateDealbreakersPass = candidateFailedDealbreakers.length === 0 || candidateOnlyLocationFails
+      const minAge = parseInt(prefMatch[1])
+      const maxAge = parseInt(prefMatch[2])
 
-    // Skip if non-location deal-breakers fail
-    if (!seekerDealbreakersPass || !candidateDealbreakersPass) continue
+      // Check if within 1 year of either boundary
+      if (age < minAge) return (minAge - age) <= 1
+      if (age > maxAge) return (age - maxAge) <= 1
+      return true
+    }
 
-    // Track if location was the relaxed deal-breaker (for adding to failed criteria)
-    const locationRelaxedForSeeker = seekerOnlyLocationFails && seekerFailedDealbreakers.length > 0
-    const locationRelaxedForCandidate = candidateOnlyLocationFails && candidateFailedDealbreakers.length > 0
+    // Helper to check if a height deal-breaker is within 2-inch tolerance
+    const isHeightDealBreakerWithinTolerance = (criterion: typeof seekerFailedDealbreakers[0], targetHeight: string | null): boolean => {
+      if (criterion.name !== 'Height') return false
+
+      // Parse height to inches (format: "5'6\"" or "5' 6\"")
+      const parseHeightToInches = (h: string | null): number | null => {
+        if (!h) return null
+        const match = h.match(/(\d+)'?\s*(\d+)?/)
+        if (!match) return null
+        const feet = parseInt(match[1])
+        const inches = parseInt(match[2] || '0')
+        return feet * 12 + inches
+      }
+
+      const targetInches = parseHeightToInches(targetHeight)
+      if (!targetInches) return false
+
+      // Parse seeker's height range (format: "5'4\" - 5'8\"")
+      const prefParts = criterion.seekerPref?.split(/\s*[-–]\s*/)
+      if (!prefParts || prefParts.length < 2) return false
+
+      const minInches = parseHeightToInches(prefParts[0])
+      const maxInches = parseHeightToInches(prefParts[1])
+      if (!minInches || !maxInches) return false
+
+      // Check if within 2 inches of either boundary
+      if (targetInches < minInches) return (minInches - targetInches) <= 2
+      if (targetInches > maxInches) return (targetInches - maxInches) <= 2
+      return true
+    }
+
+    // Check if all failed deal-breakers are "relaxable":
+    // - Location: relaxed if either party is open to relocation
+    // - Age: relaxed if within 1 year of the range
+    // - Height: relaxed if within 2 inches of the range
+    const isRelaxableDealbreaker = (
+      c: typeof seekerFailedDealbreakers[0],
+      targetAge: string | null,
+      targetHeight: string | null
+    ): boolean => {
+      if (c.name === 'Location' && (seekerOpenToRelocation || candidateOpenToRelocation)) return true
+      if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, targetAge)) return true
+      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, targetHeight)) return true
+      return false
+    }
+
+    // Convert age/height to strings for comparison
+    const candidateAgeStr = candidate.age?.toString() ?? null
+    const candidateHeightStr = candidate.height?.toString() ?? null
+    const seekerAgeStr = seeker.age?.toString() ?? null
+    const seekerHeightStr = seeker.height?.toString() ?? null
+
+    const seekerAllRelaxable = seekerFailedDealbreakers.length === 0 ||
+      seekerFailedDealbreakers.every(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
+
+    const candidateAllRelaxable = candidateFailedDealbreakers.length === 0 ||
+      candidateFailedDealbreakers.every(c => isRelaxableDealbreaker(c, seekerAgeStr, seekerHeightStr))
+
+    // Skip if any non-relaxable deal-breakers fail
+    if (!seekerAllRelaxable || !candidateAllRelaxable) continue
+
+    // Track which deal-breakers were relaxed (for adding to failed criteria)
+    const seekerRelaxedDealbreakers = seekerFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
+    const candidateRelaxedDealbreakers = candidateFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, seekerAgeStr, seekerHeightStr))
+    const locationRelaxedForSeeker = seekerRelaxedDealbreakers.some(c => c.name === 'Location')
+    const locationRelaxedForCandidate = candidateRelaxedDealbreakers.some(c => c.name === 'Location')
 
     // Filter out location-related failures if candidate explicitly won't relocate
     // Don't suggest "open to relocation" for someone who said "No"
@@ -2758,18 +2824,18 @@ export function findNearMatches(
       return true
     })
 
-    // Count relaxed location failures (treat as 1 failed criterion if location was relaxed)
-    const locationRelaxedCount = (locationRelaxedForSeeker ? 1 : 0) + (locationRelaxedForCandidate ? 1 : 0)
+    // Count all relaxed deal-breaker failures (Location, Age, Height)
+    const relaxedDealbreakersCount = seekerRelaxedDealbreakers.length + candidateRelaxedDealbreakers.length
 
-    // Calculate total failed criteria (non-critical + relaxed location)
-    const totalFailedNonCritical = filteredSeekerFailedNonCritical.length + filteredCandidateFailedNonCritical.length + locationRelaxedCount
+    // Calculate total failed criteria (non-critical + relaxed deal-breakers)
+    const totalFailedNonCritical = filteredSeekerFailedNonCritical.length + filteredCandidateFailedNonCritical.length + relaxedDealbreakersCount
 
     // Skip if too many failures or no failures (already a match)
     if (totalFailedNonCritical === 0 || totalFailedNonCritical > maxFailedCriteria) continue
 
     // Determine which direction failed
-    const seekerHasFailures = filteredSeekerFailedNonCritical.length > 0 || locationRelaxedForSeeker
-    const candidateHasFailures = filteredCandidateFailedNonCritical.length > 0 || locationRelaxedForCandidate
+    const seekerHasFailures = filteredSeekerFailedNonCritical.length > 0 || seekerRelaxedDealbreakers.length > 0
+    const candidateHasFailures = filteredCandidateFailedNonCritical.length > 0 || candidateRelaxedDealbreakers.length > 0
 
     let failedDirection: 'seeker' | 'candidate' | 'both' = 'seeker'
     if (seekerHasFailures && candidateHasFailures) {
@@ -2778,7 +2844,7 @@ export function findNearMatches(
       failedDirection = 'candidate'
     }
 
-    // Combine failed criteria from both directions (including relaxed location)
+    // Combine failed criteria from both directions (including all relaxed deal-breakers)
     const allFailedCriteria = [
       ...filteredSeekerFailedNonCritical.map(c => ({
         ...c,
@@ -2791,19 +2857,20 @@ export function findNearMatches(
         candidateValue: c.seekerPref, // What seeker has
         isDealbreaker: c.isDealbreaker
       })),
-      // Add relaxed location deal-breaker if applicable
-      ...(locationRelaxedForSeeker ? seekerFailedDealbreakers.filter(c => c.name === 'Location').map(c => ({
-        name: 'Location',
+      // Add relaxed deal-breakers (Location, Age, Height) from seeker's side
+      ...seekerRelaxedDealbreakers.map(c => ({
+        name: c.name,
         seekerPref: c.seekerPref,
         candidateValue: c.candidateValue,
         isDealbreaker: true // Mark as was-dealbreaker for special nudge
-      })) : []),
-      ...(locationRelaxedForCandidate ? candidateFailedDealbreakers.filter(c => c.name === 'Location').map(c => ({
-        name: 'Location',
-        seekerPref: c.candidateValue,
+      })),
+      // Add relaxed deal-breakers from candidate's side
+      ...candidateRelaxedDealbreakers.map(c => ({
+        name: c.name,
+        seekerPref: c.candidateValue, // Swap for display
         candidateValue: c.seekerPref,
         isDealbreaker: true
-      })) : [])
+      }))
     ]
 
     nearMatches.push({
