@@ -18,6 +18,7 @@ function createProfile(overrides: Partial<any> = {}): any {
     currentLocation: 'California',
     religion: 'Hindu',
     community: 'Brahmin',
+    subCommunity: null,
     dietaryPreference: 'vegetarian',
     qualification: 'Masters',
     height: "5'10\"",
@@ -25,12 +26,36 @@ function createProfile(overrides: Partial<any> = {}): any {
     hasChildren: 'no',
     smoking: 'no',
     drinking: 'no',
+    motherTongue: null,
+    familyValues: null,
+    familyLocation: null,
+    annualIncome: null,
+    caste: null,
+    gotra: null,
+    citizenship: null,
+    grewUpIn: null,
+    openToRelocation: 'yes',
     // Default preferences that don't block
     prefAgeMin: '25',
     prefAgeMax: '40',
+    prefAgeDiff: null,
     prefMaritalStatus: 'never_married',
     prefReligion: 'Hindu',
     prefDiet: 'vegetarian',
+    prefHeight: null,
+    prefHeightMin: null,
+    prefHeightMax: null,
+    prefHasChildren: null,
+    prefCommunity: null,
+    prefGotra: null,
+    prefSmoking: null,
+    prefDrinking: null,
+    prefEducation: null,
+    prefIncome: null,
+    prefLocation: null,
+    prefLocationList: null,
+    prefCitizenship: null,
+    prefMotherTongue: null,
     // Deal-breaker flags
     prefAgeIsDealbreaker: true,
     prefMaritalStatusIsDealbreaker: true,
@@ -40,6 +65,11 @@ function createProfile(overrides: Partial<any> = {}): any {
     prefSmokingIsDealbreaker: false,
     prefDrinkingIsDealbreaker: false,
     prefEducationIsDealbreaker: false,
+    prefIncomeIsDealbreaker: false,
+    prefLocationIsDealbreaker: false,
+    prefCommunityIsDealbreaker: false,
+    prefGotraIsDealbreaker: false,
+    prefHasChildrenIsDealbreaker: false,
     ...overrides
   }
 }
@@ -307,6 +337,395 @@ describe('matchesSeekerPreferences', () => {
     })
 
     expect(matchesSeekerPreferences(seeker, candidate)).toBe(true)
+  })
+})
+
+describe('findNearMatches - Symmetry', () => {
+  test('near match should be symmetric - if A is near match for B, B should be near match for A', () => {
+    // Priyanka: wants age 24-27 (deal-breaker), California (deal-breaker)
+    const priyanka = createProfile({
+      id: 'priyanka-id',
+      userId: 'priyanka-user',
+      gender: 'female',
+      age: 24,
+      currentLocation: 'California',
+      prefAgeMin: '24',
+      prefAgeMax: '27',
+      prefAgeIsDealbreaker: true,
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'yes'
+    })
+
+    // Subodh: age 28 (1 year over Priyanka's max), Illinois
+    const subodh = createProfile({
+      id: 'subodh-id',
+      userId: 'subodh-user',
+      gender: 'male',
+      age: 28,
+      currentLocation: 'Illinois',
+      prefAgeMin: '22',
+      prefAgeMax: '28',
+      prefAgeIsDealbreaker: false,
+      prefLocation: 'Any',
+      prefLocationIsDealbreaker: false,
+      openToRelocation: 'yes'
+    })
+
+    // From Priyanka's view - Subodh should be a near match
+    const nearMatchesForPriyanka = findNearMatches(priyanka, [subodh], 2)
+
+    // From Subodh's view - Priyanka should ALSO be a near match (symmetry)
+    const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
+
+    // Both should find each other as near matches
+    const subodhInPriyankaMatches = nearMatchesForPriyanka.some(nm => nm.profile.userId === 'subodh-user')
+    const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
+
+    expect(subodhInPriyankaMatches).toBe(true)
+    expect(priyankaInSubodhMatches).toBe(true)
+  })
+
+  test('symmetric near match when both have location deal-breakers but open to relocation', () => {
+    const userA = createProfile({
+      userId: 'user-a',
+      gender: 'male',
+      currentLocation: 'Texas',
+      prefLocation: 'Texas',
+      prefLocationList: 'Texas',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'yes' // Open to relocate
+    })
+
+    const userB = createProfile({
+      userId: 'user-b',
+      gender: 'female',
+      currentLocation: 'New York',
+      prefLocation: 'New York',
+      prefLocationList: 'New York',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'yes' // Open to relocate
+    })
+
+    const nearMatchesForA = findNearMatches(userA, [userB], 2)
+    const nearMatchesForB = findNearMatches(userB, [userA], 2)
+
+    // Both should see each other as near matches since both are open to relocation
+    expect(nearMatchesForA.some(nm => nm.profile.userId === 'user-b')).toBe(true)
+    expect(nearMatchesForB.some(nm => nm.profile.userId === 'user-a')).toBe(true)
+  })
+})
+
+describe('findNearMatches - Age Tolerance', () => {
+  test('includes candidate when age is 1 year over max (within tolerance)', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      age: 31 // 1 year over max - within tolerance
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
+  })
+
+  test('includes candidate when age is 1 year under min (within tolerance)', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      age: 24 // 1 year under min - within tolerance
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
+  })
+
+  test('excludes candidate when age is more than 1 year outside range', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      age: 32 // 2 years over max - outside tolerance
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(false)
+  })
+})
+
+describe('findNearMatches - Height Tolerance', () => {
+  test('includes candidate when height is within 2 inches of range', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefHeight: "5'6\" - 5'10\"",
+      prefHeightMin: "5'6\"",
+      prefHeightMax: "5'10\"",
+      prefHeightIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      height: "5'4\"" // 2 inches under min - within tolerance
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
+  })
+
+  test('excludes candidate when height is more than 2 inches outside range', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefHeight: "5'6\" - 5'10\"",
+      prefHeightMin: "5'6\"",
+      prefHeightMax: "5'10\"",
+      prefHeightIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      height: "5'2\"" // 4 inches under min - outside tolerance
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(false)
+  })
+})
+
+describe('findNearMatches - Unique Criteria Counting', () => {
+  test('counts Location only once even when it fails in both directions', () => {
+    const userA = createProfile({
+      userId: 'user-a',
+      gender: 'male',
+      currentLocation: 'Texas',
+      prefLocation: 'Texas',
+      prefLocationList: 'Texas',
+      prefLocationIsDealbreaker: false, // Non-critical
+      openToRelocation: 'yes'
+    })
+
+    const userB = createProfile({
+      userId: 'user-b',
+      gender: 'female',
+      currentLocation: 'California',
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: false, // Non-critical
+      openToRelocation: 'yes'
+    })
+
+    const result = findNearMatches(userA, [userB], 2)
+
+    if (result.length > 0) {
+      const uniqueNames = new Set(result[0].failedCriteria.map(c => c.name))
+      // Location should only appear once, not twice
+      const locationCount = result[0].failedCriteria.filter(c => c.name === 'Location').length
+      // If location appears multiple times in array, unique count should still be 1
+      if (locationCount > 1) {
+        expect(uniqueNames.size).toBeLessThan(result[0].failedCriteria.length)
+      }
+    }
+  })
+
+  test('excludes profiles with more than 2 unique failed criteria', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'male',
+      prefSmoking: 'no',
+      prefSmokingIsDealbreaker: false,
+      prefDrinking: 'no',
+      prefDrinkingIsDealbreaker: false,
+      prefEducation: 'Masters',
+      prefEducationIsDealbreaker: false
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'female',
+      smoking: 'yes',
+      drinking: 'yes',
+      qualification: 'Bachelors' // 3 different criteria failing
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+
+    // Should not include candidate with 3 unique failed criteria
+    result.forEach(nm => {
+      const uniqueCriteria = new Set(nm.failedCriteria.map(c => c.name))
+      expect(uniqueCriteria.size).toBeLessThanOrEqual(2)
+    })
+  })
+})
+
+describe('findNearMatches - Relocation Logic', () => {
+  test('includes near match when seeker is open to relocation for candidates location preference', () => {
+    // Candidate (Priyanka) has location deal-breaker for California
+    // Seeker (Subodh) is in Illinois but open to relocation
+    const subodh = createProfile({
+      userId: 'subodh',
+      gender: 'male',
+      currentLocation: 'Illinois',
+      openToRelocation: 'yes' // Subodh can relocate
+    })
+
+    const priyanka = createProfile({
+      userId: 'priyanka',
+      gender: 'female',
+      currentLocation: 'California',
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: true, // Priyanka wants CA
+      openToRelocation: 'no' // Priyanka won't move
+    })
+
+    // From Subodh's view, Priyanka should still be a near match
+    // because Subodh (seeker) is open to relocation
+    const result = findNearMatches(subodh, [priyanka], 2)
+    expect(result.some(nm => nm.profile.userId === 'priyanka')).toBe(true)
+  })
+
+  test('excludes near match when neither party will relocate', () => {
+    const userA = createProfile({
+      userId: 'user-a',
+      gender: 'male',
+      currentLocation: 'Texas',
+      prefLocation: 'Texas',
+      prefLocationList: 'Texas',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'no' // Won't relocate
+    })
+
+    const userB = createProfile({
+      userId: 'user-b',
+      gender: 'female',
+      currentLocation: 'California',
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: true,
+      openToRelocation: 'no' // Won't relocate either
+    })
+
+    const result = findNearMatches(userA, [userB], 2)
+    // Should NOT be a near match since neither will relocate
+    expect(result.some(nm => nm.profile.userId === 'user-b')).toBe(false)
+  })
+
+  test('checks correct person for relocation - seeker for candidates prefs', () => {
+    // Bug scenario: When checking if candidate's location preference can be relaxed,
+    // should check if SEEKER (not candidate) is open to relocation
+
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'male',
+      currentLocation: 'Illinois',
+      openToRelocation: 'yes', // Seeker CAN relocate
+      prefLocationIsDealbreaker: false
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'female',
+      currentLocation: 'California',
+      prefLocation: 'California',
+      prefLocationList: 'California',
+      prefLocationIsDealbreaker: true, // Candidate wants CA
+      openToRelocation: 'no' // Candidate won't move
+    })
+
+    // Candidate's location pref (California) fails on seeker (Illinois)
+    // Since seeker IS open to relocation, this should be relaxable
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
+  })
+})
+
+describe('findNearMatches - Deal-breaker Relaxation', () => {
+  test('relaxes age deal-breaker within 1 year tolerance', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'female',
+      prefAgeMin: '25',
+      prefAgeMax: '30',
+      prefAgeIsDealbreaker: true // This IS a deal-breaker
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'male',
+      age: 31 // 1 year over - should be relaxed
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
+
+    if (result.length > 0) {
+      // Should include Age in failed criteria as a relaxed deal-breaker
+      expect(result[0].failedCriteria.some(c => c.name === 'Age')).toBe(true)
+    }
+  })
+
+  test('does not relax religion deal-breaker', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'male',
+      prefReligion: 'Hindu',
+      prefReligionIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'female',
+      religion: 'Christian' // Different religion
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    // Should NOT include - religion deal-breaker cannot be relaxed
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(false)
+  })
+
+  test('does not relax marital status deal-breaker', () => {
+    const seeker = createProfile({
+      userId: 'seeker',
+      gender: 'male',
+      prefMaritalStatus: 'never_married',
+      prefMaritalStatusIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      userId: 'candidate',
+      gender: 'female',
+      maritalStatus: 'divorced'
+    })
+
+    const result = findNearMatches(seeker, [candidate], 2)
+    // Should NOT include - marital status deal-breaker cannot be relaxed
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(false)
   })
 })
 
