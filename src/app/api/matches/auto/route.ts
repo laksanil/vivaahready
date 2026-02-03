@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences } from '@/lib/matching'
+import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences, findNearMatches } from '@/lib/matching'
 import { getTargetUserId } from '@/lib/admin'
 import { getLifetimeStats, updateLifetimeMatches } from '@/lib/lifetimeStats'
 
@@ -284,6 +284,45 @@ export async function GET(request: Request) {
     // Frontend will separate them based on interestStatus.mutual
     const allMatches = [...sortedFreshMatches, ...sortedMutualMatches]
 
+    // Find "near matches" when user has few exact matches (< 3)
+    // These are profiles that fail on 1-2 non-critical preferences
+    let nearMatchResults: {
+      profile: typeof candidates[0]
+      failedCriteria: { name: string; seekerPref: string | null; candidateValue: string | null; isDealbreaker: boolean }[]
+      matchScore: { percentage: number; totalScore: number; maxScore: number }
+      failedDirection: 'seeker' | 'candidate' | 'both'
+    }[] = []
+
+    const showNearMatches = sortedFreshMatches.length < 3
+    console.log(`[NEAR MATCH DEBUG] showNearMatches=${showNearMatches}, freshMatches=${sortedFreshMatches.length}`)
+
+    if (showNearMatches) {
+      // Get near matches from candidates that aren't already matches
+      const nearMatches = findNearMatches(myProfile as any, candidates as any[], 2)
+      console.log(`[NEAR MATCH DEBUG] findNearMatches returned ${nearMatches.length} profiles`)
+
+      // Filter out declined profiles and existing matches
+      nearMatchResults = nearMatches
+        .filter(nm =>
+          !declinedUserIds.has(nm.profile.userId) &&
+          !declinedByOthersIds.has(nm.profile.userId) &&
+          !sentToUserIds.has(nm.profile.userId) &&
+          !acceptedSentUserIds.has(nm.profile.userId) &&
+          !acceptedReceivedUserIds.has(nm.profile.userId)
+        )
+        .slice(0, 10) // Limit to 10 near matches
+        .map(nm => {
+          // Find the full candidate data
+          const fullProfile = candidates.find(c => c.userId === nm.profile.userId)
+          return {
+            profile: fullProfile || nm.profile as any,
+            failedCriteria: nm.failedCriteria,
+            matchScore: nm.matchScore,
+            failedDirection: nm.failedDirection
+          }
+        })
+    }
+
     // Get target user's name if admin view
     let targetUserName = session?.user?.name || 'User'
     if (isAdminView) {
@@ -340,6 +379,8 @@ export async function GET(request: Request) {
       matches: allMatches,
       freshMatches: sortedFreshMatches,
       mutualMatches: sortedMutualMatches,
+      nearMatches: nearMatchResults,
+      showNearMatches,
       total: allMatches.length,
       isAdminView,
       viewingUserId: isAdminView ? targetUserId : undefined,
@@ -377,6 +418,21 @@ export async function GET(request: Request) {
         userName: targetUserName,
         firstName: myProfile.firstName,
         odNumber: myProfile.odNumber,
+        // Include preferences for generating tips
+        prefLocation: myProfile.prefLocation,
+        prefLocationList: myProfile.prefLocationList,
+        prefAgeMin: myProfile.prefAgeMin,
+        prefAgeMax: myProfile.prefAgeMax,
+        prefAgeIsDealbreaker: myProfile.prefAgeIsDealbreaker,
+        prefLocationIsDealbreaker: myProfile.prefLocationIsDealbreaker,
+        prefMaritalStatusIsDealbreaker: myProfile.prefMaritalStatusIsDealbreaker,
+        prefReligionIsDealbreaker: myProfile.prefReligionIsDealbreaker,
+        prefDietIsDealbreaker: myProfile.prefDietIsDealbreaker,
+        prefHeightIsDealbreaker: myProfile.prefHeightIsDealbreaker,
+        prefSmokingIsDealbreaker: myProfile.prefSmokingIsDealbreaker,
+        prefDrinkingIsDealbreaker: myProfile.prefDrinkingIsDealbreaker,
+        prefEducationIsDealbreaker: myProfile.prefEducationIsDealbreaker,
+        prefIncomeIsDealbreaker: myProfile.prefIncomeIsDealbreaker,
       }
     })
   } catch (error) {

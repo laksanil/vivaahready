@@ -21,6 +21,8 @@ import {
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
 import MessageModal from '@/components/MessageModal'
+import { NearMatchesSection } from '@/components/NearMatchCard'
+import { MatchTipsCard } from '@/components/MatchTipsCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -59,6 +61,9 @@ function FeedPageContent() {
   const [hasConnections, setHasConnections] = useState(false)
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
   const [messageRecipient, setMessageRecipient] = useState<{ id: string; name: string; photo?: string | null } | null>(null)
+  const [nearMatches, setNearMatches] = useState<any[]>([])
+  const [showNearMatches, setShowNearMatches] = useState(false)
+  const [myPreferences, setMyPreferences] = useState<any>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -162,6 +167,9 @@ function FeedPageContent() {
       setLikedYouCount(data.stats?.likedYouCount || 0)
       setConnections(data.mutualMatches || [])
       setHasConnections((data.mutualMatches?.length || 0) > 0)
+      setNearMatches(data.nearMatches || [])
+      setShowNearMatches(data.showNearMatches || false)
+      setMyPreferences(data.myProfile || null)
 
       if (data.userStatus) {
         setUserStatus(data.userStatus)
@@ -412,6 +420,14 @@ function FeedPageContent() {
         {/* Tab Content */}
         {activeTab === 'matches' && (
           <>
+            {/* Tips Card - Show when user has few matches */}
+            {myPreferences && profiles.length < 5 && profiles.length > 0 && (
+              <MatchTipsCard
+                matchCount={profiles.length}
+                userPreferences={myPreferences}
+              />
+            )}
+
             {/* No Profiles Message */}
             {filteredProfiles.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-10 text-center">
@@ -456,6 +472,15 @@ function FeedPageContent() {
                     </>
                   )}
                 </div>
+
+                {/* Near Matches Section for 0 exact matches */}
+                {!searchQuery && (
+                  <NearMatchesSection
+                    nearMatches={nearMatches}
+                    showNearMatches={showNearMatches}
+                    isVerified={userStatus?.isApproved ?? false}
+                  />
+                )}
               </div>
             ) : (
               <div className="space-y-6">
@@ -511,6 +536,13 @@ function FeedPageContent() {
                     </div>
                   </section>
                 )}
+
+                {/* Near Matches Section - Show when user has < 3 exact matches */}
+                <NearMatchesSection
+                  nearMatches={nearMatches}
+                  showNearMatches={showNearMatches}
+                  isVerified={userStatus?.isApproved ?? false}
+                />
               </div>
             )}
           </>

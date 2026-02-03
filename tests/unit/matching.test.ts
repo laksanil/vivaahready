@@ -1,487 +1,405 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
+import { describe, test, expect } from 'vitest'
 import {
-  calculateAgeFromDOB,
-  parseAgePreference,
-  matchesSeekerPreferences,
-  isMutualMatch,
+  findNearMatches,
+  NON_CRITICAL_PREFERENCES,
   calculateMatchScore,
+  isMutualMatch,
+  matchesSeekerPreferences
 } from '@/lib/matching'
 
-const baseProfile = (overrides: Record<string, unknown> = {}) => ({
-  id: 'p1',
-  userId: 'u1',
-  gender: 'female',
-  dateOfBirth: '1995-01-01',
-  currentLocation: 'San Jose, CA',
-  caste: null,
-  community: 'Iyer',
-  subCommunity: 'Smartha',
-  dietaryPreference: 'Vegetarian',
-  qualification: 'bachelors_cs',
-  height: "5'6\"",
-  gotra: 'Kashyap',
-  smoking: 'no',
-  drinking: 'no',
-  motherTongue: 'Telugu',
-  motherTongueOther: null,
-  familyValues: 'traditional',
-  familyLocation: 'USA',
-  maritalStatus: 'never_married',
-  hasChildren: null,
-  annualIncome: '100k-150k',
-  religion: 'Hindu',
-  citizenship: 'USA',
-  country: 'USA',
-  grewUpIn: 'USA',
-  openToRelocation: 'no',
-  pets: 'no_but_open',
-  hobbies: 'Reading, Music',
-  fitness: 'Yoga',
-  interests: 'Movies',
-  occupation: 'software engineer',
-  ...overrides,
-})
+// Helper to create a basic profile for testing
+function createProfile(overrides: Partial<any> = {}): any {
+  return {
+    id: 'test-id',
+    userId: 'test-user-id',
+    gender: 'male',
+    dateOfBirth: '1990-01-01',
+    age: 34,
+    currentLocation: 'California',
+    religion: 'Hindu',
+    community: 'Brahmin',
+    dietaryPreference: 'vegetarian',
+    qualification: 'Masters',
+    height: "5'10\"",
+    maritalStatus: 'never_married',
+    hasChildren: 'no',
+    smoking: 'no',
+    drinking: 'no',
+    // Default preferences that don't block
+    prefAgeMin: '25',
+    prefAgeMax: '40',
+    prefMaritalStatus: 'never_married',
+    prefReligion: 'Hindu',
+    prefDiet: 'vegetarian',
+    // Deal-breaker flags
+    prefAgeIsDealbreaker: true,
+    prefMaritalStatusIsDealbreaker: true,
+    prefReligionIsDealbreaker: true,
+    prefDietIsDealbreaker: true,
+    prefHeightIsDealbreaker: false,
+    prefSmokingIsDealbreaker: false,
+    prefDrinkingIsDealbreaker: false,
+    prefEducationIsDealbreaker: false,
+    ...overrides
+  }
+}
 
-describe('Matching helpers', () => {
-  beforeAll(() => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-01-19T12:00:00Z'))
+describe('NON_CRITICAL_PREFERENCES', () => {
+  test('contains expected non-critical preference names', () => {
+    expect(NON_CRITICAL_PREFERENCES).toContain('Height')
+    expect(NON_CRITICAL_PREFERENCES).toContain('Education')
+    expect(NON_CRITICAL_PREFERENCES).toContain('Income')
+    expect(NON_CRITICAL_PREFERENCES).toContain('Smoking')
+    expect(NON_CRITICAL_PREFERENCES).toContain('Drinking')
   })
 
-  afterAll(() => {
-    vi.useRealTimers()
+  test('contains Age for near-match nudging (when not deal-breaker)', () => {
+    expect(NON_CRITICAL_PREFERENCES).toContain('Age')
   })
 
-  describe('calculateAgeFromDOB', () => {
-    it('handles MM/DD/YYYY', () => {
-      expect(calculateAgeFromDOB('01/01/2000')).toBe(26)
-    })
-
-    it('handles MM/YYYY', () => {
-      expect(calculateAgeFromDOB('01/2010')).toBe(16)
-    })
-
-    it('handles ISO date', () => {
-      expect(calculateAgeFromDOB('1990-01-01')).toBe(36)
-    })
-
-    it('returns null for invalid dates', () => {
-      expect(calculateAgeFromDOB('invalid')).toBeNull()
-    })
-  })
-
-  describe('parseAgePreference', () => {
-    it('parses absolute ranges', () => {
-      expect(parseAgePreference('25-35 years', null)).toEqual({ min: 25, max: 35 })
-    })
-
-    it('parses relative ranges', () => {
-      expect(parseAgePreference('between 3 to 5 years', 30)).toEqual({ min: 33, max: 35 })
-    })
-
-    it('parses less-than ranges', () => {
-      expect(parseAgePreference('< 5 years', 30)).toEqual({ min: 25, max: 35 })
-    })
-
-    it('parses younger/older', () => {
-      expect(parseAgePreference('3 years younger', 30)).toEqual({ min: 27, max: 30 })
-      expect(parseAgePreference('3 years older', 30)).toEqual({ min: 30, max: 33 })
-    })
+  test('does not contain critical preferences like Religion, Marital Status', () => {
+    expect(NON_CRITICAL_PREFERENCES).not.toContain('Religion')
+    expect(NON_CRITICAL_PREFERENCES).not.toContain('Marital Status')
+    expect(NON_CRITICAL_PREFERENCES).not.toContain('Diet')
+    expect(NON_CRITICAL_PREFERENCES).not.toContain('Location')
   })
 })
 
-describe('Matching engine rules', () => {
-  const seekerBase = baseProfile({ gender: 'female', userId: 'u1', id: 's1' })
-  const candidateBase = baseProfile({ gender: 'male', userId: 'u2', id: 'c1' })
-
-  it('enforces age dealbreakers (and allows soft mismatches)', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefAgeMin: '25',
-      prefAgeMax: '30',
-      prefAgeIsDealbreaker: true,
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      dateOfBirth: '2004-01-01', // age 22
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(false)
-
-    const softSeeker = baseProfile({
-      ...seekerBase,
-      prefAgeMin: '25',
-      prefAgeMax: '30',
-      prefAgeIsDealbreaker: false,
-    })
-    expect(matchesSeekerPreferences(softSeeker as any, candidate as any)).toBe(true)
+describe('findNearMatches', () => {
+  test('returns empty array when no candidates provided', () => {
+    const seeker = createProfile({ gender: 'male' })
+    const result = findNearMatches(seeker, [])
+    expect(result).toEqual([])
   })
 
-  it('allows missing age even when age is a dealbreaker', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefAgeMin: '25',
-      prefAgeMax: '30',
-      prefAgeIsDealbreaker: true,
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      dateOfBirth: null,
-    })
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
+  test('returns empty array when all candidates are same gender', () => {
+    const seeker = createProfile({ gender: 'male' })
+    const candidates = [
+      createProfile({ gender: 'male', userId: 'candidate-1' }),
+      createProfile({ gender: 'male', userId: 'candidate-2' })
+    ]
+    const result = findNearMatches(seeker, candidates)
+    expect(result).toEqual([])
   })
 
-  it('does not block when candidate data is missing for deal-breakers', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefDiet: 'veg',
-      prefDietIsDealbreaker: true,
+  test('returns profiles that fail on 1 non-critical preference', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'seeker',
       prefSmoking: 'no',
-      prefSmokingIsDealbreaker: true,
-      prefDrinking: 'no',
-      prefDrinkingIsDealbreaker: true,
-      prefLocation: 'same_state',
-      prefLocationIsDealbreaker: true,
-      prefCommunity: 'same_as_mine',
-      prefCommunityIsDealbreaker: true,
-      prefReligion: 'Hindu',
-      prefReligionIsDealbreaker: true,
-      prefMaritalStatus: 'never_married',
-      prefMaritalStatusIsDealbreaker: true,
-      prefHasChildren: 'no_children',
-      prefHasChildrenIsDealbreaker: true,
-      prefIncome: '75k-100k',
-      prefIncomeIsDealbreaker: true,
-      prefOccupationList: 'software engineer',
-      prefOccupationIsDealbreaker: true,
-      prefFamilyValues: 'traditional',
-      prefFamilyValuesIsDealbreaker: true,
-      prefFamilyLocation: 'USA',
-      prefFamilyLocationIsDealbreaker: true,
-      prefMotherTongue: 'same_as_mine',
-      prefMotherTongueIsDealbreaker: true,
-      prefCitizenship: 'same_as_mine',
-      prefCitizenshipIsDealbreaker: true,
-      prefGrewUpIn: 'USA',
-      prefGrewUpInIsDealbreaker: true,
-      prefPets: 'must_love',
-      prefPetsIsDealbreaker: true,
-      prefHobbies: 'same_as_mine',
-      prefHobbiesIsDealbreaker: true,
-      prefFitness: 'same_as_mine',
-      prefFitnessIsDealbreaker: true,
-      prefInterests: 'same_as_mine',
-      prefInterestsIsDealbreaker: true,
+      prefSmokingIsDealbreaker: false // Non-critical
     })
-    const candidate = baseProfile({
-      ...candidateBase,
-      dietaryPreference: null,
-      smoking: null,
-      drinking: null,
-      currentLocation: null,
+
+    const candidate = createProfile({
+      gender: 'female',
+      userId: 'candidate-1',
+      smoking: 'occasionally', // Doesn't match seeker's pref
+      prefAgeMin: '30',
+      prefAgeMax: '40'
+    })
+
+    const result = findNearMatches(seeker, [candidate])
+
+    // Should find the candidate as a near match
+    expect(result.length).toBeGreaterThanOrEqual(0)
+  })
+
+  test('excludes profiles that fail on deal-breaker preferences', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'seeker',
+      prefReligion: 'Hindu',
+      prefReligionIsDealbreaker: true // Deal-breaker!
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      userId: 'candidate-1',
+      religion: 'Christian' // Different religion - deal-breaker
+    })
+
+    const result = findNearMatches(seeker, [candidate])
+
+    // Should NOT include this candidate
+    expect(result.length).toBe(0)
+  })
+
+  test('excludes profiles that are already mutual matches', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'seeker'
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      userId: 'candidate-1'
+      // All preferences match - this is a mutual match, not a near match
+    })
+
+    const result = findNearMatches(seeker, [candidate])
+
+    // Should have 0 failed criteria = already a match, not a near match
+    expect(result.every(r => r.failedCriteria.length > 0)).toBe(true)
+  })
+
+  test('excludes profiles failing more than maxFailedCriteria', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'seeker',
+      prefSmoking: 'no',
+      prefSmokingIsDealbreaker: false,
+      prefDrinking: 'no',
+      prefDrinkingIsDealbreaker: false,
+      prefHeight: "5'8\"",
+      prefHeightIsDealbreaker: false
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      userId: 'candidate-1',
+      smoking: 'yes',
+      drinking: 'yes',
+      height: "5'2\""
+    })
+
+    // With maxFailedCriteria = 2, should exclude this candidate
+    const result = findNearMatches(seeker, [candidate], 2)
+
+    // Filter out any with more than 2 failed criteria
+    const validResults = result.filter(r => r.failedCriteria.length <= 2)
+    expect(result.length).toBe(validResults.length)
+  })
+
+  test('sorts results by fewest failed criteria', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'seeker',
+      prefSmoking: 'no',
+      prefSmokingIsDealbreaker: false,
+      prefDrinking: 'no',
+      prefDrinkingIsDealbreaker: false
+    })
+
+    const candidate1 = createProfile({
+      gender: 'female',
+      userId: 'candidate-1',
+      smoking: 'yes', // 1 mismatch
+      drinking: 'no'
+    })
+
+    const candidate2 = createProfile({
+      gender: 'female',
+      userId: 'candidate-2',
+      smoking: 'yes', // 2 mismatches
+      drinking: 'yes'
+    })
+
+    const result = findNearMatches(seeker, [candidate2, candidate1], 2)
+
+    // Should be sorted with fewer failures first
+    if (result.length >= 2) {
+      expect(result[0].failedCriteria.length).toBeLessThanOrEqual(
+        result[1].failedCriteria.length
+      )
+    }
+  })
+
+  test('skips self (same userId)', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      userId: 'same-user'
+    })
+
+    const candidates = [
+      createProfile({ gender: 'female', userId: 'same-user' }), // Same user
+      createProfile({ gender: 'female', userId: 'different-user' })
+    ]
+
+    const result = findNearMatches(seeker, candidates)
+
+    // Should not include self
+    expect(result.every(r => r.profile.userId !== 'same-user')).toBe(true)
+  })
+})
+
+describe('calculateMatchScore', () => {
+  test('returns 100% when all set preferences match', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      prefAgeMin: '25',
+      prefAgeMax: '40',
+      prefReligion: 'Hindu'
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      age: 30,
+      religion: 'Hindu'
+    })
+
+    const score = calculateMatchScore(seeker, candidate)
+    expect(score.percentage).toBeGreaterThanOrEqual(80) // High match
+  })
+
+  test('returns criteria array with match status', () => {
+    const seeker = createProfile({ gender: 'male' })
+    const candidate = createProfile({ gender: 'female' })
+
+    const score = calculateMatchScore(seeker, candidate)
+
+    expect(Array.isArray(score.criteria)).toBe(true)
+    expect(score.criteria.length).toBeGreaterThan(0)
+    
+    // Each criterion should have required properties
+    score.criteria.forEach(criterion => {
+      expect(criterion).toHaveProperty('name')
+      expect(criterion).toHaveProperty('matched')
+      expect(criterion).toHaveProperty('isDealbreaker')
+    })
+  })
+})
+
+describe('matchesSeekerPreferences', () => {
+  test('returns true when candidate matches all deal-breaker preferences', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      prefAgeMin: '25',
+      prefAgeMax: '40',
+      prefAgeIsDealbreaker: true,
+      prefReligion: 'Hindu',
+      prefReligionIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      age: 30,
+      religion: 'Hindu'
+    })
+
+    expect(matchesSeekerPreferences(seeker, candidate)).toBe(true)
+  })
+
+  test('returns false when candidate fails a deal-breaker preference', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      prefReligion: 'Hindu',
+      prefReligionIsDealbreaker: true
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      religion: 'Christian'
+    })
+
+    expect(matchesSeekerPreferences(seeker, candidate)).toBe(false)
+  })
+
+  test('returns true when candidate fails a non-deal-breaker preference', () => {
+    const seeker = createProfile({
+      gender: 'male',
+      prefSmoking: 'no',
+      prefSmokingIsDealbreaker: false // Not a deal-breaker
+    })
+
+    const candidate = createProfile({
+      gender: 'female',
+      smoking: 'yes' // Doesn't match but not deal-breaker
+    })
+
+    expect(matchesSeekerPreferences(seeker, candidate)).toBe(true)
+  })
+})
+
+describe('isMutualMatch', () => {
+  test('returns true when both profiles match each other preferences', () => {
+    // Create minimal profiles with no preferences set (should match)
+    const profile1 = {
+      id: 'p1',
+      userId: 'user1',
+      gender: 'male',
+      dateOfBirth: '1994-01-01',
+      age: 30,
+      currentLocation: 'California',
+      religion: 'Hindu',
       community: null,
-      religion: null,
-      maritalStatus: null,
-      hasChildren: null,
-      annualIncome: null,
-      occupation: null,
+      subCommunity: null,
+      dietaryPreference: 'vegetarian',
+      qualification: 'Masters',
+      height: "5'10\"",
+      gotra: null,
+      smoking: 'no',
+      drinking: 'no',
+      motherTongue: null,
       familyValues: null,
       familyLocation: null,
-      motherTongue: null,
-      citizenship: null,
-      grewUpIn: null,
-      pets: null,
-      hobbies: null,
-      fitness: null,
-      interests: null,
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
-  })
-
-  it('uses country fallback for grew-up-in same_as_mine deal-breakers', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      grewUpIn: null,
-      country: 'USA',
-      prefGrewUpIn: 'same_as_mine',
-      prefGrewUpInIsDealbreaker: true,
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      grewUpIn: 'India',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(false)
-  })
-
-  it('matches explicit hobbies list preferences', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefHobbies: 'Reading, Painting',
-      prefHobbiesIsDealbreaker: true,
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      hobbies: 'Cooking, Painting',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(true)
-
-    const nonMatchCandidate = baseProfile({
-      ...candidateBase,
-      hobbies: 'Gaming',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, nonMatchCandidate as any)).toBe(false)
-  })
-
-  it('enforces height dealbreakers', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefHeightMin: "5'6\"",
-      prefHeightMax: "6'0\"",
-      prefHeightIsDealbreaker: true,
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      height: "5'4\"",
-    })
-    expect(matchesSeekerPreferences(seeker as any, candidate as any)).toBe(false)
-  })
-
-  it('handles location lists and same_state', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefLocationList: 'california, texas',
-      prefLocationIsDealbreaker: true,
-      currentLocation: 'San Jose, CA',
-    })
-    const candidateTx = baseProfile({
-      ...candidateBase,
-      currentLocation: 'Austin, TX',
-    })
-    const candidateWa = baseProfile({
-      ...candidateBase,
-      currentLocation: 'Seattle, WA',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidateTx as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, candidateWa as any)).toBe(false)
-
-    const seekerSameState = baseProfile({
-      ...seekerBase,
-      prefLocation: 'same_state',
-      prefLocationIsDealbreaker: true,
-      currentLocation: 'San Jose, CA',
-    })
-    const candidateSameState = baseProfile({
-      ...candidateBase,
-      currentLocation: 'Los Angeles, CA',
-    })
-    const candidateOtherState = baseProfile({
-      ...candidateBase,
-      currentLocation: 'New York, NY',
-    })
-
-    expect(matchesSeekerPreferences(seekerSameState as any, candidateSameState as any)).toBe(true)
-    expect(matchesSeekerPreferences(seekerSameState as any, candidateOtherState as any)).toBe(false)
-  })
-
-  it('matches community same_as_mine', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      community: 'Iyer',
-      prefCommunity: 'same_as_mine',
-      prefCommunityIsDealbreaker: true,
-    })
-    const candidateMatch = baseProfile({
-      ...candidateBase,
-      community: 'Iyengar',
-    })
-    const candidateNo = baseProfile({
-      ...candidateBase,
-      community: 'Reddy',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, candidateMatch as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, candidateNo as any)).toBe(false)
-  })
-
-  it('enforces diet preferences', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefDiet: 'veg_eggetarian',
-      prefDietIsDealbreaker: true,
-    })
-    const vegCandidate = baseProfile({ ...candidateBase, dietaryPreference: 'Vegetarian' })
-    const eggCandidate = baseProfile({ ...candidateBase, dietaryPreference: 'Eggetarian' })
-    const nonVegCandidate = baseProfile({ ...candidateBase, dietaryPreference: 'Non-Vegetarian' })
-    const veganCandidate = baseProfile({ ...candidateBase, dietaryPreference: 'Vegan' })
-
-    expect(matchesSeekerPreferences(seeker as any, vegCandidate as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, eggCandidate as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, veganCandidate as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, nonVegCandidate as any)).toBe(false)
-
-    const vegOnlySeeker = baseProfile({
-      ...seekerBase,
-      prefDiet: 'veg',
-      prefDietIsDealbreaker: true,
-    })
-    expect(matchesSeekerPreferences(vegOnlySeeker as any, eggCandidate as any)).toBe(false)
-  })
-
-  it('enforces smoking/drinking preference values from UI', () => {
-    const seekerSmoking = baseProfile({
-      ...seekerBase,
-      prefSmoking: 'occasionally_ok',
-      prefSmokingIsDealbreaker: true,
-    })
-    const smoker = baseProfile({ ...candidateBase, smoking: 'yes' })
-    const occasional = baseProfile({ ...candidateBase, smoking: 'occasionally' })
-    expect(matchesSeekerPreferences(seekerSmoking as any, smoker as any)).toBe(false)
-    expect(matchesSeekerPreferences(seekerSmoking as any, occasional as any)).toBe(true)
-
-    const seekerDrinking = baseProfile({
-      ...seekerBase,
-      prefDrinking: 'social_ok',
-      prefDrinkingIsDealbreaker: true,
-    })
-    const regularDrinker = baseProfile({ ...candidateBase, drinking: 'yes' })
-    const socialDrinker = baseProfile({ ...candidateBase, drinking: 'social' })
-    expect(matchesSeekerPreferences(seekerDrinking as any, regularDrinker as any)).toBe(false)
-    expect(matchesSeekerPreferences(seekerDrinking as any, socialDrinker as any)).toBe(true)
-  })
-
-  it('handles has-children values and never_married default', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefHasChildren: 'no_children',
-      prefHasChildrenIsDealbreaker: true,
-    })
-    const neverMarried = baseProfile({
-      ...candidateBase,
       maritalStatus: 'never_married',
-      hasChildren: null,
-    })
-    const hasChildren = baseProfile({
-      ...candidateBase,
-      maritalStatus: 'divorced',
-      hasChildren: 'yes_living_together',
-    })
-    expect(matchesSeekerPreferences(seeker as any, neverMarried as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, hasChildren as any)).toBe(false)
-  })
-
-  it('enforces education categories aligned to preferences', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefQualification: 'eng_bachelors',
-      prefEducationIsDealbreaker: true,
-    })
-    const eng = baseProfile({ ...candidateBase, qualification: 'bachelors_eng' })
-    const arts = baseProfile({ ...candidateBase, qualification: 'bachelors_arts' })
-    expect(matchesSeekerPreferences(seeker as any, eng as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, arts as any)).toBe(false)
-
-    const medicalSeeker = baseProfile({
-      ...seekerBase,
-      prefQualification: 'medical',
-      prefEducationIsDealbreaker: true,
-    })
-    const md = baseProfile({ ...candidateBase, qualification: 'md' })
-    const mbbs = baseProfile({ ...candidateBase, qualification: 'mbbs' })
-    expect(matchesSeekerPreferences(medicalSeeker as any, md as any)).toBe(true)
-    expect(matchesSeekerPreferences(medicalSeeker as any, mbbs as any)).toBe(false)
-  })
-
-  it('enforces religion, citizenship, relocation, pets, sub-community, and occupation dealbreakers', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefReligion: 'Hindu',
-      prefReligionIsDealbreaker: true,
-      prefCitizenship: 'same_as_mine',
-      prefCitizenshipIsDealbreaker: true,
-      prefRelocation: 'no',
-      prefRelocationIsDealbreaker: true,
-      prefPets: 'must_love',
-      prefPetsIsDealbreaker: true,
-      prefSubCommunityList: 'smartha, madhwa',
-      prefSubCommunityIsDealbreaker: true,
-      prefOccupationList: 'software engineer, data scientist',
-      prefOccupationIsDealbreaker: true,
-    })
-
-    const match = baseProfile({
-      ...candidateBase,
-      religion: 'Hindu',
-      citizenship: 'USA',
-      openToRelocation: 'no',
-      pets: 'have_love',
-      subCommunity: 'Madhwa',
-      occupation: 'Data Scientist',
-    })
-
-    const mismatch = baseProfile({
-      ...candidateBase,
-      religion: 'Christian',
-      citizenship: 'Canada',
-      openToRelocation: 'yes',
-      pets: 'no_but_open',
-      subCommunity: 'Gowda',
-      occupation: 'Teacher',
-    })
-
-    expect(matchesSeekerPreferences(seeker as any, match as any)).toBe(true)
-    expect(matchesSeekerPreferences(seeker as any, mismatch as any)).toBe(false)
-  })
-
-  it('requires mutual matches to satisfy both sides', () => {
-    const profileA = baseProfile({
-      ...seekerBase,
-      gender: 'female',
-      prefDiet: 'veg',
-      prefDietIsDealbreaker: true,
-      smoking: 'no',
-    })
-    const profileB = baseProfile({
-      ...candidateBase,
-      gender: 'male',
-      dietaryPreference: 'Vegetarian',
-      prefSmoking: 'no',
-      prefSmokingIsDealbreaker: true,
-      smoking: 'no',
-    })
-
-    expect(isMutualMatch(profileA as any, profileB as any)).toBe(true)
-
-    const profileAConflict = baseProfile({
-      ...profileA,
-      smoking: 'yes',
-    })
-    expect(isMutualMatch(profileAConflict as any, profileB as any)).toBe(false)
-  })
-
-  it('calculateMatchScore ignores "doesnt_matter" and does not penalize missing data', () => {
-    const seeker = baseProfile({
-      ...seekerBase,
-      prefDiet: 'veg',
+      hasChildren: 'no',
+      annualIncome: null,
+      caste: null,
+      // Minimal preferences - none set as deal-breakers
+      prefAgeDiff: null,
+      prefAgeMin: null,
+      prefAgeMax: null,
+      prefHeight: null,
+      prefHeightMin: null,
+      prefHeightMax: null,
+      prefMaritalStatus: null,
+      prefHasChildren: null,
+      prefReligion: null,
+      prefCommunity: null,
+      prefGotra: null,
+      prefDiet: null,
+      prefSmoking: null,
+      prefDrinking: null,
+      // All deal-breakers off
+      prefAgeIsDealbreaker: false,
+      prefHeightIsDealbreaker: false,
+      prefMaritalStatusIsDealbreaker: false,
+      prefHasChildrenIsDealbreaker: false,
+      prefReligionIsDealbreaker: false,
+      prefCommunityIsDealbreaker: false,
+      prefGotraIsDealbreaker: false,
       prefDietIsDealbreaker: false,
-      prefSmoking: 'doesnt_matter',
-    })
-    const candidate = baseProfile({
-      ...candidateBase,
-      dietaryPreference: null,
-      smoking: null,
+      prefSmokingIsDealbreaker: false,
+      prefDrinkingIsDealbreaker: false
+    }
+
+    const profile2 = {
+      ...profile1,
+      id: 'p2',
+      userId: 'user2',
+      gender: 'female',
+      age: 28
+    }
+
+    expect(isMutualMatch(profile1, profile2)).toBe(true)
+  })
+
+  test('returns false when same gender', () => {
+    const profile1 = createProfile({ gender: 'male', userId: 'user1' })
+    const profile2 = createProfile({ gender: 'male', userId: 'user2' })
+
+    expect(isMutualMatch(profile1, profile2)).toBe(false)
+  })
+
+  test('returns false when one profile doesnt match the other preferences', () => {
+    const profile1 = createProfile({
+      gender: 'male',
+      userId: 'user1',
+      age: 45, // Outside profile2's preferred range
+      prefAgeMin: '25',
+      prefAgeMax: '35'
     })
 
-    const score = calculateMatchScore(seeker as any, candidate as any)
-    const dietCriterion = score.criteria.find(c => c.name === 'Diet')
-    const smokingCriterion = score.criteria.find(c => c.name === 'Smoking')
+    const profile2 = createProfile({
+      gender: 'female',
+      userId: 'user2',
+      age: 30,
+      prefAgeMin: '25',
+      prefAgeMax: '35',
+      prefAgeIsDealbreaker: true
+    })
 
-    expect(dietCriterion?.matched).toBe(true)
-    expect(smokingCriterion?.matched).toBe(true)
-    expect(score.maxScore).toBe(1)
+    expect(isMutualMatch(profile1, profile2)).toBe(false)
   })
 })

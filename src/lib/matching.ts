@@ -52,7 +52,8 @@ interface ProfileForMatching {
   prefHeightMax?: string | null
   prefMaritalStatus?: string | null
   prefHasChildren?: string | null
-  prefReligion?: string | null
+  prefReligion?: string | null  // Legacy field
+  prefReligions?: string[]      // New multi-select field
   prefCommunity?: string | null
   prefGotra?: string | null
   prefDiet?: string | null
@@ -204,6 +205,53 @@ function isNoPreferenceValue(value: string | null | undefined): boolean {
   if (!value) return true
   const normalized = value.toLowerCase().trim()
   return NO_PREFERENCE_VALUES.has(normalized)
+}
+
+/**
+ * Non-critical preferences that can be loosened to find more matches.
+ * These are typically lifestyle preferences rather than core compatibility factors.
+ */
+export const NON_CRITICAL_PREFERENCES = [
+  'Age',
+  'Height',
+  'Education',
+  'Income',
+  'Smoking',
+  'Drinking',
+  'Occupation',
+  'Hobbies',
+  'Fitness',
+  'Interests',
+  'Pets',
+  'Citizenship',
+  'Grew Up In',
+  'Relocation',
+  'Sub-Community',
+  'Mother Tongue',
+  'Family Location',
+  'Family Values'
+] as const
+
+export type NonCriticalPreference = typeof NON_CRITICAL_PREFERENCES[number]
+
+/**
+ * Result type for near matches - profiles that almost match
+ */
+export interface NearMatchResult {
+  profile: ProfileForMatching
+  failedCriteria: {
+    name: string
+    seekerPref: string | null
+    candidateValue: string | null
+    isDealbreaker: boolean
+  }[]
+  matchScore: {
+    percentage: number
+    totalScore: number
+    maxScore: number
+  }
+  /** Which direction failed: 'seeker' means candidate doesn't match seeker's prefs, 'candidate' means seeker doesn't match candidate's prefs */
+  failedDirection: 'seeker' | 'candidate' | 'both'
 }
 
 /**
@@ -1469,13 +1517,38 @@ function isSubCommunityMatch(seekerPref: string | null | undefined, seekerSubCom
  * Check if religion preferences match
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
-function isReligionMatch(seekerPref: string | null | undefined, candidateReligion: string | null | undefined, strict: boolean = false): boolean {
-  if (isNoPreferenceValue(seekerPref) || !seekerPref) {
+/**
+ * Check if religion preference matches
+ * Supports both legacy string field and new array field
+ * @param seekerPrefReligion - Legacy single religion preference (string)
+ * @param seekerPrefReligions - New multi-select religion preferences (array)
+ * @param candidateReligion - Candidate's actual religion
+ * @param strict - if true, enforce preference when data is present
+ */
+function isReligionMatch(
+  seekerPrefReligion: string | null | undefined,
+  candidateReligion: string | null | undefined,
+  strict: boolean = false,
+  seekerPrefReligions?: string[] | null
+): boolean {
+  // Check new array field first (takes precedence)
+  if (seekerPrefReligions && seekerPrefReligions.length > 0) {
+    if (!candidateReligion) return true // No candidate religion = pass
+    const cand = candidateReligion.toLowerCase()
+    // Check if candidate's religion is in the seeker's preference list
+    return seekerPrefReligions.some(pref => {
+      const p = pref.toLowerCase()
+      return p === cand || p.includes(cand) || cand.includes(p)
+    })
+  }
+
+  // Fall back to legacy single string field
+  if (isNoPreferenceValue(seekerPrefReligion) || !seekerPrefReligion) {
     return true
   }
   if (!candidateReligion) return true
 
-  const pref = seekerPref.toLowerCase()
+  const pref = seekerPrefReligion.toLowerCase()
   const cand = candidateReligion.toLowerCase()
 
   return pref === cand || pref.includes(cand) || cand.includes(pref)
@@ -1793,9 +1866,10 @@ export function matchesSeekerPreferences(
     }
   }
 
-  // 7. Religion check
-  if (isPrefSet(seeker.prefReligion)) {
-    const matches = isReligionMatch(seeker.prefReligion, candidate.religion, false)
+  // 7. Religion check (supports both legacy prefReligion and new prefReligions array)
+  const hasReligionPref = isPrefSet(seeker.prefReligion) || (seeker.prefReligions && seeker.prefReligions.length > 0)
+  if (hasReligionPref) {
+    const matches = isReligionMatch(seeker.prefReligion, candidate.religion, false, seeker.prefReligions)
     if (!matches && isDealbreaker(seeker.prefReligionIsDealbreaker)) {
       return false
     }
@@ -2371,18 +2445,27 @@ export function calculateMatchScore(
     isDealbreaker: isDealbreaker(seeker.prefSubCommunityIsDealbreaker)
   })
 
-  // 16. Religion match
+  // 16. Religion match (supports both legacy prefReligion and new prefReligions array)
   let religionMatched = true
-  if (isPrefSet(seeker.prefReligion)) {
+  const hasReligionPrefForScore = isPrefSet(seeker.prefReligion) || (seeker.prefReligions && seeker.prefReligions.length > 0)
+  if (hasReligionPrefForScore) {
     totalCriteria++
-    religionMatched = isReligionMatch(seeker.prefReligion, candidate.religion, true)
+    religionMatched = isReligionMatch(seeker.prefReligion, candidate.religion, true, seeker.prefReligions)
     if (religionMatched) matchedCount++
+  }
+
+  // Format religion preference display (handle both legacy and new format)
+  const formatReligionPref = (): string => {
+    if (seeker.prefReligions && seeker.prefReligions.length > 0) {
+      return seeker.prefReligions.join(', ')
+    }
+    return seeker.prefReligion || "Doesn't matter"
   }
 
   criteria.push({
     name: 'Religion',
     matched: religionMatched,
-    seekerPref: seeker.prefReligion || "Doesn't matter",
+    seekerPref: formatReligionPref(),
     candidateValue: candidate.religion || 'Not specified',
     isDealbreaker: isDealbreaker(seeker.prefReligionIsDealbreaker)
   })
@@ -2509,4 +2592,237 @@ export function calculateMatchScore(
     percentage,
     criteria
   }
+}
+
+/**
+ * Find "near matches" - profiles that fail on only 1-2 non-critical preferences.
+ * These are profiles that could become matches if the user loosens certain preferences.
+ *
+ * @param seeker - The user looking for matches
+ * @param candidates - All potential candidates
+ * @param maxFailedCriteria - Maximum number of failed non-critical criteria to allow (default: 2)
+ * @returns Array of near match results sorted by fewest failed criteria, then by match score
+ */
+export function findNearMatches(
+  seeker: ProfileForMatching,
+  candidates: ProfileForMatching[],
+  maxFailedCriteria: number = 2
+): NearMatchResult[] {
+  const nearMatches: NearMatchResult[] = []
+
+  for (const candidate of candidates) {
+    // Skip same gender
+    if (seeker.gender === candidate.gender) continue
+
+    // Skip self
+    if (seeker.userId === candidate.userId) continue
+
+    // Get match score in both directions
+    const seekerScore = calculateMatchScore(seeker, candidate)
+    const candidateScore = calculateMatchScore(candidate, seeker)
+
+    // Find failed criteria that are NON-CRITICAL (not deal-breakers or in non-critical list)
+    const seekerFailedNonCritical = seekerScore.criteria.filter(
+      c => !c.matched &&
+      !c.isDealbreaker &&
+      NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
+    )
+
+    const candidateFailedNonCritical = candidateScore.criteria.filter(
+      c => !c.matched &&
+      !c.isDealbreaker &&
+      NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
+    )
+
+    // Check deal-breakers, but allow location to be relaxed if seeker is open to relocation
+    const seekerOpenToRelocation = seeker.openToRelocation?.toLowerCase() !== 'no'
+    const candidateOpenToRelocation = candidate.openToRelocation?.toLowerCase() !== 'no'
+
+    // Find failed deal-breakers (excluding location if relocation is possible)
+    const seekerFailedDealbreakers = seekerScore.criteria.filter(c => c.isDealbreaker && !c.matched)
+    const candidateFailedDealbreakers = candidateScore.criteria.filter(c => c.isDealbreaker && !c.matched)
+
+    // Check if location is the ONLY failed deal-breaker and relocation is possible
+    const seekerOnlyLocationFails = seekerFailedDealbreakers.length > 0 &&
+      seekerFailedDealbreakers.every(c => c.name === 'Location') &&
+      (seekerOpenToRelocation || candidateOpenToRelocation)
+
+    const candidateOnlyLocationFails = candidateFailedDealbreakers.length > 0 &&
+      candidateFailedDealbreakers.every(c => c.name === 'Location') &&
+      (seekerOpenToRelocation || candidateOpenToRelocation)
+
+    // Determine if deal-breakers pass (or only location fails with relocation possible)
+    const seekerDealbreakersPass = seekerFailedDealbreakers.length === 0 || seekerOnlyLocationFails
+    const candidateDealbreakersPass = candidateFailedDealbreakers.length === 0 || candidateOnlyLocationFails
+
+    // Skip if non-location deal-breakers fail
+    if (!seekerDealbreakersPass || !candidateDealbreakersPass) continue
+
+    // Track if location was the relaxed deal-breaker (for adding to failed criteria)
+    const locationRelaxedForSeeker = seekerOnlyLocationFails && seekerFailedDealbreakers.length > 0
+    const locationRelaxedForCandidate = candidateOnlyLocationFails && candidateFailedDealbreakers.length > 0
+
+    // Filter out location-related failures if candidate explicitly won't relocate
+    // Don't suggest "open to relocation" for someone who said "No"
+    const candidateWontRelocate = candidate.openToRelocation?.toLowerCase() === 'no'
+
+    // Helper to check if age difference is within 1 year tolerance
+    const isAgeWithinTolerance = (c: typeof seekerFailedNonCritical[0]): boolean => {
+      if (c.name !== 'Age') return true
+
+      // Parse candidate age
+      const candidateAge = parseInt(c.candidateValue || '0')
+      if (!candidateAge) return false
+
+      // Parse seeker's age range from preference (format: "min-max" or "XX - YY")
+      const prefMatch = c.seekerPref?.match(/(\d+)\s*[-–]\s*(\d+)/)
+      if (!prefMatch) return false
+
+      const minAge = parseInt(prefMatch[1])
+      const maxAge = parseInt(prefMatch[2])
+
+      // Check if within 1 year of either boundary
+      if (candidateAge < minAge) {
+        return (minAge - candidateAge) <= 1 // 1 year below min
+      }
+      if (candidateAge > maxAge) {
+        return (candidateAge - maxAge) <= 1 // 1 year above max
+      }
+      return true // Within range (shouldn't happen for failed criteria)
+    }
+
+    // Helper to check if height difference is within 1 inch tolerance
+    const isHeightWithinTolerance = (c: typeof seekerFailedNonCritical[0]): boolean => {
+      if (c.name !== 'Height') return true
+
+      // Parse height to inches (format: "5'6\"" or "5' 6\"")
+      const parseHeightToInches = (h: string | null): number | null => {
+        if (!h) return null
+        const match = h.match(/(\d+)'?\s*(\d+)?/)
+        if (!match) return null
+        const feet = parseInt(match[1])
+        const inches = parseInt(match[2] || '0')
+        return feet * 12 + inches
+      }
+
+      const candidateInches = parseHeightToInches(c.candidateValue)
+      if (!candidateInches) return false
+
+      // Parse seeker's height range (format: "5'4\" - 5'8\"")
+      const prefParts = c.seekerPref?.split(/\s*[-–]\s*/)
+      if (!prefParts || prefParts.length < 2) return false
+
+      const minInches = parseHeightToInches(prefParts[0])
+      const maxInches = parseHeightToInches(prefParts[1])
+      if (!minInches || !maxInches) return false
+
+      // Check if within 1 inch of either boundary
+      if (candidateInches < minInches) {
+        return (minInches - candidateInches) <= 1 // 1 inch below min
+      }
+      if (candidateInches > maxInches) {
+        return (candidateInches - maxInches) <= 1 // 1 inch above max
+      }
+      return true // Within range (shouldn't happen for failed criteria)
+    }
+
+    const filteredSeekerFailedNonCritical = seekerFailedNonCritical.filter(c => {
+      // If location fails and candidate won't relocate, don't include as near match
+      if ((c.name === 'Location' || c.name === 'Relocation') && candidateWontRelocate) {
+        return false
+      }
+      // Check age tolerance (1 year)
+      if (!isAgeWithinTolerance(c)) {
+        return false
+      }
+      // Check height tolerance (1 inch)
+      if (!isHeightWithinTolerance(c)) {
+        return false
+      }
+      return true
+    })
+
+    const filteredCandidateFailedNonCritical = candidateFailedNonCritical.filter(c => {
+      // If seeker's location preference fails vs candidate, and candidate won't relocate
+      if ((c.name === 'Location' || c.name === 'Relocation') && candidateWontRelocate) {
+        return false
+      }
+      // Check age tolerance (1 year)
+      if (!isAgeWithinTolerance(c)) {
+        return false
+      }
+      // Check height tolerance (1 inch)
+      if (!isHeightWithinTolerance(c)) {
+        return false
+      }
+      return true
+    })
+
+    // Count relaxed location failures (treat as 1 failed criterion if location was relaxed)
+    const locationRelaxedCount = (locationRelaxedForSeeker ? 1 : 0) + (locationRelaxedForCandidate ? 1 : 0)
+
+    // Calculate total failed criteria (non-critical + relaxed location)
+    const totalFailedNonCritical = filteredSeekerFailedNonCritical.length + filteredCandidateFailedNonCritical.length + locationRelaxedCount
+
+    // Skip if too many failures or no failures (already a match)
+    if (totalFailedNonCritical === 0 || totalFailedNonCritical > maxFailedCriteria) continue
+
+    // Determine which direction failed
+    const seekerHasFailures = filteredSeekerFailedNonCritical.length > 0 || locationRelaxedForSeeker
+    const candidateHasFailures = filteredCandidateFailedNonCritical.length > 0 || locationRelaxedForCandidate
+
+    let failedDirection: 'seeker' | 'candidate' | 'both' = 'seeker'
+    if (seekerHasFailures && candidateHasFailures) {
+      failedDirection = 'both'
+    } else if (candidateHasFailures) {
+      failedDirection = 'candidate'
+    }
+
+    // Combine failed criteria from both directions (including relaxed location)
+    const allFailedCriteria = [
+      ...filteredSeekerFailedNonCritical.map(c => ({
+        ...c,
+        seekerPref: c.seekerPref,
+        candidateValue: c.candidateValue
+      })),
+      ...filteredCandidateFailedNonCritical.map(c => ({
+        name: c.name,
+        seekerPref: c.candidateValue, // Swap for display - candidate's value is their "requirement"
+        candidateValue: c.seekerPref, // What seeker has
+        isDealbreaker: c.isDealbreaker
+      })),
+      // Add relaxed location deal-breaker if applicable
+      ...(locationRelaxedForSeeker ? seekerFailedDealbreakers.filter(c => c.name === 'Location').map(c => ({
+        name: 'Location',
+        seekerPref: c.seekerPref,
+        candidateValue: c.candidateValue,
+        isDealbreaker: true // Mark as was-dealbreaker for special nudge
+      })) : []),
+      ...(locationRelaxedForCandidate ? candidateFailedDealbreakers.filter(c => c.name === 'Location').map(c => ({
+        name: 'Location',
+        seekerPref: c.candidateValue,
+        candidateValue: c.seekerPref,
+        isDealbreaker: true
+      })) : [])
+    ]
+
+    nearMatches.push({
+      profile: candidate,
+      failedCriteria: allFailedCriteria,
+      matchScore: {
+        percentage: Math.round((seekerScore.percentage + candidateScore.percentage) / 2),
+        totalScore: seekerScore.totalScore + candidateScore.totalScore,
+        maxScore: seekerScore.maxScore + candidateScore.maxScore
+      },
+      failedDirection
+    })
+  }
+
+  // Sort by fewest failed criteria, then by match percentage (descending)
+  return nearMatches.sort((a, b) => {
+    if (a.failedCriteria.length !== b.failedCriteria.length) {
+      return a.failedCriteria.length - b.failedCriteria.length
+    }
+    return b.matchScore.percentage - a.matchScore.percentage
+  })
 }
