@@ -22,7 +22,6 @@ import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard
 import { ProfileData } from '@/components/ProfileCard'
 import MessageModal from '@/components/MessageModal'
 import { NearMatchesSection } from '@/components/NearMatchCard'
-import { MatchTipsCard } from '@/components/MatchTipsCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -420,14 +419,6 @@ function FeedPageContent() {
         {/* Tab Content */}
         {activeTab === 'matches' && (
           <>
-            {/* Tips Card - Show when user has few matches */}
-            {myPreferences && profiles.length < 5 && profiles.length > 0 && (
-              <MatchTipsCard
-                matchCount={profiles.length}
-                userPreferences={myPreferences}
-              />
-            )}
-
             {/* No Profiles Message */}
             {filteredProfiles.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-10 text-center">
