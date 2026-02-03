@@ -204,7 +204,7 @@ export function NearMatchCard({
             <img
               src={photoUrl}
               alt={name}
-              className={`h-full w-full object-cover ${isVerified ? 'blur-sm' : 'blur-md'}`}
+              className={`h-full w-full object-cover ${isVerified ? '' : 'blur-md'}`}
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center text-amber-700 font-semibold">
