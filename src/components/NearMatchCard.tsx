@@ -439,11 +439,11 @@ export function NearMatchesSection({
           <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm text-amber-900 font-medium">
-              We don't have exact matches for your preferences right now.
+              Want to see more profiles?
             </p>
             <p className="text-sm text-amber-700 mt-1">
-              But here are profiles that are close to what you're looking for.
-              A small adjustment to your preferences could make them a perfect match!
+              Here are profiles that are close to your preferences.
+              A small adjustment could make them a perfect match!
             </p>
           </div>
         </div>
