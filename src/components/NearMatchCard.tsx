@@ -238,7 +238,7 @@ export function NearMatchCard({
             )}
           </div>
           <p className="text-xs text-amber-700 mt-1">
-            {failedCriteria.length} preference{failedCriteria.length > 1 ? 's' : ''} {getDirectionText()}
+            {new Set(failedCriteria.map(c => c.name)).size} preference{new Set(failedCriteria.map(c => c.name)).size > 1 ? 's' : ''} {getDirectionText()}
           </p>
         </div>
 
