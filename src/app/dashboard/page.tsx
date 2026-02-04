@@ -131,6 +131,9 @@ function DashboardContent() {
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
 
+  // Check if we have pending signup data to process (before creatingProfile is set)
+  const hasPendingSignupData = typeof window !== 'undefined' && shouldCreateProfile && sessionStorage.getItem('signupFormData') !== null
+
   // Fetch payment status when user has a pending profile
   useEffect(() => {
     if (!isPending || isAdminView) return
@@ -352,10 +355,14 @@ function DashboardContent() {
   // 1. Session is loading
   // 2. Admin view mode checks are pending
   // 3. Session data (hasProfile) is not yet populated from JWT
-  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady) || (status === 'authenticated' && !sessionDataLoaded)) {
+  // 4. Profile is being created after Google auth (prevents flash of dashboard)
+  // 5. Pending signup data waiting to be processed
+  const isCreatingOrPendingProfile = creatingProfile || hasPendingSignupData
+  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady) || (status === 'authenticated' && !sessionDataLoaded) || isCreatingOrPendingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        {isCreatingOrPendingProfile && <p className="ml-3 text-gray-600">Setting up your profile...</p>}
       </div>
     )
   }
