@@ -766,7 +766,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 onClick={() => {
                   // Store form data in session storage before redirecting
                   sessionStorage.setItem('signupFormData', JSON.stringify(formData))
-                  signIn('google', { callbackUrl: '/dashboard?createProfile=true' })
+                  signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
                 }}
                 className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"
               >

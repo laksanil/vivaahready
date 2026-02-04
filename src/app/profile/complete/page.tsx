@@ -51,17 +51,85 @@ const getSignupStepFromLocalStep = (localStep: number): number => {
 function ProfileCompleteContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { status } = useSession()
+  const { data: session, status } = useSession()
 
-  const profileId = searchParams.get('profileId')
+  const urlProfileId = searchParams.get('profileId')
+  const fromGoogleAuth = searchParams.get('fromGoogleAuth') === 'true'
   const initialStep = parseInt(searchParams.get('step') || '1', 10) // Default to step 1 (basics)
 
+  const [profileId, setProfileId] = useState<string | null>(urlProfileId)
+  const [creatingProfile, setCreatingProfile] = useState(false)
   const [step, setStep] = useState(() => getLocalStepFromSignupStep(initialStep))
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState<Record<string, unknown>>({})
 
+  // Handle profile creation from Google auth (when redirected here with stored form data)
+  useEffect(() => {
+    const createProfileFromStoredData = async () => {
+      if (status !== 'authenticated' || !session?.user?.email) return
+      if (profileId || creatingProfile) return // Already have profile or creating one
+
+      // Check for stored form data from Google auth flow
+      const storedFormData = sessionStorage.getItem('signupFormData')
+      if (!storedFormData && !fromGoogleAuth) return
+
+      setCreatingProfile(true)
+
+      try {
+        if (storedFormData) {
+          const formDataFromStorage = JSON.parse(storedFormData)
+          const referredBy = sessionStorage.getItem('referredBy') || undefined
+
+          const response = await fetch('/api/profile/create-from-modal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: session.user.email,
+              ...formDataFromStorage,
+              referredBy,
+            }),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            setProfileId(data.profileId)
+            sessionStorage.removeItem('signupFormData')
+            // Pre-fill form with the stored data
+            setFormData(formDataFromStorage)
+            setStep(2) // Move to step 2 since basics are done
+          } else if (response.status === 409) {
+            // Duplicate - try with skip
+            const retryResponse = await fetch('/api/profile/create-from-modal', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: session.user.email,
+                ...formDataFromStorage,
+                referredBy,
+                skipDuplicateCheck: true,
+              }),
+            })
+            if (retryResponse.ok) {
+              const data = await retryResponse.json()
+              setProfileId(data.profileId)
+              sessionStorage.removeItem('signupFormData')
+              setFormData(formDataFromStorage)
+              setStep(2)
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error creating profile:', err)
+        setError('Failed to create profile. Please try again.')
+      } finally {
+        setCreatingProfile(false)
+      }
+    }
+
+    createProfileFromStoredData()
+  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -355,12 +423,17 @@ function ProfileCompleteContent() {
     </button>
   )
 
-  if (status === 'loading' || pageLoading) {
+  // Check if we have pending signup data (for Google auth flow)
+  const hasPendingSignupData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData') !== null
+
+  if (status === 'loading' || pageLoading || creatingProfile || (hasPendingSignupData && !profileId)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading your profile...</p>
+          <p className="mt-4 text-gray-600">
+            {creatingProfile || hasPendingSignupData ? 'Setting up your profile...' : 'Loading your profile...'}
+          </p>
         </div>
       </div>
     )
