@@ -1584,12 +1584,16 @@ function ViewProfilePageContent() {
                             ? `${profile.prefAgeMin}+ years`
                             : profile.prefAgeMax
                               ? `Up to ${profile.prefAgeMax} years`
-                              : (profile.prefAgeDiff as string) || "Doesn't matter"
+                              : "Not specified"
                       } />
                       <PrefTableRow label="Height Range" field="prefHeight" value={
                         profile.prefHeightMin && profile.prefHeightMax
                           ? `${profile.prefHeightMin} - ${profile.prefHeightMax}`
-                          : (profile.prefHeight as string) || "Doesn't matter"
+                          : profile.prefHeightMin
+                            ? `${profile.prefHeightMin} and above`
+                            : profile.prefHeightMax
+                              ? `Up to ${profile.prefHeightMax}`
+                              : "Not specified"
                       } />
 
                       <SectionRow title="Marital Status" />

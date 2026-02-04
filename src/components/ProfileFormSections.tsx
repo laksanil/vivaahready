@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Phone, Shield, CheckCircle, ChevronDown } from 'lucide-react'
-import { HEIGHT_OPTIONS, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
+import { HEIGHT_OPTIONS, heightToInches, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -2369,11 +2369,27 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               <div className="grid grid-cols-2 gap-2">
                 <select name="prefAgeMin" value={formData.prefAgeMin as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Min Age</option>
-                  {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                  {PREF_AGE_MIN_MAX.map((opt) => {
+                    const maxAge = parseInt(formData.prefAgeMax as string) || 0
+                    const isDisabled = maxAge > 0 && parseInt(opt.value) > maxAge
+                    return (
+                      <option key={opt.value} value={opt.value} disabled={isDisabled}>
+                        {opt.label}
+                      </option>
+                    )
+                  })}
                 </select>
                 <select name="prefAgeMax" value={formData.prefAgeMax as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Max Age</option>
-                  {PREF_AGE_MIN_MAX.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                  {PREF_AGE_MIN_MAX.map((opt) => {
+                    const minAge = parseInt(formData.prefAgeMin as string) || 0
+                    const isDisabled = minAge > 0 && parseInt(opt.value) < minAge
+                    return (
+                      <option key={opt.value} value={opt.value} disabled={isDisabled}>
+                        {opt.label}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>
@@ -2385,11 +2401,27 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               <div className="grid grid-cols-2 gap-2">
                 <select name="prefHeightMin" value={formData.prefHeightMin as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Min Height</option>
-                  {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
+                  {HEIGHT_OPTIONS.map((h) => {
+                    const maxHeight = formData.prefHeightMax as string
+                    const isDisabled = !!(maxHeight && heightToInches(h.value) > heightToInches(maxHeight))
+                    return (
+                      <option key={h.value} value={h.value} disabled={isDisabled}>
+                        {h.label}
+                      </option>
+                    )
+                  })}
                 </select>
                 <select name="prefHeightMax" value={formData.prefHeightMax as string || ''} onChange={handleChange} className="input-field" required>
                   <option value="">Max Height</option>
-                  {HEIGHT_OPTIONS.map((h) => (<option key={h.value} value={h.value}>{h.label}</option>))}
+                  {HEIGHT_OPTIONS.map((h) => {
+                    const minHeight = formData.prefHeightMin as string
+                    const isDisabled = !!(minHeight && heightToInches(h.value) < heightToInches(minHeight))
+                    return (
+                      <option key={h.value} value={h.value} disabled={isDisabled}>
+                        {h.label}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
             </div>
@@ -2537,12 +2569,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Diet <span className="text-red-500">*</span></label>
+                <label className="form-label mb-0">Diet {isDealbreaker(formData, 'prefDiet') && <span className="text-red-500">*</span>}</label>
                 <DealBreakerToggle field="prefDiet" formData={formData} setFormData={setFormData} relatedField="prefDiet" />
               </div>
-              <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handlePreferenceChange} className="input-field" required>
-                <option value="">Select</option>
-                {!isDealbreaker(formData, 'prefDiet') && <option value="doesnt_matter">Doesn&apos;t Matter</option>}
+              <select name="prefDiet" value={formData.prefDiet as string || ''} onChange={handlePreferenceChange} className="input-field" required={isDealbreaker(formData, 'prefDiet')}>
+                {!isDealbreaker(formData, 'prefDiet') && <option value="">Doesn&apos;t Matter</option>}
+                {isDealbreaker(formData, 'prefDiet') && <option value="">Select</option>}
                 <option value="veg">Vegetarian Only</option>
                 <option value="veg_eggetarian">Veg / Eggetarian</option>
                 <option value="non_veg_ok">Non-Veg OK</option>
@@ -2551,23 +2583,25 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
             </div>
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Smoking <span className="text-red-500">*</span></label>
+                <label className="form-label mb-0">Smoking {isDealbreaker(formData, 'prefSmoking') && <span className="text-red-500">*</span>}</label>
                 <DealBreakerToggle field="prefSmoking" formData={formData} setFormData={setFormData} relatedField="prefSmoking" />
               </div>
-              <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handlePreferenceChange} className="input-field" required>
-                <option value="">Select</option>
-                {PREF_SMOKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefSmoking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              <select name="prefSmoking" value={formData.prefSmoking as string || ''} onChange={handlePreferenceChange} className="input-field" required={isDealbreaker(formData, 'prefSmoking')}>
+                {!isDealbreaker(formData, 'prefSmoking') && <option value="">Doesn&apos;t Matter</option>}
+                {isDealbreaker(formData, 'prefSmoking') && <option value="">Select</option>}
+                {PREF_SMOKING_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
               {isDealbreaker(formData, 'prefSmoking') && !(formData.prefSmoking as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Drinking <span className="text-red-500">*</span></label>
+                <label className="form-label mb-0">Drinking {isDealbreaker(formData, 'prefDrinking') && <span className="text-red-500">*</span>}</label>
                 <DealBreakerToggle field="prefDrinking" formData={formData} setFormData={setFormData} relatedField="prefDrinking" />
               </div>
-              <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handlePreferenceChange} className="input-field" required>
-                <option value="">Select</option>
-                {PREF_DRINKING_OPTIONS.filter(opt => !isDealbreaker(formData, 'prefDrinking') || opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+              <select name="prefDrinking" value={formData.prefDrinking as string || ''} onChange={handlePreferenceChange} className="input-field" required={isDealbreaker(formData, 'prefDrinking')}>
+                {!isDealbreaker(formData, 'prefDrinking') && <option value="">Doesn&apos;t Matter</option>}
+                {isDealbreaker(formData, 'prefDrinking') && <option value="">Select</option>}
+                {PREF_DRINKING_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
               {isDealbreaker(formData, 'prefDrinking') && !(formData.prefDrinking as string) && <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a specific preference</p>}
             </div>

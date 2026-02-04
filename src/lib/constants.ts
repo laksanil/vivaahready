@@ -1,3 +1,20 @@
+// Convert height string (e.g., "5'4\"") to total inches for comparison
+export function heightToInches(height: string | null | undefined): number {
+  if (!height) return 0
+  const match = height.match(/(\d+)'(\d+)"?/)
+  if (!match) return 0
+  return parseInt(match[1]) * 12 + parseInt(match[2])
+}
+
+// Compare two height strings, returns -1 if a < b, 0 if equal, 1 if a > b
+export function compareHeights(a: string | null | undefined, b: string | null | undefined): number {
+  const aInches = heightToInches(a)
+  const bInches = heightToInches(b)
+  if (aInches < bInches) return -1
+  if (aInches > bInches) return 1
+  return 0
+}
+
 // Height options for dropdown (4'6" to 7'0")
 export const HEIGHT_OPTIONS = [
   { value: "4'6\"", label: "4'6\" (137 cm)" },

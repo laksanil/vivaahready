@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { X, Loader2 } from 'lucide-react'
 import {
   BasicsSection,
@@ -14,6 +14,30 @@ import {
   PreferencesPage2Section,
   ContactSection,
 } from './ProfileFormSections'
+import { heightToInches } from '@/lib/constants'
+
+// Placeholder phrases that shouldn't be accepted
+const INVALID_ABOUTME_PHRASES = [
+  'will fill in later',
+  'will fill later',
+  'fill in later',
+  'fill later',
+  'tbd',
+  'to be done',
+  'coming soon',
+  'will update',
+  'will add later',
+  'n/a',
+  'na',
+  'none',
+  'nothing',
+  'test',
+  'testing',
+  'asdf',
+  'abc',
+  '...',
+  '---',
+]
 
 interface ProfileEditModalProps {
   isOpen: boolean
@@ -50,8 +74,81 @@ export default function ProfileEditModal({
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  // Validation for each section
+  const validationErrors = useMemo(() => {
+    const errors: string[] = []
+
+    if (section === 'aboutme') {
+      const aboutMe = (formData.aboutMe as string || '').trim().toLowerCase()
+      const linkedinProfile = formData.linkedinProfile as string || ''
+      const referralSource = formData.referralSource as string || ''
+
+      // Check aboutMe
+      if (!aboutMe) {
+        errors.push('About Me is required')
+      } else if (aboutMe.length < 50) {
+        errors.push('About Me must be at least 50 characters')
+      } else if (INVALID_ABOUTME_PHRASES.some(phrase => aboutMe === phrase || aboutMe.includes(phrase))) {
+        errors.push('Please write a meaningful description about yourself')
+      }
+
+      // Check LinkedIn
+      if (!linkedinProfile) {
+        errors.push('LinkedIn profile is required')
+      } else if (linkedinProfile !== 'no_linkedin') {
+        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+        if (!linkedinRegex.test(linkedinProfile)) {
+          errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn"')
+        }
+      }
+
+      // Check referral source
+      if (!referralSource) {
+        errors.push('Referral source is required')
+      }
+    }
+
+    if (section === 'preferences_1') {
+      const prefAgeMin = formData.prefAgeMin as string || ''
+      const prefAgeMax = formData.prefAgeMax as string || ''
+      const prefHeightMin = formData.prefHeightMin as string || ''
+      const prefHeightMax = formData.prefHeightMax as string || ''
+
+      if (!prefAgeMin) errors.push('Minimum age preference is required')
+      if (!prefAgeMax) errors.push('Maximum age preference is required')
+      if (!prefHeightMin) errors.push('Minimum height preference is required')
+      if (!prefHeightMax) errors.push('Maximum height preference is required')
+
+      // Validate age range
+      if (prefAgeMin && prefAgeMax) {
+        const minAge = parseInt(prefAgeMin)
+        const maxAge = parseInt(prefAgeMax)
+        if (minAge > maxAge) {
+          errors.push('Minimum age cannot be greater than maximum age')
+        }
+      }
+
+      // Validate height range
+      if (prefHeightMin && prefHeightMax) {
+        if (heightToInches(prefHeightMin) > heightToInches(prefHeightMax)) {
+          errors.push('Minimum height cannot be greater than maximum height')
+        }
+      }
+    }
+
+    return errors
+  }, [section, formData])
+
+  const isValid = validationErrors.length === 0
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isValid) {
+      setError(validationErrors.join('. '))
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -126,11 +223,31 @@ export default function ProfileEditModal({
           {section === 'preferences_1' && <PreferencesPage1Section {...sectionProps} />}
           {section === 'preferences_2' && <PreferencesPage2Section {...sectionProps} />}
 
+          {/* Validation errors */}
+          {!isValid && validationErrors.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-sm">
+              <p className="font-medium mb-1">Please fix the following:</p>
+              <ul className="list-disc list-inside space-y-1">
+                {validationErrors.map((err, idx) => (
+                  <li key={idx}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:text-gray-800">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={loading || !isValid}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                isValid && !loading
+                  ? 'bg-primary-600 text-white hover:bg-primary-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Save Changes
             </button>

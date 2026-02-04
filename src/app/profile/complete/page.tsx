@@ -381,11 +381,16 @@ function ProfileCompleteContent() {
     !formData.linkedinError
   )
 
-  // Preferences Page 1 validation - Diet, Smoking, Drinking are required
-  const prefDietValue = formData.prefDiet as string || ''
-  const prefSmokingValue = formData.prefSmoking as string || ''
-  const prefDrinkingValue = formData.prefDrinking as string || ''
-  const isPreferences1Complete = prefDietValue !== '' && prefSmokingValue !== '' && prefDrinkingValue !== ''
+  // Preferences Page 1 validation - Age and Height are required (both min and max)
+  const prefAgeMinValue = formData.prefAgeMin as string || ''
+  const prefAgeMaxValue = formData.prefAgeMax as string || ''
+  const prefHeightMinValue = formData.prefHeightMin as string || ''
+  const prefHeightMaxValue = formData.prefHeightMax as string || ''
+  const isPreferences1Complete =
+    prefAgeMinValue !== '' &&
+    prefAgeMaxValue !== '' &&
+    prefHeightMinValue !== '' &&
+    prefHeightMaxValue !== ''
 
   const currentSection = SECTION_ORDER[step - 1]
   const totalSteps = SECTION_ORDER.length
