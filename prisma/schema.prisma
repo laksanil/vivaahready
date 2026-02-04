@@ -31,6 +31,7 @@ model User {
   receivedMessages Message[] @relation("ReceivedMessages")
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsReceived Report[] @relation("ReportsReceived")
+  deletionRequest DeletionRequest?
 }
 
 model Profile {
@@ -178,7 +179,8 @@ model Profile {
   prefRelocation    String?  // doesnt_matter, willing, not_required
   prefMotherTongue  String?  // doesnt_matter, same_as_mine, specific language
   prefPets          String?  // doesnt_matter, must_love, no_pets, open_to_pets
-  prefReligion      String?  // doesnt_matter, Hindu, Muslim, Christian, Sikh, Jain, Buddhist, etc.
+  prefReligion      String?  // LEGACY: Single religion preference (kept for backwards compatibility)
+  prefReligions     String[] @default([])  // NEW: Multi-select religion preferences (empty = doesn't matter)
   prefFamilyValues  String?  // doesnt_matter, traditional, moderate, liberal
   prefFamilyLocation String?  // doesnt_matter, same_country, specific_country
   prefFamilyLocationCountry String?  // Specific country name if prefFamilyLocation is specific
@@ -343,6 +345,7 @@ model DeclinedProfile {
 model DeletionRequest {
   id              String   @id @default(cuid())
   userId          String   @unique // User requesting deletion
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   reason          String   // Predefined reason code
   otherReason     String?  // Custom reason if "other" selected
