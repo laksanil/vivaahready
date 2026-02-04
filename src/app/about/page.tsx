@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { Heart, Users, Shield, Target, CheckCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Heart, Users, Shield, Target, CheckCircle, MapPin, Quote } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -16,43 +17,131 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-white via-silver-50 to-silver-100 py-20">
+      <section className="bg-gradient-to-br from-white via-silver-50 to-silver-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               About VivaahReady
             </h1>
             <p className="text-xl text-gray-600">
-              We're bridging the gap between traditional matchmaking values and modern
-              preferences, helping Indian singles in the US find meaningful connections.
+              Built by a mom who understood the struggle of finding the right match
+              for her daughter in the US.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Our Story */}
-      <section className="py-20 bg-white">
+      {/* Founder Story */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Photo */}
+            <div className="flex justify-center md:justify-end">
+              <div className="relative">
+                <div className="w-72 h-72 md:w-80 md:h-80 rounded-2xl overflow-hidden shadow-xl">
+                  <Image
+                    src="/images/founder-lakshmi.jpg"
+                    alt="Lakshmi - Founder of VivaahReady"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+                <div className="absolute -bottom-4 -right-4 bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm font-medium">Bay Area, CA</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Story */}
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Hi, I&apos;m Lakshmi</h2>
+              <p className="text-primary-600 font-medium mb-6">Founder of VivaahReady</p>
+
+              <div className="space-y-4 text-gray-600">
+                <p>
+                  I come from a traditional Indian family, and like many parents in the diaspora,
+                  I wanted to help my daughter find the right life partner. Someone who shared
+                  our values, understood our culture, and was serious about marriage.
+                </p>
+                <p>
+                  I tried every matrimonial website out there. Some felt outdated and impersonal.
+                  Others were full of fake profiles and people who weren&apos;t serious. None of them
+                  felt right for families like ours who wanted a blend of tradition and modernity.
+                </p>
+                <p>
+                  So I decided to build what I was looking for. VivaahReady is the platform I
+                  wished existed — where every profile is verified, privacy is respected, and
+                  the focus is on meaningful connections, not endless swiping.
+                </p>
+                <div className="bg-primary-50 border-l-4 border-primary-600 p-4 rounded-r-lg mt-6">
+                  <div className="flex items-start gap-3">
+                    <Quote className="h-6 w-6 text-primary-600 flex-shrink-0 mt-1" />
+                    <p className="text-gray-700 italic">
+                      &quot;I built VivaahReady because I believe every family deserves a platform
+                      that takes matchmaking as seriously as they do.&quot;
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Bar */}
+      <section className="py-8 bg-gray-50 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+              <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
+              <p className="font-semibold text-gray-900">Verified Profiles</p>
+              <p className="text-sm text-gray-500">Every profile checked</p>
+            </div>
+            <div>
+              <Shield className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <p className="font-semibold text-gray-900">Privacy-First</p>
+              <p className="text-sm text-gray-500">Your data protected</p>
+            </div>
+            <div>
+              <MapPin className="h-6 w-6 text-primary-600 mx-auto mb-2" />
+              <p className="font-semibold text-gray-900">Nationwide</p>
+              <p className="text-sm text-gray-500">Across the US</p>
+            </div>
+            <div>
+              <Heart className="h-6 w-6 text-red-500 mx-auto mb-2" />
+              <p className="font-semibold text-gray-900">Serious Connections</p>
+              <p className="text-sm text-gray-500">Marriage-minded only</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why I Built This */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="section-title mb-6">Our Story</h2>
+              <h2 className="section-title mb-6">Why I Built This</h2>
               <div className="space-y-4 text-gray-600">
                 <p>
-                  VivaahReady was born from a simple observation: Indian singles in the US
-                  were caught between two extremes - traditional matchmaking that felt
-                  outdated, and modern dating apps that reduced meaningful connections to
-                  superficial swiping.
+                  As a mother living in the Bay Area, I saw firsthand the challenges
+                  Indian families face when looking for matches in the US. The big
+                  matrimonial sites felt impersonal, and dating apps weren&apos;t designed
+                  for families who value tradition.
                 </p>
                 <p>
-                  We believed there had to be a better way. A way that honored the wisdom
-                  of traditional matchmaking - taking time to understand values, family,
-                  and long-term compatibility - while embracing the autonomy and
-                  preferences of modern individuals.
+                  I wanted a platform where parents could be involved without being
+                  overbearing, where profiles were real and verified, and where the
+                  focus was on compatibility that leads to lasting marriages.
                 </p>
                 <p>
-                  That's why we created VivaahReady: a platform where human curators,
-                  not algorithms, take the time to understand who you are and hand-select
-                  matches that align with your values, goals, and vision for the future.
+                  VivaahReady combines the thoughtfulness of traditional matchmaking
+                  with the convenience of modern technology. Because finding a life
+                  partner should feel personal, not transactional.
                 </p>
               </div>
             </div>
@@ -63,8 +152,8 @@ export default function AboutPage() {
                     <Heart className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Human-First</h3>
-                    <p className="text-gray-600 text-sm">Real people reviewing profiles, not algorithms</p>
+                    <h3 className="font-semibold text-gray-900">Family Values</h3>
+                    <p className="text-gray-600 text-sm">Built for families who want to be part of the journey</p>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -81,8 +170,8 @@ export default function AboutPage() {
                     <Target className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Values-Based</h3>
-                    <p className="text-gray-600 text-sm">Matching based on what truly matters for lasting relationships</p>
+                    <h3 className="font-semibold text-gray-900">Quality Matches</h3>
+                    <p className="text-gray-600 text-sm">Thoughtful matching based on what truly matters</p>
                   </div>
                 </div>
               </div>
