@@ -221,7 +221,7 @@ export default function GetVerifiedPage() {
               {/* Right: Payment Card or What Unlocks */}
               {showPayment ? (
                 <SquarePaymentForm
-                  amount={1}
+                  amount={50}
                   onSuccess={() => router.push('/dashboard')}
                 />
               ) : (
