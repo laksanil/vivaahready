@@ -425,7 +425,7 @@ function DashboardContent() {
                 Admin Panel
               </Link>
             )}
-            {/* Status Badges */}
+            {/* Status Badge */}
             {hasProfile && (
               <>
                 {isApproved ? (
@@ -436,7 +436,7 @@ function DashboardContent() {
                 ) : isPending && hasPaid === true ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                     <Clock className="h-3 w-3 mr-1" />
-                    Pending Approval
+                    Paid - Awaiting Approval
                   </span>
                 ) : isPending && hasPaid === false ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
@@ -449,12 +449,6 @@ function DashboardContent() {
                     Not Approved
                   </span>
                 ) : null}
-                {hasPaid === true && !isApproved && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Paid
-                  </span>
-                )}
               </>
             )}
           </div>
@@ -486,24 +480,34 @@ function DashboardContent() {
         )}
 
         {isPending && hasPaid === true && (
-          <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-xl p-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <Clock className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="ml-4 flex-1">
+                <h3 className="text-lg font-semibold text-amber-900">
+                  Payment Received - Awaiting Admin Approval
+                </h3>
+                <p className="text-amber-800 mt-1">
+                  Thank you for completing verification! Your payment has been received.
+                </p>
+                <div className="mt-3 bg-amber-100 rounded-lg p-3">
+                  <p className="text-sm text-amber-900">
+                    <strong>Why can&apos;t I browse matches yet?</strong><br />
+                    Our team manually reviews each profile to ensure authenticity and quality.
+                    This process typically takes 24-48 hours. You&apos;ll receive an email notification once your profile is approved.
+                  </p>
+                </div>
+                <Link
+                  href={buildUrl('/profile/edit')}
+                  className="inline-flex items-center mt-4 text-amber-700 hover:text-amber-800 font-medium text-sm"
+                >
+                  Edit Profile While You Wait
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Payment Received - Awaiting Approval
-            </h3>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Thank you for completing verification! Your payment has been received. Our admin team will review
-              your profile and approve it within 24-48 hours. You'll be notified once approved.
-            </p>
-            <Link
-              href={buildUrl('/profile/edit')}
-              className="inline-flex items-center mt-6 text-green-700 hover:text-green-800 font-medium"
-            >
-              Edit Profile
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
           </div>
         )}
 
