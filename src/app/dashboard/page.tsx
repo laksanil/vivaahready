@@ -406,7 +406,7 @@ function DashboardContent() {
               ? 'Profile complete. Next step: Get verified.'
               : "Let's get your profile set up"}
           </p>
-          <div className="flex items-center gap-4 mt-2">
+          <div className="flex flex-wrap items-center gap-3 mt-2">
             {hasProfile && (
               <Link
                 href={buildUrl('/profile')}
@@ -424,6 +424,38 @@ function DashboardContent() {
                 <Shield className="h-4 w-4 mr-1" />
                 Admin Panel
               </Link>
+            )}
+            {/* Status Badges */}
+            {hasProfile && (
+              <>
+                {isApproved ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Verified
+                  </span>
+                ) : isPending && hasPaid === true ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Pending Approval
+                  </span>
+                ) : isPending && hasPaid === false ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Unverified
+                  </span>
+                ) : isRejected ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <XCircle className="h-3 w-3 mr-1" />
+                    Not Approved
+                  </span>
+                ) : null}
+                {hasPaid === true && !isApproved && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Paid
+                  </span>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -851,62 +883,36 @@ function DashboardContent() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Profile Status */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Status</h2>
-              <div className="flex items-center mb-4">
-                {isApproved ? (
-                  <>
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    <span className="text-green-700 font-medium">Approved</span>
-                  </>
-                ) : isPending && hasPaid === true ? (
-                  <>
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    <span className="text-green-700 font-medium">Paid - Awaiting Approval</span>
-                  </>
-                ) : isPending && hasPaid === false ? (
-                  <>
-                    <Shield className="h-5 w-5 text-primary-600 mr-2" />
-                    <span className="text-primary-700 font-medium">Verification Required</span>
-                  </>
-                ) : isRejected ? (
-                  <>
-                    <XCircle className="h-5 w-5 text-red-600 mr-2" />
-                    <span className="text-red-700 font-medium">Not Approved</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-gray-500 font-medium">No Profile</span>
-                  </>
+            {/* Quick Actions for Profile */}
+            {(!hasProfile || (isPending && hasPaid === false) || (hasProfile && !isApproved && hasPaid !== false)) && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Next Step</h2>
+                {!hasProfile && (
+                  <button
+                    onClick={() => setShowCreateProfileModal(true)}
+                    className="btn-primary w-full text-center text-sm py-2"
+                  >
+                    Create Profile
+                  </button>
+                )}
+                {isPending && hasPaid === false && (
+                  <button
+                    onClick={() => setShowPaymentModal(true)}
+                    className="btn-primary w-full text-center text-sm py-2"
+                  >
+                    Get Verified
+                  </button>
+                )}
+                {hasProfile && !isApproved && hasPaid !== false && (
+                  <Link
+                    href={buildUrl('/profile/edit')}
+                    className="btn-outline w-full text-center text-sm py-2 block"
+                  >
+                    Edit Profile
+                  </Link>
                 )}
               </div>
-              {!hasProfile && (
-                <button
-                  onClick={() => setShowCreateProfileModal(true)}
-                  className="btn-primary w-full text-center text-sm py-2"
-                >
-                  Create Profile
-                </button>
-              )}
-              {isPending && hasPaid === false && (
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  className="btn-primary w-full text-center text-sm py-2"
-                >
-                  Get Verified
-                </button>
-              )}
-              {hasProfile && !isApproved && hasPaid !== false && (
-                <Link
-                  href={buildUrl('/profile/edit')}
-                  className="btn-outline w-full text-center text-sm py-2"
-                >
-                  Edit Profile
-                </Link>
-              )}
-            </div>
+            )}
 
             {/* Referral */}
             {hasProfile && <ReferralCard />}
