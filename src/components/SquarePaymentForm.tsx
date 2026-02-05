@@ -117,7 +117,8 @@ export function SquarePaymentForm({
         setLoading(false)
       } catch (err) {
         console.error('Error initializing Square:', err)
-        setError('Failed to initialize payment form')
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+        setError(`Failed to initialize payment form: ${errorMessage}`)
         setLoading(false)
       }
     }
