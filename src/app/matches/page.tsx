@@ -63,6 +63,8 @@ function FeedPageContent() {
   const [nearMatches, setNearMatches] = useState<any[]>([])
   const [showNearMatches, setShowNearMatches] = useState(false)
   const [myPreferences, setMyPreferences] = useState<any>(null)
+  const [withdrawConfirmInterest, setWithdrawConfirmInterest] = useState<any | null>(null)
+  const [withdrawingSentId, setWithdrawingSentId] = useState<string | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -256,6 +258,42 @@ function FeedPageContent() {
       console.error('Error withdrawing interest:', error)
     } finally {
       setWithdrawingId(null)
+    }
+  }
+
+  const handleWithdrawSentInterest = async () => {
+    if (!withdrawConfirmInterest) return
+
+    const interest = withdrawConfirmInterest
+    setWithdrawingSentId(interest.id)
+
+    try {
+      // Call the withdraw API to remove the interest
+      await fetch(buildApiUrl('/api/interest'), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interestId: interest.id, action: 'withdraw' }),
+      })
+
+      // Add to declined list so they appear in Passed tab
+      if (interest.receiver?.id) {
+        await fetch(buildApiUrl('/api/matches/decline'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ declinedUserId: interest.receiver.id }),
+        })
+      }
+
+      // Remove from local sent interests state
+      setSentInterests((prev) => prev.filter((i) => i.id !== interest.id))
+
+      // Refresh passed profiles so the withdrawn interest appears there
+      fetchPassedProfiles()
+    } catch (error) {
+      console.error('Error withdrawing sent interest:', error)
+    } finally {
+      setWithdrawingSentId(null)
+      setWithdrawConfirmInterest(null)
     }
   }
 
@@ -605,13 +643,15 @@ function FeedPageContent() {
                   </div>
                 )}
                 {sentInterests.map((interest) => (
-                  <Link
+                  <div
                     key={interest.id}
-                    href={buildUrl(`/profile/${interest.receiver?.profile?.id}`)}
-                    className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-primary-300 transition-colors"
+                    className="bg-white rounded-lg border border-gray-200 p-4 hover:border-primary-300 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                      <Link
+                        href={buildUrl(`/profile/${interest.receiver?.profile?.id}`)}
+                        className="w-14 h-14 rounded-full bg-gray-200 overflow-hidden flex-shrink-0"
+                      >
                         {interest.receiver?.profile?.profileImageUrl ? (
                           <img
                             src={interest.receiver.profile.profileImageUrl}
@@ -623,8 +663,11 @@ function FeedPageContent() {
                             {interest.receiver?.name?.charAt(0) || '?'}
                           </div>
                         )}
-                      </div>
-                      <div className="flex-1 min-w-0">
+                      </Link>
+                      <Link
+                        href={buildUrl(`/profile/${interest.receiver?.profile?.id}`)}
+                        className="flex-1 min-w-0"
+                      >
                         <h3 className="font-semibold text-gray-900 truncate">{interest.receiver?.name}</h3>
                         <p className="text-sm text-gray-600 truncate">
                           {interest.receiver?.profile?.currentLocation || 'Location not specified'}
@@ -633,17 +676,32 @@ function FeedPageContent() {
                         <p className="text-xs text-gray-500 mt-1">
                           Sent {new Date(interest.createdAt).toLocaleDateString()}
                         </p>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        interest.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        interest.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {interest.status === 'pending' ? 'Pending' :
-                         interest.status === 'accepted' ? 'Accepted' : 'Declined'}
+                      </Link>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          interest.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          interest.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {interest.status === 'pending' ? 'Pending' :
+                           interest.status === 'accepted' ? 'Accepted' : 'Declined'}
+                        </div>
+                        {interest.status === 'pending' && (
+                          <button
+                            onClick={() => setWithdrawConfirmInterest(interest)}
+                            disabled={withdrawingSentId === interest.id}
+                            className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 rounded-full transition-colors disabled:opacity-50"
+                          >
+                            {withdrawingSentId === interest.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              'Withdraw'
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}
@@ -1043,6 +1101,47 @@ function FeedPageContent() {
           recipientName={messageRecipient.name}
           recipientPhoto={messageRecipient.photo}
         />
+      )}
+
+      {/* Withdraw Interest Confirmation Modal */}
+      {withdrawConfirmInterest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full shadow-xl">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdraw Interest</h3>
+              <p className="text-gray-600">
+                Are you sure you want to withdraw your interest in{' '}
+                <span className="font-medium">{withdrawConfirmInterest.receiver?.name}</span>?
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                They will be moved to your Passed list.
+              </p>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                onClick={() => setWithdrawConfirmInterest(null)}
+                disabled={withdrawingSentId === withdrawConfirmInterest.id}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleWithdrawSentInterest}
+                disabled={withdrawingSentId === withdrawConfirmInterest.id}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {withdrawingSentId === withdrawConfirmInterest.id ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Withdrawing...
+                  </>
+                ) : (
+                  'Withdraw'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
   )
