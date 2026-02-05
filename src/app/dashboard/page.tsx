@@ -36,6 +36,7 @@ interface DashboardStats {
     interestsReceived: number
     interestsSent: number
     profileViews: number
+    matches: number
   }
 }
 
@@ -54,6 +55,7 @@ function DashboardContent() {
       interestsReceived: 0,
       interestsSent: 0,
       profileViews: 0,
+      matches: 0,
     },
   })
   const [loading, setLoading] = useState(true)
@@ -334,6 +336,7 @@ function DashboardContent() {
           interestsReceived: lifetimeStats.interestsReceived || 0,
           interestsSent: lifetimeStats.interestsSent || 0,
           profileViews: lifetimeStats.profileViews || 0,
+          matches: lifetimeStats.matches || 0,
         },
       })
 
@@ -579,51 +582,66 @@ function DashboardContent() {
             </div>
 
             {/* Lifetime Stats - Show platform value */}
-            {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0) && (
+            {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0 || stats.lifetime.matches > 0) && (
               <div className="mb-8">
                 <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Lifetime Engagement</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-                  <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-100 rounded-xl p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-pink-600 font-medium">Total Interests Received</p>
-                        <p className="text-2xl font-bold text-pink-700 mt-1">
+                        <p className="text-xs sm:text-sm text-blue-600 font-medium">Total Matches</p>
+                        <p className="text-xl sm:text-2xl font-bold text-blue-700 mt-1">
+                          {loading ? '...' : stats.lifetime.matches}
+                        </p>
+                        <p className="text-xs text-blue-500 mt-1">Since you joined</p>
+                      </div>
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4 sm:p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-pink-600 font-medium">Interests Received</p>
+                        <p className="text-xl sm:text-2xl font-bold text-pink-700 mt-1">
                           {loading ? '...' : stats.lifetime.interestsReceived}
                         </p>
                         <p className="text-xs text-pink-500 mt-1">Since you joined</p>
                       </div>
-                      <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center">
-                        <Heart className="h-6 w-6 text-pink-600" />
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center">
+                        <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-purple-600 font-medium">Total Interests Sent</p>
-                        <p className="text-2xl font-bold text-purple-700 mt-1">
+                        <p className="text-xs sm:text-sm text-purple-600 font-medium">Interests Sent</p>
+                        <p className="text-xl sm:text-2xl font-bold text-purple-700 mt-1">
                           {loading ? '...' : stats.lifetime.interestsSent}
                         </p>
                         <p className="text-xs text-purple-500 mt-1">Since you joined</p>
                       </div>
-                      <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <Eye className="h-6 w-6 text-purple-600" />
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-6">
+                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-blue-600 font-medium">Profile Views</p>
-                        <p className="text-2xl font-bold text-blue-700 mt-1">
+                        <p className="text-xs sm:text-sm text-teal-600 font-medium">Profile Views</p>
+                        <p className="text-xl sm:text-2xl font-bold text-teal-700 mt-1">
                           {loading ? '...' : stats.lifetime.profileViews}
                         </p>
-                        <p className="text-xs text-blue-500 mt-1">Since you joined</p>
+                        <p className="text-xs text-teal-500 mt-1">Since you joined</p>
                       </div>
-                      <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Eye className="h-6 w-6 text-blue-600" />
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-teal-100 rounded-full flex items-center justify-center">
+                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600" />
                       </div>
                     </div>
                   </div>
