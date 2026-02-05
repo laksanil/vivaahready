@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Script from 'next/script'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
@@ -17,12 +16,9 @@ import {
   CheckCircle,
   Users,
   Loader2,
-  AlertCircle,
   Check,
 } from 'lucide-react'
-
-// PayPal Client ID from environment variable (public, safe to expose in frontend)
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'AQaudKo50ofbHjXkE91kbhzdPGji-Jk9b1tMzG89KjhROwnvZLVv6DKXZUAK99ZvJQvxDa-X_LFLwrfD'
+import { SquarePaymentForm } from '@/components/SquarePaymentForm'
 
 // FAQ Accordion Item
 function FAQItem({ question, answer, defaultOpen = false }: {
@@ -66,11 +62,6 @@ export default function GetVerifiedPage() {
   const router = useRouter()
   const [hasPaid, setHasPaid] = useState<boolean | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(true)
-  const [paypalLoaded, setPaypalLoaded] = useState(false)
-  const [processing, setProcessing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const paypalContainerRef = useRef<HTMLDivElement>(null)
-  const buttonsRendered = useRef(false)
 
   const isLoggedIn = status === 'authenticated'
   const hasProfile = (session?.user as { hasProfile?: boolean })?.hasProfile
@@ -90,108 +81,14 @@ export default function GetVerifiedPage() {
     }
   }, [isLoggedIn, hasProfile])
 
-  // Render PayPal buttons when SDK is loaded
-  useEffect(() => {
-    if (paypalLoaded && isLoggedIn && hasProfile && hasPaid === false && paypalContainerRef.current && !buttonsRendered.current) {
-      buttonsRendered.current = true
-
-      const paypal = (window as unknown as { paypal?: {
-        Buttons: (config: {
-          style?: {
-            layout?: string
-            color?: string
-            shape?: string
-            label?: string
-            height?: number
-          }
-          createOrder: () => Promise<string>
-          onApprove: (data: { orderID: string }) => Promise<void>
-          onError: (err: unknown) => void
-          onCancel: () => void
-        }) => { render: (selector: string | HTMLElement) => void }
-      }}).paypal
-
-      if (paypal?.Buttons) {
-        paypal.Buttons({
-          style: {
-            layout: 'vertical',
-            color: 'gold',
-            shape: 'rect',
-            label: 'paypal',
-            height: 45,
-          },
-          createOrder: async () => {
-            setError(null)
-            // Don't set processing here - user still needs to fill in card details
-            try {
-              const response = await fetch('/api/paypal/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-              })
-              const data = await response.json()
-              if (data.error) {
-                throw new Error(data.error)
-              }
-              return data.orderId
-            } catch (err) {
-              console.error('Error creating order:', err)
-              setError('Failed to create order. Please try again.')
-              throw err
-            }
-          },
-          onApprove: async (data: { orderID: string }) => {
-            // Now show processing - user has submitted payment
-            setProcessing(true)
-            try {
-              const response = await fetch('/api/paypal/capture-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderId: data.orderID }),
-              })
-              const result = await response.json()
-
-              if (result.success) {
-                router.push('/dashboard')
-              } else {
-                setError('Payment verification failed. Please contact support.')
-                setProcessing(false)
-              }
-            } catch (err) {
-              console.error('Error capturing order:', err)
-              setError('Payment processing failed. Please contact support.')
-              setProcessing(false)
-            }
-          },
-          onError: (err: unknown) => {
-            console.error('PayPal error:', err)
-            setError('Payment failed. Please try again.')
-            setProcessing(false)
-          },
-          onCancel: () => {
-            setProcessing(false)
-          },
-        }).render(paypalContainerRef.current!)
-      }
-    }
-  }, [paypalLoaded, isLoggedIn, hasProfile, hasPaid, router])
-
   // Determine what CTA to show
-  const showPayPal = isLoggedIn && hasProfile && hasPaid === false
+  const showPayment = isLoggedIn && hasProfile && hasPaid === false
   const showRegisterLink = !isLoggedIn
   const showAlreadyPaid = isLoggedIn && hasProfile && hasPaid === true
   const showCompleteProfile = isLoggedIn && !hasProfile
 
   return (
-    <>
-      {/* PayPal SDK Script - only load if needed */}
-      {showPayPal && (
-        <Script
-          src={`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture&enable-funding=venmo,paylater&disable-funding=card`}
-          onLoad={() => setPaypalLoaded(true)}
-        />
-      )}
-
-      <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen">
         {/* Sticky Top Bar */}
         <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-stone-200">
           <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
@@ -322,98 +219,11 @@ export default function GetVerifiedPage() {
               </div>
 
               {/* Right: Payment Card or What Unlocks */}
-              {showPayPal ? (
-                <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-lg">
-                  <h2 className="text-lg font-semibold text-stone-900 mb-4 text-center">Complete Verification</h2>
-
-                  {/* Price */}
-                  <div className="text-center mb-4">
-                    <div className="text-3xl font-bold text-stone-900">$50</div>
-                    <p className="text-xs text-stone-500 mt-1">One-time payment</p>
-                  </div>
-
-                  {/* Error message with retry button */}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-sm text-red-800">{error}</p>
-                          <button
-                            onClick={() => {
-                              setError(null)
-                              setProcessing(false)
-                              // Re-render PayPal buttons by resetting the ref
-                              buttonsRendered.current = false
-                              if (paypalContainerRef.current) {
-                                paypalContainerRef.current.innerHTML = ''
-                              }
-                              // Trigger re-render
-                              setPaypalLoaded(false)
-                              setTimeout(() => setPaypalLoaded(true), 100)
-                            }}
-                            className="mt-2 inline-flex items-center text-sm text-red-700 hover:text-red-800 font-medium underline underline-offset-2"
-                          >
-                            Try Again
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Processing state */}
-                  {processing && (
-                    <div className="flex items-center justify-center py-3 mb-3">
-                      <Loader2 className="h-5 w-5 animate-spin text-primary-600 mr-2" />
-                      <span className="text-stone-600 text-sm">Processing...</span>
-                    </div>
-                  )}
-
-                  {/* PayPal Button Container */}
-                  <div className="mb-4">
-                    {!paypalLoaded ? (
-                      <div className="flex items-center justify-center py-6">
-                        <Loader2 className="h-5 w-5 animate-spin text-primary-600 mr-2" />
-                        <span className="text-stone-600 text-sm">Loading payment...</span>
-                      </div>
-                    ) : (
-                      <div ref={paypalContainerRef} className="paypal-button-container" />
-                    )}
-                  </div>
-
-                  {/* Alternative: Direct PayPal Link (supports cards) */}
-                  <div className="text-center mb-4">
-                    <p className="text-xs text-stone-500 mb-2">Or pay with credit/debit card:</p>
-                    <a
-                      href="https://www.paypal.com/ncp/payment/NK87NK7WFTP8L"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-                      </svg>
-                      Pay with Card
-                    </a>
-                  </div>
-
-                  {/* Trust badges */}
-                  <div className="border-t border-stone-100 pt-3 mt-2">
-                    <div className="flex items-center justify-center gap-4 mb-2">
-                      <div className="flex items-center gap-1.5">
-                        <Lock className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-semibold text-green-700">256-bit SSL Encrypted</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Shield className="h-4 w-4 text-stone-500" />
-                        <span className="text-sm font-semibold text-stone-600">All Cards Accepted</span>
-                      </div>
-                    </div>
-                    <p className="text-center text-sm font-medium text-stone-500 mt-2">
-                      Powered by PayPal. Your card details are never stored on our servers.
-                    </p>
-                  </div>
-                </div>
+              {showPayment ? (
+                <SquarePaymentForm
+                  amount={1}
+                  onSuccess={() => router.push('/dashboard')}
+                />
               ) : (
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
                   <h2 className="text-sm font-semibold text-stone-900 mb-3">What verification unlocks</h2>
@@ -531,7 +341,7 @@ export default function GetVerifiedPage() {
                 <Check className="mr-2 h-4 w-4" />
                 Go to Dashboard
               </Link>
-            ) : showPayPal ? (
+            ) : showPayment ? (
               <a
                 href="#"
                 onClick={(e) => {
@@ -558,6 +368,5 @@ export default function GetVerifiedPage() {
           </div>
         </section>
       </div>
-    </>
   )
 }

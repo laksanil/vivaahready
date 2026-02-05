@@ -334,6 +334,10 @@ export async function PUT(request: Request) {
 
     // Additional preference fields
     if (body.prefReligion !== undefined) updateData.prefReligion = body.prefReligion
+    if (body.prefReligions !== undefined) {
+      // Handle array field - ensure it's an array
+      updateData.prefReligions = Array.isArray(body.prefReligions) ? body.prefReligions : []
+    }
     if (body.prefFamilyValues !== undefined) updateData.prefFamilyValues = body.prefFamilyValues
     if (body.prefFamilyLocation !== undefined) updateData.prefFamilyLocation = body.prefFamilyLocation
     if (body.prefFamilyLocationCountry !== undefined) updateData.prefFamilyLocationCountry = body.prefFamilyLocationCountry

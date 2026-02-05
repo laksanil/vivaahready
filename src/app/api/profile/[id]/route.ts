@@ -210,6 +210,9 @@ export async function PUT(
     if (body.prefHasChildren !== undefined) updateData.prefHasChildren = body.prefHasChildren
     if (body.prefHasChildrenIsDealbreaker !== undefined) updateData.prefHasChildrenIsDealbreaker = body.prefHasChildrenIsDealbreaker
     if (body.prefReligion !== undefined) updateData.prefReligion = body.prefReligion
+    if (body.prefReligions !== undefined) {
+      updateData.prefReligions = Array.isArray(body.prefReligions) ? body.prefReligions : []
+    }
     if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker
     if (body.prefCommunity !== undefined) updateData.prefCommunity = body.prefCommunity
     if (body.prefCommunityIsDealbreaker !== undefined) updateData.prefCommunityIsDealbreaker = body.prefCommunityIsDealbreaker
