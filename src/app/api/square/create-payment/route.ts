@@ -3,8 +3,28 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { squareClient, getLocationId, dollarsToCents } from '@/lib/square'
-import { getActivePrice } from '@/lib/pricing'
 import { randomUUID } from 'crypto'
+
+// Get current price from database
+async function getCurrentPrice(): Promise<number> {
+  try {
+    const settings = await prisma.settings.findUnique({
+      where: { id: 'default' },
+    })
+
+    if (!settings) return 50 // Default
+
+    // Check if promo is active
+    const now = new Date()
+    if (settings.promoPrice && settings.promoEndDate && new Date(settings.promoEndDate) > now) {
+      return settings.promoPrice
+    }
+
+    return settings.verificationPrice
+  } catch {
+    return 50 // Default on error
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,8 +57,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 })
     }
 
-    // Get the active price
-    const amount = getActivePrice()
+    // Get the active price from database
+    const amount = await getCurrentPrice()
     const locationId = await getLocationId()
 
     // Create payment with Square

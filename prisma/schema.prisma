@@ -382,3 +382,12 @@ model PendingPayment {
   @@index([status])
   @@index([paypalOrderId])
 }
+
+// Site settings (singleton - only one row)
+model Settings {
+  id                  String   @id @default("default")
+  verificationPrice   Int      @default(50)  // Price in dollars
+  promoPrice          Int?     // Optional promo price
+  promoEndDate        DateTime? // When promo expires
+  updatedAt           DateTime @updatedAt
+}

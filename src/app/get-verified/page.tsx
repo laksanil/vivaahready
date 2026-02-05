@@ -62,9 +62,18 @@ export default function GetVerifiedPage() {
   const router = useRouter()
   const [hasPaid, setHasPaid] = useState<boolean | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(true)
+  const [pricing, setPricing] = useState<{ price: number; isPromo: boolean; regularPrice: number } | null>(null)
 
   const isLoggedIn = status === 'authenticated'
   const hasProfile = (session?.user as { hasProfile?: boolean })?.hasProfile
+
+  // Fetch current pricing
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then(res => res.json())
+      .then(data => setPricing(data))
+      .catch(() => setPricing({ price: 50, isPromo: false, regularPrice: 50 }))
+  }, [])
 
   // Check payment status for logged-in users
   useEffect(() => {
@@ -221,7 +230,7 @@ export default function GetVerifiedPage() {
               {/* Right: Payment Card or What Unlocks */}
               {showPayment ? (
                 <SquarePaymentForm
-                  amount={50}
+                  amount={pricing?.price || 50}
                   onSuccess={() => router.push('/dashboard')}
                 />
               ) : (

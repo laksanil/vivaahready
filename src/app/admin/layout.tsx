@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
-  UserPlus, Menu, X
+  UserPlus, Menu, X, Settings
 } from 'lucide-react'
 import { ToastProvider } from '@/components/Toast'
 
@@ -197,6 +197,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <UserPlus className="h-5 w-5 mr-3" aria-hidden="true" />
               Create Profile
+            </Link>
+            <Link
+              href="/admin/settings"
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/settings' ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <Settings className="h-5 w-5 mr-3" aria-hidden="true" />
+              Pricing Settings
             </Link>
           </nav>
 
