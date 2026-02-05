@@ -429,8 +429,8 @@ function DashboardContent() {
             {hasProfile && (
               <>
                 {isApproved ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <CheckCircle className="h-3 w-3 mr-1" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm">
+                    <CheckCircle className="h-4 w-4" />
                     Verified
                   </span>
                 ) : isPending && hasPaid === true ? (
