@@ -68,6 +68,7 @@ function DashboardContent() {
   } | null>(null)
   const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
   const [profileInfo, setProfileInfo] = useState<{ firstName?: string; odNumber?: string } | null>(null)
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false)
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
@@ -315,6 +316,17 @@ function DashboardContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproved, buildApiUrl, userContextReady])
 
+  // Show welcome banner only once after approval
+  useEffect(() => {
+    if (!isApproved) return
+    const welcomeKey = 'vivaah_welcome_banner_seen'
+    const hasSeen = localStorage.getItem(welcomeKey)
+    if (!hasSeen) {
+      setShowWelcomeBanner(true)
+      localStorage.setItem(welcomeKey, 'true')
+    }
+  }, [isApproved])
+
   const fetchStats = async () => {
     try {
       // Fetch all stats from the single source of truth API
@@ -483,8 +495,8 @@ function DashboardContent() {
         {/* Approved User Stats */}
         {isApproved && (
           <>
-            {/* Success Banner for new approvals */}
-            {stats.mutualMatches === 0 && stats.interestsReceived === 0 && (
+            {/* Success Banner for new approvals - shows only on first login after approval */}
+            {showWelcomeBanner && (
               <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
                 <div className="flex items-start">
                   <Sparkles className="h-6 w-6 text-green-500 mt-0.5" />
@@ -581,71 +593,14 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Lifetime Stats - Show platform value */}
+            {/* Lifetime Stats - Simple text display */}
             {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0 || stats.lifetime.matches > 0) && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Lifetime Engagement</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-100 rounded-xl p-4 sm:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm text-blue-600 font-medium">Total Matches</p>
-                        <p className="text-xl sm:text-2xl font-bold text-blue-700 mt-1">
-                          {loading ? '...' : stats.lifetime.matches}
-                        </p>
-                        <p className="text-xs text-blue-500 mt-1">Since you joined</p>
-                      </div>
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4 sm:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm text-pink-600 font-medium">Interests Received</p>
-                        <p className="text-xl sm:text-2xl font-bold text-pink-700 mt-1">
-                          {loading ? '...' : stats.lifetime.interestsReceived}
-                        </p>
-                        <p className="text-xs text-pink-500 mt-1">Since you joined</p>
-                      </div>
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center">
-                        <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-4 sm:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm text-purple-600 font-medium">Interests Sent</p>
-                        <p className="text-xl sm:text-2xl font-bold text-purple-700 mt-1">
-                          {loading ? '...' : stats.lifetime.interestsSent}
-                        </p>
-                        <p className="text-xs text-purple-500 mt-1">Since you joined</p>
-                      </div>
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center">
-                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4 sm:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm text-teal-600 font-medium">Profile Views</p>
-                        <p className="text-xl sm:text-2xl font-bold text-teal-700 mt-1">
-                          {loading ? '...' : stats.lifetime.profileViews}
-                        </p>
-                        <p className="text-xs text-teal-500 mt-1">Since you joined</p>
-                      </div>
-                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-teal-100 rounded-full flex items-center justify-center">
-                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500">
+                <span className="font-medium text-gray-400">Since you joined:</span>
+                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.matches}</span> matches shown</span>
+                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.interestsReceived}</span> interests received</span>
+                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.interestsSent}</span> interests sent</span>
+                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.profileViews}</span> profile views</span>
               </div>
             )}
 
