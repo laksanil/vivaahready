@@ -29,6 +29,7 @@ export interface ProfileData {
   dateOfBirth: string | null
   height: string | null
   currentLocation: string | null
+  country: string | null
   occupation: string | null
   qualification: string | null
   caste: string | null
@@ -233,10 +234,12 @@ export function ProfileCard({
           {/* Key Details */}
           <div className="space-y-2.5 text-sm flex-1">
             {/* Location */}
-            {profile.currentLocation && (
+            {(profile.currentLocation || profile.country) && (
               <div className="flex items-center gap-2 text-gray-600">
                 <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                <span className="truncate">{profile.currentLocation}</span>
+                <span className="truncate">
+                  {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
+                </span>
               </div>
             )}
 

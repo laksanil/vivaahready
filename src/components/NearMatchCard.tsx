@@ -30,6 +30,7 @@ interface NearMatchProfile {
   dateOfBirth?: string | null
   age?: number | string | null
   currentLocation?: string | null
+  country?: string | null
   occupation?: string | null
   user?: {
     name?: string | null
@@ -232,10 +233,10 @@ export function NearMatchCard({
             </span>
           </div>
           <div className="text-sm text-gray-600 flex items-center gap-3 mt-0.5">
-            {profile.currentLocation && (
+            {(profile.currentLocation || profile.country) && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {profile.currentLocation}
+                {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
               </span>
             )}
             {profile.occupation && (

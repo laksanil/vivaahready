@@ -229,10 +229,12 @@ export function DirectoryCard({
                 {formatHeight(profile.height)}
               </span>
             )}
-            {profile.currentLocation && (
+            {(profile.currentLocation || profile.country) && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[80px] sm:max-w-[120px]">{profile.currentLocation}</span>
+                <span className="truncate max-w-[100px] sm:max-w-[150px]">
+                  {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
+                </span>
               </span>
             )}
             {profile.qualification && (

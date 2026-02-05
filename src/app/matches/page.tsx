@@ -679,7 +679,7 @@ function FeedPageContent() {
                       >
                         <h3 className="font-semibold text-gray-900 truncate">{interest.receiver?.name}</h3>
                         <p className="text-sm text-gray-600 truncate">
-                          {interest.receiver?.profile?.currentLocation || 'Location not specified'}
+                          {[interest.receiver?.profile?.currentLocation, interest.receiver?.profile?.country].filter(Boolean).join(', ') || 'Location not specified'}
                           {interest.receiver?.profile?.occupation && ` • ${interest.receiver.profile.occupation}`}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -787,7 +787,7 @@ function FeedPageContent() {
                       <Link href={buildUrl(`/profile/${interest.sender?.profile?.id}`)} className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">{interest.sender?.name}</h3>
                         <p className="text-sm text-gray-600 truncate">
-                          {interest.sender?.profile?.currentLocation || 'Location not specified'}
+                          {[interest.sender?.profile?.currentLocation, interest.sender?.profile?.country].filter(Boolean).join(', ') || 'Location not specified'}
                           {interest.sender?.profile?.occupation && ` • ${interest.sender.profile.occupation}`}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -916,7 +916,7 @@ function FeedPageContent() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 truncate">{connection.user?.name}</h3>
                           <p className="text-sm text-gray-600 truncate">
-                            {connection.currentLocation || 'Location not specified'}
+                            {[connection.currentLocation, connection.country].filter(Boolean).join(', ') || 'Location not specified'}
                             {connection.occupation && ` • ${connection.occupation}`}
                           </p>
                           {connection.matchScore && (
@@ -1008,7 +1008,7 @@ function FeedPageContent() {
                       <Link href={buildUrl(`/profile/${profile.id}`)} className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">{profile.user?.name}</h3>
                         <p className="text-sm text-gray-600 truncate">
-                          {profile.currentLocation || 'Location not specified'}
+                          {[profile.currentLocation, profile.country].filter(Boolean).join(', ') || 'Location not specified'}
                           {profile.occupation && ` • ${profile.occupation}`}
                         </p>
                         {profile.declinedAt && (
