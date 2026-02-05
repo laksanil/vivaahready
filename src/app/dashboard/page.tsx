@@ -508,61 +508,73 @@ function DashboardContent() {
             <div className="mb-4">
               <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Current Activity</h3>
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <Link
+                  href={buildUrl('/matches?tab=matches')}
+                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-blue-200 border border-transparent transition-all cursor-pointer group"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-500">Your Matches</p>
+                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-blue-600 transition-colors">Your Matches</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.matchesCount}
                       </p>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                       <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                     </div>
                   </div>
-                </div>
+                </Link>
 
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <Link
+                  href={buildUrl('/matches?tab=received')}
+                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-pink-200 border border-transparent transition-all cursor-pointer group"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-500">Active Interests</p>
+                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-pink-600 transition-colors">Interests Received</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.interestsReceived}
                       </p>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
                       <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                     </div>
                   </div>
-                </div>
+                </Link>
 
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <Link
+                  href={buildUrl('/matches?tab=sent')}
+                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-purple-200 border border-transparent transition-all cursor-pointer group"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-500">Pending Sent</p>
+                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-purple-600 transition-colors">Interests Sent</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.interestsSent}
                       </p>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
                       <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                     </div>
                   </div>
-                </div>
+                </Link>
 
-                <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+                <Link
+                  href={buildUrl('/connections')}
+                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-green-200 border border-transparent transition-all cursor-pointer group"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs sm:text-sm text-gray-500">Mutual Matches</p>
+                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-green-600 transition-colors">Connections</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {loading ? '...' : stats.mutualMatches}
                       </p>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
                       <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                     </div>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
 
@@ -719,8 +731,8 @@ function DashboardContent() {
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">Mutual Matches</p>
-                        <p className="text-sm text-gray-500">Contact info unlocked on mutual match</p>
+                        <p className="font-medium text-gray-900">Connections</p>
+                        <p className="text-sm text-gray-500">View and message your connections</p>
                       </div>
                     </Link>
                   </>

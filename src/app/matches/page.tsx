@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Heart,
@@ -34,6 +34,7 @@ type TabType = 'matches' | 'sent' | 'received' | 'connections' | 'passed'
 function FeedPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { viewAsUser, buildApiUrl, buildUrl } = useImpersonation()
   const { isAdminView, isAdmin, adminChecked } = useAdminViewAccess()
 
@@ -67,6 +68,14 @@ function FeedPageContent() {
   const [withdrawingSentId, setWithdrawingSentId] = useState<string | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
+
+  // Read tab from URL query param
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['matches', 'sent', 'received', 'connections', 'passed'].includes(tab)) {
+      setActiveTab(tab as TabType)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
