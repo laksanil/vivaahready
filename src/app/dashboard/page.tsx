@@ -434,13 +434,13 @@ function DashboardContent() {
                     Verified
                   </span>
                 ) : isPending && hasPaid === true ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                    <Clock className="h-3 w-3 mr-1" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm">
+                    <Clock className="h-4 w-4" />
                     Paid - Awaiting Approval
                   </span>
-                ) : isPending && hasPaid === false ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                    <AlertCircle className="h-3 w-3 mr-1" />
+                ) : isPending && hasPaid !== true ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-orange-400 to-red-400 text-white shadow-sm">
+                    <AlertCircle className="h-4 w-4" />
                     Unverified
                   </span>
                 ) : isRejected ? (
@@ -888,7 +888,7 @@ function DashboardContent() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions for Profile */}
-            {(!hasProfile || (isPending && hasPaid === false) || (hasProfile && !isApproved && hasPaid !== false)) && (
+            {(!hasProfile || (isPending && hasPaid !== true) || (hasProfile && !isApproved && hasPaid === true)) && (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Next Step</h2>
                 {!hasProfile && (
@@ -899,15 +899,15 @@ function DashboardContent() {
                     Create Profile
                   </button>
                 )}
-                {isPending && hasPaid === false && (
-                  <button
-                    onClick={() => setShowPaymentModal(true)}
-                    className="btn-primary w-full text-center text-sm py-2"
+                {isPending && hasPaid !== true && (
+                  <Link
+                    href="/get-verified"
+                    className="btn-primary w-full text-center text-sm py-2 block"
                   >
                     Get Verified
-                  </button>
+                  </Link>
                 )}
-                {hasProfile && !isApproved && hasPaid !== false && (
+                {hasProfile && !isApproved && hasPaid === true && (
                   <Link
                     href={buildUrl('/profile/edit')}
                     className="btn-outline w-full text-center text-sm py-2 block"
