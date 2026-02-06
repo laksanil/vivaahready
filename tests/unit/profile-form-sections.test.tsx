@@ -120,7 +120,8 @@ describe('Profile form sections', () => {
     expect(renderResult.container.querySelector('select[name="prefIncome"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="prefFamilyValues"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="prefFamilyLocationCountry"]')).toBeTruthy()
-    expect(renderResult.container.querySelector('select[name="prefGrewUpIn"]')).toBeTruthy()
+    // prefGrewUpIn is an input field with typeahead dropdown, not a select
+    expect(screen.getByText('Grew Up In')).toBeInTheDocument()
     expect(renderResult.container.querySelector('select[name="prefRelocation"]')).toBeTruthy()
     expect(renderResult.container.querySelector('input[placeholder="Any citizenship"]')).toBeTruthy()
     expect(screen.getByText(/Mother Tongue/i)).toBeInTheDocument()

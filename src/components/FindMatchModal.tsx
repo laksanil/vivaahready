@@ -36,8 +36,8 @@ const COUNTRY_CODES = [
 ]
 
 const SECTION_TITLES: Record<string, string> = {
+  account: 'Get Started',
   basics: 'Basic Info',
-  account: 'Create Account',
   admin_account: 'Account Details',
   location_education: 'Education & Career',
   religion: 'Religion & Astro',
@@ -50,19 +50,18 @@ const SECTION_TITLES: Record<string, string> = {
   photos: 'Add Your Photos',
 }
 
-// Profile data steps (numbered 1-8 in UI):
-// 1: basics, 2: location_education, 3: religion, 4: family, 5: lifestyle, 6: aboutme, 7: preferences_1, 8: preferences_2
-// Account creation is shown BETWEEN step 1 and 2 but is NOT numbered (it's a gate, not a data step)
-// signupStep in DB maps directly to these numbers (1-8 = profile sections, 9 = complete after photos page)
+// Profile data steps (numbered 1-9 in UI):
+// 1: account (email + phone), 2: basics, 3: location_education, 4: religion, 5: family, 6: lifestyle, 7: aboutme, 8: preferences_1, 9: preferences_2
+// signupStep in DB: 1=basics, 2=location_education, etc. (offset by 1 from UI step)
 // Photos are uploaded on a separate /profile/photos page, not in this modal
-const PROFILE_SECTIONS = ['basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
+const PROFILE_SECTIONS = ['account', 'basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
 
-// Internal section order includes account page (shown after basics for non-authenticated users)
+// Section order - account (email + phone) is FIRST to capture contact info immediately
 // Photos removed - handled separately on /profile/photos page
-const SECTION_ORDER = ['basics', 'account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
+const SECTION_ORDER = ['account', 'basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2']
 
 // Admin mode has admin_account instead of account, and includes photos for admin flow
-const ADMIN_SECTION_ORDER = ['basics', 'admin_account', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
+const ADMIN_SECTION_ORDER = ['admin_account', 'basics', 'location_education', 'religion', 'family', 'lifestyle', 'aboutme', 'preferences_1', 'preferences_2', 'photos']
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
@@ -625,13 +624,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const activeSectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
   const currentSection = activeSectionOrder[step - 1]
 
-  // For display purposes, don't count account/admin_account as a numbered step
-  // Account step is a gate between step 1 (basics) and step 2 (location_education)
-  const isAccountStep = currentSection === 'account' || currentSection === 'admin_account'
-  // For regular users: internal step 1=basics(display 1), 2=account(display 1), 3+=display step-1
-  // For admin: similar logic with admin_account
-  const displayStepNumber = isAccountStep ? 1 : (step > 2 ? step - 1 : step)
-  const totalDisplaySteps = PROFILE_SECTIONS.length // 8 profile sections (not counting account or photos)
+  // Account is now step 1, so all steps are displayed directly
+  const displayStepNumber = step
+  const totalDisplaySteps = PROFILE_SECTIONS.length // 9 sections total (including account)
   const progress = Math.round((displayStepNumber / totalDisplaySteps) * 100)
 
   const sectionProps = { formData, handleChange, setFormData }
@@ -689,11 +684,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </button>
           </div>
 
-          {/* Progress indicator - don't show step number during account creation */}
+          {/* Progress indicator */}
           <div className="px-6 pb-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-gray-500">
-                {isAccountStep ? 'Create Account' : `Step ${displayStepNumber} of ${totalDisplaySteps}`}
+                Step {displayStepNumber} of {totalDisplaySteps}
               </span>
               <span className="text-xs font-semibold text-primary-600">{progress}% Complete</span>
             </div>
@@ -749,54 +744,57 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 2: Account Creation */}
+          {/* Step 1: Account Creation - Email & Phone FIRST */}
           {currentSection === 'account' && (
             <div>
-              <div className="w-20 h-20 bg-yellow-100 flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-10 w-10 text-yellow-500" />
+              <div className="w-20 h-20 bg-primary-100 flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-10 w-10 text-primary-600" />
               </div>
 
               <p className="text-center text-gray-600 mb-6">
-                Create your account to save your profile
+                Let&apos;s start with your contact details
               </p>
 
-              {/* Google Sign In - Primary Option */}
-              <button
-                type="button"
-                onClick={() => {
-                  // Store form data in session storage before redirecting
-                  sessionStorage.setItem('signupFormData', JSON.stringify(formData))
-                  signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
-                }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continue with Google
-              </button>
+              {/* Email and Phone - ALWAYS REQUIRED FIRST */}
+              <div className="space-y-4">
+                <div>
+                  <label className="form-label">Email Address *</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-field"
+                    placeholder="you@example.com"
+                  />
+                </div>
 
-              <p className="text-center text-xs text-gray-500 mt-3">
-                Recommended - Quick and secure sign up
-              </p>
-
-              {/* Email Sign Up Toggle */}
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowEmailForm(!showEmailForm)}
-                  className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  <span>Don&apos;t have Gmail? Sign up with email</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showEmailForm ? 'rotate-180' : ''}`} />
-                </button>
+                <div>
+                  <label className="form-label">Phone Number *</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      className="input-field w-28"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={c.code} value={c.code}>{c.code} {c.country}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      className="input-field flex-1"
+                      placeholder="Phone number"
+                      maxLength={15}
+                    />
+                  </div>
+                  <p className="text-gray-500 text-xs mt-1">We&apos;ll use this to send you match updates</p>
+                </div>
               </div>
 
-              {/* Email Form - Collapsible */}
-              {showEmailForm && (
+              {/* Only show signup options if email and phone are filled */}
+              {email && phone && phone.length >= 6 && (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -804,99 +802,110 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-400">Email Sign Up</span>
+                      <span className="px-2 bg-white text-gray-400">Choose how to sign up</span>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="form-label">Email *</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="input-field"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="form-label">Phone *</label>
-                      <div className="flex gap-2">
-                        <select
-                          value={countryCode}
-                          onChange={(e) => setCountryCode(e.target.value)}
-                          className="input-field w-24"
-                        >
-                          {COUNTRY_CODES.map((c) => (
-                            <option key={c.code} value={c.code}>{c.code}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                          className="input-field flex-1"
-                          placeholder="Phone number"
-                          maxLength={10}
-                        />
-                      </div>
-                      {countryCode === '+1' && (
-                        <p className="text-gray-500 text-xs mt-1">10 digits for US phone number</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="form-label">Password *</label>
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="input-field"
-                          placeholder="Enter password"
-                        />
-                      </div>
-                      <div>
-                        <label className="form-label">Confirm Password *</label>
-                        <input
-                          type="password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="input-field"
-                          placeholder="Re-enter password"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-gray-500 text-xs mt-1">Minimum 8 characters</p>
-                    {password && confirmPassword && password !== confirmPassword && (
-                      <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
-                    )}
-                  </div>
-
+                  {/* Google Sign In - Primary Option */}
                   <button
-                    onClick={handleCreateAccount}
-                    disabled={!email || !phone || !password || password.length < 8 || password !== confirmPassword || loading}
-                    className={`mt-6 w-full py-3 px-4 font-medium rounded-lg transition-colors flex items-center justify-center ${
-                      email && phone && password && password.length >= 8 && password === confirmPassword && !loading
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                    type="button"
+                    onClick={() => {
+                      // Store form data AND phone in session storage before redirecting
+                      const dataToStore = {
+                        ...formData,
+                        phone: `${countryCode}${phone}`,
+                        contactEmail: email // Store the email they entered
+                      }
+                      sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
+                      signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
+                    }}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"
                   >
-                    {loading ? (
-                      <span className="flex items-center justify-center">
-                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                        Creating Account...
-                      </span>
-                    ) : (
-                      'Create Account & Continue'
-                    )}
+                    <svg className="h-5 w-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
                   </button>
 
-                  <p className="text-center text-xs text-gray-500 mt-3">
-                    Email sign up requires email verification
+                  <p className="text-center text-xs text-gray-500 mt-2">
+                    Quick and secure - Recommended
                   </p>
+
+                  {/* Email Sign Up Toggle */}
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailForm(!showEmailForm)}
+                      className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors py-2"
+                    >
+                      <span>Or create account with password</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showEmailForm ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+
+                  {/* Password Form - Collapsible */}
+                  {showEmailForm && (
+                    <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="form-label">Password *</label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="input-field"
+                            placeholder="Enter password"
+                          />
+                        </div>
+                        <div>
+                          <label className="form-label">Confirm Password *</label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="input-field"
+                            placeholder="Re-enter password"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-gray-500 text-xs">Minimum 8 characters</p>
+                      {password && confirmPassword && password !== confirmPassword && (
+                        <p className="text-red-500 text-sm">Passwords do not match</p>
+                      )}
+
+                      <button
+                        onClick={handleCreateAccount}
+                        disabled={!password || password.length < 8 || password !== confirmPassword || loading}
+                        className={`w-full py-3 px-4 font-medium rounded-lg transition-colors flex items-center justify-center ${
+                          password && password.length >= 8 && password === confirmPassword && !loading
+                            ? 'bg-primary-600 text-white hover:bg-primary-700'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {loading ? (
+                          <span className="flex items-center justify-center">
+                            <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                            Creating Account...
+                          </span>
+                        ) : (
+                          'Create Account & Continue'
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </>
+              )}
+
+              {/* Message when email/phone not filled */}
+              {(!email || !phone || phone.length < 6) && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
+                  <p className="text-gray-500 text-sm">
+                    Enter your email and phone number to continue
+                  </p>
+                </div>
               )}
 
               <p className="mt-6 text-center text-xs text-gray-500">

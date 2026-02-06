@@ -40,8 +40,8 @@ export async function GET(request: Request) {
     const hasPaid = userSubscription?.profilePaid === true
     const isApproved = myProfile.approvalStatus === 'approved'
 
-    // Get all profiles (opposite gender) that match partner preferences - show regardless of approval status
-    const candidates = await prisma.profile.findMany({
+    // Get all profiles (opposite gender) - will filter for complete profiles below
+    const rawCandidates = await prisma.profile.findMany({
       where: {
         gender: myProfile.gender === 'male' ? 'female' : 'male',
         isActive: true,
@@ -60,6 +60,13 @@ export async function GET(request: Request) {
         }
       },
       // Include all fields including partner preferences
+    })
+
+    // Filter for COMPLETE profiles only:
+    // Complete = user has phone number (photos not required for legacy profiles)
+    const candidates = rawCandidates.filter(candidate => {
+      const hasPhone = !!candidate.user?.phone && candidate.user.phone.trim() !== ''
+      return hasPhone
     })
 
     // Filter to profiles where BOTH parties' preferences match (mutual matching)

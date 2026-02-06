@@ -107,7 +107,7 @@ export async function PUT(
     // Get the profile to verify it exists
     const existingProfile = await prisma.profile.findUnique({
       where: { id: profileId },
-      include: { user: { select: { id: true, email: true } } },
+      include: { user: { select: { id: true, email: true, phone: true } } },
     })
 
     if (!existingProfile) {
@@ -253,7 +253,31 @@ export async function PUT(
     if (body.referredBy !== undefined) updateData.referredBy = body.referredBy
 
     // Signup progress tracking
-    if (body.signupStep !== undefined) updateData.signupStep = body.signupStep
+    // IMPORTANT: Phone number is REQUIRED to proceed past step 1 (basics)
+    // Users cannot move to step 2+ without a phone number
+    if (body.signupStep !== undefined) {
+      if (body.signupStep > 1) {
+        // Check if phone exists in DB or is being provided in this request
+        const existingPhone = existingProfile.user?.phone?.trim() || ''
+        const providedPhone = body.phone?.trim() || ''
+        const hasPhone = existingPhone !== '' || providedPhone !== ''
+        if (!hasPhone) {
+          return NextResponse.json(
+            { error: 'Phone number is required to continue. Please add your phone number in the Basic Info section.' },
+            { status: 400 }
+          )
+        }
+      }
+      updateData.signupStep = body.signupStep
+    }
+
+    // Update phone number on User model if provided
+    if (body.phone !== undefined) {
+      await prisma.user.update({
+        where: { id: existingProfile.userId },
+        data: { phone: body.phone.trim() || null },
+      })
+    }
 
     // Update the profile
     const updatedProfile = await prisma.profile.update({

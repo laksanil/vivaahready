@@ -96,9 +96,11 @@ function ProfileCompleteContent() {
             const data = await response.json()
             setProfileId(data.profileId)
             sessionStorage.removeItem('signupFormData')
-            // Pre-fill form with the stored data
+            // Pre-fill form with the stored data (includes phone from account step)
             setFormData(formDataFromStorage)
-            setStep(2) // Move to step 2 since basics are done
+            // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
+            // Phone is already saved from the account step
+            setStep(1)
           } else if (response.status === 409) {
             // Duplicate - try with skip
             const retryResponse = await fetch('/api/profile/create-from-modal', {
@@ -116,7 +118,7 @@ function ProfileCompleteContent() {
               setProfileId(data.profileId)
               sessionStorage.removeItem('signupFormData')
               setFormData(formDataFromStorage)
-              setStep(2)
+              setStep(1) // Start at basics
             }
           }
         }

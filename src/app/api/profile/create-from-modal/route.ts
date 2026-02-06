@@ -25,6 +25,7 @@ const profileSchema = z.object({
   email: z.string().email(),
   gender: z.string(),
   createdBy: z.string().optional(),
+  phone: z.string().optional(), // Phone number stored in User model
 
   // Basic Info
   firstName: z.string().optional(),
@@ -406,18 +407,38 @@ export async function POST(request: Request) {
         approvalStatus: 'pending',
 
         // Signup progress - signupStep tracks the next profile section to complete
-        // 1=basics(done), 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2, 9=complete
-        // After account creation, basics is done, so next step is 2 (location_education)
-        signupStep: 2,
+        // 1=basics, 2=location_education, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=preferences_1, 8=preferences_2, 9=complete
+        // Basics is complete only if ALL required fields are filled: firstName, lastName, gender, age/DOB, height, maritalStatus, motherTongue, AND phone
+        // If basics is complete, go to step 2 (location_education), otherwise stay at step 1 (basics)
+        signupStep: (() => {
+          const hasPhone = !!(data.phone || user.phone)
+          const hasBasics = !!(
+            data.firstName &&
+            data.lastName &&
+            data.gender &&
+            (data.dateOfBirth || data.age) &&
+            data.height &&
+            data.maritalStatus &&
+            data.motherTongue &&
+            hasPhone
+          )
+          return hasBasics ? 2 : 1
+        })(),
       },
     })
 
-    // Update user's display name if firstName/lastName provided
+    // Update user's display name and phone if provided
+    const userUpdateData: Record<string, unknown> = {}
     if (data.firstName || data.lastName) {
-      const formattedName = formatDisplayName(data.firstName || '', data.lastName || '')
+      userUpdateData.name = formatDisplayName(data.firstName || '', data.lastName || '')
+    }
+    if (data.phone) {
+      userUpdateData.phone = data.phone.trim()
+    }
+    if (Object.keys(userUpdateData).length > 0) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { name: formattedName },
+        data: userUpdateData,
       })
     }
 

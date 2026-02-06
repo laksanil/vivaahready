@@ -57,6 +57,7 @@ export async function createProfile(
   const payload = {
     email: user.email,
     gender: user.gender,
+    phone: user.phone, // Phone is now mandatory - stored in User model
     createdBy: 'self',
     firstName: user.firstName,
     lastName: user.lastName,

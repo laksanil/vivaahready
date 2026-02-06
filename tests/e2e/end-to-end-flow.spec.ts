@@ -46,9 +46,10 @@ async function mockZipLookup(page: Page) {
 
 async function openSignupModal(page: Page) {
   await page.goto('/?e2eOpenModal=1', { waitUntil: 'domcontentloaded' })
-  const basicHeading = page.getByRole('heading', { name: /Basic Info/i })
+  // First step is now "Get Started" (account step with email + phone)
+  const getStartedHeading = page.getByRole('heading', { name: /Get Started/i })
   try {
-    await basicHeading.waitFor({ state: 'visible', timeout: 30000 })
+    await getStartedHeading.waitFor({ state: 'visible', timeout: 30000 })
     return
   } catch {
     // Fall back to clicking the CTA if the auto-open hook didn't fire yet.
@@ -59,15 +60,40 @@ async function openSignupModal(page: Page) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await ctaButton.click({ force: true, timeout: 5000 })
     try {
-      await basicHeading.waitFor({ state: 'visible', timeout: 8000 })
+      await getStartedHeading.waitFor({ state: 'visible', timeout: 8000 })
       return
     } catch {
       await page.waitForTimeout(500)
     }
   }
-  await expect(basicHeading).toBeVisible({ timeout: 10000 })
+  await expect(getStartedHeading).toBeVisible({ timeout: 10000 })
 }
 
+// Step 1: Account - email + phone are MANDATORY first, then password to create account
+async function completeAccountStep(page: Page, user: typeof userA) {
+  // Fill email and phone first (mandatory before auth options appear)
+  await page.fill('input[type="email"]', user.email)
+  await page.locator('input[type="tel"]').fill(user.phone)
+  await page.waitForTimeout(500) // Wait for auth options to appear
+
+  // Fill password fields
+  await page.fill('input[placeholder="Enter password"]', password)
+  await page.fill('input[placeholder="Re-enter password"]', password)
+
+  // Wait for API responses
+  const registerResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
+  )
+  const profileResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
+  )
+
+  await page.getByRole('button', { name: /Create Account & Continue/i }).click()
+  await Promise.all([registerResponse, profileResponse])
+  await expect(page.getByRole('heading', { name: /Basic Info/i })).toBeVisible({ timeout: 30000 })
+}
+
+// Step 2: Basic Info
 async function completeBasics(page: Page, user: typeof userA) {
   await page.selectOption('select[name="createdBy"]', 'self')
   await page.selectOption('select[name="gender"]', user.gender)
@@ -80,6 +106,7 @@ async function completeBasics(page: Page, user: typeof userA) {
   await expect(page.getByRole('heading', { name: /Education & Career/i })).toBeVisible()
 }
 
+// Step 3: Education & Career
 async function completeLocationEducation(page: Page) {
   await mockZipLookup(page)
   await page.fill('input[name="zipCode"]', '10001')
@@ -88,23 +115,8 @@ async function completeLocationEducation(page: Page) {
   await page.selectOption('select[name="annualIncome"]', '75k-100k')
   await page.selectOption('select[name="openToRelocation"]', 'yes')
   await page.getByRole('button', { name: /Continue/i }).click()
-  await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible()
-}
-
-async function completeAccount(page: Page, user: typeof userA) {
-  await page.fill('input[type="email"]', user.email)
-  await page.locator('input[type="tel"]').fill(user.phone)
-  await page.fill('input[placeholder="Enter password"]', password)
-  await page.fill('input[placeholder="Re-enter password"]', password)
-  const registerResponse = page.waitForResponse(
-    (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
-  )
-  const profileResponse = page.waitForResponse(
-    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
-  )
-  await page.getByRole('button', { name: /Create Account & Continue/i }).click()
-  await Promise.all([registerResponse, profileResponse])
-  await expect(page.getByRole('heading', { name: /Religion & Astro/i })).toBeVisible({ timeout: 30000 })
+  // After account-first flow, next step is Religion & Astro (not Create Account)
+  await expect(page.getByRole('heading', { name: /Religion & Astro/i })).toBeVisible()
 }
 
 async function completeReligion(page: Page) {
@@ -154,9 +166,11 @@ async function uploadModalPhoto(page: Page) {
 
 async function completeSignupFlow(page: Page, user: typeof userA) {
   await openSignupModal(page)
+  // NEW ORDER: Account step is FIRST (email + phone mandatory)
+  await completeAccountStep(page, user)
   await completeBasics(page, user)
   await completeLocationEducation(page)
-  await completeAccount(page, user)
+  // Account step removed - now handled at the beginning
   await completeReligion(page)
   await completeFamily(page)
   await completeLifestyle(page)
