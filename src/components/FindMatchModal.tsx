@@ -779,7 +779,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                     />
                   </div>
                   <p className="text-gray-500 text-xs mt-1">
-                    🔒 Your phone number is private and only shared with mutual matches
+                    Your contact information is protected. We do not sell, share, or disclose your phone number or email to third parties. Contact details are only visible to mutual matches.
                   </p>
                 </div>
               </div>
