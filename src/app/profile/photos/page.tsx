@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
-import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft, Phone, Shield, Clock, Users, Sparkles, AlertCircle, ChevronDown, Heart } from 'lucide-react'
+import { Camera, Upload, Trash2, CheckCircle, Loader2, ArrowLeft, Sparkles, AlertCircle, Heart, Shield, Clock, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useFaceDetection } from '@/hooks/useFaceDetection'
 
@@ -56,47 +56,6 @@ const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File
   })
 }
 
-// Country codes for phone number with expected digit lengths
-const countryCodes = [
-  { code: '+1', country: 'USA', flag: '🇺🇸', digits: 10 },
-  { code: '+1', country: 'Canada', flag: '🇨🇦', digits: 10 },
-  { code: '+91', country: 'India', flag: '🇮🇳', digits: 10 },
-  { code: '+44', country: 'UK', flag: '🇬🇧', digits: 10 },
-  { code: '+61', country: 'Australia', flag: '🇦🇺', digits: 9 },
-  { code: '+971', country: 'UAE', flag: '🇦🇪', digits: 9 },
-  { code: '+65', country: 'Singapore', flag: '🇸🇬', digits: 8 },
-  { code: '+49', country: 'Germany', flag: '🇩🇪', digits: 10 },
-  { code: '+33', country: 'France', flag: '🇫🇷', digits: 9 },
-  { code: '+81', country: 'Japan', flag: '🇯🇵', digits: 10 },
-  { code: 'other', country: 'Other', flag: '🌍', digits: 0 }, // For countries not in list
-]
-
-// Validate phone number based on country
-const validatePhoneNumber = (phone: string, country: typeof countryCodes[0], customCode?: string): { valid: boolean; message: string } => {
-  const digitsOnly = phone.replace(/\D/g, '')
-
-  if (!digitsOnly) {
-    return { valid: false, message: 'Please enter your phone number' }
-  }
-
-  // For "Other" country, validate custom code and phone length
-  if (country.code === 'other') {
-    if (!customCode || !customCode.startsWith('+') || customCode.length < 2) {
-      return { valid: false, message: 'Please enter a valid country code (e.g., +52)' }
-    }
-    if (digitsOnly.length < 6 || digitsOnly.length > 15) {
-      return { valid: false, message: 'Phone number must be 6-15 digits' }
-    }
-    return { valid: true, message: '' }
-  }
-
-  if (digitsOnly.length !== country.digits) {
-    return { valid: false, message: `${country.country} phone numbers must be ${country.digits} digits` }
-  }
-
-  return { valid: true, message: '' }
-}
-
 function PhotosUploadContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -107,16 +66,11 @@ function PhotosUploadContent() {
   const fromSignup = searchParams.get('fromSignup') === 'true'
 
   const [photos, setPhotos] = useState<{ file: File; preview: string; validated: boolean }[]>([])
-  const [selectedCountry, setSelectedCountry] = useState(countryCodes[0])
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [customCountryCode, setCustomCountryCode] = useState('')
-  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [loading, setLoading] = useState(false)
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [error, setError] = useState('')
   const [photoError, setPhotoError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,57 +84,6 @@ function PhotosUploadContent() {
       router.push('/dashboard')
     }
   }, [profileId, status, router])
-
-  // Fetch existing phone number from profile
-  useEffect(() => {
-    const fetchExistingPhone = async () => {
-      if (!profileId || status !== 'authenticated') return
-
-      try {
-        const response = await fetch(`/api/profile/${profileId}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.phone) {
-            // Try to match known country code (skip "other")
-            const matched = countryCodes.find(c => c.code !== 'other' && data.phone.startsWith(c.code))
-            if (matched) {
-              setSelectedCountry(matched)
-              setPhoneNumber(data.phone.substring(matched.code.length))
-            } else if (data.phone.startsWith('+')) {
-              // Unknown country code - use "Other" option
-              const otherCountry = countryCodes.find(c => c.code === 'other')!
-              setSelectedCountry(otherCountry)
-              // Extract country code (digits after + until we hit the phone number)
-              const match = data.phone.match(/^(\+\d{1,4})(\d+)$/)
-              if (match) {
-                setCustomCountryCode(match[1])
-                setPhoneNumber(match[2])
-              } else {
-                setPhoneNumber(data.phone)
-              }
-            } else {
-              setPhoneNumber(data.phone)
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch phone:', error)
-      }
-    }
-
-    fetchExistingPhone()
-  }, [profileId, status])
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowCountryDropdown(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -231,13 +134,6 @@ function PhotosUploadContent() {
       return
     }
 
-    // Validate phone number
-    const phoneValidation = validatePhoneNumber(phoneNumber, selectedCountry, customCountryCode)
-    if (!phoneValidation.valid) {
-      setError(phoneValidation.message)
-      return
-    }
-
     if (photos.length === 0) {
       setError('Please upload at least one photo to continue.')
       return
@@ -248,15 +144,6 @@ function PhotosUploadContent() {
     setUploadingPhotos(true)
 
     try {
-      // Save phone number with country code to user profile
-      const effectiveCode = selectedCountry.code === 'other' ? customCountryCode : selectedCountry.code
-      const fullPhoneNumber = `${effectiveCode}${phoneNumber.trim()}`
-      await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: fullPhoneNumber }),
-      })
-
       // Upload photos (compress before upload to avoid Vercel 4.5MB limit)
       for (const photo of photos) {
         const photoFormData = new FormData()
@@ -324,10 +211,10 @@ function PhotosUploadContent() {
             </Link>
           )}
           <h1 className="text-2xl font-bold text-gray-900">
-            {fromSignup ? 'Almost Done! Add Your Contact & Photos' : 'Update Contact & Photos'}
+            {fromSignup ? 'Almost Done! Add Your Photos' : 'Update Photos'}
           </h1>
           <p className="text-gray-600 mt-1">
-            A phone number and profile photo are required to view and connect with matches.
+            A profile photo is required to view and connect with matches.
           </p>
         </div>
 
@@ -363,135 +250,6 @@ function PhotosUploadContent() {
 
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          {/* Phone Number Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                <Phone className="h-5 w-5 text-primary-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Contact Number</h3>
-                <p className="text-sm text-gray-500">Required for profile verification and match communication</p>
-              </div>
-            </div>
-
-            {/* Why Phone Number Matters */}
-            <div className="mb-4 bg-green-50 p-4 rounded-lg border border-green-100">
-              <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Shield className="h-4 w-4 text-green-600" />
-                Your Number is Safe With Us
-              </h4>
-              <ul className="text-sm text-gray-700 space-y-1.5">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span><strong>Never shared publicly</strong> — Only visible to matches you connect with</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span><strong>Verification only</strong> — Used to verify you&apos;re a real person</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span><strong>No spam calls</strong> — We never share your number with third parties</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Phone Input with Country Code */}
-            <div className="flex gap-2">
-              {/* Country Code Dropdown */}
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-                  className="flex items-center gap-2 px-3 py-3 border-2 border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors min-w-[120px]"
-                >
-                  <span className="text-xl">{selectedCountry.flag}</span>
-                  <span className="text-gray-700 font-medium">
-                    {selectedCountry.code === 'other' ? (customCountryCode || 'Code') : selectedCountry.code}
-                  </span>
-                  <ChevronDown className="h-4 w-4 text-gray-500 ml-auto" />
-                </button>
-
-                {showCountryDropdown && (
-                  <div className="absolute z-50 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                    {countryCodes.map((country, index) => (
-                      <button
-                        key={`${country.code}-${country.country}-${index}`}
-                        onClick={() => {
-                          setSelectedCountry(country)
-                          setShowCountryDropdown(false)
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors ${
-                          selectedCountry.code === country.code && selectedCountry.country === country.country
-                            ? 'bg-primary-50'
-                            : ''
-                        } ${country.code === 'other' ? 'border-t border-gray-100' : ''}`}
-                      >
-                        <span className="text-xl">{country.flag}</span>
-                        <span className="text-gray-700">{country.country}</span>
-                        {country.code !== 'other' && (
-                          <span className="text-gray-500 ml-auto">{country.code}</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Custom Country Code Input (when "Other" is selected) */}
-              {selectedCountry.code === 'other' && (
-                <input
-                  type="text"
-                  value={customCountryCode}
-                  onChange={(e) => {
-                    let formatted = e.target.value
-                    if (!formatted.startsWith('+')) {
-                      formatted = '+' + formatted.replace(/[^0-9]/g, '')
-                    } else {
-                      formatted = '+' + formatted.substring(1).replace(/[^0-9]/g, '')
-                    }
-                    setCustomCountryCode(formatted.substring(0, 5))
-                  }}
-                  placeholder="+XX"
-                  className="w-20 px-2 py-3 border-2 border-gray-200 rounded-lg text-center text-lg"
-                  maxLength={5}
-                />
-              )}
-
-              {/* Phone Number Input */}
-              <div className="relative flex-1">
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => {
-                    const maxLen = selectedCountry.code === 'other' ? 15 : selectedCountry.digits
-                    setPhoneNumber(e.target.value.replace(/[^0-9]/g, '').slice(0, maxLen))
-                  }}
-                  placeholder={selectedCountry.code === 'other' ? 'Phone number (6-15 digits)' : `${selectedCountry.digits}-digit phone number`}
-                  maxLength={selectedCountry.code === 'other' ? 15 : selectedCountry.digits}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition-all text-lg"
-                />
-                {selectedCountry.code !== 'other' && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-                    {phoneNumber.length}/{selectedCountry.digits}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <Shield className="h-3 w-3 text-green-500" />
-              Your phone number is encrypted and only shared with matches you accept
-            </p>
-            {selectedCountry.code === 'other' && (
-              <p className="text-xs text-gray-500">Enter your country code (e.g., +52 for Mexico) and phone number</p>
-            )}
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-200 my-6"></div>
-
           {/* Photo Upload Section */}
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -657,9 +415,9 @@ function PhotosUploadContent() {
           <div className="mt-6">
             <button
               onClick={handlePhotoSubmit}
-              disabled={loading || photos.length === 0 || !phoneNumber.trim() || isValidatingPhoto}
+              disabled={loading || photos.length === 0 || isValidatingPhoto}
               className={`w-full py-3.5 rounded-lg font-semibold text-lg shadow-lg transition-all ${
-                !loading && photos.length > 0 && phoneNumber.trim() && !isValidatingPhoto
+                !loading && photos.length > 0 && !isValidatingPhoto
                   ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:shadow-xl'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
@@ -673,13 +431,9 @@ function PhotosUploadContent() {
                 'Complete Registration'
               )}
             </button>
-            {(photos.length === 0 || !phoneNumber.trim()) && (
+            {photos.length === 0 && (
               <p className="text-center text-sm text-gray-500 mt-2">
-                {!phoneNumber.trim() && photos.length === 0
-                  ? 'Please enter your phone number and upload at least one photo'
-                  : !phoneNumber.trim()
-                  ? 'Please enter your phone number'
-                  : 'Please upload at least one photo'}
+                Please upload at least one photo
               </p>
             )}
           </div>
