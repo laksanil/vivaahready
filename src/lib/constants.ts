@@ -122,7 +122,6 @@ export const FAMILY_LOCATION_COUNTRIES = [
 // Mother Tongue preference options
 export const PREF_MOTHER_TONGUE_OPTIONS = [
   { value: "doesnt_matter", label: "Doesn't matter" },
-  { value: "same_as_mine", label: "Same as mine" },
   { value: "telugu", label: "Telugu" },
   { value: "hindi", label: "Hindi" },
   { value: "tamil", label: "Tamil" },
@@ -146,7 +145,6 @@ export const PREF_PETS_OPTIONS = [
 
 // Preferred Community options for partner (multi-select when specific)
 export const PREF_COMMUNITY_OPTIONS = [
-  { value: "same_as_mine", label: "Same as mine" },
   { value: "doesnt_matter", label: "Doesn't matter" },
   { value: "specific", label: "Specific communities..." },
 ]
