@@ -786,7 +786,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {/* Step 1: Basic Info */}
           {currentSection === 'basics' && (
             <div className="space-y-4">
-              <BasicsSection {...sectionProps} />
+              <BasicsSection {...sectionProps} hideNameFields={true} hidePhoneField={true} />
               {renderContinueButton(
                 handleBasicsContinue,
                 !isBasicsComplete
@@ -794,7 +794,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 1: Account Creation - Email & Phone FIRST */}
+          {/* Step 1: Account Creation - Name first, then Phone, then Auth */}
           {currentSection === 'account' && (
             <div>
               <div className="w-20 h-20 bg-primary-100 flex items-center justify-center mx-auto mb-4">
@@ -802,71 +802,71 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               </div>
 
               <p className="text-center text-gray-600 mb-6">
-                Let&apos;s start with your phone number
+                Let&apos;s get started
               </p>
 
-              {/* Phone Number - ALWAYS REQUIRED FIRST */}
+              {/* Name fields - ALWAYS VISIBLE FIRST */}
               <div className="space-y-4">
-                <div>
-                  <label className="form-label">Phone Number *</label>
-                  <div className="flex gap-2">
-                    <select
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="input-field w-28"
-                    >
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={c.code} value={c.code}>{c.code} {c.country}</option>
-                      ))}
-                    </select>
+                <p className="text-sm text-gray-600 font-medium">Profile Name (person looking for match)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="form-label">First Name *</label>
                     <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                      className="input-field flex-1"
-                      placeholder="Phone number"
-                      maxLength={15}
+                      type="text"
+                      name="firstName"
+                      value={(formData.firstName as string) || ''}
+                      onChange={handleChange}
+                      className="input-field"
+                      placeholder="First name"
                     />
                   </div>
-                  <p className="text-gray-500 text-xs mt-1">
-                    Your contact information is protected. We do not sell, share, or disclose your phone number or email to third parties. Contact details are only visible to mutual matches.
-                  </p>
+                  <div>
+                    <label className="form-label">Last Name *</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={(formData.lastName as string) || ''}
+                      onChange={handleChange}
+                      className="input-field"
+                      placeholder="Last name"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Show name fields after phone is filled */}
-              {phone && phone.length >= 6 ? (
+              {/* Phone Number - appears after name is filled */}
+              {(formData.firstName as string) && (formData.lastName as string) ? (
                 <div className="mt-4 space-y-4">
-                  <p className="text-sm text-gray-600 font-medium">Profile Name (person looking for match)</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="form-label">First Name *</label>
+                  <div>
+                    <label className="form-label">Phone Number *</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="input-field w-28"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code} value={c.code}>{c.code} {c.country}</option>
+                        ))}
+                      </select>
                       <input
-                        type="text"
-                        name="firstName"
-                        value={(formData.firstName as string) || ''}
-                        onChange={handleChange}
-                        className="input-field"
-                        placeholder="First name"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                        className="input-field flex-1"
+                        placeholder="Phone number"
+                        maxLength={15}
                       />
                     </div>
-                    <div>
-                      <label className="form-label">Last Name *</label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={(formData.lastName as string) || ''}
-                        onChange={handleChange}
-                        className="input-field"
-                        placeholder="Last name"
-                      />
-                    </div>
+                    <p className="text-gray-500 text-xs mt-1">
+                      Your contact information is protected. We do not sell, share, or disclose your phone number or email to third parties. Contact details are only visible to mutual matches.
+                    </p>
                   </div>
                 </div>
               ) : null}
 
-              {/* Only show signup options if phone AND name are filled */}
-              {phone && phone.length >= 6 && (formData.firstName as string) && (formData.lastName as string) ? (
+              {/* Only show signup options if name AND phone are filled */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 6 ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -1005,11 +1005,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </>
               ) : null}
 
-              {/* Message when phone not filled */}
-              {(!phone || phone.length < 6) && (
+              {/* Message when name not filled */}
+              {(!(formData.firstName as string) || !(formData.lastName as string)) && (
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
                   <p className="text-gray-500 text-sm">
-                    Enter your phone number to continue
+                    Enter the candidate&apos;s name to continue
                   </p>
                 </div>
               )}

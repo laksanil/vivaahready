@@ -93,9 +93,11 @@ interface SectionProps {
   formData: Record<string, unknown>
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void
   setFormData: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
+  hideNameFields?: boolean // Hide firstName/lastName when already collected in account step
+  hidePhoneField?: boolean // Hide phone section when already collected in account step
 }
 
-export function BasicsSection({ formData, handleChange, setFormData }: SectionProps) {
+export function BasicsSection({ formData, handleChange, setFormData, hideNameFields = false, hidePhoneField = false }: SectionProps) {
   const [dobError, setDobError] = useState('')
   const [ageError, setAgeError] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(PHONE_COUNTRY_CODES[0])
@@ -312,18 +314,23 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
               <option value="female">Female</option>
             </select>
           </div>
-          <div>
-            <label className="form-label">First Name <span className="text-red-500">*</span></label>
-            <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="First name" required />
-          </div>
-          <div>
-            <label className="form-label">Last Name <span className="text-red-500">*</span></label>
-            <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" required />
-          </div>
+          {!hideNameFields && (
+            <div>
+              <label className="form-label">First Name <span className="text-red-500">*</span></label>
+              <input type="text" name="firstName" value={formData.firstName as string || ''} onChange={handleChange} className="input-field" placeholder="First name" required />
+            </div>
+          )}
+          {!hideNameFields && (
+            <div>
+              <label className="form-label">Last Name <span className="text-red-500">*</span></label>
+              <input type="text" name="lastName" value={formData.lastName as string || ''} onChange={handleChange} className="input-field" placeholder="Last name" required />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Contact Number */}
+      {/* Contact Number - hidden when phone already collected in account step */}
+      {!hidePhoneField && (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
@@ -419,6 +426,7 @@ export function BasicsSection({ formData, handleChange, setFormData }: SectionPr
           <p className="text-xs text-gray-500">Enter your country code (e.g., +52 for Mexico) and phone number</p>
         )}
       </div>
+      )}
 
       {/* Age & Physical Attributes */}
       <div className="space-y-4">

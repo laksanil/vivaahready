@@ -69,14 +69,23 @@ async function openSignupModal(page: Page) {
   await expect(getStartedHeading).toBeVisible({ timeout: 10000 })
 }
 
-// Step 1: Account - email + phone are MANDATORY first, then password to create account
+// Step 1: Account - name first, then phone, then email/password to create account
 async function completeAccountStep(page: Page, user: typeof userA) {
-  // Fill email and phone first (mandatory before auth options appear)
-  await page.fill('input[type="email"]', user.email)
+  // Fill name first (mandatory before phone appears)
+  await page.fill('input[name="firstName"]', user.firstName)
+  await page.fill('input[name="lastName"]', user.lastName)
+  await page.waitForTimeout(300)
+
+  // Fill phone (mandatory before auth options appear)
   await page.locator('input[type="tel"]').fill(user.phone)
   await page.waitForTimeout(500) // Wait for auth options to appear
 
-  // Fill password fields
+  // Expand email form (click "Don't have Gmail?" toggle)
+  await page.click('text=Don\'t have Gmail')
+  await page.waitForTimeout(300)
+
+  // Fill email and password fields
+  await page.fill('input[type="email"]', user.email)
   await page.fill('input[placeholder="Enter password"]', password)
   await page.fill('input[placeholder="Re-enter password"]', password)
 
@@ -93,14 +102,14 @@ async function completeAccountStep(page: Page, user: typeof userA) {
   await expect(page.getByRole('heading', { name: /Basic Info/i })).toBeVisible({ timeout: 30000 })
 }
 
-// Step 2: Basic Info
+// Step 2: Basic Info (name already collected in account step)
 async function completeBasics(page: Page, user: typeof userA) {
   await page.selectOption('select[name="createdBy"]', 'self')
   await page.selectOption('select[name="gender"]', user.gender)
-  await page.fill('input[name="firstName"]', user.firstName)
-  await page.fill('input[name="lastName"]', user.lastName)
+  // firstName and lastName already filled in account step
   await page.fill('input[name="dateOfBirth"]', '01/01/1992')
   await page.selectOption('select[name="height"]', "5'8\"")
+  await page.selectOption('select[name="maritalStatus"]', 'never_married')
   await page.selectOption('select[name="motherTongue"]', 'English')
   await page.getByRole('button', { name: /Continue/i }).click()
   await expect(page.getByRole('heading', { name: /Education & Career/i })).toBeVisible()
