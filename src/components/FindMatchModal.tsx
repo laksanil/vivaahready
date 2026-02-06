@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -84,6 +84,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
 
   // Profile form data - initialize with defaults for fields that have default UI values
@@ -182,11 +184,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
     try {
       // Step 1: Create user account
+      // Use email prefix as temporary name since basics (firstName, lastName) come later
+      const tempName = email.split('@')[0] || 'New User'
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: `${formData.firstName} ${formData.lastName}`,
+          name: tempName,
           email,
           password,
           phone: `${countryCode}${phone}`,
@@ -852,28 +856,53 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="form-label">Password *</label>
-                          <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="input-field"
-                            placeholder="Enter password"
-                          />
+                          <div className="relative">
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              className="input-field pr-10"
+                              placeholder="Enter password"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label className="form-label">Confirm Password *</label>
-                          <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="input-field"
-                            placeholder="Re-enter password"
-                          />
+                          <div className="relative">
+                            <input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="input-field pr-10"
+                              placeholder="Re-enter password"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-gray-500 text-xs">Minimum 8 characters</p>
+                      {password && password.length > 0 && password.length < 8 && (
+                        <p className="text-red-500 text-xs">Password must be at least 8 characters</p>
+                      )}
+                      {!password && <p className="text-gray-500 text-xs">Minimum 8 characters</p>}
+                      {password && password.length >= 8 && <p className="text-green-600 text-xs">Password length OK</p>}
                       {password && confirmPassword && password !== confirmPassword && (
                         <p className="text-red-500 text-sm">Passwords do not match</p>
+                      )}
+                      {password && confirmPassword && password === confirmPassword && password.length >= 8 && (
+                        <p className="text-green-600 text-sm">Passwords match</p>
                       )}
 
                       <button
