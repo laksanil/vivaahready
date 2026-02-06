@@ -26,13 +26,59 @@ interface FindMatchModalProps {
 }
 
 const COUNTRY_CODES = [
-  { code: '+1', country: 'US' },
-  { code: '+91', country: 'IN' },
+  { code: '+1', country: 'US/CA' },
+  { code: '+91', country: 'India' },
   { code: '+44', country: 'UK' },
-  { code: '+61', country: 'AU' },
-  { code: '+49', country: 'DE' },
-  { code: '+65', country: 'SG' },
+  { code: '+61', country: 'Australia' },
+  { code: '+64', country: 'New Zealand' },
+  { code: '+49', country: 'Germany' },
+  { code: '+33', country: 'France' },
+  { code: '+31', country: 'Netherlands' },
+  { code: '+41', country: 'Switzerland' },
+  { code: '+43', country: 'Austria' },
+  { code: '+32', country: 'Belgium' },
+  { code: '+353', country: 'Ireland' },
+  { code: '+46', country: 'Sweden' },
+  { code: '+47', country: 'Norway' },
+  { code: '+45', country: 'Denmark' },
+  { code: '+358', country: 'Finland' },
+  { code: '+39', country: 'Italy' },
+  { code: '+34', country: 'Spain' },
+  { code: '+351', country: 'Portugal' },
+  { code: '+48', country: 'Poland' },
+  { code: '+65', country: 'Singapore' },
+  { code: '+60', country: 'Malaysia' },
+  { code: '+66', country: 'Thailand' },
+  { code: '+63', country: 'Philippines' },
+  { code: '+62', country: 'Indonesia' },
+  { code: '+81', country: 'Japan' },
+  { code: '+82', country: 'South Korea' },
+  { code: '+86', country: 'China' },
+  { code: '+852', country: 'Hong Kong' },
   { code: '+971', country: 'UAE' },
+  { code: '+966', country: 'Saudi Arabia' },
+  { code: '+974', country: 'Qatar' },
+  { code: '+968', country: 'Oman' },
+  { code: '+973', country: 'Bahrain' },
+  { code: '+965', country: 'Kuwait' },
+  { code: '+27', country: 'South Africa' },
+  { code: '+254', country: 'Kenya' },
+  { code: '+234', country: 'Nigeria' },
+  { code: '+20', country: 'Egypt' },
+  { code: '+55', country: 'Brazil' },
+  { code: '+52', country: 'Mexico' },
+  { code: '+54', country: 'Argentina' },
+  { code: '+57', country: 'Colombia' },
+  { code: '+56', country: 'Chile' },
+  { code: '+92', country: 'Pakistan' },
+  { code: '+94', country: 'Sri Lanka' },
+  { code: '+880', country: 'Bangladesh' },
+  { code: '+977', country: 'Nepal' },
+  { code: '+95', country: 'Myanmar' },
+  { code: '+7', country: 'Russia' },
+  { code: '+380', country: 'Ukraine' },
+  { code: '+972', country: 'Israel' },
+  { code: '+90', country: 'Turkey' },
 ]
 
 const SECTION_TITLES: Record<string, string> = {
@@ -184,13 +230,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
     try {
       // Step 1: Create user account
-      // Use email prefix as temporary name since basics (firstName, lastName) come later
-      const tempName = email.split('@')[0] || 'New User'
+      // Use firstName and lastName collected in account step
+      const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'New User'
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: tempName,
+          name: fullName,
           email,
           password,
           phone: `${countryCode}${phone}`,
@@ -788,8 +834,39 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               </div>
 
-              {/* Only show signup options if phone is filled */}
-              {phone && phone.length >= 6 && (
+              {/* Show name fields after phone is filled */}
+              {phone && phone.length >= 6 ? (
+                <div className="mt-4 space-y-4">
+                  <p className="text-sm text-gray-600 font-medium">Profile Name (person looking for match)</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="form-label">First Name *</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={(formData.firstName as string) || ''}
+                        onChange={handleChange}
+                        className="input-field"
+                        placeholder="First name"
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label">Last Name *</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={(formData.lastName as string) || ''}
+                        onChange={handleChange}
+                        className="input-field"
+                        placeholder="Last name"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Only show signup options if phone AND name are filled */}
+              {phone && phone.length >= 6 && (formData.firstName as string) && (formData.lastName as string) ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -907,9 +984,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
                       <button
                         onClick={handleCreateAccount}
-                        disabled={!email || !password || password.length < 8 || password !== confirmPassword || loading}
+                        disabled={!email || !password || password.length < 8 || password !== confirmPassword || !formData.firstName || !formData.lastName || loading}
                         className={`w-full py-3 px-4 font-medium rounded-lg transition-colors flex items-center justify-center ${
-                          email && password && password.length >= 8 && password === confirmPassword && !loading
+                          email && password && password.length >= 8 && password === confirmPassword && formData.firstName && formData.lastName && !loading
                             ? 'bg-primary-600 text-white hover:bg-primary-700'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
@@ -926,7 +1003,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                     </div>
                   )}
                 </>
-              )}
+              ) : null}
 
               {/* Message when phone not filled */}
               {(!phone || phone.length < 6) && (
