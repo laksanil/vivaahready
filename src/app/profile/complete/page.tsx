@@ -126,33 +126,40 @@ function ProfileCompleteContent() {
           // Phone is already saved from the account step
           setStep(1)
         } else if (response.status === 409) {
-          // Duplicate - try with skip
-          const retryResponse = await fetch('/api/profile/create-from-modal', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: session.user.email,
-              ...formDataFromStorage,
-              referredBy,
-              skipDuplicateCheck: true,
-            }),
-          })
-          if (retryResponse.ok) {
-            const data = await retryResponse.json()
-            setProfileId(data.profileId)
-            sessionStorage.removeItem('signupFormData')
-            setFormData(formDataFromStorage)
-            setStep(1) // Start at basics
+          // Duplicate profile - clear sessionStorage and redirect
+          sessionStorage.removeItem('signupFormData')
+          router.push('/dashboard')
+          return
+        } else if (response.status === 400) {
+          // Profile already exists - clear sessionStorage and get existing profile
+          sessionStorage.removeItem('signupFormData')
+          try {
+            const checkResponse = await fetch('/api/user/profile-status')
+            if (checkResponse.ok) {
+              const data = await checkResponse.json()
+              if (data.hasProfile && data.profileId) {
+                setProfileId(data.profileId)
+                return
+              }
+            }
+          } catch {
+            // Fallback to dashboard
           }
+          router.push('/dashboard')
+          return
         } else {
+          // Any other error - clear sessionStorage to prevent infinite loading
+          sessionStorage.removeItem('signupFormData')
           const errorData = await response.json()
           setError(errorData.error || 'Failed to create profile')
         }
       } catch (err) {
         console.error('Error creating profile:', err)
+        sessionStorage.removeItem('signupFormData') // Clear to prevent infinite loading
         setError('Failed to create profile. Please try again.')
       } finally {
         setCreatingProfile(false)
+        setPageLoading(false)
       }
     }
 
@@ -165,6 +172,32 @@ function ProfileCompleteContent() {
       router.push('/login')
     }
   }, [status, router])
+
+  // Safety timeout - prevent infinite loading (10 seconds max)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (pageLoading || creatingProfile) {
+        console.log('Safety timeout triggered - stopping loading')
+        sessionStorage.removeItem('signupFormData')
+        setPageLoading(false)
+        setCreatingProfile(false)
+        // Check if user has a profile
+        fetch('/api/user/profile-status')
+          .then(res => res.json())
+          .then(data => {
+            if (data.hasProfile && data.profileId) {
+              setProfileId(data.profileId)
+            } else {
+              setError('Profile setup timed out. Please try again.')
+            }
+          })
+          .catch(() => {
+            setError('Profile setup timed out. Please try again.')
+          })
+      }
+    }, 10000)
+    return () => clearTimeout(timeout)
+  }, [pageLoading, creatingProfile])
 
   // Fetch existing profile data
   useEffect(() => {
