@@ -45,7 +45,7 @@ model Profile {
   lastName          String?  // Full last name as entered by user
 
   // Basic Info (from Google Form)
-  gender            String   // male, female
+  gender            String?  // male, female - optional until basics step completed
   dateOfBirth       String?  // MM/DD/YYYY format
   age               String?  // Age in years (alternative to DOB)
   placeOfBirth      String?
