@@ -73,54 +73,80 @@ function ProfileCompleteContent() {
 
       // Check for stored form data from Google auth flow
       const storedFormData = sessionStorage.getItem('signupFormData')
-      if (!storedFormData && !fromGoogleAuth) return
+
+      // If no stored form data, check if user already has a profile
+      if (!storedFormData) {
+        // Check if user already has a profile in the database
+        try {
+          const checkResponse = await fetch('/api/user/profile-status')
+          if (checkResponse.ok) {
+            const data = await checkResponse.json()
+            if (data.hasProfile && data.profileId) {
+              // User already has a profile, use it
+              setProfileId(data.profileId)
+              return
+            }
+          }
+        } catch (err) {
+          console.error('Error checking profile status:', err)
+        }
+
+        // No stored data and no profile - redirect to homepage to start fresh
+        if (fromGoogleAuth) {
+          console.log('No signup data found, redirecting to homepage')
+          router.push('/?startSignup=true')
+          return
+        }
+        return
+      }
 
       setCreatingProfile(true)
 
       try {
-        if (storedFormData) {
-          const formDataFromStorage = JSON.parse(storedFormData)
-          const referredBy = sessionStorage.getItem('referredBy') || undefined
+        const formDataFromStorage = JSON.parse(storedFormData)
+        const referredBy = sessionStorage.getItem('referredBy') || undefined
 
-          const response = await fetch('/api/profile/create-from-modal', {
+        const response = await fetch('/api/profile/create-from-modal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: session.user.email,
+            ...formDataFromStorage,
+            referredBy,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setProfileId(data.profileId)
+          sessionStorage.removeItem('signupFormData')
+          // Pre-fill form with the stored data (includes phone from account step)
+          setFormData(formDataFromStorage)
+          // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
+          // Phone is already saved from the account step
+          setStep(1)
+        } else if (response.status === 409) {
+          // Duplicate - try with skip
+          const retryResponse = await fetch('/api/profile/create-from-modal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: session.user.email,
               ...formDataFromStorage,
               referredBy,
+              skipDuplicateCheck: true,
             }),
           })
-
-          if (response.ok) {
-            const data = await response.json()
+          if (retryResponse.ok) {
+            const data = await retryResponse.json()
             setProfileId(data.profileId)
             sessionStorage.removeItem('signupFormData')
-            // Pre-fill form with the stored data (includes phone from account step)
             setFormData(formDataFromStorage)
-            // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
-            // Phone is already saved from the account step
-            setStep(1)
-          } else if (response.status === 409) {
-            // Duplicate - try with skip
-            const retryResponse = await fetch('/api/profile/create-from-modal', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: session.user.email,
-                ...formDataFromStorage,
-                referredBy,
-                skipDuplicateCheck: true,
-              }),
-            })
-            if (retryResponse.ok) {
-              const data = await retryResponse.json()
-              setProfileId(data.profileId)
-              sessionStorage.removeItem('signupFormData')
-              setFormData(formDataFromStorage)
-              setStep(1) // Start at basics
-            }
+            setStep(1) // Start at basics
           }
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Failed to create profile')
         }
       } catch (err) {
         console.error('Error creating profile:', err)
@@ -131,7 +157,7 @@ function ProfileCompleteContent() {
     }
 
     createProfileFromStoredData()
-  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth])
+  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth, router])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -143,7 +169,13 @@ function ProfileCompleteContent() {
   // Fetch existing profile data
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!profileId || status !== 'authenticated') return
+      if (status !== 'authenticated') return
+
+      // If no profileId, stop loading - either profile creation will set it or we show error
+      if (!profileId) {
+        setPageLoading(false)
+        return
+      }
 
       try {
         const response = await fetch(`/api/profile/${profileId}`)
