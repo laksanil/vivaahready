@@ -75,7 +75,8 @@ function DashboardContent() {
 
   // Check if session data is fully loaded (hasProfile will be undefined until JWT callback populates it)
   // This prevents the flash where "Create Profile" modal appears briefly before session data loads
-  const sessionDataLoaded = isAdminView || (session?.user && (session.user as any).hasProfile !== undefined)
+  // Consider data loaded if: admin view, OR hasProfile is defined (true or false), OR user has email (session exists)
+  const sessionDataLoaded = isAdminView || (session?.user && ((session.user as any).hasProfile !== undefined || session.user.email))
   const sessionHasProfile = isAdminView
     ? !!impersonatedUser?.profile
     : ((session?.user as any)?.hasProfile || false)
@@ -133,8 +134,18 @@ function DashboardContent() {
 
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
+
+  // Safety timeout to prevent infinite loading - if loading takes more than 10 seconds, stop waiting
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingTimeout(true)
+    }, 10000)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Check if we have pending signup data to process (before creatingProfile is set)
+  // Only check this if shouldCreateProfile is true (from URL param) to prevent false positives
   const hasPendingSignupData = typeof window !== 'undefined' && shouldCreateProfile && sessionStorage.getItem('signupFormData') !== null
 
   // Fetch payment status when user has a pending profile
@@ -159,24 +170,6 @@ function DashboardContent() {
     }
   }, [status, router, isAdminView, adminChecked, isAdminAccess])
 
-  // Check if email verification is required for email/password users
-  const [emailVerificationRequired, setEmailVerificationRequired] = useState(false)
-  useEffect(() => {
-    if (status !== 'authenticated' || isAdminView) return
-
-    // Check verification status
-    fetch('/api/user/verification-status')
-      .then(res => res.json())
-      .then(data => {
-        // If user has a password (email/password signup) and email is not verified, redirect
-        if (data.hasPassword && !data.emailVerified) {
-          setEmailVerificationRequired(true)
-          router.push('/verify-email')
-        }
-      })
-      .catch(() => {})
-  }, [status, isAdminView, router])
-
   // Check if photo upload is required (profile exists but no photos uploaded)
   useEffect(() => {
     if (status !== 'authenticated' || isAdminView || !hasProfile) return
@@ -191,6 +184,18 @@ function DashboardContent() {
       })
       .catch(() => {})
   }, [status, isAdminView, hasProfile, router])
+
+  // Clean up orphaned signupFormData if user is authenticated but not creating profile
+  // This prevents stale data from causing issues on future visits
+  useEffect(() => {
+    if (status === 'authenticated' && !shouldCreateProfile && typeof window !== 'undefined') {
+      const storedFormData = sessionStorage.getItem('signupFormData')
+      if (storedFormData) {
+        console.log('Cleaning up orphaned signupFormData')
+        sessionStorage.removeItem('signupFormData')
+      }
+    }
+  }, [status, shouldCreateProfile])
 
   // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
@@ -372,8 +377,16 @@ function DashboardContent() {
   // 3. Session data (hasProfile) is not yet populated from JWT
   // 4. Profile is being created after Google auth (prevents flash of dashboard)
   // 5. Pending signup data waiting to be processed
+  // Safety: loadingTimeout prevents infinite loading if something goes wrong
   const isCreatingOrPendingProfile = creatingProfile || hasPendingSignupData
-  if (status === 'loading' || (isAdminView && !adminChecked) || (isAdminView && !userContextReady) || (status === 'authenticated' && !sessionDataLoaded) || isCreatingOrPendingProfile) {
+  const shouldShowLoader = !loadingTimeout && (
+    status === 'loading' ||
+    (isAdminView && !adminChecked) ||
+    (isAdminView && !userContextReady) ||
+    (status === 'authenticated' && !sessionDataLoaded) ||
+    isCreatingOrPendingProfile
+  )
+  if (shouldShowLoader) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
@@ -455,6 +468,7 @@ function DashboardContent() {
         </div>
 
         {/* Profile Status Alerts */}
+
         {needsProfile && !isPending && !isRejected && (
           <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div className="flex items-start">

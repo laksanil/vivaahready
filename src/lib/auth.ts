@@ -125,6 +125,11 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user, account }) {
+      // IMPORTANT: Always ensure hasProfile has a default value to prevent undefined issues
+      if (token.hasProfile === undefined) {
+        token.hasProfile = false
+      }
+
       // On initial sign-in, set token.id
       if (account?.provider === 'google' && user?.email) {
         const dbUser = await prisma.user.findUnique({
@@ -136,25 +141,35 @@ export const authOptions: NextAuthOptions = {
           token.hasProfile = !!dbUser.profile
           token.approvalStatus = dbUser.profile?.approvalStatus || null
           token.subscriptionPlan = dbUser.subscription?.plan || 'free'
+        } else {
+          // User should exist (created in signIn callback) but handle edge case
+          token.hasProfile = false
+          token.approvalStatus = null
+          token.subscriptionPlan = 'free'
         }
       } else if (user) {
         token.id = user.id
-        token.hasProfile = (user as any).hasProfile
-        token.approvalStatus = (user as any).approvalStatus
-        token.subscriptionPlan = (user as any).subscriptionPlan
+        token.hasProfile = (user as any).hasProfile ?? false
+        token.approvalStatus = (user as any).approvalStatus ?? null
+        token.subscriptionPlan = (user as any).subscriptionPlan ?? 'free'
       }
 
       // Always refresh profile status from database to catch changes
       // (e.g., profile creation, approval status updates)
       if (token.id && typeof token.id === 'string') {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id },
-          include: { profile: true, subscription: true },
-        })
-        if (dbUser) {
-          token.hasProfile = !!dbUser.profile
-          token.approvalStatus = dbUser.profile?.approvalStatus || null
-          token.subscriptionPlan = dbUser.subscription?.plan || 'free'
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id },
+            include: { profile: true, subscription: true },
+          })
+          if (dbUser) {
+            token.hasProfile = !!dbUser.profile
+            token.approvalStatus = dbUser.profile?.approvalStatus || null
+            token.subscriptionPlan = dbUser.subscription?.plan || 'free'
+          }
+        } catch (error) {
+          console.error('Error refreshing user profile status:', error)
+          // Don't fail - keep existing token values
         }
       }
 
