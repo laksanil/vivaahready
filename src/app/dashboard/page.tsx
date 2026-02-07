@@ -69,14 +69,17 @@ function DashboardContent() {
   const [impersonatedLoaded, setImpersonatedLoaded] = useState(false)
   const [profileInfo, setProfileInfo] = useState<{ firstName?: string; odNumber?: string } | null>(null)
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false)
+  const [dbProfileChecked, setDbProfileChecked] = useState(false)
+  const [dbHasProfile, setDbHasProfile] = useState<boolean | null>(null)
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
 
   // Check if session data is fully loaded (hasProfile will be undefined until JWT callback populates it)
   // This prevents the flash where "Create Profile" modal appears briefly before session data loads
-  // Consider data loaded if: admin view, OR hasProfile is defined (true or false), OR user has email (session exists)
-  const sessionDataLoaded = isAdminView || (session?.user && ((session.user as any).hasProfile !== undefined || session.user.email))
+  // Consider data loaded if: admin view, OR database check is complete, OR hasProfile is defined in JWT
+  // IMPORTANT: Wait for database check to complete to prevent showing modal when profile actually exists
+  const sessionDataLoaded = isAdminView || dbProfileChecked || (session?.user && (session.user as any).hasProfile === true)
   const sessionHasProfile = isAdminView
     ? !!impersonatedUser?.profile
     : ((session?.user as any)?.hasProfile || false)
@@ -84,7 +87,9 @@ function DashboardContent() {
     ? (impersonatedUser?.profile?.approvalStatus || null)
     : ((session?.user as any)?.approvalStatus || null)
   const pendingFromUrl = showPendingMessage && !sessionApprovalStatus
-  const hasProfile = sessionHasProfile || pendingFromUrl
+  // Use database check if available (overrides potentially stale JWT value)
+  // This prevents the loop where user creates profile but JWT still says hasProfile=false
+  const hasProfile = dbHasProfile === true || sessionHasProfile || pendingFromUrl
   const approvalStatus = sessionApprovalStatus || (pendingFromUrl ? 'pending' : null)
   const isApproved = hasProfile && approvalStatus === 'approved'
   const isPending = hasProfile && approvalStatus === 'pending'
@@ -101,6 +106,23 @@ function DashboardContent() {
       .then(res => setIsAdmin(res.ok))
       .catch(() => setIsAdmin(false))
   }, [])
+
+  // Check actual profile status from database (not just JWT which can be stale)
+  // This prevents the loop where user creates profile but JWT still says hasProfile=false
+  useEffect(() => {
+    if (status !== 'authenticated' || isAdminView) return
+    if (dbProfileChecked) return // Only check once
+
+    fetch('/api/user/profile-status')
+      .then(res => res.json())
+      .then(data => {
+        setDbHasProfile(data.hasProfile === true)
+        setDbProfileChecked(true)
+      })
+      .catch(() => {
+        setDbProfileChecked(true)
+      })
+  }, [status, isAdminView, dbProfileChecked])
 
   useEffect(() => {
     let active = true
@@ -298,9 +320,12 @@ function DashboardContent() {
     // The session might not have updated hasProfile yet, so we trust the URL param
     if (showPendingMessage) return
 
-    // Wait until session data is fully loaded before deciding to show modal
-    // This prevents the flash where modal appears briefly before hasProfile is populated
-    if (!sessionDataLoaded) return
+    // Wait until session data is fully loaded AND database check is complete
+    // This prevents showing the modal when profile actually exists but JWT is stale
+    if (!sessionDataLoaded || !dbProfileChecked) return
+
+    // Don't show modal if database confirms profile exists
+    if (dbHasProfile === true) return
 
     if (status === 'authenticated' && needsProfile && (shouldCreateProfile || !showCreateProfileModal)) {
       // Small delay to ensure page is ready
@@ -309,7 +334,7 @@ function DashboardContent() {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage])
+  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage, dbProfileChecked, dbHasProfile])
 
   useEffect(() => {
     if (!userContextReady) return

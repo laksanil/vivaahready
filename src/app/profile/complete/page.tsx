@@ -91,10 +91,11 @@ function ProfileCompleteContent() {
           console.error('Error checking profile status:', err)
         }
 
-        // No stored data and no profile - redirect to homepage to start fresh
+        // No stored data and no profile - redirect to dashboard
+        // Don't redirect to homepage with startSignup=true as that creates a loop
         if (fromGoogleAuth) {
-          console.log('No signup data found, redirecting to homepage')
-          router.push('/?startSignup=true')
+          console.log('No signup data found, redirecting to dashboard')
+          router.push('/dashboard')
           return
         }
         return

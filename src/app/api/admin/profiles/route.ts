@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const gender = searchParams.get('gender')
     const search = searchParams.get('search')
-    const filter = searchParams.get('filter') // pending, verified, unverified, suspended, no_photos, no_profile, deletions
+    const filter = searchParams.get('filter') // pending, verified, unverified, suspended, no_photos, no_profile, deletions, incomplete
     const userId = searchParams.get('userId')
 
     // no_profile filter is removed - users without profiles shouldn't exist
@@ -105,6 +105,7 @@ export async function GET(request: Request) {
           approvedCount,
           suspendedCount,
           noPhotosCount,
+          incompleteCount,
           bridesCount,
           groomsCount,
         ] = await Promise.all([
@@ -121,6 +122,16 @@ export async function GET(request: Request) {
               ],
             },
           }),
+          prisma.profile.count({
+            where: {
+              OR: [
+                { signupStep: { lt: 4 } },
+                { gender: null },
+                { dateOfBirth: null },
+                { currentLocation: null },
+              ],
+            },
+          }),
           prisma.profile.count({ where: { gender: 'female' } }),
           prisma.profile.count({ where: { gender: 'male' } }),
         ])
@@ -131,6 +142,7 @@ export async function GET(request: Request) {
           approved: approvedCount,
           suspended: suspendedCount,
           no_photos: noPhotosCount,
+          incomplete: incompleteCount,
           deletions: totalDeletions,
           brides: bridesCount,
           grooms: groomsCount,
@@ -176,6 +188,14 @@ export async function GET(request: Request) {
           { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
           { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
         ]
+      } else if (filter === 'incomplete') {
+        // Incomplete profiles: signupStep < 4 (haven't completed basics) or missing essential fields
+        where.OR = [
+          { signupStep: { lt: 4 } },
+          { gender: null },
+          { dateOfBirth: null },
+          { currentLocation: null },
+        ]
       }
 
       if (gender) {
@@ -219,6 +239,7 @@ export async function GET(request: Request) {
           occupation: true,
           qualification: true,
           caste: true,
+          signupStep: true,
           isVerified: true,
           isSuspended: true,
           suspendedReason: true,
@@ -312,6 +333,7 @@ export async function GET(request: Request) {
         approvedCount,
         suspendedCount,
         noPhotosCount,
+        incompleteCount,
         deletionsCount,
         bridesCount,
         groomsCount,
@@ -329,6 +351,16 @@ export async function GET(request: Request) {
             ],
           },
         }),
+        prisma.profile.count({
+          where: {
+            OR: [
+              { signupStep: { lt: 4 } },
+              { gender: null },
+              { dateOfBirth: null },
+              { currentLocation: null },
+            ],
+          },
+        }),
         prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
         prisma.profile.count({ where: { gender: 'female' } }),
         prisma.profile.count({ where: { gender: 'male' } }),
@@ -340,6 +372,7 @@ export async function GET(request: Request) {
         approved: approvedCount,
         suspended: suspendedCount,
         no_photos: noPhotosCount,
+        incomplete: incompleteCount,
         deletions: deletionsCount,
         brides: bridesCount,
         grooms: groomsCount,

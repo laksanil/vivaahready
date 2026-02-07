@@ -44,6 +44,8 @@ interface Profile {
   gender: string | null
   currentLocation: string | null
   occupation: string | null
+  dateOfBirth: string | null
+  signupStep: number | null
   isVerified: boolean
   isSuspended: boolean
   suspendedReason: string | null
@@ -70,7 +72,7 @@ interface Profile {
   } | null
 }
 
-type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'deletions'
+type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'incomplete' | 'deletions'
 
 const REASON_LABELS: Record<string, string> = {
   marriage_vivaahready: 'Marriage Fixed via VivaahReady',
@@ -119,6 +121,7 @@ function AdminProfilesContent() {
     { id: 'approved', label: 'Approved', count: tabCounts.approved },
     { id: 'suspended', label: 'Suspended', count: tabCounts.suspended },
     { id: 'no_photos', label: 'No Photos', count: tabCounts.no_photos },
+    { id: 'incomplete', label: 'Incomplete', count: tabCounts.incomplete },
     { id: 'deletions', label: 'Deletions', count: tabCounts.deletions },
   ]
 
@@ -365,6 +368,16 @@ function AdminProfilesContent() {
         { key: 'actions', label: 'Actions' },
       ]
     }
+    if (activeTab === 'incomplete') {
+      return [
+        { key: 'vrId', label: 'VR ID' },
+        { key: 'user', label: 'User' },
+        { key: 'progress', label: 'Progress' },
+        { key: 'missing', label: 'Missing Fields' },
+        { key: 'created', label: 'Created' },
+        { key: 'actions', label: 'Actions' },
+      ]
+    }
     return [
       { key: 'vrId', label: 'VR ID' },
       { key: 'user', label: 'User' },
@@ -374,6 +387,34 @@ function AdminProfilesContent() {
       { key: 'lastLogin', label: 'Last Login' },
       { key: 'actions', label: 'Actions' },
     ]
+  }
+
+  // Get list of missing fields for incomplete profiles
+  const getMissingFields = (profile: Profile) => {
+    const missing: string[] = []
+    if (!profile.gender) missing.push('Gender')
+    if (!profile.dateOfBirth) missing.push('DOB')
+    if (!profile.currentLocation) missing.push('Location')
+    if ((profile.signupStep || 0) < 4) missing.push(`Step ${profile.signupStep || 0}/10`)
+    return missing
+  }
+
+  // Get signup step label
+  const getStepLabel = (step: number | null) => {
+    const steps: Record<number, string> = {
+      0: 'Not Started',
+      1: 'Basics',
+      2: 'Location & Education',
+      3: 'Account Created',
+      4: 'Religion',
+      5: 'Family',
+      6: 'Lifestyle',
+      7: 'About Me',
+      8: 'Preferences 1',
+      9: 'Preferences 2',
+      10: 'Photos',
+    }
+    return steps[step || 0] || `Step ${step}`
   }
 
   // Render table row based on active tab
@@ -475,6 +516,86 @@ function AdminProfilesContent() {
                 </AdminButton>
               )
             ) : null}
+          </td>
+        </tr>
+      )
+    }
+
+    // Incomplete profiles tab view
+    if (activeTab === 'incomplete') {
+      const missingFields = getMissingFields(profile)
+      return (
+        <tr key={profile.id || profile.user.id} className="hover:bg-gray-50 bg-orange-50/50">
+          <td className="px-4 py-3">
+            <span className="font-mono text-sm text-gray-600">{profile.odNumber || '-'}</span>
+          </td>
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <a
+                  href={adminLinks.editProfile(profile.user.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                >
+                  {profile.user.name}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                <div className="text-xs text-gray-500">{profile.user.email}</div>
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="w-20 bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-orange-500 h-2 rounded-full"
+                  style={{ width: `${((profile.signupStep || 0) / 10) * 100}%` }}
+                />
+              </div>
+              <span className="text-xs text-gray-600">{getStepLabel(profile.signupStep)}</span>
+            </div>
+          </td>
+          <td className="px-4 py-3">
+            <div className="flex flex-wrap gap-1">
+              {missingFields.map((field, idx) => (
+                <span key={idx} className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">
+                  {field}
+                </span>
+              ))}
+            </div>
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {formatDate(profile.createdAt)}
+          </td>
+          <td className="px-4 py-3">
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            ) : (
+              <div className="flex items-center gap-1">
+                {/* Edit Profile */}
+                {profile.hasProfile && profile.id && (
+                  <AdminIconButton
+                    icon={<Edit className="h-4 w-4" />}
+                    href={adminLinks.editProfile(profile.user.id)}
+                    title="Edit profile"
+                    variant="gray"
+                  />
+                )}
+                {/* Delete */}
+                {profile.hasProfile && profile.id && (
+                  <AdminIconButton
+                    icon={<Trash2 className="h-4 w-4" />}
+                    onClick={() => setDeleteConfirmModal({ isOpen: true, profile })}
+                    title="Delete incomplete profile"
+                    variant="red"
+                  />
+                )}
+              </div>
+            )}
           </td>
         </tr>
       )
@@ -706,7 +827,7 @@ function AdminProfilesContent() {
           onSearchSubmit={handleSearch}
           placeholder="Search by name, email, phone, VR ID..."
         >
-          {activeTab !== 'deletions' && (
+          {activeTab !== 'deletions' && activeTab !== 'incomplete' && (
             <select
               value={genderFilter}
               onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
@@ -721,11 +842,11 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : 7} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : activeTab === 'incomplete' ? 6 : 7} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
-          icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : <Users className="h-12 w-12" />}
-          title={activeTab === 'deletions' ? 'No deletion requests' : 'No profiles found'}
+          icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : <Users className="h-12 w-12" />}
+          title={activeTab === 'deletions' ? 'No deletion requests' : activeTab === 'incomplete' ? 'No incomplete profiles' : 'No profiles found'}
           description={`No ${activeTab === 'all' ? '' : activeTab.replace('_', ' ')} items to display.`}
         />
       ) : (
