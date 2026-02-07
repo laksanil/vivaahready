@@ -9,24 +9,34 @@ test.describe('Login Flow', () => {
   test('login page has required fields', async ({ page }) => {
     await page.goto('/login')
 
-    // Email field
-    const emailInput = page.locator('input[type="email"], input[name="email"]')
+    // Google Sign In is the primary option
+    const googleButton = page.locator('button:has-text("Continue with Google")')
+    await expect(googleButton).toBeVisible()
+
+    // Click to expand email form
+    await page.click('text=/Don\'t have Gmail/i')
+
+    // Email field (after expanding)
+    const emailInput = page.locator('#email')
     await expect(emailInput).toBeVisible()
 
     // Password field
-    const passwordInput = page.locator('input[type="password"], input[name="password"]')
+    const passwordInput = page.locator('#password')
     await expect(passwordInput).toBeVisible()
 
     // Submit button
-    const submitButton = page.locator('button[type="submit"], button:has-text("Sign In"), button:has-text("Login")')
-    await expect(submitButton.first()).toBeVisible()
+    const submitButton = page.locator('button[type="submit"]')
+    await expect(submitButton).toBeVisible()
   })
 
   test('login shows error for invalid credentials', async ({ page }) => {
     await page.goto('/login')
 
-    await page.fill('input[type="email"], input[name="email"]', 'invalid@test.com')
-    await page.fill('input[type="password"], input[name="password"]', 'wrongpassword')
+    // Expand email form first
+    await page.click('text=/Don\'t have Gmail/i')
+
+    await page.fill('#email', 'invalid@test.com')
+    await page.fill('#password', 'wrongpassword')
 
     await page.click('button[type="submit"]')
 
@@ -42,6 +52,9 @@ test.describe('Login Flow', () => {
 
   test('empty form shows validation', async ({ page }) => {
     await page.goto('/login')
+
+    // Expand email form first
+    await page.click('text=/Don\'t have Gmail/i')
 
     // Try to submit empty form
     await page.click('button[type="submit"]')

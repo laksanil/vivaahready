@@ -69,7 +69,7 @@ async function openSignupModal(page: Page) {
   await expect(getStartedHeading).toBeVisible({ timeout: 10000 })
 }
 
-// Step 1: Account - name first, then phone, then email/password to create account
+// Step 1: Account - name first, then phone, then email/password to create USER only
 async function completeAccountStep(page: Page, user: typeof userA) {
   // Fill name first (mandatory before phone appears)
   await page.fill('input[name="firstName"]', user.firstName)
@@ -89,20 +89,17 @@ async function completeAccountStep(page: Page, user: typeof userA) {
   await page.fill('input[placeholder="Enter password"]', password)
   await page.fill('input[placeholder="Re-enter password"]', password)
 
-  // Wait for API responses
+  // Wait for register API response only (profile is created in basics step)
   const registerResponse = page.waitForResponse(
     (response) => response.url().includes('/api/register') && response.request().method() === 'POST'
   )
-  const profileResponse = page.waitForResponse(
-    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
-  )
 
   await page.getByRole('button', { name: /Create Account & Continue/i }).click()
-  await Promise.all([registerResponse, profileResponse])
+  await registerResponse
   await expect(page.getByRole('heading', { name: /Basic Info/i })).toBeVisible({ timeout: 30000 })
 }
 
-// Step 2: Basic Info (name already collected in account step)
+// Step 2: Basic Info - Creates PROFILE after basics are filled
 async function completeBasics(page: Page, user: typeof userA) {
   await page.selectOption('select[name="createdBy"]', 'self')
   await page.selectOption('select[name="gender"]', user.gender)
@@ -111,7 +108,14 @@ async function completeBasics(page: Page, user: typeof userA) {
   await page.selectOption('select[name="height"]', "5'8\"")
   await page.selectOption('select[name="maritalStatus"]', 'never_married')
   await page.selectOption('select[name="motherTongue"]', 'English')
+
+  // Wait for profile creation response
+  const profileResponse = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/create-from-modal') && response.request().method() === 'POST'
+  )
+
   await page.getByRole('button', { name: /Continue/i }).click()
+  await profileResponse
   await expect(page.getByRole('heading', { name: /Education & Career/i })).toBeVisible()
 }
 

@@ -186,6 +186,9 @@ export async function adminRejectProfile(
 
 export async function loginViaUi(page: Page, email: string, password: string = DEFAULT_PASSWORD): Promise<void> {
   await page.goto('/login')
+  // Click to expand email form (hidden by default, Google is primary)
+  await page.click('text=/Don\'t have Gmail/i')
+  await page.waitForTimeout(300)
   await page.fill('#email', email)
   await page.fill('#password', password)
   await page.getByRole('button', { name: /Sign In/i }).click()

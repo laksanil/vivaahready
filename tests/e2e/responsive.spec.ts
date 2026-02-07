@@ -46,8 +46,15 @@ test.describe('Mobile Responsiveness', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/login')
 
-    // Form should be properly sized
-    const emailInput = page.locator('input[type="email"], input[name="email"]')
+    // Google Sign In should be visible as primary option
+    const googleButton = page.locator('button:has-text("Continue with Google")')
+    await expect(googleButton).toBeVisible()
+
+    // Expand email form
+    await page.click('text=/Don\'t have Gmail/i')
+
+    // Email input should be visible now
+    const emailInput = page.locator('#email')
     await expect(emailInput).toBeVisible()
 
     // Input should be tappable
@@ -75,8 +82,8 @@ test.describe('Tablet Responsiveness', () => {
     await page.setViewportSize({ width: 768, height: 1024 })
     await page.goto('/pricing')
 
-    // Pricing cards should be visible
-    const pricingSection = page.locator('text=/pricing|plan/i')
+    // Pricing/Verification section should be visible
+    const pricingSection = page.locator('text=/pricing|plan|verif|founding/i')
     await expect(pricingSection.first()).toBeVisible()
   })
 })
