@@ -3029,7 +3029,7 @@ export function ContactSection({ formData, handleChange }: SectionProps) {
             placeholder="+1 (xxx) xxx-xxxx"
             required
           />
-          <p className="text-xs text-gray-500 mt-1">Visible to mutual matches only</p>
+          <p className="text-xs text-gray-500 mt-1">Visible to connections only</p>
         </div>
       </div>
 
