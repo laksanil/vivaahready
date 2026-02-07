@@ -81,6 +81,12 @@ const COUNTRY_CODES = [
   { code: '+90', country: 'Turkey' },
 ]
 
+// Email validation helper
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
 const SECTION_TITLES: Record<string, string> = {
   account: 'Get Started',
   basics: 'Basic Info',
@@ -165,18 +171,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     }
   }
 
-  const handleBasicsContinue = () => {
-    // Either dateOfBirth or age is required
-    const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
-    if (formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus) {
-      setStep(2)
-    }
-  }
-
   // Either dateOfBirth or age is required
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
-  // Basic Info now includes Mother Tongue
-  const isBasicsComplete = !!(formData.createdBy && formData.firstName && formData.lastName && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus && formData.motherTongue)
+  // Basic Info validation for step 2 (firstName/lastName already collected in step 1)
+  // Required: createdBy, gender, age/dob, height, maritalStatus, motherTongue
+  const isBasicsComplete = !!(formData.createdBy && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus && formData.motherTongue)
 
   // Education & Career section validation (includes location fields)
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
@@ -229,8 +228,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
-      // Step 1: Create user account
-      // Use firstName and lastName collected in account step
+      // Step 1: Create user account ONLY (profile created in step 2 after basics)
       const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'New User'
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -256,15 +254,32 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Store password in sessionStorage for auto-login after photo upload
       sessionStorage.setItem('newUserPassword', password)
 
-      // Step 2: Create partial profile with basics data only
-      // Account is now created at step 2 (right after basics), so only basics data is available
-      // All subsequent sections will be saved via handleUpdateProfile
+      // Move to basics step - profile will be created after basics are filled
+      setStep(step + 1)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Create profile after basics step is complete (step 2)
+  const handleCreateProfile = async () => {
+    const userEmail = sessionStorage.getItem('newUserEmail') || email
+    if (!userEmail) {
+      setError('Session expired. Please start over.')
+      return
+    }
+
+    setError('')
+    setLoading(true)
+
+    try {
       const profileResponse = await fetch('/api/profile/create-from-modal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          // Only include basics fields that are filled at this point
+          email: userEmail,
           firstName: formData.firstName,
           lastName: formData.lastName,
           gender: formData.gender,
@@ -276,7 +291,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           anyDisability: formData.anyDisability,
           createdBy: formData.createdBy,
           referredBy: sessionStorage.getItem('referredBy') || undefined,
-          // Mark as incomplete so we know to update it later
           _isPartialSave: true,
         }),
       })
@@ -295,7 +309,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                email,
+                email: userEmail,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 gender: formData.gender,
@@ -319,15 +333,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             }
             const retryData = await retryResponse.json()
             setCreatedProfileId(retryData.profileId)
-
-            fetch('/api/profile/send-welcome-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ profileId: retryData.profileId }),
-            }).catch((err) => {
-              console.error('Failed to send welcome email:', err)
-            })
-
             setStep(step + 1)
             setLoading(false)
             return
@@ -344,15 +349,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       const profileData = await profileResponse.json()
       setCreatedProfileId(profileData.profileId)
-
-      // Send welcome email immediately after account creation
-      fetch('/api/profile/send-welcome-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileId: profileData.profileId }),
-      }).catch((err) => {
-        console.error('Failed to send welcome email:', err)
-      })
 
       setStep(step + 1) // Move to next section (location_education)
     } catch {
@@ -783,18 +779,18 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
         {/* Content */}
         <div className="p-6 pb-8">
-          {/* Step 1: Basic Info */}
+          {/* Step 2: Basic Info - Creates profile with all required fields */}
           {currentSection === 'basics' && (
             <div className="space-y-4">
               <BasicsSection {...sectionProps} hideNameFields={true} hidePhoneField={true} />
               {renderContinueButton(
-                handleBasicsContinue,
+                handleCreateProfile,
                 !isBasicsComplete
               )}
             </div>
           )}
 
-          {/* Step 1: Account Creation - Name first, then Phone, then Auth */}
+          {/* Step 1: Account Creation - Collects name, phone, email/password - creates USER only */}
           {currentSection === 'account' && (
             <div>
               <div className="w-20 h-20 bg-primary-100 flex items-center justify-center mx-auto mb-4">
@@ -866,7 +862,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               ) : null}
 
               {/* Only show signup options if name AND phone are filled */}
-              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 6 ? (
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -929,6 +925,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                           className="input-field"
                           placeholder="you@example.com"
                         />
+                        {email && !isValidEmail(email) && (
+                          <p className="text-red-500 text-xs mt-1">Please enter a valid email address</p>
+                        )}
+                        {email && isValidEmail(email) && (
+                          <p className="text-green-600 text-xs mt-1">Email format OK</p>
+                        )}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -984,9 +986,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
                       <button
                         onClick={handleCreateAccount}
-                        disabled={!email || !password || password.length < 8 || password !== confirmPassword || !formData.firstName || !formData.lastName || loading}
+                        disabled={!email || !isValidEmail(email) || !password || password.length < 8 || password !== confirmPassword || !formData.firstName || !formData.lastName || loading}
                         className={`w-full py-3 px-4 font-medium rounded-lg transition-colors flex items-center justify-center ${
-                          email && password && password.length >= 8 && password === confirmPassword && formData.firstName && formData.lastName && !loading
+                          email && isValidEmail(email) && password && password.length >= 8 && password === confirmPassword && formData.firstName && formData.lastName && !loading
                             ? 'bg-primary-600 text-white hover:bg-primary-700'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
@@ -1023,7 +1025,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             </div>
           )}
 
-          {/* Step 2: Location, Education & Background */}
+          {/* Step 3: Location, Education & Background */}
           {currentSection === 'location_education' && (
             <div className="space-y-6">
               <LocationSection {...sectionProps} />

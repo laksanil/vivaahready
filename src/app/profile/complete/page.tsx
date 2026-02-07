@@ -331,7 +331,7 @@ function ProfileCompleteContent() {
   // Basics validation
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
   const phoneValue = formData.phone as string || ''
-  const hasValidPhone = phoneValue.length >= 8 // At minimum: +XX + 6 digits
+  const hasValidPhone = phoneValue.length >= 12 // At minimum: +X + 10 digits (e.g., +15551234567)
   const isBasicsComplete = !!(
     formData.createdBy &&
     formData.firstName &&
