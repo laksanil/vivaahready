@@ -192,15 +192,27 @@ function DashboardContent() {
     }
   }, [status, router, isAdminView, adminChecked, isAdminAccess])
 
-  // Check if photo upload is required (profile exists but no photos uploaded)
+  // Check if profile is incomplete and redirect to the correct step
+  // This handles users who started signup but didn't finish - resume where they left off
   useEffect(() => {
     if (status !== 'authenticated' || isAdminView || !hasProfile) return
 
     fetch('/api/profile/completion-status')
       .then(res => res.json())
       .then(data => {
-        // If profile exists but photos not uploaded (signupStep < 9 and no photos), redirect to photos page
-        if (data.hasProfile && !data.hasPhotos && data.signupStep < 9) {
+        if (!data.hasProfile) return
+
+        // signupStep mapping: 1=basics, 2=location, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=prefs1, 8=prefs2, 9+=photos
+        // If signup flow is not complete (signupStep < 8), redirect to profile completion at the step where user left off
+        if (data.signupStep < 8) {
+          // Redirect to profile/complete at the next step (signupStep + 1)
+          // Profile data will be fetched and pre-populated on that page
+          router.push(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep + 1}`)
+          return
+        }
+
+        // If profile sections done (signupStep 8) but photos not uploaded, redirect to photos page
+        if (!data.hasPhotos && data.signupStep < 10) {
           router.push(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
         }
       })
