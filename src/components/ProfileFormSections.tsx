@@ -3000,36 +3000,23 @@ export function ReferralSection({ formData, handleChange }: SectionProps) {
   )
 }
 
-// Contact Details Section - for editing email, phone, and social profiles
+// Contact Details Section - for editing email and social profiles
+// Note: Phone is collected during signup only and cannot be edited here
 export function ContactSection({ formData, handleChange }: SectionProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Email <span className="text-red-500">*</span></label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="your@email.com"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">This will be used for account login and notifications</p>
-        </div>
-        <div>
-          <label className="form-label">Phone</label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="+1 (xxx) xxx-xxxx"
-          />
-          <p className="text-xs text-gray-500 mt-1">Optional - for direct contact</p>
-        </div>
+      <div>
+        <label className="form-label">Email <span className="text-red-500">*</span></label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email as string || ''}
+          onChange={handleChange}
+          className="input-field"
+          placeholder="your@email.com"
+          required
+        />
+        <p className="text-xs text-gray-500 mt-1">This will be used for account login and notifications</p>
       </div>
 
       <div className="border-t pt-4 mt-4">
