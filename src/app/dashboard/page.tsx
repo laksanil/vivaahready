@@ -219,17 +219,29 @@ function DashboardContent() {
       .catch(() => {})
   }, [status, isAdminView, hasProfile, router])
 
-  // Clean up orphaned signupFormData if user is authenticated but not creating profile
-  // This prevents stale data from causing issues on future visits
+  // Clean up orphaned signupFormData ONLY if user has a completed profile
+  // This prevents cleaning up data that's still needed for the Google OAuth flow
+  // IMPORTANT: Must wait for database check to complete before cleaning up
   useEffect(() => {
-    if (status === 'authenticated' && !shouldCreateProfile && typeof window !== 'undefined') {
+    // Only clean up if:
+    // 1. User is authenticated
+    // 2. Database check is complete
+    // 3. User HAS a profile in the database (signup is complete)
+    // 4. Not in the process of creating a profile
+    if (
+      status === 'authenticated' &&
+      dbProfileChecked &&
+      dbHasProfile === true &&
+      !shouldCreateProfile &&
+      typeof window !== 'undefined'
+    ) {
       const storedFormData = sessionStorage.getItem('signupFormData')
       if (storedFormData) {
-        console.log('Cleaning up orphaned signupFormData')
+        console.log('Cleaning up orphaned signupFormData (profile exists)')
         sessionStorage.removeItem('signupFormData')
       }
     }
-  }, [status, shouldCreateProfile])
+  }, [status, shouldCreateProfile, dbProfileChecked, dbHasProfile])
 
   // Handle Google auth callback - create profile from stored form data and go to photos
   useEffect(() => {
@@ -324,9 +336,15 @@ function DashboardContent() {
 
   // Auto-show create profile modal if user needs to create profile (and not handling Google auth)
   useEffect(() => {
-    // Don't show modal if we're handling Google auth callback
+    // Don't show modal if there's stored signup data - user might be mid-OAuth flow
+    // They should be on /profile/complete processing this data, not on dashboard
     const hasStoredFormData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData')
-    if (hasStoredFormData && shouldCreateProfile) return
+    if (hasStoredFormData) {
+      console.log('Signup data found in sessionStorage - redirecting to profile/complete')
+      // Redirect to profile/complete to process the stored data
+      router.push('/profile/complete?fromGoogleAuth=true')
+      return
+    }
 
     // Don't show modal if user just completed registration (redirected with status=pending)
     // The session might not have updated hasProfile yet, so we trust the URL param
@@ -346,7 +364,7 @@ function DashboardContent() {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage, dbProfileChecked, dbHasProfile])
+  }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage, dbProfileChecked, dbHasProfile, router])
 
   useEffect(() => {
     if (!userContextReady) return
