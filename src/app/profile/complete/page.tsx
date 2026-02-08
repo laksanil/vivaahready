@@ -637,6 +637,21 @@ function ProfileCompleteContent() {
             {currentSection === 'basics' && (
               <div className="space-y-4">
                 <BasicsSection {...sectionProps} hidePhoneField={true} />
+                {/* Debug: Show which fields are missing */}
+                {!isBasicsComplete && (
+                  <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                    Missing: {[
+                      !formData.createdBy && 'Created By',
+                      !formData.firstName && 'First Name',
+                      !formData.lastName && 'Last Name',
+                      !formData.gender && 'Gender',
+                      !hasAgeOrDOB && 'Age/DOB',
+                      !formData.height && 'Height',
+                      !formData.maritalStatus && 'Marital Status',
+                      !formData.motherTongue && 'Mother Tongue',
+                    ].filter(Boolean).join(', ') || 'Unknown'}
+                  </div>
+                )}
                 {renderContinueButton(handleSectionContinue, !isBasicsComplete)}
               </div>
             )}
