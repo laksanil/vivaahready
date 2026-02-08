@@ -624,10 +624,10 @@ function ProfileCard({
                 <>
                   <img
                     src={carouselPhotos.length > 0 ? carouselPhotos[photoIndex] : (photoUrl || '')}
-                    alt={viewerIsApproved ? profile.user.name : 'Profile'}
-                    className={`w-full h-full object-cover ${viewerIsApproved ? 'cursor-pointer' : 'blur-lg'}`}
+                    alt={(viewerIsApproved || isOwnProfile) ? profile.user.name : 'Profile'}
+                    className={`w-full h-full object-cover ${(viewerIsApproved || isOwnProfile) ? 'cursor-pointer' : 'blur-lg'}`}
                     referrerPolicy="no-referrer"
-                    onClick={() => viewerIsApproved && openLightbox(photoIndex)}
+                    onClick={() => (viewerIsApproved || isOwnProfile) && openLightbox(photoIndex)}
                     onError={(e) => {
                       if (photoUrl && e.currentTarget.src !== photoUrl) {
                         e.currentTarget.src = photoUrl
@@ -636,16 +636,16 @@ function ProfileCard({
                       }
                     }}
                   />
-                  {/* Lock overlay for non-approved viewers */}
-                  {!viewerIsApproved && (
+                  {/* Lock overlay for non-approved viewers (not for own profile) */}
+                  {!viewerIsApproved && !isOwnProfile && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                       <div className="bg-white/90 p-2 rounded-full">
                         <Lock className="h-5 w-5 text-gray-600" />
                       </div>
                     </div>
                   )}
-                  {/* Zoom icon overlay - only for approved viewers */}
-                  {viewerIsApproved && (
+                  {/* Zoom icon overlay - only for approved viewers or own profile */}
+                  {(viewerIsApproved || isOwnProfile) && (
                     <div
                       className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                       onClick={() => openLightbox(photoIndex)}
@@ -653,8 +653,8 @@ function ProfileCard({
                       <ZoomIn className="h-6 w-6 text-white" />
                     </div>
                   )}
-                  {/* Carousel navigation arrows - only for approved viewers */}
-                  {viewerIsApproved && carouselPhotos.length > 1 && (
+                  {/* Carousel navigation arrows - only for approved viewers or own profile */}
+                  {(viewerIsApproved || isOwnProfile) && carouselPhotos.length > 1 && (
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); setPhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length) }}
@@ -672,15 +672,15 @@ function ProfileCard({
                   )}
                 </>
               ) : (
-                <div className={`w-full h-full flex items-center justify-center bg-primary-100 ${!viewerIsApproved ? 'blur-lg' : ''}`}>
+                <div className={`w-full h-full flex items-center justify-center bg-primary-100 ${(!viewerIsApproved && !isOwnProfile) ? 'blur-lg' : ''}`}>
                   <span className="text-2xl font-semibold text-primary-600">
                     {getInitials(profile.user.name)}
                   </span>
                 </div>
               )}
             </div>
-            {/* Photo navigation dots - only for approved viewers */}
-            {viewerIsApproved && carouselPhotos.length > 1 && (
+            {/* Photo navigation dots - only for approved viewers or own profile */}
+            {(viewerIsApproved || isOwnProfile) && carouselPhotos.length > 1 && (
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
                 {carouselPhotos.slice(0, 5).map((_, idx) => (
                   <button
@@ -697,7 +697,7 @@ function ProfileCard({
           <div className="flex-1 min-w-0 text-white">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-xl font-bold truncate">{viewerIsApproved ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
+                <h2 className="text-xl font-bold truncate">{(viewerIsApproved || isOwnProfile) ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
                 <div className="text-sm text-white/90 mt-0.5">
                   {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
@@ -1340,8 +1340,8 @@ function ProfileCard({
           </div>
         )}
       </div>
-      {/* Photo Lightbox Modal - Only for approved viewers */}
-      {lightboxOpen && thumbnails.length > 0 && viewerIsApproved && (
+      {/* Photo Lightbox Modal - Only for approved viewers or own profile */}
+      {lightboxOpen && thumbnails.length > 0 && (viewerIsApproved || isOwnProfile) && (
         <div
           className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
           onClick={closeLightbox}
