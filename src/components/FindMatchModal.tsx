@@ -885,12 +885,18 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                         phone: `${countryCode}${phone}`
                       }
                       sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
+                      console.log('signupFormData stored:', dataToStore)
+                      console.log('Session status:', status, 'email:', session?.user?.email)
 
                       // If user is already authenticated (logged in via Google),
                       // just redirect to profile/complete - no need to go through OAuth again
                       if (status === 'authenticated' && session?.user?.email) {
-                        router.push('/profile/complete?fromGoogleAuth=true')
+                        console.log('Already authenticated - redirecting directly to /profile/complete')
+                        // Close modal and do a full page redirect for reliability
+                        onClose()
+                        window.location.href = '/profile/complete?fromGoogleAuth=true'
                       } else {
+                        console.log('Not authenticated - going through Google OAuth')
                         // Not authenticated - go through Google OAuth flow
                         signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
                       }
