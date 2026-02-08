@@ -364,6 +364,8 @@ function AdminProfilesContent() {
         { key: 'user', label: 'User' },
         { key: 'reason', label: 'Reason' },
         { key: 'status', label: 'Status' },
+        { key: 'created', label: 'Created' },
+        { key: 'lastLogin', label: 'Last Login' },
         { key: 'requested', label: 'Requested' },
         { key: 'actions', label: 'Actions' },
       ]
@@ -434,7 +436,15 @@ function AdminProfilesContent() {
                 </span>
               </div>
               <div>
-                <div className="font-medium text-gray-900">{profile.user.name}</div>
+                <a
+                  href={profile.id ? `/profile/${profile.id}` : adminLinks.editProfile(profile.user.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                >
+                  {profile.user.name}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
                 <div className="text-xs text-gray-500">{profile.user.email}</div>
                 {profile.odNumber && (
                   <div className="text-xs font-mono text-primary-600">{profile.odNumber}</div>
@@ -463,6 +473,12 @@ function AdminProfilesContent() {
             <AdminBadge variant={req.status === 'pending' ? 'pending' : req.status === 'approved' ? 'approved' : 'gray'}>
               {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
             </AdminBadge>
+          </td>
+          <td className="px-4 py-4 text-sm text-gray-600">
+            {formatDate(profile.createdAt)}
+          </td>
+          <td className="px-4 py-4 text-sm text-gray-600">
+            {formatRelativeDate(profile.user.lastLogin)}
           </td>
           <td className="px-4 py-4 text-sm text-gray-600">
             {formatDate(req.createdAt)}
@@ -842,7 +858,7 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 5 : activeTab === 'incomplete' ? 6 : 7} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : 7} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : <Users className="h-12 w-12" />}
