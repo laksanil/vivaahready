@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { ArrowLeft, Shield, Loader2, X, Camera, Upload, Trash2, CheckCircle, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -117,6 +117,7 @@ const ADMIN_SECTION_ORDER = ['admin_account', 'basics', 'location_education', 'r
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
+  const { data: session, status } = useSession()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -878,13 +879,21 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   <button
                     type="button"
                     onClick={() => {
-                      // Store phone in session storage before redirecting to Google OAuth
+                      // Store phone in session storage before redirecting
                       const dataToStore = {
                         ...formData,
                         phone: `${countryCode}${phone}`
                       }
                       sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
-                      signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
+
+                      // If user is already authenticated (logged in via Google),
+                      // just redirect to profile/complete - no need to go through OAuth again
+                      if (status === 'authenticated' && session?.user?.email) {
+                        router.push('/profile/complete?fromGoogleAuth=true')
+                      } else {
+                        // Not authenticated - go through Google OAuth flow
+                        signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
+                      }
                     }}
                     className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-primary-600 border-2 border-primary-600 rounded-xl text-white hover:bg-primary-700 hover:border-primary-700 transition-all font-semibold shadow-md"
                   >
