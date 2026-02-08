@@ -441,10 +441,8 @@ function ProfileCompleteContent() {
   }
 
   // Section validations
-  // Basics validation
+  // Basics validation (phone is already collected in signup modal, no need to validate here)
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
-  const phoneValue = formData.phone as string || ''
-  const hasValidPhone = phoneValue.length >= 12 // At minimum: +X + 10 digits (e.g., +15551234567)
   const isBasicsComplete = !!(
     formData.createdBy &&
     formData.firstName &&
@@ -453,8 +451,7 @@ function ProfileCompleteContent() {
     hasAgeOrDOB &&
     formData.height &&
     formData.maritalStatus &&
-    formData.motherTongue &&
-    hasValidPhone
+    formData.motherTongue
   )
 
   // Location & Education validation
@@ -639,7 +636,7 @@ function ProfileCompleteContent() {
             {/* Basics Section */}
             {currentSection === 'basics' && (
               <div className="space-y-4">
-                <BasicsSection {...sectionProps} />
+                <BasicsSection {...sectionProps} hidePhoneField={true} />
                 {renderContinueButton(handleSectionContinue, !isBasicsComplete)}
               </div>
             )}
