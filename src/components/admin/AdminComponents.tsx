@@ -46,7 +46,7 @@ export function AdminTabs({ tabs, activeTab, onTabChange, children }: AdminTabsP
               }`}
             >
               {tab.label}
-              {tab.count !== undefined && tab.count > 0 && (
+              {tab.count !== undefined && (
                 <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
                   activeTab === tab.id
                     ? 'bg-primary-100 text-primary-700'
