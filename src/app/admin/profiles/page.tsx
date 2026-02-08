@@ -386,6 +386,7 @@ function AdminProfilesContent() {
       { key: 'type', label: 'Type' },
       { key: 'status', label: 'Status' },
       { key: 'activity', label: 'Activity' },
+      { key: 'created', label: 'Created' },
       { key: 'lastLogin', label: 'Last Login' },
       { key: 'actions', label: 'Actions' },
     ]
@@ -694,6 +695,9 @@ function AdminProfilesContent() {
           )}
         </td>
         <td className="px-4 py-3 text-sm text-gray-600">
+          {formatDate(profile.createdAt)}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600">
           {formatRelativeDate(profile.user.lastLogin)}
         </td>
         <td className="px-4 py-3">
@@ -858,7 +862,7 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : 7} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : 8} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : <Users className="h-12 w-12" />}
