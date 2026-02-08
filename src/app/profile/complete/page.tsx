@@ -57,6 +57,11 @@ function ProfileCompleteContent() {
   const fromGoogleAuth = searchParams.get('fromGoogleAuth') === 'true'
   const initialStep = parseInt(searchParams.get('step') || '1', 10) // Default to step 1 (basics)
 
+  // Read form data from URL params (most reliable - survives incognito mode OAuth redirects)
+  const urlFirstName = searchParams.get('firstName')
+  const urlLastName = searchParams.get('lastName')
+  const urlPhone = searchParams.get('phone')
+
   const [profileId, setProfileId] = useState<string | null>(urlProfileId)
   const [creatingProfile, setCreatingProfile] = useState(false)
   const [step, setStep] = useState(() => getLocalStepFromSignupStep(initialStep))
@@ -71,8 +76,19 @@ function ProfileCompleteContent() {
       if (status !== 'authenticated' || !session?.user?.email) return
       if (profileId || creatingProfile) return // Already have profile or creating one
 
-      // Check for stored form data from Google auth flow
-      // Try both localStorage and sessionStorage (some browsers clear sessionStorage during OAuth)
+      // PRIORITY 1: Check URL params first (most reliable - survives incognito mode OAuth redirects)
+      // This is the primary method for getting form data after Google OAuth
+      let formDataFromUrl: { firstName?: string; lastName?: string; phone?: string } | null = null
+      if (fromGoogleAuth && urlFirstName && urlLastName && urlPhone) {
+        console.log('Found form data in URL params (most reliable method)')
+        formDataFromUrl = {
+          firstName: urlFirstName,
+          lastName: urlLastName,
+          phone: urlPhone,
+        }
+      }
+
+      // PRIORITY 2: Check storage as fallback
       let storedFormData = sessionStorage.getItem('signupFormData')
       if (!storedFormData) {
         storedFormData = localStorage.getItem('signupFormData')
@@ -81,8 +97,8 @@ function ProfileCompleteContent() {
         }
       }
 
-      // If no stored form data, check if user already has a profile
-      if (!storedFormData) {
+      // If no form data from URL params or storage, check if user already has a profile
+      if (!formDataFromUrl && !storedFormData) {
         // Check if user already has a profile in the database
         try {
           const checkResponse = await fetch('/api/user/profile-status')
@@ -111,15 +127,22 @@ function ProfileCompleteContent() {
       setCreatingProfile(true)
 
       try {
-        const formDataFromStorage = JSON.parse(storedFormData)
+        // Use URL params first if available, otherwise fall back to storage
+        const formDataToUse = formDataFromUrl || (storedFormData ? JSON.parse(storedFormData) : {})
         const referredBy = sessionStorage.getItem('referredBy') || undefined
+
+        console.log('Creating profile with data:', {
+          firstName: formDataToUse.firstName,
+          lastName: formDataToUse.lastName,
+          hasPhone: !!formDataToUse.phone
+        })
 
         const response = await fetch('/api/profile/create-from-modal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: session.user.email,
-            ...formDataFromStorage,
+            ...formDataToUse,
             referredBy,
           }),
         })
@@ -128,8 +151,8 @@ function ProfileCompleteContent() {
           const data = await response.json()
           setProfileId(data.profileId)
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
-          // Pre-fill form with the stored data (includes phone from account step)
-          setFormData(formDataFromStorage)
+          // Pre-fill form with the data (includes phone from account step)
+          setFormData(formDataToUse)
           // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
           // Phone is already saved from the account step
           setStep(1)
@@ -172,7 +195,7 @@ function ProfileCompleteContent() {
     }
 
     createProfileFromStoredData()
-  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth, router])
+  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth, urlFirstName, urlLastName, urlPhone, router])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -504,7 +527,9 @@ function ProfileCompleteContent() {
   )
 
   // Check if we have pending signup data (for Google auth flow)
-  const hasPendingSignupData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData') !== null
+  // Check both URL params and storage
+  const hasPendingSignupData = (fromGoogleAuth && urlFirstName && urlLastName && urlPhone) ||
+    (typeof window !== 'undefined' && (sessionStorage.getItem('signupFormData') !== null || localStorage.getItem('signupFormData') !== null))
 
   if (status === 'loading' || pageLoading || creatingProfile || (hasPendingSignupData && !profileId)) {
     return (

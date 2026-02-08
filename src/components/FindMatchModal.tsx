@@ -879,30 +879,40 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   <button
                     type="button"
                     onClick={() => {
-                      // Store form data before redirecting
-                      // Use BOTH localStorage and sessionStorage for maximum compatibility
-                      // Some browsers clear sessionStorage during cross-domain OAuth redirects
+                      // Build URL with form data encoded as query params
+                      // This is the most reliable way to pass data through OAuth redirects
+                      // as some browsers block localStorage/sessionStorage in incognito
                       const dataToStore = {
                         ...formData,
                         phone: `${countryCode}${phone}`
                       }
-                      const dataJson = JSON.stringify(dataToStore)
-                      localStorage.setItem('signupFormData', dataJson)
-                      sessionStorage.setItem('signupFormData', dataJson)
-                      console.log('signupFormData stored in both localStorage and sessionStorage:', dataToStore)
-                      console.log('Session status:', status, 'email:', session?.user?.email)
 
-                      // If user is already authenticated (logged in via Google),
-                      // just redirect to profile/complete - no need to go through OAuth again
+                      // Encode form data in URL params (survives all redirects)
+                      const params = new URLSearchParams()
+                      params.set('fromGoogleAuth', 'true')
+                      if (formData.firstName) params.set('firstName', formData.firstName as string)
+                      if (formData.lastName) params.set('lastName', formData.lastName as string)
+                      params.set('phone', `${countryCode}${phone}`)
+
+                      const callbackUrl = `/profile/complete?${params.toString()}`
+                      console.log('Callback URL:', callbackUrl)
+
+                      // Also store in localStorage as backup (may not work in incognito)
+                      try {
+                        localStorage.setItem('signupFormData', JSON.stringify(dataToStore))
+                        sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
+                      } catch (e) {
+                        console.log('Storage not available (incognito mode)')
+                      }
+
+                      // If user is already authenticated, redirect directly
                       if (status === 'authenticated' && session?.user?.email) {
-                        console.log('Already authenticated - redirecting directly to /profile/complete')
-                        // Close modal and do a full page redirect for reliability
+                        console.log('Already authenticated - redirecting directly')
                         onClose()
-                        window.location.href = '/profile/complete?fromGoogleAuth=true'
+                        window.location.href = callbackUrl
                       } else {
                         console.log('Not authenticated - going through Google OAuth')
-                        // Not authenticated - go through Google OAuth flow
-                        signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
+                        signIn('google', { callbackUrl })
                       }
                     }}
                     className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-primary-600 border-2 border-primary-600 rounded-xl text-white hover:bg-primary-700 hover:border-primary-700 transition-all font-semibold shadow-md"
