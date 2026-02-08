@@ -76,6 +76,14 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Always allow relative URLs
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      // Allow URLs on the same origin
+      if (new URL(url).origin === baseUrl) return url
+      // Default to baseUrl
+      return baseUrl
+    },
     async signIn({ user, account }) {
       // Handle Google sign-in
       if (account?.provider === 'google') {

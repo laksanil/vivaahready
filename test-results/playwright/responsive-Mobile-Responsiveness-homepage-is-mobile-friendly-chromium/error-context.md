@@ -1,0 +1,252 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "VivaahReady VivaahReady" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "VivaahReady" [ref=e7]
+        - generic [ref=e9]: VivaahReady
+      - button [ref=e11] [cursor=pointer]:
+        - img [ref=e12]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - heading "Modern Matchmaking with a Traditional Soul" [level=1] [ref=e19]
+          - paragraph [ref=e20]: Create your profile, set deal-breakers and preferences, and view mutual matches only. Photos and contact details unlock after verification and mutual interest.
+          - generic [ref=e21]:
+            - button "Find My Match" [ref=e22] [cursor=pointer]:
+              - text: Find My Match
+              - img [ref=e23]
+            - link "How it Works" [ref=e25] [cursor=pointer]:
+              - /url: "#how-it-works"
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - img [ref=e28]
+              - text: Free to start
+            - generic [ref=e31]: •
+            - generic [ref=e32]:
+              - img [ref=e33]
+              - text: Verified to connect
+            - generic [ref=e35]: •
+            - generic [ref=e36]:
+              - img [ref=e37]
+              - text: Essential cookies only
+          - generic [ref=e40]:
+            - img [ref=e41]
+            - generic [ref=e43]: Founding Member Pricing ends March 1, 2026|$50 through March 1•$100 after(one-time)
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]:
+              - heading "Smart Matching" [level=3] [ref=e51]
+              - paragraph [ref=e52]: Based on your preferences
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - img [ref=e55]
+              - generic [ref=e57]: Mutual matches only (privacy-first)
+            - generic [ref=e58]:
+              - img [ref=e59]
+              - generic [ref=e61]: Compatibility scores with deal-breakers
+            - generic [ref=e62]:
+              - img [ref=e63]
+              - generic [ref=e66]: Phone-verified profiles
+            - generic [ref=e67]:
+              - img [ref=e68]
+              - generic [ref=e73]: Contact shared after mutual acceptance
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - img [ref=e79]
+            - generic [ref=e81]: 10+
+          - paragraph [ref=e82]: Verified Profiles
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - img [ref=e85]
+            - generic [ref=e88]: 5+
+          - paragraph [ref=e89]: Matches Made
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - img [ref=e92]
+            - generic [ref=e95]: 3+
+          - paragraph [ref=e96]: US States
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - heading "How VivaahReady Works" [level=2] [ref=e100]
+          - paragraph [ref=e101]: Privacy-first matchmaking with phone-verified profiles.
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e105]: "1"
+            - heading "Create Profile (Free)" [level=3] [ref=e106]
+            - paragraph [ref=e107]: Create your profile and preferences. Add deal-breakers and match preferences.
+          - generic [ref=e108]:
+            - generic [ref=e110]: "2"
+            - heading "Find Matches (Free)" [level=3] [ref=e111]
+            - paragraph [ref=e112]: See curated matches where both sides' preferences align. Identity stays hidden.
+          - generic [ref=e113]:
+            - generic [ref=e115]: "3"
+            - heading "Express Interest (Free)" [level=3] [ref=e116]
+            - paragraph [ref=e117]: Express interest to signal intent.
+          - generic [ref=e118]:
+            - generic [ref=e120]: "4"
+            - heading "Verify to Proceed" [level=3] [ref=e121]
+            - paragraph [ref=e122]: Verification is required to unlock next steps and keep the community genuine.
+          - generic [ref=e123]:
+            - generic [ref=e125]: "5"
+            - heading "Connect" [level=3] [ref=e126]
+            - paragraph [ref=e127]: Mutual interest unlocks messaging and contact details.
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - heading "Why Choose VivaahReady?" [level=2] [ref=e132]
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - img [ref=e136]
+              - generic [ref=e138]:
+                - heading "Verified & Secure" [level=3] [ref=e139]
+                - paragraph [ref=e140]: All profiles are manually reviewed. Your privacy is protected until mutual interest.
+            - generic [ref=e141]:
+              - img [ref=e143]
+              - generic [ref=e148]:
+                - heading "Preference Matching" [level=3] [ref=e149]
+                - paragraph [ref=e150]: See only profiles matching YOUR preferences — age, location, caste, diet, and more.
+            - generic [ref=e151]:
+              - img [ref=e153]
+              - generic [ref=e155]:
+                - heading "Mutual Interest Required" [level=3] [ref=e156]
+                - paragraph [ref=e157]: Contact details shared only when BOTH parties express interest. No spam.
+            - generic [ref=e158]:
+              - img [ref=e160]
+              - generic [ref=e163]:
+                - heading "Essential Cookies Only" [level=3] [ref=e164]
+                - paragraph [ref=e165]: No tracking cookies. We only use essential cookies required for the site to function.
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - img [ref=e168]
+            - heading "Free to Start" [level=3] [ref=e170]
+          - paragraph [ref=e171]: Create your profile, set deal-breakers, and view mutual matches. Verification keeps profiles genuine.
+          - list [ref=e172]:
+            - listitem [ref=e173]:
+              - img [ref=e174]
+              - text: Free profile creation
+            - listitem [ref=e177]:
+              - img [ref=e178]
+              - text: Mutual matches only (no public directory)
+            - listitem [ref=e181]:
+              - img [ref=e182]
+              - text: Photos & names unlock after verification
+            - listitem [ref=e185]:
+              - img [ref=e186]
+              - text: Contact shared after mutual acceptance
+          - button "Find My Match" [ref=e189] [cursor=pointer]:
+            - text: Find My Match
+            - img [ref=e190]
+      - generic [ref=e193]:
+        - generic [ref=e194]:
+          - heading "What Our Members Say" [level=2] [ref=e195]
+          - paragraph [ref=e196]: Real experiences from people who found meaningful connections.
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - img [ref=e199]
+            - paragraph [ref=e202]: "\"I was tired of swiping on apps that didn't understand what I was looking for. VivaahReady felt different — the matches actually aligned with my values and preferences.\""
+            - generic [ref=e203]:
+              - paragraph [ref=e204]: Priya S.
+              - paragraph [ref=e205]: Joined 2025
+          - generic [ref=e206]:
+            - img [ref=e207]
+            - paragraph [ref=e210]: "\"The privacy-first approach gave me confidence. I didn't have to worry about my profile being publicly visible. Only mutual matches can see each other.\""
+            - generic [ref=e211]:
+              - paragraph [ref=e212]: Rahul M.
+              - paragraph [ref=e213]: Joined 2025
+          - generic [ref=e214]:
+            - img [ref=e215]
+            - paragraph [ref=e218]: "\"My parents and I both loved that profiles are verified. It's serious matchmaking, not casual browsing. The one-time fee means no subscription pressure.\""
+            - generic [ref=e219]:
+              - paragraph [ref=e220]: Ananya K.
+              - paragraph [ref=e221]: Joined 2025
+      - generic [ref=e223]:
+        - heading "Ready to create your profile?" [level=2] [ref=e224]
+        - paragraph [ref=e225]: Free to start. Verified, privacy-first matchmaking for serious relationships.
+        - generic [ref=e226]:
+          - button "Find My Match" [ref=e227] [cursor=pointer]:
+            - text: Find My Match
+            - img [ref=e228]
+          - link "View Pricing" [ref=e230] [cursor=pointer]:
+            - /url: /get-verified
+  - contentinfo [ref=e231]:
+    - generic [ref=e233]:
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - img "VivaahReady" [ref=e238]
+          - paragraph [ref=e239]: Modern matchmaking with a traditional soul.
+          - paragraph [ref=e240]: Privacy-first matchmaking with verified profiles.
+        - navigation "Quick Links" [ref=e241]:
+          - heading "Quick Links" [level=3] [ref=e242]
+          - list [ref=e243]:
+            - listitem [ref=e244]:
+              - link "How it Works" [ref=e245] [cursor=pointer]:
+                - /url: /#how-it-works
+            - listitem [ref=e246]:
+              - link "View Matches" [ref=e247] [cursor=pointer]:
+                - /url: /matches
+            - listitem [ref=e248]:
+              - link "Sign In" [ref=e249] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e250]:
+              - link "About Us" [ref=e251] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e252]:
+              - link "Contact" [ref=e253] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e254]:
+          - heading "Trust & Safety" [level=3] [ref=e255]
+          - list [ref=e256]:
+            - listitem [ref=e257]:
+              - img [ref=e258]
+              - generic [ref=e260]: Privacy-first design
+            - listitem [ref=e261]:
+              - img [ref=e262]
+              - generic [ref=e266]: Verified to connect
+            - listitem [ref=e267]:
+              - img [ref=e268]
+              - generic [ref=e273]: Mutual interest only
+        - navigation "Legal" [ref=e274]:
+          - heading "Legal" [level=3] [ref=e275]
+          - list [ref=e276]:
+            - listitem [ref=e277]:
+              - link "Terms of Use" [ref=e278] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e279]:
+              - link "Privacy Policy" [ref=e280] [cursor=pointer]:
+                - /url: /privacy
+        - generic [ref=e281]:
+          - heading "Contact" [level=3] [ref=e282]
+          - list [ref=e283]:
+            - listitem [ref=e284]:
+              - link "support@vivaahready.com" [ref=e285] [cursor=pointer]:
+                - /url: mailto:support@vivaahready.com
+                - img [ref=e286]
+                - generic [ref=e289]: support@vivaahready.com
+            - listitem [ref=e290]:
+              - img [ref=e291]
+              - generic [ref=e294]: United States
+          - generic [ref=e295]:
+            - link "Instagram" [ref=e296] [cursor=pointer]:
+              - /url: https://www.instagram.com/vivaahready
+              - img [ref=e297]
+            - link "LinkedIn" [ref=e299] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/vivaahready/
+              - img [ref=e300]
+            - link "WhatsApp" [ref=e302] [cursor=pointer]:
+              - /url: https://wa.me/19258193653
+              - img [ref=e303]
+      - generic [ref=e307]:
+        - paragraph [ref=e308]: © 2026 VivaahReady. All rights reserved.
+        - generic [ref=e309]:
+          - link "Terms of Use" [ref=e310] [cursor=pointer]:
+            - /url: /terms
+          - link "Privacy Policy" [ref=e311] [cursor=pointer]:
+            - /url: /privacy
+  - alert [ref=e312]
+```

@@ -72,7 +72,14 @@ function ProfileCompleteContent() {
       if (profileId || creatingProfile) return // Already have profile or creating one
 
       // Check for stored form data from Google auth flow
-      const storedFormData = sessionStorage.getItem('signupFormData')
+      // Try both localStorage and sessionStorage (some browsers clear sessionStorage during OAuth)
+      let storedFormData = sessionStorage.getItem('signupFormData')
+      if (!storedFormData) {
+        storedFormData = localStorage.getItem('signupFormData')
+        if (storedFormData) {
+          console.log('Found signupFormData in localStorage (sessionStorage was empty)')
+        }
+      }
 
       // If no stored form data, check if user already has a profile
       if (!storedFormData) {
@@ -120,7 +127,7 @@ function ProfileCompleteContent() {
         if (response.ok) {
           const data = await response.json()
           setProfileId(data.profileId)
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           // Pre-fill form with the stored data (includes phone from account step)
           setFormData(formDataFromStorage)
           // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
@@ -128,12 +135,12 @@ function ProfileCompleteContent() {
           setStep(1)
         } else if (response.status === 409) {
           // Duplicate profile - clear sessionStorage and redirect
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           router.push('/dashboard')
           return
         } else if (response.status === 400) {
           // Profile already exists - clear sessionStorage and get existing profile
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           try {
             const checkResponse = await fetch('/api/user/profile-status')
             if (checkResponse.ok) {
@@ -150,13 +157,13 @@ function ProfileCompleteContent() {
           return
         } else {
           // Any other error - clear sessionStorage to prevent infinite loading
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           const errorData = await response.json()
           setError(errorData.error || 'Failed to create profile')
         }
       } catch (err) {
         console.error('Error creating profile:', err)
-        sessionStorage.removeItem('signupFormData') // Clear to prevent infinite loading
+        sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData') // Clear to prevent infinite loading
         setError('Failed to create profile. Please try again.')
       } finally {
         setCreatingProfile(false)
@@ -179,7 +186,7 @@ function ProfileCompleteContent() {
     const timeout = setTimeout(() => {
       if (pageLoading || creatingProfile) {
         console.log('Safety timeout triggered - stopping loading')
-        sessionStorage.removeItem('signupFormData')
+        sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
         setPageLoading(false)
         setCreatingProfile(false)
         // Check if user has a profile

@@ -235,10 +235,13 @@ function DashboardContent() {
       !shouldCreateProfile &&
       typeof window !== 'undefined'
     ) {
-      const storedFormData = sessionStorage.getItem('signupFormData')
-      if (storedFormData) {
+      // Check both storages
+      const hasSessionData = sessionStorage.getItem('signupFormData')
+      const hasLocalData = localStorage.getItem('signupFormData')
+      if (hasSessionData || hasLocalData) {
         console.log('Cleaning up orphaned signupFormData (profile exists)')
-        sessionStorage.removeItem('signupFormData')
+        sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
+        localStorage.removeItem('signupFormData')
       }
     }
   }, [status, shouldCreateProfile, dbProfileChecked, dbHasProfile])
@@ -277,7 +280,7 @@ function DashboardContent() {
           setCreatedProfileId(profileData.profileId)
 
           // Clear the stored form data
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
 
           // Redirect to profile complete page to continue signup from step 2 (location_education)
           // User has completed step 1 (basics) before Google auth, account creation is not numbered
@@ -304,27 +307,27 @@ function DashboardContent() {
               if (retryResponse.ok) {
                 const retryData = await retryResponse.json()
                 setCreatedProfileId(retryData.profileId)
-                sessionStorage.removeItem('signupFormData')
+                sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
                 router.push(`/profile/complete?profileId=${retryData.profileId}&step=2`)
               } else {
-                sessionStorage.removeItem('signupFormData')
+                sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
                 setShowCreateProfileModal(true)
               }
             } else {
-              sessionStorage.removeItem('signupFormData')
+              sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
             }
           } else {
-            sessionStorage.removeItem('signupFormData')
+            sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
             setShowCreateProfileModal(true)
           }
         } else {
           // If profile creation fails, show the modal to let user complete manually
-          sessionStorage.removeItem('signupFormData')
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           setShowCreateProfileModal(true)
         }
       } catch (error) {
         console.error('Error creating profile after Google auth:', error)
-        sessionStorage.removeItem('signupFormData')
+        sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
         setShowCreateProfileModal(true)
       } finally {
         setCreatingProfile(false)
@@ -338,9 +341,11 @@ function DashboardContent() {
   useEffect(() => {
     // Don't show modal if there's stored signup data - user might be mid-OAuth flow
     // They should be on /profile/complete processing this data, not on dashboard
-    const hasStoredFormData = typeof window !== 'undefined' && sessionStorage.getItem('signupFormData')
+    // Check both sessionStorage and localStorage (some browsers clear sessionStorage during OAuth)
+    const hasStoredFormData = typeof window !== 'undefined' &&
+      (sessionStorage.getItem('signupFormData') || localStorage.getItem('signupFormData'))
     if (hasStoredFormData) {
-      console.log('Signup data found in sessionStorage - redirecting to profile/complete')
+      console.log('Signup data found - redirecting to profile/complete')
       // Redirect to profile/complete to process the stored data
       router.push('/profile/complete?fromGoogleAuth=true')
       return

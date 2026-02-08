@@ -879,13 +879,17 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   <button
                     type="button"
                     onClick={() => {
-                      // Store phone in session storage before redirecting
+                      // Store form data before redirecting
+                      // Use BOTH localStorage and sessionStorage for maximum compatibility
+                      // Some browsers clear sessionStorage during cross-domain OAuth redirects
                       const dataToStore = {
                         ...formData,
                         phone: `${countryCode}${phone}`
                       }
-                      sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
-                      console.log('signupFormData stored:', dataToStore)
+                      const dataJson = JSON.stringify(dataToStore)
+                      localStorage.setItem('signupFormData', dataJson)
+                      sessionStorage.setItem('signupFormData', dataJson)
+                      console.log('signupFormData stored in both localStorage and sessionStorage:', dataToStore)
                       console.log('Session status:', status, 'email:', session?.user?.email)
 
                       // If user is already authenticated (logged in via Google),
