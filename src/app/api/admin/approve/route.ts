@@ -213,8 +213,11 @@ async function notifyMatchingUsers(approvedProfiles: any[]) {
       // 2. Haven't logged in in the last 24 hours
       // 3. Haven't been notified about new matches in the last 24 hours
       const usersToNotify = potentialMatches.filter(candidate => {
-        // Check mutual match
-        if (!isMutualMatch(approvedProfile, candidate)) {
+        // Skip candidates without gender (required for matching)
+        if (!candidate.gender) return false
+
+        // Check mutual match (cast to satisfy TypeScript - gender check is above)
+        if (!isMutualMatch(approvedProfile, candidate as Parameters<typeof isMutualMatch>[1])) {
           return false
         }
 
