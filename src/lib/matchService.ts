@@ -32,7 +32,7 @@ interface MatchResults {
   }
   myProfile: {
     id: string
-    gender: string
+    gender: string | null
     profileImageUrl: string | null
     photoUrls: string | null
   }

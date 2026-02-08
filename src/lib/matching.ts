@@ -22,7 +22,7 @@
 interface ProfileForMatching {
   id: string
   userId: string
-  gender: string
+  gender: string | null  // Nullable until basics step is completed
   dateOfBirth: string | null
   age?: string | number | null  // Used when dateOfBirth is not available
   currentLocation: string | null
@@ -2055,6 +2055,9 @@ export function isMutualMatch(
   profile1: ProfileForMatching,
   profile2: ProfileForMatching
 ): boolean {
+  // Both profiles must have gender specified
+  if (!profile1.gender || !profile2.gender) return false
+
   // Gender must be opposite
   if (profile1.gender === profile2.gender) return false
 
