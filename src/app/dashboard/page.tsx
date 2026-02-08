@@ -341,11 +341,12 @@ function DashboardContent() {
   useEffect(() => {
     // Don't show modal if there's stored signup data - user might be mid-OAuth flow
     // They should be on /profile/complete processing this data, not on dashboard
-    // Check both sessionStorage and localStorage (some browsers clear sessionStorage during OAuth)
+    // Check cookie, sessionStorage, and localStorage
+    const hasCookie = typeof document !== 'undefined' && document.cookie.includes('signupFormData=')
     const hasStoredFormData = typeof window !== 'undefined' &&
-      (sessionStorage.getItem('signupFormData') || localStorage.getItem('signupFormData'))
+      (hasCookie || sessionStorage.getItem('signupFormData') || localStorage.getItem('signupFormData'))
     if (hasStoredFormData) {
-      console.log('Signup data found - redirecting to profile/complete')
+      console.log('Signup data found (cookie or storage) - redirecting to profile/complete')
       // Redirect to profile/complete to process the stored data
       router.push('/profile/complete?fromGoogleAuth=true')
       return

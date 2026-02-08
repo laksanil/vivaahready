@@ -879,31 +879,28 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   <button
                     type="button"
                     onClick={() => {
-                      // Build URL with form data encoded as query params
-                      // This is the most reliable way to pass data through OAuth redirects
-                      // as some browsers block localStorage/sessionStorage in incognito
+                      // Store form data in a cookie - most reliable method for OAuth redirects
+                      // Cookies survive OAuth redirects even in incognito mode
                       const dataToStore = {
-                        ...formData,
+                        firstName: formData.firstName,
+                        lastName: formData.lastName,
                         phone: `${countryCode}${phone}`
                       }
 
-                      // Encode form data in URL params (survives all redirects)
-                      const params = new URLSearchParams()
-                      params.set('fromGoogleAuth', 'true')
-                      if (formData.firstName) params.set('firstName', formData.firstName as string)
-                      if (formData.lastName) params.set('lastName', formData.lastName as string)
-                      params.set('phone', `${countryCode}${phone}`)
+                      // Set cookie that expires in 1 hour (plenty of time for OAuth)
+                      const cookieData = encodeURIComponent(JSON.stringify(dataToStore))
+                      document.cookie = `signupFormData=${cookieData}; path=/; max-age=3600; SameSite=Lax`
+                      console.log('Stored signup data in cookie:', dataToStore)
 
-                      const callbackUrl = `/profile/complete?${params.toString()}`
-                      console.log('Callback URL:', callbackUrl)
-
-                      // Also store in localStorage as backup (may not work in incognito)
+                      // Also store in localStorage/sessionStorage as backup
                       try {
                         localStorage.setItem('signupFormData', JSON.stringify(dataToStore))
                         sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
                       } catch (e) {
-                        console.log('Storage not available (incognito mode)')
+                        console.log('Storage not available')
                       }
+
+                      const callbackUrl = '/profile/complete?fromGoogleAuth=true'
 
                       // If user is already authenticated, redirect directly
                       if (status === 'authenticated' && session?.user?.email) {

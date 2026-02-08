@@ -76,11 +76,28 @@ function ProfileCompleteContent() {
       if (status !== 'authenticated' || !session?.user?.email) return
       if (profileId || creatingProfile) return // Already have profile or creating one
 
-      // PRIORITY 1: Check URL params first (most reliable - survives incognito mode OAuth redirects)
-      // This is the primary method for getting form data after Google OAuth
+      // PRIORITY 1: Check cookie first (most reliable - survives OAuth redirects in incognito)
+      let formDataFromCookie: { firstName?: string; lastName?: string; phone?: string } | null = null
+      if (fromGoogleAuth) {
+        const cookies = document.cookie.split(';')
+        const signupCookie = cookies.find(c => c.trim().startsWith('signupFormData='))
+        if (signupCookie) {
+          try {
+            const cookieValue = signupCookie.split('=')[1]
+            formDataFromCookie = JSON.parse(decodeURIComponent(cookieValue))
+            console.log('Found form data in cookie (most reliable method):', formDataFromCookie)
+            // Clear the cookie after reading
+            document.cookie = 'signupFormData=; path=/; max-age=0'
+          } catch (e) {
+            console.error('Failed to parse signup cookie:', e)
+          }
+        }
+      }
+
+      // PRIORITY 2: Check URL params as fallback
       let formDataFromUrl: { firstName?: string; lastName?: string; phone?: string } | null = null
-      if (fromGoogleAuth && urlFirstName && urlLastName && urlPhone) {
-        console.log('Found form data in URL params (most reliable method)')
+      if (!formDataFromCookie && fromGoogleAuth && urlFirstName && urlLastName && urlPhone) {
+        console.log('Found form data in URL params')
         formDataFromUrl = {
           firstName: urlFirstName,
           lastName: urlLastName,
@@ -88,7 +105,7 @@ function ProfileCompleteContent() {
         }
       }
 
-      // PRIORITY 2: Check storage as fallback
+      // PRIORITY 3: Check storage as last resort
       let storedFormData = sessionStorage.getItem('signupFormData')
       if (!storedFormData) {
         storedFormData = localStorage.getItem('signupFormData')
@@ -97,8 +114,8 @@ function ProfileCompleteContent() {
         }
       }
 
-      // If no form data from URL params or storage, check if user already has a profile
-      if (!formDataFromUrl && !storedFormData) {
+      // If no form data from any source, check if user already has a profile
+      if (!formDataFromCookie && !formDataFromUrl && !storedFormData) {
         // Check if user already has a profile in the database
         try {
           const checkResponse = await fetch('/api/user/profile-status')
@@ -127,8 +144,8 @@ function ProfileCompleteContent() {
       setCreatingProfile(true)
 
       try {
-        // Use URL params first if available, otherwise fall back to storage
-        const formDataToUse = formDataFromUrl || (storedFormData ? JSON.parse(storedFormData) : {})
+        // Use cookie first, then URL params, then storage
+        const formDataToUse = formDataFromCookie || formDataFromUrl || (storedFormData ? JSON.parse(storedFormData) : {})
         const referredBy = sessionStorage.getItem('referredBy') || undefined
 
         console.log('Creating profile with data:', {
@@ -527,8 +544,9 @@ function ProfileCompleteContent() {
   )
 
   // Check if we have pending signup data (for Google auth flow)
-  // Check both URL params and storage
-  const hasPendingSignupData = (fromGoogleAuth && urlFirstName && urlLastName && urlPhone) ||
+  // Check cookie, URL params, and storage
+  const hasCookie = typeof document !== 'undefined' && document.cookie.includes('signupFormData=')
+  const hasPendingSignupData = (fromGoogleAuth && (hasCookie || (urlFirstName && urlLastName && urlPhone))) ||
     (typeof window !== 'undefined' && (sessionStorage.getItem('signupFormData') !== null || localStorage.getItem('signupFormData') !== null))
 
   if (status === 'loading' || pageLoading || creatingProfile || (hasPendingSignupData && !profileId)) {
