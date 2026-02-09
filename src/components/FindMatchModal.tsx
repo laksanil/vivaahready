@@ -140,6 +140,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
+  const [smsConsent, setSmsConsent] = useState(false)
 
   // Profile form data - initialize with defaults for fields that have default UI values
   const [formData, setFormData] = useState<Record<string, unknown>>({
@@ -859,11 +860,29 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       Your contact information is protected. We do not sell, share, or disclose your phone number or email to third parties. Contact details are only visible to mutual matches.
                     </p>
                   </div>
+
+                  {/* SMS Consent Checkbox */}
+                  <div className="mt-4">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={smsConsent}
+                        onChange={(e) => setSmsConsent(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-600 group-hover:text-gray-800">
+                        I agree to receive SMS text messages from VivaahReady for account verification (OTP) and match notifications. Message frequency varies. Message and data rates may apply. Reply STOP to opt out. View our{' '}
+                        <Link href="/privacy" target="_blank" className="text-primary-600 hover:underline">Privacy Policy</Link>
+                        {' '}and{' '}
+                        <Link href="/terms" target="_blank" className="text-primary-600 hover:underline">Terms of Use</Link>.
+                      </span>
+                    </label>
+                  </div>
                 </div>
               ) : null}
 
-              {/* Only show signup options if name AND phone are filled */}
-              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 ? (
+              {/* Only show signup options if name AND phone are filled AND SMS consent given */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && smsConsent ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -884,7 +903,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       const dataToStore = {
                         firstName: formData.firstName,
                         lastName: formData.lastName,
-                        phone: `${countryCode}${phone}`
+                        phone: `${countryCode}${phone}`,
+                        smsConsent: true // User checked the consent box
                       }
 
                       // Set cookie that expires in 1 hour (plenty of time for OAuth)

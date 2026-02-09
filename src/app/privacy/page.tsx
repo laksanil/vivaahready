@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
           {/* Effective Date */}
           <div className="bg-gray-50 rounded-lg p-4 mb-8 text-sm text-gray-600">
             <p><strong>Effective Date:</strong> January 17, 2026</p>
-            <p><strong>Last Updated:</strong> January 17, 2026</p>
+            <p><strong>Last Updated:</strong> February 9, 2026</p>
           </div>
 
           <p className="text-gray-600 mb-8">
@@ -77,6 +77,25 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Legal Compliance:</strong> Comply with applicable laws, regulations, and legal processes;</li>
                 <li><strong>Marketing:</strong> Send you promotional communications (with your consent where required).</li>
               </ul>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-6 mb-3">2.1 SMS/Text Message Communications</h3>
+              <p className="text-gray-600 mb-3">
+                By providing your phone number and using VivaahReady, you consent to receive SMS text messages from us. We may send you:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li><strong>Account Verification:</strong> One-time passwords (OTP) and security codes to verify your identity;</li>
+                <li><strong>Match Notifications:</strong> Alerts when you receive new match suggestions or interest expressions;</li>
+                <li><strong>Account Updates:</strong> Important information about your account status, profile approval, or security alerts.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                <strong>Message Frequency:</strong> Message frequency varies based on your account activity. You may receive multiple messages per week depending on matching activity.
+              </p>
+              <p className="text-gray-600 mt-3">
+                <strong>Opt-Out:</strong> You can opt out of promotional SMS messages at any time by replying <strong>STOP</strong> to any text message you receive from us. Note that opting out of SMS will not affect transactional messages required for account security (such as OTP codes). To opt out of all SMS communications, you may disable SMS notifications in your account settings or contact us at <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
+              </p>
+              <p className="text-gray-600 mt-3">
+                <strong>Carrier Charges:</strong> Message and data rates may apply depending on your mobile carrier plan. VivaahReady is not responsible for any charges from your carrier.
+              </p>
             </section>
 
             {/* Section 3 */}
@@ -257,7 +276,7 @@ export default function PrivacyPolicyPage() {
 
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500">
-              Last updated: January 17, 2026
+              Last updated: February 9, 2026
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Also see our{' '}
