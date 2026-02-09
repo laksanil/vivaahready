@@ -1,21 +1,20 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: Request) {
   try {
-    const { profileId } = await request.json()
+    const session = await getServerSession(authOptions)
 
-    if (!profileId) {
-      return NextResponse.json(
-        { error: 'Profile ID is required' },
-        { status: 400 }
-      )
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get the profile with user info
+    // Get the user's profile
     const profile = await prisma.profile.findUnique({
-      where: { id: profileId },
+      where: { userId: session.user.id },
       include: { user: true },
     })
 

@@ -1,23 +1,27 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { profileId, photoVisibility } = body
+    const session = await getServerSession(authOptions)
 
-    if (!profileId) {
-      return NextResponse.json({ error: 'Profile ID is required' }, { status: 400 })
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const body = await request.json()
+    const { photoVisibility } = body
 
     const validOptions = ['verified_only', 'matching_preferences', 'mutual_interest']
     if (!validOptions.includes(photoVisibility)) {
       return NextResponse.json({ error: 'Invalid photo visibility option' }, { status: 400 })
     }
 
-    // Verify profile exists
+    // Get user's profile
     const profile = await prisma.profile.findUnique({
-      where: { id: profileId }
+      where: { userId: session.user.id }
     })
 
     if (!profile) {
@@ -26,7 +30,7 @@ export async function POST(request: Request) {
 
     // Update photo visibility
     await prisma.profile.update({
-      where: { id: profileId },
+      where: { id: profile.id },
       data: { photoVisibility }
     })
 

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
+import { sendMatchNotificationSms, formatPhoneNumber } from '@/lib/twilio'
 
 export async function GET(request: Request) {
   try {
@@ -198,6 +199,36 @@ export async function POST(request: Request) {
         status: 'pending',
       },
     })
+
+    // Send SMS notification to receiver (if they have a verified phone)
+    try {
+      const receiver = await prisma.user.findUnique({
+        where: { id: receiverId },
+        select: {
+          phone: true,
+          phoneVerified: true,
+          profile: { select: { firstName: true } }
+        }
+      })
+
+      const sender = await prisma.user.findUnique({
+        where: { id: currentUserId },
+        select: { profile: { select: { firstName: true } } }
+      })
+
+      if (receiver?.phone && receiver.phoneVerified) {
+        const receiverName = receiver.profile?.firstName || 'there'
+        const senderName = sender?.profile?.firstName || 'Someone'
+        await sendMatchNotificationSms(
+          formatPhoneNumber(receiver.phone),
+          receiverName,
+          senderName
+        )
+      }
+    } catch (smsError) {
+      // Log but don't fail the match creation if SMS fails
+      console.error('Failed to send match notification SMS:', smsError)
+    }
 
     return NextResponse.json({ message: 'Interest sent successfully', match }, { status: 201 })
   } catch (error) {

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
+import { sendMatchAcceptedSms, formatPhoneNumber } from '@/lib/twilio'
 
 // PATCH - Update match status (accept/reject)
 export async function PATCH(
@@ -124,6 +125,30 @@ export async function PATCH(
           data: { status: 'accepted' }
         })
 
+        // Send SMS to the original sender (notifying them of mutual match)
+        try {
+          const senderProfile = await prisma.profile.findUnique({
+            where: { userId: match.senderId },
+            select: { firstName: true }
+          })
+          const receiverProfile = await prisma.profile.findUnique({
+            where: { userId: match.receiverId },
+            select: { firstName: true }
+          })
+
+          if (match.sender.phone) {
+            const senderName = senderProfile?.firstName || 'there'
+            const receiverName = receiverProfile?.firstName || 'Someone'
+            await sendMatchAcceptedSms(
+              formatPhoneNumber(match.sender.phone),
+              senderName,
+              receiverName
+            )
+          }
+        } catch (smsError) {
+          console.error('Failed to send mutual match SMS:', smsError)
+        }
+
         return NextResponse.json({
           message: "It's a mutual match!",
           match: updatedMatch,
@@ -136,6 +161,30 @@ export async function PATCH(
             facebookInstagram: match.sender.profile?.facebookInstagram,
           }
         })
+      }
+
+      // Not mutual - send SMS to sender that their interest was accepted
+      try {
+        const senderProfile = await prisma.profile.findUnique({
+          where: { userId: match.senderId },
+          select: { firstName: true }
+        })
+        const receiverProfile = await prisma.profile.findUnique({
+          where: { userId: match.receiverId },
+          select: { firstName: true }
+        })
+
+        if (match.sender.phone) {
+          const senderName = senderProfile?.firstName || 'there'
+          const receiverName = receiverProfile?.firstName || 'Someone'
+          await sendMatchAcceptedSms(
+            formatPhoneNumber(match.sender.phone),
+            senderName,
+            receiverName
+          )
+        }
+      } catch (smsError) {
+        console.error('Failed to send match accepted SMS:', smsError)
       }
 
       return NextResponse.json({

@@ -44,6 +44,7 @@
     "square": "^44.0.0",
     "stripe": "^15.0.0",
     "tailwind-merge": "^2.3.0",
+    "twilio": "^5.12.1",
     "zipcodes": "^8.0.0",
     "zod": "^3.23.8"
   },

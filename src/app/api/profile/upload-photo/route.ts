@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
 import { isTestMode } from '@/lib/testMode'
@@ -8,16 +10,17 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
-    const profileId = formData.get('profileId') as string
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
-    }
-
-    if (!profileId) {
-      return NextResponse.json({ error: 'Profile ID is required' }, { status: 400 })
     }
 
     // Validate file type
@@ -34,14 +37,16 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    // Verify profile exists
+    // Get user's profile (ensure user can only upload to their own profile)
     const profile = await prisma.profile.findUnique({
-      where: { id: profileId }
+      where: { userId: session.user.id }
     })
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
+
+    const profileId = profile.id
 
     // Check photo limit (max 3)
     const existingPhotoCount = profile.photoUrls ? profile.photoUrls.split(',').filter(Boolean).length : 0
