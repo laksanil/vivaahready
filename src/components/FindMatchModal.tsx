@@ -140,7 +140,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
-  const [smsConsent, setSmsConsent] = useState(false)
+  const [smsConsent, setSmsConsent] = useState(true) // Default checked - user can uncheck if they prefer
 
   // Profile form data - initialize with defaults for fields that have default UI values
   const [formData, setFormData] = useState<Record<string, unknown>>({
