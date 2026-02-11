@@ -230,6 +230,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [blockedByDealbreaker, setBlockedByDealbreaker] = useState(false)
   const [matchScoreChecked, setMatchScoreChecked] = useState(false)
+  const [contactSharingStatus, setContactSharingStatus] = useState<{ iShared: boolean; theyShared: boolean } | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdminAccess)
 
@@ -326,6 +327,29 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     if (profile && canAccess) {
       fetchMatchScore()
+    }
+  }, [profile, canAccess, viewAsUser])
+
+  // Fetch contact sharing status when viewing a connected profile
+  const fetchContactSharingStatus = async () => {
+    if (!profile || !canAccess || profile.userId === viewerUserId) return
+    try {
+      const response = await fetch(buildApiUrl(`/api/matches/share-contact?connectionUserId=${profile.userId}`))
+      if (response.ok) {
+        const data = await response.json()
+        setContactSharingStatus({
+          iShared: data.iSharedContact,
+          theyShared: data.theySharedContact,
+        })
+      }
+    } catch (err) {
+      // Ignore errors
+    }
+  }
+
+  useEffect(() => {
+    if (profile && canAccess && profile.interestStatus?.mutual) {
+      fetchContactSharingStatus()
     }
   }, [profile, canAccess, viewAsUser])
 
@@ -444,6 +468,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
           onOpenPayment={() => setShowPaymentModal(true)}
           onMessage={() => setShowMessageModal(true)}
           buildUrl={buildUrl}
+          contactSharingStatus={contactSharingStatus}
         />
 
         {/* Report Modal */}
@@ -509,6 +534,7 @@ interface ProfileCardProps {
   onOpenPayment?: () => void
   onMessage?: () => void
   buildUrl: (path: string) => string
+  contactSharingStatus?: { iShared: boolean; theyShared: boolean } | null
 }
 
 function ProfileCard({
@@ -527,6 +553,7 @@ function ProfileCard({
   viewerUserId,
   isLoggedIn,
   viewerIsApproved = false,
+  contactSharingStatus,
 }: ProfileCardProps) {
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
   const interestSent = profile.interestStatus?.sentByMe
@@ -534,10 +561,12 @@ function ProfileCard({
   const isMutual = profile.interestStatus?.mutual
 
   // Determine if sensitive info should be shown
-  // Only show clear contact info for: own profile OR mutual match
-  // Non-approved users and even approved users should see masked info until mutual
+  // Only show clear contact info for: own profile OR (mutual match AND they shared contact)
+  // Non-approved users and even approved users should see masked info until mutual AND contact shared
   const isOwnProfile = viewerUserId === profile.userId
-  const showClear = isOwnProfile || isMutual
+  // For mutual matches, check if they've shared their contact details
+  const theySharedContact = contactSharingStatus?.theyShared ?? false
+  const showClear = isOwnProfile || (isMutual && theySharedContact)
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -697,7 +726,7 @@ function ProfileCard({
           <div className="flex-1 min-w-0 text-white">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-xl font-bold truncate">{(viewerIsApproved || isOwnProfile) ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
+                <h2 className="text-xl font-bold truncate">{showClear ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
                 <div className="text-sm text-white/90 mt-0.5">
                   {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
@@ -887,7 +916,7 @@ function ProfileCard({
             {!showClear && (
               <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded flex items-center gap-1">
                 <Lock className="w-3 h-3" />
-                {isMutual ? 'Contact Shared' : 'Connect to Reveal'}
+                {isMutual ? (theySharedContact ? 'Contact Visible' : 'Waiting for them to share') : 'Connect to Reveal'}
               </span>
             )}
           </div>

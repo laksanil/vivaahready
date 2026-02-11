@@ -1282,11 +1282,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
               </button>
 
               {/* Photo Visibility Options */}
-              <div className="mt-6 bg-gray-50 p-4">
-                <h4 className="font-medium text-gray-900 mb-3">Photo Privacy Settings</h4>
-                <p className="text-sm text-gray-500 mb-4">Choose who can view your photos:</p>
+              <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Eye className="h-5 w-5 text-primary-500" />
+                  <h4 className="font-semibold text-gray-900">Photo Privacy Settings</h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">Control who can view your photos on VivaahReady</p>
                 <div className="space-y-3">
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all ${photoVisibility === 'verified_only' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <input
                       type="radio"
                       name="photoVisibility"
@@ -1295,26 +1298,29 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       onChange={(e) => setPhotoVisibility(e.target.value)}
                       className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
-                    <div>
-                      <span className="font-medium text-gray-900">Verified Members Only</span>
-                      <p className="text-sm text-gray-500">Your photos will only be visible to members with verified profiles</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">All Verified Members</span>
+                        <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">Recommended</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">Your photos are visible to all members with verified profiles</p>
                     </div>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all ${photoVisibility === 'express_interest' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <input
                       type="radio"
                       name="photoVisibility"
-                      value="matching_preferences"
-                      checked={photoVisibility === 'matching_preferences'}
+                      value="express_interest"
+                      checked={photoVisibility === 'express_interest'}
                       onChange={(e) => setPhotoVisibility(e.target.value)}
                       className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
-                    <div>
-                      <span className="font-medium text-gray-900">Matching Profiles Only</span>
-                      <p className="text-sm text-gray-500">Your photos will be visible to members whose preferences align with your profile</p>
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-900">When I Express Interest</span>
+                      <p className="text-sm text-gray-500 mt-1">Your photos are only visible to members you&apos;ve expressed interest in</p>
                     </div>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all ${photoVisibility === 'mutual_interest' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <input
                       type="radio"
                       name="photoVisibility"
@@ -1323,9 +1329,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       onChange={(e) => setPhotoVisibility(e.target.value)}
                       className="mt-1 h-4 w-4 text-primary-500 focus:ring-primary-500"
                     />
-                    <div>
-                      <span className="font-medium text-gray-900">After Mutual Interest</span>
-                      <p className="text-sm text-gray-500">Your photos will only be revealed after both parties express interest</p>
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-900">After Connection is Made</span>
+                      <p className="text-sm text-gray-500 mt-1">Your photos are revealed only after both parties express mutual interest</p>
                     </div>
                   </label>
                 </div>

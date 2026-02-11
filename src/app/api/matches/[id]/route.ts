@@ -22,7 +22,7 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const { status } = body
+    const { status, revealContact = true } = body // revealContact defaults to true
 
     if (!status || !['accepted', 'rejected', 'reconsider'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
@@ -74,10 +74,17 @@ export async function PATCH(
       return NextResponse.json({ error: 'Can only reconsider rejected interests' }, { status: 400 })
     }
 
-    // Update the match status
+    // Update the match status and contact visibility
+    const updateData: { status: string; receiverRevealedContact?: boolean } = { status: finalStatus }
+
+    // If accepting, also save the receiver's choice about revealing contact
+    if (finalStatus === 'accepted') {
+      updateData.receiverRevealedContact = revealContact
+    }
+
     const updatedMatch = await prisma.match.update({
       where: { id },
-      data: { status: finalStatus },
+      data: updateData,
     })
 
     // If rejecting, also add to DeclinedProfile so they appear in "Passed Profiles"
@@ -149,17 +156,29 @@ export async function PATCH(
           console.error('Failed to send mutual match SMS:', smsError)
         }
 
+        // Get updated match with visibility fields
+        const finalMatch = await prisma.match.findUnique({
+          where: { id },
+          select: { senderRevealedContact: true, receiverRevealedContact: true }
+        })
+
+        // Only return contact info if the sender has revealed their contact
+        const senderRevealed = finalMatch?.senderRevealedContact ?? true
+        const contactInfo = senderRevealed ? {
+          name: match.sender.name,
+          email: match.sender.email,
+          phone: match.sender.phone,
+          linkedinProfile: match.sender.profile?.linkedinProfile,
+          facebookInstagram: match.sender.profile?.facebookInstagram,
+        } : null
+
         return NextResponse.json({
           message: "It's a mutual match!",
           match: updatedMatch,
           mutual: true,
-          contactInfo: {
-            name: match.sender.name,
-            email: match.sender.email,
-            phone: match.sender.phone,
-            linkedinProfile: match.sender.profile?.linkedinProfile,
-            facebookInstagram: match.sender.profile?.facebookInstagram,
-          }
+          contactInfo,
+          senderRevealedContact: senderRevealed,
+          receiverRevealedContact: revealContact,
         })
       }
 

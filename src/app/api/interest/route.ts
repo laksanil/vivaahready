@@ -384,7 +384,7 @@ export async function PATCH(request: Request) {
     const { userId: currentUserId } = targetUser
 
     const body = await request.json()
-    const { interestId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
+    const { interestId, action, revealContact = true } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
 
     if (!interestId || !action) {
       return NextResponse.json({ error: 'Interest ID and action are required' }, { status: 400 })
@@ -532,9 +532,16 @@ export async function PATCH(request: Request) {
     }
 
     // Update the interest status
+    const updateData: { status: string; receiverRevealedContact?: boolean } = { status: newStatus }
+
+    // If accepting, also save the receiver's choice about revealing contact
+    if (action === 'accept' || action === 'reconsider') {
+      updateData.receiverRevealedContact = revealContact
+    }
+
     const updatedInterest = await prisma.match.update({
       where: { id: interestId },
-      data: { status: newStatus }
+      data: updateData
     })
 
     // Increment lifetime mutual matches when a connection is created (accept or reconsider)

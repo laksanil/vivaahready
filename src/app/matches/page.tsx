@@ -17,6 +17,9 @@ import {
   Eye,
   XCircle,
   MessageCircle,
+  Share2,
+  Check,
+  EyeOff,
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
@@ -66,6 +69,11 @@ function FeedPageContent() {
   const [myPreferences, setMyPreferences] = useState<any>(null)
   const [withdrawConfirmInterest, setWithdrawConfirmInterest] = useState<any | null>(null)
   const [withdrawingSentId, setWithdrawingSentId] = useState<string | null>(null)
+  const [contactSharingStatus, setContactSharingStatus] = useState<Record<string, { iShared: boolean; theyShared: boolean }>>({})
+  const [sharingContactId, setSharingContactId] = useState<string | null>(null)
+  const [acceptConfirmInterest, setAcceptConfirmInterest] = useState<any | null>(null)
+  const [acceptingInterestId, setAcceptingInterestId] = useState<string | null>(null)
+  const [revealContactOnAccept, setRevealContactOnAccept] = useState(true)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -109,6 +117,13 @@ function FeedPageContent() {
       fetchPassedProfiles()
     }
   }, [canAccess, viewAsUser])
+
+  // Fetch contact sharing status when connections are loaded
+  useEffect(() => {
+    if (connections.length > 0) {
+      fetchContactSharingStatus(connections)
+    }
+  }, [connections])
 
   const fetchInterests = async () => {
     setInterestsLoading(true)
@@ -303,6 +318,85 @@ function FeedPageContent() {
     } finally {
       setWithdrawingSentId(null)
       setWithdrawConfirmInterest(null)
+    }
+  }
+
+  // Fetch contact sharing status for all connections
+  const fetchContactSharingStatus = async (connectionsList: FeedProfile[]) => {
+    const statusMap: Record<string, { iShared: boolean; theyShared: boolean }> = {}
+
+    await Promise.all(
+      connectionsList.map(async (connection) => {
+        if (!connection.userId) return
+        try {
+          const res = await fetch(buildApiUrl(`/api/matches/share-contact?connectionUserId=${connection.userId}`))
+          if (res.ok) {
+            const data = await res.json()
+            statusMap[connection.userId] = {
+              iShared: data.iSharedContact,
+              theyShared: data.theySharedContact,
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching contact status:', error)
+        }
+      })
+    )
+
+    setContactSharingStatus(statusMap)
+  }
+
+  // Handle sharing/unsharing contact details
+  const handleShareContact = async (connectionUserId: string, share: boolean) => {
+    setSharingContactId(connectionUserId)
+    try {
+      const res = await fetch(buildApiUrl('/api/matches/share-contact'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ connectionUserId, share }),
+      })
+
+      if (res.ok) {
+        setContactSharingStatus(prev => ({
+          ...prev,
+          [connectionUserId]: {
+            ...prev[connectionUserId],
+            iShared: share,
+          }
+        }))
+      }
+    } catch (error) {
+      console.error('Error sharing contact:', error)
+    } finally {
+      setSharingContactId(null)
+    }
+  }
+
+  // Handle accepting interest with contact reveal choice
+  const handleAcceptInterest = async () => {
+    if (!acceptConfirmInterest) return
+
+    setAcceptingInterestId(acceptConfirmInterest.id)
+    try {
+      const res = await fetch(buildApiUrl('/api/interest'), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interestId: acceptConfirmInterest.id,
+          action: 'accept',
+          revealContact: revealContactOnAccept,
+        })
+      })
+      if (res.ok) {
+        fetchInterests()
+        fetchProfiles() // Refresh to show new connection
+      }
+    } catch (err) {
+      console.error('Error accepting interest:', err)
+    } finally {
+      setAcceptingInterestId(null)
+      setAcceptConfirmInterest(null)
+      setRevealContactOnAccept(true) // Reset to default
     }
   }
 
@@ -798,20 +892,10 @@ function FeedPageContent() {
                         <div className="flex gap-2">
                           <div className="group relative">
                             <button
-                              onClick={async () => {
+                              onClick={() => {
                                 if (!userStatus?.isApproved) return
-                                try {
-                                  const res = await fetch(buildApiUrl('/api/interest'), {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ interestId: interest.id, action: 'accept' })
-                                  })
-                                  if (res.ok) {
-                                    fetchInterests()
-                                  }
-                                } catch (err) {
-                                  console.error('Error accepting interest:', err)
-                                }
+                                setAcceptConfirmInterest(interest)
+                                setRevealContactOnAccept(true) // Reset to default
                               }}
                               disabled={!userStatus?.isApproved}
                               className={`px-4 py-2 text-sm font-medium rounded-lg ${
@@ -927,6 +1011,52 @@ function FeedPageContent() {
                         </div>
                       </Link>
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Contact Sharing Status and Button */}
+                        {connection.userId && (
+                          <div className="group relative">
+                            {contactSharingStatus[connection.userId]?.iShared ? (
+                              <button
+                                onClick={() => handleShareContact(connection.userId!, false)}
+                                disabled={sharingContactId === connection.userId}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-full hover:bg-green-200 transition-colors"
+                              >
+                                {sharingContactId === connection.userId ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Check className="h-3.5 w-3.5" />
+                                )}
+                                <span>Contact Shared</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleShareContact(connection.userId!, true)}
+                                disabled={sharingContactId === connection.userId}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-100 text-primary-700 text-xs font-medium rounded-full hover:bg-primary-200 transition-colors"
+                              >
+                                {sharingContactId === connection.userId ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Share2 className="h-3.5 w-3.5" />
+                                )}
+                                <span>Share Contact</span>
+                              </button>
+                            )}
+                            <div className="absolute bottom-full right-0 mb-1 hidden group-hover:block z-50">
+                              <div className="bg-gray-900 text-white text-xs rounded-lg py-1.5 px-2.5 whitespace-nowrap shadow-lg max-w-[200px]">
+                                {contactSharingStatus[connection.userId]?.iShared
+                                  ? 'Click to hide your contact details'
+                                  : 'Share your contact details with this connection'}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {/* Show if they shared their contact */}
+                        {connection.userId && contactSharingStatus[connection.userId]?.theyShared && (
+                          <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            <span className="hidden sm:inline">Their contact visible</span>
+                          </span>
+                        )}
                         <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                           Connected
                         </span>
@@ -1146,6 +1276,77 @@ function FeedPageContent() {
                   </>
                 ) : (
                   'Withdraw'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Accept Interest Confirmation Modal */}
+      {acceptConfirmInterest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-xl">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-green-100 rounded-full">
+                  <Heart className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Accept Interest</h3>
+                  <p className="text-sm text-gray-500">
+                    from {acceptConfirmInterest.sender?.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={revealContactOnAccept}
+                    onChange={(e) => setRevealContactOnAccept(e.target.checked)}
+                    className="mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">Share my contact details</span>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      Allow {acceptConfirmInterest.sender?.name?.split(' ')[0] || 'them'} to see your phone number, email, and social profiles
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-4">
+                You can change this later from the Connections tab.
+              </p>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                onClick={() => {
+                  setAcceptConfirmInterest(null)
+                  setRevealContactOnAccept(true)
+                }}
+                disabled={acceptingInterestId === acceptConfirmInterest.id}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAcceptInterest}
+                disabled={acceptingInterestId === acceptConfirmInterest.id}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {acceptingInterestId === acceptConfirmInterest.id ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Accepting...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Accept Interest
+                  </>
                 )}
               </button>
             </div>

@@ -17,6 +17,8 @@ model User {
   phone         String?
   emailVerified DateTime?
   phoneVerified DateTime?
+  whatsappOptIn Boolean   @default(false) // User opted in to receive WhatsApp notifications
+  smsOptIn      Boolean   @default(true)  // User opted in to receive SMS notifications
   lastLogin     DateTime?
   lastNewMatchNotificationAt DateTime? // Track when user was last notified of new matches
   mustChangePassword Boolean @default(false)
@@ -69,7 +71,7 @@ model Profile {
   photoUrls         String?  // Comma-separated URLs from Google Drive
   profileImageUrl   String?  // Primary display photo (extracted from photoUrls or uploaded)
   drivePhotosLink   String?  // Link to Google Drive folder for additional photos
-  photoVisibility   String?  @default("verified_only") // verified_only, matching_preferences, mutual_interest
+  photoVisibility   String   @default("verified_only") // verified_only, express_interest, mutual_interest
 
   // Family Details
   fatherName        String?
@@ -261,6 +263,12 @@ model Match {
 
   status      String   @default("pending") // pending, accepted, rejected
   message     String?
+
+  // Contact/Name visibility - tracks if each party has revealed their info
+  // When sender expresses interest, they agree to reveal (default true)
+  // When receiver accepts, they're asked if they want to reveal (default true)
+  senderRevealedContact   Boolean @default(true)
+  receiverRevealedContact Boolean @default(true)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

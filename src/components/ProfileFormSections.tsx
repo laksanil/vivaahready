@@ -425,6 +425,35 @@ export function BasicsSection({ formData, handleChange, setFormData, hideNameFie
         {selectedCountry.code === 'other' && (
           <p className="text-xs text-gray-500">Enter your country code (e.g., +52 for Mexico) and phone number</p>
         )}
+
+        {/* Notification Preferences */}
+        <div className="mt-3 space-y-2">
+          <p className="text-xs text-gray-600 font-medium">Notification Preferences</p>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="smsOptIn"
+              checked={formData.smsOptIn !== false}
+              onChange={(e) => setFormData(prev => ({ ...prev, smsOptIn: e.target.checked }))}
+              className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-xs text-gray-600">
+              Receive SMS notifications for matches and updates
+            </span>
+          </label>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="whatsappOptIn"
+              checked={formData.whatsappOptIn === true}
+              onChange={(e) => setFormData(prev => ({ ...prev, whatsappOptIn: e.target.checked }))}
+              className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <span className="text-xs text-gray-600">
+              Receive WhatsApp messages for events and announcements
+            </span>
+          </label>
+        </div>
       </div>
       )}
 

@@ -929,6 +929,46 @@ function ViewProfilePageContent() {
               <p className="text-xs text-gray-500 mt-2">
                 {allPhotos.length}/3 photos {canAddMorePhotos && '- Click to add more'}
               </p>
+
+              {/* Photo Privacy Settings */}
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">Photo Privacy</span>
+                  </div>
+                </div>
+                <select
+                  value={profile.photoVisibility || 'verified_only'}
+                  onChange={async (e) => {
+                    const newValue = e.target.value
+                    try {
+                      const response = await fetch('/api/profile/update-visibility', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ photoVisibility: newValue }),
+                      })
+                      if (response.ok) {
+                        fetchProfile()
+                      }
+                    } catch (err) {
+                      console.error('Failed to update photo visibility', err)
+                    }
+                  }}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="verified_only">All Verified Members</option>
+                  <option value="express_interest">When I Express Interest</option>
+                  <option value="mutual_interest">After Connection is Made</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {profile.photoVisibility === 'express_interest'
+                    ? 'Photos visible only to members you express interest in'
+                    : profile.photoVisibility === 'mutual_interest'
+                    ? 'Photos visible only after mutual interest'
+                    : 'Photos visible to all verified members'}
+                </p>
+              </div>
             </div>
 
             {/* Profile Info */}

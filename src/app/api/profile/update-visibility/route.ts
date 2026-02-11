@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { photoVisibility } = body
 
-    const validOptions = ['verified_only', 'matching_preferences', 'mutual_interest']
+    const validOptions = ['verified_only', 'express_interest', 'mutual_interest']
     if (!validOptions.includes(photoVisibility)) {
       return NextResponse.json({ error: 'Invalid photo visibility option' }, { status: 400 })
     }
