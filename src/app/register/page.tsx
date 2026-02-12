@@ -216,12 +216,14 @@ const countryCodes = [
 
 export default function RegisterPage() {
   const router = useRouter()
-  // Capture referral code from URL and store in sessionStorage
+  // Capture referral code from URL and store in both sessionStorage and cookie
+  // Cookie survives Google OAuth redirect; sessionStorage does not always
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const ref = params.get('ref')
     if (ref) {
       sessionStorage.setItem('referredBy', ref)
+      document.cookie = `referredBy=${encodeURIComponent(ref)}; path=/; max-age=86400; SameSite=Lax`
     }
   }, [])
 

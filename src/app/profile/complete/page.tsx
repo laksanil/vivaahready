@@ -197,7 +197,7 @@ function ProfileCompleteContent() {
       try {
         // Use cookie first, then URL params, then storage
         const formDataToUse = formDataFromCookie || formDataFromUrl || (storedFormData ? JSON.parse(storedFormData) : {})
-        const referredBy = sessionStorage.getItem('referredBy') || undefined
+        const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
 
         console.log('Creating profile with data:', {
           firstName: formDataToUse.firstName,

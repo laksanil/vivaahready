@@ -25,13 +25,13 @@ function formatDisplayName(firstName: string, lastName: string): string {
 
 const profileSchema = z.object({
   email: z.string().email(),
-  gender: z.string().optional(), // Optional - user fills this in basics step
+  gender: z.string().min(1, 'Gender is required'),
   createdBy: z.string().optional(),
   phone: z.string().optional(), // Phone number stored in User model
 
-  // Basic Info
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  // Basic Info - firstName and lastName are required for profile creation
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   dateOfBirth: z.string().optional(),
   age: z.string().optional(),
   height: z.string().optional(),

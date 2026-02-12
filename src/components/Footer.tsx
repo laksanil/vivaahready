@@ -62,7 +62,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/matches" className="text-white/60 hover:text-white text-sm transition-colors duration-200">
+                  <Link href="/login" className="text-white/60 hover:text-white text-sm transition-colors duration-200">
                     View Matches
                   </Link>
                 </li>
@@ -133,10 +133,10 @@ export function Footer() {
                 <li>
                   <a
                     href="mailto:support@vivaahready.com"
-                    className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors duration-200"
+                    className="flex items-center gap-2 min-w-0 text-white/60 hover:text-white text-sm transition-colors duration-200"
                   >
                     <Mail className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span>support@vivaahready.com</span>
+                    <span className="break-all sm:break-normal">support@vivaahready.com</span>
                   </a>
                 </li>
                 <li className="flex items-center gap-2 text-white/60 text-sm">

@@ -264,7 +264,7 @@ function DashboardContent() {
         const formData = JSON.parse(storedFormData)
 
         // Create profile with stored form data
-        const referredBy = sessionStorage.getItem('referredBy') || undefined
+        const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
         const profileResponse = await fetch('/api/profile/create-from-modal', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

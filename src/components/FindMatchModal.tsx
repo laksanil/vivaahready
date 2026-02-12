@@ -122,12 +122,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Capture referral code from URL params into sessionStorage
+  // Capture referral code from URL params into sessionStorage and cookie
+  // Cookie survives Google OAuth redirect; sessionStorage does not always
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const ref = params.get('ref')
     if (ref) {
       sessionStorage.setItem('referredBy', ref)
+      document.cookie = `referredBy=${encodeURIComponent(ref)}; path=/; max-age=86400; SameSite=Lax`
     }
   }, [])
 
@@ -234,7 +236,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const isPreferences1Complete = true
 
   const handleCreateAccount = async () => {
-    if (!email || !phone || !password) return
+    if (!email || !password) return
     setError('')
     setLoading(true)
 
@@ -248,7 +250,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           name: fullName,
           email,
           password,
-          phone: `${countryCode}${phone}`,
+          phone: phone ? `${countryCode}${phone}` : undefined,
         }),
       })
 
@@ -276,6 +278,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   // Create profile after basics step is complete (step 2)
   const handleCreateProfile = async () => {
+    if (loading) return // Prevent double-click
+
     const userEmail = sessionStorage.getItem('newUserEmail') || email
     if (!userEmail) {
       setError('Session expired. Please start over.')
@@ -301,7 +305,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           motherTongue: formData.motherTongue,
           anyDisability: formData.anyDisability,
           createdBy: formData.createdBy,
-          referredBy: sessionStorage.getItem('referredBy') || undefined,
+          referredBy: sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined,
           _isPartialSave: true,
         }),
       })
@@ -331,7 +335,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 motherTongue: formData.motherTongue,
                 anyDisability: formData.anyDisability,
                 createdBy: formData.createdBy,
-                referredBy: sessionStorage.getItem('referredBy') || undefined,
+                referredBy: sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined,
                 _isPartialSave: true,
                 skipDuplicateCheck: true,
               }),
@@ -841,66 +845,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               </div>
 
-              {/* Phone Number - appears after name is filled */}
+              {/* Only show signup options if name is filled */}
               {(formData.firstName as string) && (formData.lastName as string) ? (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="form-label">Phone Number *</label>
-                    <div className="flex gap-2">
-                      <select
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="input-field w-28"
-                      >
-                        {COUNTRY_CODES.map((c) => (
-                          <option key={c.code} value={c.code}>{c.code} {c.country}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                        className="input-field flex-1"
-                        placeholder="Phone number"
-                        maxLength={15}
-                      />
-                    </div>
-                    <p className="text-gray-500 text-xs mt-1">
-                      Your contact information is protected. We do not sell, share, or disclose your phone number or email to third parties. Contact details are only visible to mutual matches.
-                    </p>
-                  </div>
-
-                  {/* SMS Consent Checkbox */}
-                  <div className="mt-4">
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={smsConsent}
-                        onChange={(e) => setSmsConsent(e.target.checked)}
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
-                      />
-                      <span className="text-sm text-gray-600 group-hover:text-gray-800">
-                        I agree to receive SMS text messages from VivaahReady for account verification (OTP) and match notifications. Message frequency varies. Message and data rates may apply. Reply STOP to opt out. View our{' '}
-                        <Link href="/privacy" target="_blank" className="text-primary-600 hover:underline">Privacy Policy</Link>
-                        {' '}and{' '}
-                        <Link href="/terms" target="_blank" className="text-primary-600 hover:underline">Terms of Use</Link>.
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              ) : null}
-
-              {/* SMS consent required message */}
-              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && !smsConsent && (
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
-                  <p className="text-amber-700 text-sm">
-                    Please agree to receive SMS messages to continue. SMS is required for account verification.
-                  </p>
-                </div>
-              )}
-
-              {/* Only show signup options if name AND phone are filled AND SMS consent given */}
-              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && smsConsent ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -921,8 +867,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       const dataToStore = {
                         firstName: formData.firstName,
                         lastName: formData.lastName,
-                        phone: `${countryCode}${phone}`,
-                        smsConsent: true // User checked the consent box
                       }
 
                       // Set cookie that expires in 1 hour (plenty of time for OAuth)
