@@ -149,6 +149,11 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     country: 'USA',
     grewUpIn: 'USA',
     citizenship: 'USA',
+    // Default deal-breakers for partner preferences
+    prefAgeIsDealbreaker: true,
+    prefHeightIsDealbreaker: true,
+    prefReligionIsDealbreaker: true,
+    prefMaritalStatusIsDealbreaker: true,
   })
 
   // Photo upload state
@@ -181,13 +186,19 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   // Education & Career section validation (includes location fields)
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
+  const occupationValue = (formData.occupation as string || '').toLowerCase()
+  const isNonWorkingOccupation = ['student', 'homemaker', 'home maker', 'retired', 'not working', 'unemployed'].some(
+    status => occupationValue.includes(status)
+  )
   const isLocationEducationComplete = !!(
     formData.country &&
     formData.grewUpIn &&
     formData.citizenship &&
     (!isUSALocation || formData.zipCode) && // zipCode only required for USA
     formData.qualification &&
+    formData.university &&
     formData.occupation &&
+    (isNonWorkingOccupation || formData.employerName) &&
     formData.openToRelocation // relocation is now required
   )
 
@@ -218,11 +229,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const communityValue = formData.community as string || ''
   const isReligionComplete = religionValue !== '' && communityValue !== ''
 
-  // Preferences Page 1 validation - Diet, Smoking, Drinking are required
-  const prefDietValue = formData.prefDiet as string || ''
-  const prefSmokingValue = formData.prefSmoking as string || ''
-  const prefDrinkingValue = formData.prefDrinking as string || ''
-  const isPreferences1Complete = prefDietValue !== '' && prefSmokingValue !== '' && prefDrinkingValue !== ''
+  // Preferences Page 1 validation - No required fields, "Doesn't Matter" is a valid choice
+  // Diet, Smoking, Drinking default to "Doesn't Matter" (empty string) which is acceptable
+  const isPreferences1Complete = true
 
   const handleCreateAccount = async () => {
     if (!email || !phone || !password) return
@@ -880,6 +889,15 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                   </div>
                 </div>
               ) : null}
+
+              {/* SMS consent required message */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && !smsConsent && (
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                  <p className="text-amber-700 text-sm">
+                    Please agree to receive SMS messages to continue. SMS is required for account verification.
+                  </p>
+                </div>
+              )}
 
               {/* Only show signup options if name AND phone are filled AND SMS consent given */}
               {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && smsConsent ? (

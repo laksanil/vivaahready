@@ -56,6 +56,7 @@ function ProfileCompleteContent() {
   const urlProfileId = searchParams.get('profileId')
   const fromGoogleAuth = searchParams.get('fromGoogleAuth') === 'true'
   const initialStep = parseInt(searchParams.get('step') || '1', 10) // Default to step 1 (basics)
+  const returnTo = searchParams.get('returnTo')
 
   // Read form data from URL params (most reliable - survives incognito mode OAuth redirects)
   const urlFirstName = searchParams.get('firstName')
@@ -129,6 +130,56 @@ function ProfileCompleteContent() {
           }
         } catch (err) {
           console.error('Error checking profile status:', err)
+        }
+
+        // No stored data and no profile
+        // If user has returnTo (coming from event registration), create profile using Google session data
+        if (returnTo && session?.user?.name) {
+          console.log('Creating profile from session data for event registration flow')
+          setCreatingProfile(true)
+          try {
+            // Parse name from Google session
+            const nameParts = session.user.name.split(' ')
+            const firstName = nameParts[0] || ''
+            const lastName = nameParts.slice(1).join(' ') || ''
+
+            const response = await fetch('/api/profile/create-from-modal', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: session.user.email,
+                firstName,
+                lastName,
+                phone: '', // Will be collected during profile completion
+              }),
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              setProfileId(data.profileId)
+              setFormData({ firstName, lastName, maritalStatus: 'never_married' })
+              setStep(1)
+              setCreatingProfile(false)
+              setPageLoading(false)
+              return
+            } else if (response.status === 409 || response.status === 400) {
+              // Profile already exists - try to fetch it again
+              const retryCheck = await fetch('/api/user/profile-status')
+              if (retryCheck.ok) {
+                const retryData = await retryCheck.json()
+                if (retryData.hasProfile && retryData.profileId) {
+                  setProfileId(retryData.profileId)
+                  setCreatingProfile(false)
+                  return
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error creating profile from session:', err)
+          }
+          setCreatingProfile(false)
+          setPageLoading(false)
+          return
         }
 
         // No stored data and no profile - redirect to dashboard
@@ -212,7 +263,7 @@ function ProfileCompleteContent() {
     }
 
     createProfileFromStoredData()
-  }, [status, session?.user?.email, profileId, creatingProfile, fromGoogleAuth, urlFirstName, urlLastName, urlPhone, router])
+  }, [status, session?.user?.email, session?.user?.name, profileId, creatingProfile, fromGoogleAuth, urlFirstName, urlLastName, urlPhone, returnTo, router])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -272,7 +323,7 @@ function ProfileCompleteContent() {
             dateOfBirth: data.dateOfBirth,
             age: data.age,
             height: data.height,
-            maritalStatus: data.maritalStatus,
+            maritalStatus: data.maritalStatus || 'never_married',
             hasChildren: data.hasChildren,
             motherTongue: data.motherTongue,
             languagesKnown: data.languagesKnown,
@@ -328,16 +379,16 @@ function ProfileCompleteContent() {
             // Partner Preferences
             prefAgeMin: data.prefAgeMin,
             prefAgeMax: data.prefAgeMax,
-            prefAgeIsDealbreaker: data.prefAgeIsDealbreaker,
+            prefAgeIsDealbreaker: data.prefAgeIsDealbreaker ?? true,
             prefHeightMin: data.prefHeightMin,
             prefHeightMax: data.prefHeightMax,
-            prefHeightIsDealbreaker: data.prefHeightIsDealbreaker,
+            prefHeightIsDealbreaker: data.prefHeightIsDealbreaker ?? true,
             prefMaritalStatus: data.prefMaritalStatus,
-            prefMaritalStatusIsDealbreaker: data.prefMaritalStatusIsDealbreaker,
+            prefMaritalStatusIsDealbreaker: data.prefMaritalStatusIsDealbreaker ?? true,
             prefHasChildren: data.prefHasChildren,
             prefHasChildrenIsDealbreaker: data.prefHasChildrenIsDealbreaker,
             prefReligion: data.prefReligion,
-            prefReligionIsDealbreaker: data.prefReligionIsDealbreaker,
+            prefReligionIsDealbreaker: data.prefReligionIsDealbreaker ?? true,
             prefCommunity: data.prefCommunity,
             prefCommunityIsDealbreaker: data.prefCommunityIsDealbreaker,
             prefGotra: data.prefGotra,
@@ -394,6 +445,46 @@ function ProfileCompleteContent() {
     // The back button on step 1 does nothing since profile is incomplete
   }
 
+  // Merge "Other" custom text fields into main fields before saving
+  // e.g., if motherTongue="Other" and motherTongueOther="Tulu", save motherTongue="Tulu"
+  const mergeOtherFields = (data: Record<string, unknown>): Record<string, unknown> => {
+    const merged = { ...data }
+
+    // Simple select fields: if value is "Other"/"other" and *Other field has text, use the text
+    const otherFieldMappings = [
+      { main: 'motherTongue', other: 'motherTongueOther', otherValue: 'Other' },
+      { main: 'qualification', other: 'qualificationOther', otherValue: 'other' },
+      { main: 'occupation', other: 'occupationOther', otherValue: 'other' },
+      { main: 'residencyStatus', other: 'residencyStatusOther', otherValue: 'other' },
+      { main: 'religion', other: 'religionOther', otherValue: 'Other' },
+      { main: 'familyLocation', other: 'familyLocationOther', otherValue: 'Other' },
+    ]
+
+    for (const { main, other, otherValue } of otherFieldMappings) {
+      if (merged[main] === otherValue && merged[other] && (merged[other] as string).trim()) {
+        merged[main] = (merged[other] as string).trim()
+      }
+    }
+
+    // Checkbox fields (comma-separated): replace "Other" with custom text
+    const checkboxOtherMappings = [
+      { main: 'hobbies', other: 'hobbiesOther' },
+      { main: 'fitness', other: 'fitnessOther' },
+      { main: 'interests', other: 'interestsOther' },
+      { main: 'languagesKnown', other: 'languagesKnownOther' },
+    ]
+
+    for (const { main, other } of checkboxOtherMappings) {
+      const val = merged[main] as string
+      const otherText = merged[other] as string
+      if (val && val.includes('Other') && otherText && otherText.trim()) {
+        merged[main] = val.replace('Other', otherText.trim())
+      }
+    }
+
+    return merged
+  }
+
   // Update profile with section data
   const handleUpdateProfile = async (nextStep: number) => {
     if (!profileId) return
@@ -403,6 +494,7 @@ function ProfileCompleteContent() {
 
     try {
       const signupStep = getSignupStepFromLocalStep(nextStep)
+      const dataToSave = mergeOtherFields(formData)
 
       const response = await fetch(`/api/profile/${profileId}`, {
         method: 'PUT',
@@ -410,7 +502,7 @@ function ProfileCompleteContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
+          ...dataToSave,
           signupStep,
         }),
       })
@@ -434,7 +526,8 @@ function ProfileCompleteContent() {
     // If on last step (preferences_2, which is step 8), save and redirect to photos page
     if (step === SECTION_ORDER.length) {
       await handleUpdateProfile(step)
-      router.push(`/profile/photos?profileId=${profileId}&fromSignup=true`)
+      const photosUrl = `/profile/photos?profileId=${profileId}&fromSignup=true${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
+      router.push(photosUrl)
     } else if (step < SECTION_ORDER.length) {
       await handleUpdateProfile(step + 1)
     }
@@ -456,13 +549,19 @@ function ProfileCompleteContent() {
 
   // Location & Education validation
   const isUSALocation = (formData.country as string || 'USA') === 'USA'
+  const occupationValue = (formData.occupation as string || '').toLowerCase()
+  const isNonWorkingOccupation = ['student', 'homemaker', 'home maker', 'retired', 'not working', 'unemployed'].some(
+    status => occupationValue.includes(status)
+  )
   const isLocationEducationComplete = !!(
     formData.country &&
     formData.grewUpIn &&
     formData.citizenship &&
     (!isUSALocation || formData.zipCode) &&
     formData.qualification &&
+    formData.university &&
     formData.occupation &&
+    (isNonWorkingOccupation || formData.employerName) &&
     formData.openToRelocation
   )
 

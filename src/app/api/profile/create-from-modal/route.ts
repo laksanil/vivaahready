@@ -197,6 +197,13 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     const sessionEmail = session?.user?.email
 
+    // Security: if user is authenticated, ensure data.email matches their session
+    // This prevents creating profiles on other users' accounts
+    if (sessionEmail && data.email && sessionEmail.toLowerCase() !== data.email.toLowerCase()) {
+      // Allow session-based lookup if emails don't match (Google OAuth redirect flow)
+      // but only use the session user, not the body email
+    }
+
     // Try to find user by email first
     let user = await prisma.user.findUnique({
       where: { email: data.email },
@@ -209,6 +216,14 @@ export async function POST(request: Request) {
         where: { email: sessionEmail },
         include: { profile: true }
       })
+    }
+
+    // Security: if we found user by body email AND session exists, verify ownership
+    if (user && sessionEmail && user.email.toLowerCase() !== sessionEmail.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Session email does not match profile email.' },
+        { status: 401 }
+      )
     }
 
     // If user still not found but we have a valid session, create the user

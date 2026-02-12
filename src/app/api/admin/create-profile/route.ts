@@ -232,10 +232,17 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Handle name fields specially
-      if (normalizedProfileData.firstName || normalizedProfileData.lastName) {
-        // Store full name in a way that can be retrieved
-        profileFields.createdBy = normalizedProfileData.createdBy || 'admin'
+      // Set firstName and lastName on profile
+      if (normalizedProfileData.firstName) {
+        profileFields.firstName = normalizedProfileData.firstName
+      }
+      if (normalizedProfileData.lastName) {
+        profileFields.lastName = normalizedProfileData.lastName
+      }
+      if (normalizedProfileData.createdBy) {
+        profileFields.createdBy = normalizedProfileData.createdBy
+      } else {
+        profileFields.createdBy = 'admin'
       }
 
       // Create profile

@@ -119,13 +119,16 @@ export async function PUT(
     const targetUser = await getTargetUserId(request, session)
 
     // For security, verify the request is from:
-    // 1. The profile owner (via session)
-    // 2. Or via newUserId header (set during signup flow before session exists)
+    // 1. The profile owner (via session user ID)
+    // 2. Or via session email matching profile owner's email
+    // 3. Or via newUserId header (set during signup flow before session exists)
     const newUserIdHeader = request.headers.get('x-new-user-id')
     const isOwnerViaSession = targetUser?.userId === existingProfile.userId
+    const isOwnerViaEmail = session?.user?.email && existingProfile.user?.email &&
+      session.user.email.toLowerCase() === existingProfile.user.email.toLowerCase()
     const isOwnerViaHeader = newUserIdHeader === existingProfile.userId
 
-    if (!isOwnerViaSession && !isOwnerViaHeader) {
+    if (!isOwnerViaSession && !isOwnerViaEmail && !isOwnerViaHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -154,6 +157,7 @@ export async function PUT(
     if (body.qualification !== undefined) updateData.qualification = body.qualification
     if (body.university !== undefined) updateData.university = body.university
     if (body.occupation !== undefined) updateData.occupation = body.occupation
+    if (body.employerName !== undefined) updateData.employerName = body.employerName
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
 
@@ -251,6 +255,27 @@ export async function PUT(
     // Referral
     if (body.howDidYouHear !== undefined) updateData.howDidYouHear = body.howDidYouHear
     if (body.referredBy !== undefined) updateData.referredBy = body.referredBy
+
+    // Validate preference ranges: min must be ≤ max
+    if (updateData.prefAgeMin !== undefined && updateData.prefAgeMax !== undefined) {
+      if (Number(updateData.prefAgeMin) > Number(updateData.prefAgeMax)) {
+        return NextResponse.json(
+          { error: 'Preferred minimum age cannot be greater than maximum age.' },
+          { status: 400 }
+        )
+      }
+    }
+    if (updateData.prefHeightMin !== undefined && updateData.prefHeightMax !== undefined) {
+      const heightOrder = ["4'6\"", "4'7\"", "4'8\"", "4'9\"", "4'10\"", "4'11\"", "5'0\"", "5'1\"", "5'2\"", "5'3\"", "5'4\"", "5'5\"", "5'6\"", "5'7\"", "5'8\"", "5'9\"", "5'10\"", "5'11\"", "6'0\"", "6'1\"", "6'2\"", "6'3\"", "6'4\"", "6'5\"", "6'6\""]
+      const minIdx = heightOrder.indexOf(updateData.prefHeightMin as string)
+      const maxIdx = heightOrder.indexOf(updateData.prefHeightMax as string)
+      if (minIdx !== -1 && maxIdx !== -1 && minIdx > maxIdx) {
+        return NextResponse.json(
+          { error: 'Preferred minimum height cannot be greater than maximum height.' },
+          { status: 400 }
+        )
+      }
+    }
 
     // Signup progress tracking
     // IMPORTANT: Phone number is REQUIRED to proceed past step 1 (basics)
