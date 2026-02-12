@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { generateVrId } from '@/lib/vrId'
@@ -191,11 +193,35 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
+    // Get the authenticated session first
+    const session = await getServerSession(authOptions)
+    const sessionEmail = session?.user?.email
+
+    // Try to find user by email first
+    let user = await prisma.user.findUnique({
       where: { email: data.email },
       include: { profile: true }
     })
+
+    // If not found by email, try to get user from authenticated session
+    if (!user && sessionEmail) {
+      user = await prisma.user.findUnique({
+        where: { email: sessionEmail },
+        include: { profile: true }
+      })
+    }
+
+    // If user still not found but we have a valid session, create the user
+    if (!user && sessionEmail) {
+      user = await prisma.user.create({
+        data: {
+          email: sessionEmail,
+          name: session?.user?.name || data.firstName || 'User',
+          phone: data.phone || null,
+        },
+        include: { profile: true }
+      })
+    }
 
     if (!user) {
       return NextResponse.json(

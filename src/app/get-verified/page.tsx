@@ -214,13 +214,21 @@ export default function GetVerifiedPage() {
 
                 {/* Founding Member Pricing - Discreet inline */}
                 <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
-                  <p className="text-xs text-amber-800">
-                    <span className="font-semibold">Founding Member:</span>{' '}
-                    <span className="text-amber-700">$50 until March 1, 2026</span>
-                    <span className="mx-1.5 text-amber-400">•</span>
-                    <span className="text-amber-600">$100 after</span>
-                    <span className="text-amber-500 ml-1">(one-time)</span>
-                  </p>
+                  {new Date() < new Date('2026-03-01T00:00:00') ? (
+                    <p className="text-xs text-amber-800">
+                      <span className="font-semibold">Founding Member:</span>{' '}
+                      <span className="text-amber-700">$50 until March 1, 2026</span>
+                      <span className="mx-1.5 text-amber-400">•</span>
+                      <span className="text-amber-600">$100 after</span>
+                      <span className="text-amber-500 ml-1">(one-time)</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-800">
+                      <span className="font-semibold">One-time verification fee:</span>{' '}
+                      <span className="text-amber-700">$100</span>
+                      <span className="text-amber-500 ml-1">(one-time, no subscription)</span>
+                    </p>
+                  )}
                   <p className="text-xs text-amber-600 mt-0.5">
                     Helps keep VivaahReady private and spam-free.
                   </p>
