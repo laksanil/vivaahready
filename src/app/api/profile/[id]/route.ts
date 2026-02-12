@@ -195,7 +195,7 @@ export async function PUT(
 
     // About Me
     if (body.aboutMe !== undefined) updateData.aboutMe = body.aboutMe
-    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
     if (body.instagram !== undefined) updateData.instagram = body.instagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.bloodGroup !== undefined) updateData.bloodGroup = body.bloodGroup

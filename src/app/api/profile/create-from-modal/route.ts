@@ -321,7 +321,7 @@ export async function POST(request: Request) {
           : data.familyLocationCountry || data.familyLocation,
         motherTongue: data.motherTongue,
         languagesKnown: data.languagesKnown,
-        linkedinProfile: data.linkedinProfile,
+        linkedinProfile: data.linkedinProfile === 'no_linkedin' ? null : data.linkedinProfile,
         instagram: data.instagram,
         facebook: data.facebook,
 

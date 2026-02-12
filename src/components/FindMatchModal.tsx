@@ -117,7 +117,7 @@ const ADMIN_SECTION_ORDER = ['admin_account', 'basics', 'location_education', 'r
 
 export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, onAdminSuccess }: FindMatchModalProps) {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status, update: updateSession } = useSession()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -328,10 +328,24 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             }
             const retryData = await retryResponse.json()
             setCreatedProfileId(retryData.profileId)
+            await updateSession()
             setStep(step + 1)
             setLoading(false)
             return
           } else {
+            // User canceled - clean up orphan user account
+            const orphanUserId = sessionStorage.getItem('newUserId')
+            if (orphanUserId) {
+              fetch('/api/user/cleanup-orphan', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: orphanUserId }),
+              }).catch(() => {}) // Fire and forget
+              sessionStorage.removeItem('newUserId')
+              sessionStorage.removeItem('newUserEmail')
+              sessionStorage.removeItem('newUserPassword')
+            }
+            setStep(1) // Reset to registration step
             setLoading(false)
             return
           }
@@ -344,6 +358,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       const profileData = await profileResponse.json()
       setCreatedProfileId(profileData.profileId)
+
+      // Refresh session so hasProfile is updated immediately
+      await updateSession()
 
       setStep(step + 1) // Move to next section (location_education)
     } catch {

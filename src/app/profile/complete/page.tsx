@@ -51,7 +51,7 @@ const getSignupStepFromLocalStep = (localStep: number): number => {
 function ProfileCompleteContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session, status } = useSession()
+  const { data: session, status, update: updateSession } = useSession()
 
   const urlProfileId = searchParams.get('profileId')
   const fromGoogleAuth = searchParams.get('fromGoogleAuth') === 'true'
@@ -155,6 +155,7 @@ function ProfileCompleteContent() {
             if (response.ok) {
               const data = await response.json()
               setProfileId(data.profileId)
+              await updateSession() // Refresh session so hasProfile is updated
               setFormData({ firstName, lastName, maritalStatus: 'never_married' })
               setStep(1)
               setCreatingProfile(false)
@@ -210,6 +211,7 @@ function ProfileCompleteContent() {
         if (response.ok) {
           const data = await response.json()
           setProfileId(data.profileId)
+          await updateSession() // Refresh session so hasProfile is updated
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           // Pre-fill form with the data (includes phone from account step)
           setFormData(formDataToUse)
@@ -255,7 +257,7 @@ function ProfileCompleteContent() {
     }
 
     createProfileFromStoredData()
-  }, [status, session?.user?.email, session?.user?.name, profileId, creatingProfile, fromGoogleAuth, urlFirstName, urlLastName, urlPhone, returnTo, router])
+  }, [status, session?.user?.email, session?.user?.name, profileId, creatingProfile, fromGoogleAuth, urlFirstName, urlLastName, urlPhone, returnTo, router, updateSession])
 
   // Redirect if not authenticated
   useEffect(() => {

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 import bcrypt from 'bcryptjs'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
+import { sanitizeObject } from '@/lib/sanitize'
 
 // Generate a VR ID
 function generateVRId(): string {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
+    const body = sanitizeObject(await request.json())
     const { name, email, phone, tempPassword, profileData, skipDuplicateCheck } = body
 
     if (!email || !name || !tempPassword) {
@@ -110,8 +111,8 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Prepare profile data
-      const normalizedProfileData = normalizeSameAsMinePreferences(profileData || {})
+      // Prepare profile data - sanitize to prevent XSS
+      const normalizedProfileData = sanitizeObject(normalizeSameAsMinePreferences(profileData || {}))
       const profileFields: Record<string, unknown> = {
         userId: user.id,
         odNumber: vrId,
@@ -228,7 +229,12 @@ export async function POST(request: NextRequest) {
       // Copy profile data
       for (const [formKey, dbKey] of Object.entries(fieldMappings)) {
         if (normalizedProfileData[formKey] !== undefined && normalizedProfileData[formKey] !== '') {
-          profileFields[dbKey] = normalizedProfileData[formKey]
+          let value = normalizedProfileData[formKey]
+          // Normalize 'no_linkedin' to null
+          if (dbKey === 'linkedinProfile' && value === 'no_linkedin') {
+            value = null
+          }
+          profileFields[dbKey] = value
         }
       }
 
