@@ -290,25 +290,19 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
+      const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
+      const profilePayload = {
+        ...formData,
+        email: userEmail,
+        phone: phone ? `${countryCode}${phone}` : undefined,
+        referredBy,
+        _isPartialSave: true,
+      }
+
       const profileResponse = await fetch('/api/profile/create-from-modal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userEmail,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: phone ? `${countryCode}${phone}` : undefined,
-          gender: formData.gender,
-          dateOfBirth: formData.dateOfBirth,
-          age: formData.age,
-          height: formData.height,
-          maritalStatus: formData.maritalStatus,
-          motherTongue: formData.motherTongue,
-          anyDisability: formData.anyDisability,
-          createdBy: formData.createdBy,
-          referredBy: sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined,
-          _isPartialSave: true,
-        }),
+        body: JSON.stringify(profilePayload),
       })
 
       if (!profileResponse.ok) {
@@ -324,23 +318,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             const retryResponse = await fetch('/api/profile/create-from-modal', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: userEmail,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: phone ? `${countryCode}${phone}` : undefined,
-                gender: formData.gender,
-                dateOfBirth: formData.dateOfBirth,
-                age: formData.age,
-                height: formData.height,
-                maritalStatus: formData.maritalStatus,
-                motherTongue: formData.motherTongue,
-                anyDisability: formData.anyDisability,
-                createdBy: formData.createdBy,
-                referredBy: sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined,
-                _isPartialSave: true,
-                skipDuplicateCheck: true,
-              }),
+              body: JSON.stringify({ ...profilePayload, skipDuplicateCheck: true }),
             })
             if (!retryResponse.ok) {
               const retryData = await retryResponse.json()
