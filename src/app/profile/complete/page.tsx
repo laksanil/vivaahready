@@ -526,10 +526,12 @@ function ProfileCompleteContent() {
   }
 
   // Section validations
-  // Basics validation (name and phone already collected during registration, not needed here)
+  // Basics validation (phone is already collected in signup modal, no need to validate here)
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
   const isBasicsComplete = !!(
     formData.createdBy &&
+    formData.firstName &&
+    formData.lastName &&
     formData.gender &&
     hasAgeOrDOB &&
     formData.height &&
@@ -725,12 +727,14 @@ function ProfileCompleteContent() {
             {/* Basics Section */}
             {currentSection === 'basics' && (
               <div className="space-y-4">
-                <BasicsSection {...sectionProps} hideNameFields={true} hidePhoneField={true} />
+                <BasicsSection {...sectionProps} hidePhoneField={true} />
                 {/* Debug: Show which fields are missing */}
                 {!isBasicsComplete && (
                   <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
                     Missing: {[
                       !formData.createdBy && 'Created By',
+                      !formData.firstName && 'First Name',
+                      !formData.lastName && 'Last Name',
                       !formData.gender && 'Gender',
                       !hasAgeOrDOB && 'Age/DOB',
                       !formData.height && 'Height',

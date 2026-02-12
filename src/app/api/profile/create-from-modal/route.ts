@@ -25,7 +25,7 @@ function formatDisplayName(firstName: string, lastName: string): string {
 
 const profileSchema = z.object({
   email: z.string().email(),
-  gender: z.string().optional(), // Collected in basics step, not during initial registration
+  gender: z.string().min(1, 'Gender is required'),
   createdBy: z.string().optional(),
   phone: z.string().optional(), // Phone number stored in User model
 
