@@ -241,7 +241,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
-      // Step 1: Create user account ONLY (profile created in step 2 after basics)
+      // Step 1: Create user account
       const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'New User'
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -267,7 +267,31 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Store password in sessionStorage for auto-login after photo upload
       sessionStorage.setItem('newUserPassword', password)
 
-      // Move to basics step - profile will be created after basics are filled
+      // Step 2: Create profile immediately with name + phone (before navigating to basics)
+      try {
+        const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
+        const profileResponse = await fetch('/api/profile/create-from-modal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: phone ? `${countryCode}${phone}` : undefined,
+            referredBy,
+            _isPartialSave: true,
+          }),
+        })
+
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json()
+          setCreatedProfileId(profileData.profileId)
+        }
+      } catch {
+        // Profile creation failed silently - will retry on basics step
+      }
+
+      // Move to basics step
       setStep(step + 1)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -794,12 +818,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
         {/* Content */}
         <div className="p-6 pb-8">
-          {/* Step 2: Basic Info - Creates profile with all required fields */}
+          {/* Step 2: Basic Info - Profile already created during registration with name+phone */}
           {currentSection === 'basics' && (
             <div className="space-y-4">
               <BasicsSection {...sectionProps} hideNameFields={true} hidePhoneField={true} />
               {renderContinueButton(
-                handleCreateProfile,
+                createdProfileId ? handleSectionContinue : handleCreateProfile,
                 !isBasicsComplete
               )}
             </div>
