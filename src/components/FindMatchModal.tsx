@@ -845,8 +845,37 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               </div>
 
-              {/* Only show signup options if name is filled */}
+              {/* Phone Number - appears after name is filled */}
               {(formData.firstName as string) && (formData.lastName as string) ? (
+                <div className="mt-4">
+                  <label className="form-label">Phone Number *</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => setCountryCode(e.target.value)}
+                      className="input-field w-28"
+                    >
+                      {COUNTRY_CODES.map((c) => (
+                        <option key={c.code} value={c.code}>{c.code} {c.country}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                      className="input-field flex-1"
+                      placeholder="Phone number"
+                      maxLength={15}
+                    />
+                  </div>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Your contact information is protected and only visible to mutual matches.
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Only show signup options if name AND phone are filled */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -867,30 +896,27 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       const dataToStore = {
                         firstName: formData.firstName,
                         lastName: formData.lastName,
+                        phone: `${countryCode}${phone}`,
                       }
 
                       // Set cookie that expires in 1 hour (plenty of time for OAuth)
                       const cookieData = encodeURIComponent(JSON.stringify(dataToStore))
                       document.cookie = `signupFormData=${cookieData}; path=/; max-age=3600; SameSite=Lax`
-                      console.log('Stored signup data in cookie:', dataToStore)
-
                       // Also store in localStorage/sessionStorage as backup
                       try {
                         localStorage.setItem('signupFormData', JSON.stringify(dataToStore))
                         sessionStorage.setItem('signupFormData', JSON.stringify(dataToStore))
-                      } catch (e) {
-                        console.log('Storage not available')
+                      } catch {
+                        // Storage not available
                       }
 
                       const callbackUrl = '/profile/complete?fromGoogleAuth=true'
 
                       // If user is already authenticated, redirect directly
                       if (status === 'authenticated' && session?.user?.email) {
-                        console.log('Already authenticated - redirecting directly')
                         onClose()
                         window.location.href = callbackUrl
                       } else {
-                        console.log('Not authenticated - going through Google OAuth')
                         signIn('google', { callbackUrl })
                       }
                     }}

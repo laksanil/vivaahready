@@ -86,7 +86,6 @@ function ProfileCompleteContent() {
           try {
             const cookieValue = signupCookie.split('=')[1]
             formDataFromCookie = JSON.parse(decodeURIComponent(cookieValue))
-            console.log('Found form data in cookie (most reliable method):', formDataFromCookie)
             // Clear the cookie after reading
             document.cookie = 'signupFormData=; path=/; max-age=0'
           } catch (e) {
@@ -98,7 +97,6 @@ function ProfileCompleteContent() {
       // PRIORITY 2: Check URL params as fallback
       let formDataFromUrl: { firstName?: string; lastName?: string; phone?: string } | null = null
       if (!formDataFromCookie && fromGoogleAuth && urlFirstName && urlLastName && urlPhone) {
-        console.log('Found form data in URL params')
         formDataFromUrl = {
           firstName: urlFirstName,
           lastName: urlLastName,
@@ -111,7 +109,7 @@ function ProfileCompleteContent() {
       if (!storedFormData) {
         storedFormData = localStorage.getItem('signupFormData')
         if (storedFormData) {
-          console.log('Found signupFormData in localStorage (sessionStorage was empty)')
+          // Found in localStorage as fallback
         }
       }
 
@@ -135,7 +133,7 @@ function ProfileCompleteContent() {
         // No stored data and no profile
         // If user has returnTo (coming from event registration), create profile using Google session data
         if (returnTo && session?.user?.name) {
-          console.log('Creating profile from session data for event registration flow')
+          // Creating profile from session data for event registration flow
           setCreatingProfile(true)
           try {
             // Parse name from Google session
@@ -185,7 +183,7 @@ function ProfileCompleteContent() {
         // No stored data and no profile - redirect to dashboard
         // Don't redirect to homepage with startSignup=true as that creates a loop
         if (fromGoogleAuth) {
-          console.log('No signup data found, redirecting to dashboard')
+          // No signup data found, redirecting to dashboard
           router.push('/dashboard')
           return
         }
@@ -198,12 +196,6 @@ function ProfileCompleteContent() {
         // Use cookie first, then URL params, then storage
         const formDataToUse = formDataFromCookie || formDataFromUrl || (storedFormData ? JSON.parse(storedFormData) : {})
         const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
-
-        console.log('Creating profile with data:', {
-          firstName: formDataToUse.firstName,
-          lastName: formDataToUse.lastName,
-          hasPhone: !!formDataToUse.phone
-        })
 
         const response = await fetch('/api/profile/create-from-modal', {
           method: 'POST',
@@ -276,7 +268,7 @@ function ProfileCompleteContent() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (pageLoading || creatingProfile) {
-        console.log('Safety timeout triggered - stopping loading')
+        // Safety timeout triggered - stopping loading
         sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
         setPageLoading(false)
         setCreatingProfile(false)

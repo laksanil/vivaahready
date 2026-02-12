@@ -84,7 +84,7 @@ export async function GET() {
           maxAge: EVENT_CONFIG.maxAge,
           dietaryReq: EVENT_CONFIG.dietaryReq,
           locationReq: EVENT_CONFIG.locationReq,
-          price: 1, // TODO: Change back to 25 for production
+          price: 25,
           status: 'upcoming',
           isPublished: true,
           minAttendeesToRun: 10,
