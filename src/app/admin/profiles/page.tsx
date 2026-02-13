@@ -6,7 +6,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Download, Trash2, RefreshCw, Ban, UserCheck, ShieldCheck, ImageOff,
-  ExternalLink, Eye, Loader2, Users, Heart, AlertTriangle,
+  ExternalLink, Eye, Loader2, User, Users, Heart, AlertTriangle,
   Check, X, Edit, LayoutDashboard, MessageCircle, CreditCard
 } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
@@ -72,7 +72,7 @@ interface Profile {
   } | null
 }
 
-type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'incomplete' | 'deletions'
+type TabType = 'all' | 'pending' | 'approved' | 'suspended' | 'no_photos' | 'incomplete' | 'no_profile' | 'deletions'
 
 const REASON_LABELS: Record<string, string> = {
   marriage_vivaahready: 'Marriage Fixed via VivaahReady',
@@ -122,6 +122,7 @@ function AdminProfilesContent() {
     { id: 'suspended', label: 'Suspended', count: tabCounts.suspended },
     { id: 'no_photos', label: 'No Photos', count: tabCounts.no_photos },
     { id: 'incomplete', label: 'Incomplete', count: tabCounts.incomplete },
+    { id: 'no_profile', label: 'No Profile', count: tabCounts.no_profile },
     { id: 'deletions', label: 'Deletions', count: tabCounts.deletions },
   ]
 
@@ -198,11 +199,16 @@ function AdminProfilesContent() {
 
   const handleDeleteConfirm = async () => {
     const profile = deleteConfirmModal.profile
-    if (!profile || !profile.id) return
+    if (!profile) return
 
-    setActionLoading(profile.id)
+    // Use profile ID if available, otherwise fall back to user ID
+    const deleteId = profile.id || profile.user.id
+    setActionLoading(deleteId)
     try {
-      const res = await fetch(`/api/admin/profiles/${profile.id}`, {
+      const deleteUrl = profile.id
+        ? `/api/admin/profiles/${profile.id}`
+        : `/api/admin/users/${profile.user.id}`
+      const res = await fetch(deleteUrl, {
         method: 'DELETE',
       })
       if (res.ok) {
@@ -377,6 +383,16 @@ function AdminProfilesContent() {
         { key: 'progress', label: 'Progress' },
         { key: 'missing', label: 'Missing Fields' },
         { key: 'created', label: 'Created' },
+        { key: 'actions', label: 'Actions' },
+      ]
+    }
+    if (activeTab === 'no_profile') {
+      return [
+        { key: 'user', label: 'User' },
+        { key: 'email', label: 'Email' },
+        { key: 'phone', label: 'Phone' },
+        { key: 'registered', label: 'Registered' },
+        { key: 'lastLogin', label: 'Last Login' },
         { key: 'actions', label: 'Actions' },
       ]
     }
@@ -618,6 +634,52 @@ function AdminProfilesContent() {
       )
     }
 
+    // No Profile tab view - accounts without any profile
+    if (activeTab === 'no_profile') {
+      return (
+        <tr key={profile.user.id} className="hover:bg-gray-50 bg-blue-50/30">
+          <td className="px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-blue-600 font-semibold text-sm">
+                  {profile.user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-900">
+                  {profile.user.name}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {profile.user.email}
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {profile.user.phone || <span className="text-gray-400">-</span>}
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {formatDate(profile.createdAt)}
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {formatRelativeDate(profile.user.lastLogin)}
+          </td>
+          <td className="px-4 py-3">
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            ) : (
+              <AdminIconButton
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => setDeleteConfirmModal({ isOpen: true, profile })}
+                title="Delete account"
+                variant="red"
+              />
+            )}
+          </td>
+        </tr>
+      )
+    }
+
     // Default profile view
     // Color code: suspended=red, approved+paid=green tint, approved+unpaid=amber tint
     const getRowClass = () => {
@@ -847,7 +909,7 @@ function AdminProfilesContent() {
           onSearchSubmit={handleSearch}
           placeholder="Search by name, email, phone, VR ID..."
         >
-          {activeTab !== 'deletions' && activeTab !== 'incomplete' && (
+          {activeTab !== 'deletions' && activeTab !== 'incomplete' && activeTab !== 'no_profile' && (
             <select
               value={genderFilter}
               onChange={(e) => { setGenderFilter(e.target.value); setPage(1); }}
@@ -862,11 +924,11 @@ function AdminProfilesContent() {
       </AdminTabs>
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : 8} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : activeTab === 'no_profile' ? 6 : 8} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
-          icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : <Users className="h-12 w-12" />}
-          title={activeTab === 'deletions' ? 'No deletion requests' : activeTab === 'incomplete' ? 'No incomplete profiles' : 'No profiles found'}
+          icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : activeTab === 'no_profile' ? <User className="h-12 w-12" /> : <Users className="h-12 w-12" />}
+          title={activeTab === 'deletions' ? 'No deletion requests' : activeTab === 'incomplete' ? 'No incomplete profiles' : activeTab === 'no_profile' ? 'No accounts without profiles' : 'No profiles found'}
           description={`No ${activeTab === 'all' ? '' : activeTab.replace('_', ' ')} items to display.`}
         />
       ) : (
@@ -879,7 +941,7 @@ function AdminProfilesContent() {
             totalPages={totalPages}
             totalCount={totalCount}
             itemsShown={profiles.length}
-            itemLabel={activeTab === 'deletions' ? 'requests' : 'profiles'}
+            itemLabel={activeTab === 'deletions' ? 'requests' : activeTab === 'no_profile' ? 'accounts' : 'profiles'}
             onPageChange={setPage}
           />
         </>
@@ -941,7 +1003,7 @@ function AdminProfilesContent() {
         message={`Are you sure you want to permanently delete ${deleteConfirmModal.profile?.user.name}'s account? This will remove their profile, login, messages, connections, and all associated data. This action cannot be undone.`}
         confirmText="Delete Account"
         confirmVariant="danger"
-        isLoading={actionLoading === deleteConfirmModal.profile?.id}
+        isLoading={actionLoading === (deleteConfirmModal.profile?.id || deleteConfirmModal.profile?.user.id)}
         icon={<Trash2 className="h-5 w-5 text-red-500" />}
       />
 

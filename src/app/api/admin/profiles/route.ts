@@ -19,14 +19,135 @@ export async function GET(request: Request) {
     const filter = searchParams.get('filter') // pending, verified, unverified, suspended, no_photos, no_profile, deletions, incomplete
     const userId = searchParams.get('userId')
 
-    // no_profile filter is removed - users without profiles shouldn't exist
+    // Users who have an account but never created a profile
     if (filter === 'no_profile') {
+      const userWhere: any = { profile: null }
+
+      if (search) {
+        const phoneDigits = search.replace(/[^0-9]/g, '')
+        const searchConditions: any[] = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ]
+        if (phoneDigits.length >= 4) {
+          searchConditions.push(
+            { phone: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: phoneDigits, mode: 'insensitive' } },
+          )
+        }
+        userWhere.OR = searchConditions
+      }
+
+      const [usersWithoutProfile, totalNoProfile] = await Promise.all([
+        prisma.user.findMany({
+          where: userWhere,
+          skip: (page - 1) * limit,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+            lastLogin: true,
+            emailVerified: true,
+          },
+        }),
+        prisma.user.count({ where: userWhere }),
+      ])
+
+      // Transform to profile-like structure for unified frontend rendering
+      const profilesFromUsers = usersWithoutProfile.map((user) => ({
+        id: null,
+        odNumber: null,
+        gender: null,
+        dateOfBirth: null,
+        height: null,
+        currentLocation: null,
+        occupation: null,
+        qualification: null,
+        caste: null,
+        signupStep: null,
+        isVerified: false,
+        isSuspended: false,
+        suspendedReason: null,
+        approvalStatus: 'no_profile',
+        createdAt: user.createdAt,
+        updatedAt: null,
+        photoUrls: null,
+        profileImageUrl: null,
+        drivePhotosLink: null,
+        user: {
+          id: user.id,
+          name: user.name || 'Unknown',
+          email: user.email,
+          phone: user.phone,
+          lastLogin: user.lastLogin,
+        },
+        hasProfile: false,
+        emailVerified: !!user.emailVerified,
+        interestStats: null,
+        deletionRequest: null,
+      }))
+
+      // Get tab counts (only on first page)
+      let tabCounts = null
+      if (page === 1) {
+        const [
+          allCount, pendingCount, approvedCount, suspendedCount,
+          noPhotosCount, incompleteCount, deletionsCount,
+          noProfileCount, bridesCount, groomsCount,
+        ] = await Promise.all([
+          prisma.profile.count(),
+          prisma.profile.count({ where: { approvalStatus: 'pending' } }),
+          prisma.profile.count({ where: { approvalStatus: 'approved', isSuspended: false } }),
+          prisma.profile.count({ where: { isSuspended: true } }),
+          prisma.profile.count({
+            where: {
+              AND: [
+                { OR: [{ photoUrls: null }, { photoUrls: '' }] },
+                { OR: [{ profileImageUrl: null }, { profileImageUrl: '' }] },
+                { OR: [{ drivePhotosLink: null }, { drivePhotosLink: '' }] },
+              ],
+            },
+          }),
+          prisma.profile.count({
+            where: {
+              OR: [
+                { signupStep: { lt: 4 } },
+                { gender: null },
+                { dateOfBirth: null },
+                { currentLocation: null },
+              ],
+            },
+          }),
+          prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
+          prisma.user.count({ where: { profile: null } }),
+          prisma.profile.count({ where: { gender: 'female' } }),
+          prisma.profile.count({ where: { gender: 'male' } }),
+        ])
+
+        tabCounts = {
+          all: allCount,
+          pending: pendingCount,
+          approved: approvedCount,
+          suspended: suspendedCount,
+          no_photos: noPhotosCount,
+          incomplete: incompleteCount,
+          deletions: deletionsCount,
+          no_profile: noProfileCount,
+          brides: bridesCount,
+          grooms: groomsCount,
+        }
+      }
+
       return NextResponse.json({
-        profiles: [],
-        total: 0,
+        profiles: profilesFromUsers,
+        total: totalNoProfile,
         page,
-        totalPages: 0,
-        tabCounts: null,
+        totalPages: Math.ceil(totalNoProfile / limit),
+        tabCounts,
       })
     }
 
@@ -106,6 +227,7 @@ export async function GET(request: Request) {
           suspendedCount,
           noPhotosCount,
           incompleteCount,
+          noProfileCount,
           bridesCount,
           groomsCount,
         ] = await Promise.all([
@@ -132,6 +254,7 @@ export async function GET(request: Request) {
               ],
             },
           }),
+          prisma.user.count({ where: { profile: null } }),
           prisma.profile.count({ where: { gender: 'female' } }),
           prisma.profile.count({ where: { gender: 'male' } }),
         ])
@@ -144,6 +267,7 @@ export async function GET(request: Request) {
           no_photos: noPhotosCount,
           incomplete: incompleteCount,
           deletions: totalDeletions,
+          no_profile: noProfileCount,
           brides: bridesCount,
           grooms: groomsCount,
         }
@@ -335,6 +459,7 @@ export async function GET(request: Request) {
         noPhotosCount,
         incompleteCount,
         deletionsCount,
+        noProfileCount,
         bridesCount,
         groomsCount,
       ] = await Promise.all([
@@ -362,6 +487,7 @@ export async function GET(request: Request) {
           },
         }),
         prisma.deletionRequest.count({ where: { status: { in: ['pending', 'approved'] } } }),
+        prisma.user.count({ where: { profile: null } }),
         prisma.profile.count({ where: { gender: 'female' } }),
         prisma.profile.count({ where: { gender: 'male' } }),
       ])
@@ -374,6 +500,7 @@ export async function GET(request: Request) {
         no_photos: noPhotosCount,
         incomplete: incompleteCount,
         deletions: deletionsCount,
+        no_profile: noProfileCount,
         brides: bridesCount,
         grooms: groomsCount,
       }
