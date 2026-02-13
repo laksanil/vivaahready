@@ -13,6 +13,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   globalSetup: './tests/e2e/global-setup.ts',
+  globalTeardown: './tests/e2e/global-teardown.ts',
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/playwright/results.json' }],

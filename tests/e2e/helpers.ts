@@ -1,6 +1,7 @@
 import type { APIRequestContext, Page, APIResponse } from '@playwright/test'
 import path from 'path'
 import fs from 'fs'
+import { recordCreatedTestUser } from './cleanup-registry'
 
 export const DEFAULT_PASSWORD = 'E2EPass123!'
 export const DEFAULT_PHOTO_PATH = path.join(process.cwd(), 'public', 'logo-couple.png')
@@ -45,7 +46,9 @@ export async function registerUser(
   }
 
   const data = await response.json()
-  return { userId: data.userId as string }
+  const userId = data.userId as string
+  recordCreatedTestUser(userId, user.email, 'helpers.registerUser')
+  return { userId }
 }
 
 export async function createProfile(

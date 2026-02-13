@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import path from 'path'
+import { recordCreatedTestEmail, recordCreatedTestUser } from './cleanup-registry'
 
 const uniqueId = Date.now().toString(36)
 const password = 'E2EPass123!'
@@ -406,17 +407,21 @@ test.describe.serial('End-to-end user journey', () => {
   test.describe.configure({ timeout: 180000 })
   let userAId = ''
   let userBId = ''
+  let userCId = ''
 
   test('User A signs up and completes profile with photo upload', async ({ page }) => {
     await completeSignupFlow(page, userA)
+    recordCreatedTestEmail(userA.email, 'end-to-end-flow.userA')
   })
 
   test('User B signs up and completes profile with photo upload', async ({ page }) => {
     await completeSignupFlow(page, userB)
+    recordCreatedTestEmail(userB.email, 'end-to-end-flow.userB')
   })
 
   test('User C signs up and completes profile with photo upload', async ({ page }) => {
     await completeSignupFlow(page, userC)
+    recordCreatedTestEmail(userC.email, 'end-to-end-flow.userC')
   })
 
   test('Admin approves new profiles', async ({ page }) => {
@@ -434,9 +439,16 @@ test.describe.serial('End-to-end user journey', () => {
 
     userAId = await lookupUserIdFromAdminProfiles(page, userA.email)
     expect(userAId).toBeTruthy()
+    recordCreatedTestUser(userAId, userA.email, 'end-to-end-flow.userA.id')
 
     userBId = await lookupUserIdFromAdminProfiles(page, userB.email)
     expect(userBId).toBeTruthy()
+    recordCreatedTestUser(userBId, userB.email, 'end-to-end-flow.userB.id')
+
+    userCId = await lookupUserIdFromAdminProfiles(page, userC.email)
+    if (userCId) {
+      recordCreatedTestUser(userCId, userC.email, 'end-to-end-flow.userC.id')
+    }
   })
 
   test('User B logs in, completes photos, and likes User A', async ({ page }) => {

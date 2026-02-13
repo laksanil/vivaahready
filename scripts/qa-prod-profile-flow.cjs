@@ -1,8 +1,11 @@
-const { chromium } = require('playwright')
+const { chromium, request } = require('playwright')
 
 const BASE_URL = 'https://vivaahready.com'
 const defects = []
 const notes = []
+const cleanupEmails = new Set()
+
+const TEST_EMAIL_PATTERN = /^(e2e-[a-z0-9-]+|qa\.profile\.[a-z0-9-]+)@example\.com$/i
 
 function addDefect({ title, severity = 'High', steps, expected, actual }) {
   defects.push({ title, severity, steps, expected, actual })
@@ -13,11 +16,114 @@ function note(msg) {
   console.log(`[note] ${msg}`)
 }
 
+function isCleanupEligibleEmail(email) {
+  return TEST_EMAIL_PATTERN.test(String(email || '').trim().toLowerCase())
+}
+
+function trackCleanupEmail(email) {
+  if (!isCleanupEligibleEmail(email)) return
+  cleanupEmails.add(String(email).trim().toLowerCase())
+}
+
 async function isVisible(locator) {
   try {
     return await locator.isVisible()
   } catch {
     return false
+  }
+}
+
+async function lookupUserIdsByEmail(adminRequest, email) {
+  const ids = new Set()
+  const encodedSearch = encodeURIComponent(email)
+  const endpoints = [
+    `/api/admin/profiles?search=${encodedSearch}&limit=100`,
+    `/api/admin/profiles?filter=no_profile&search=${encodedSearch}&limit=100`,
+  ]
+
+  for (const endpoint of endpoints) {
+    const response = await adminRequest.get(endpoint)
+    if (!response.ok()) continue
+
+    const payload = await response.json().catch(() => null)
+    const profiles = Array.isArray(payload?.profiles) ? payload.profiles : []
+    for (const profile of profiles) {
+      const rowEmail = String(profile?.user?.email || '').trim().toLowerCase()
+      const rowUserId = profile?.user?.id
+      if (rowUserId && rowEmail === email) {
+        ids.add(rowUserId)
+      }
+    }
+  }
+
+  return [...ids]
+}
+
+async function cleanupTrackedAccounts() {
+  if (!cleanupEmails.size) {
+    note('Cleanup skipped: no tracked test accounts were created.')
+    return
+  }
+
+  const adminRequest = await request.newContext({ baseURL: BASE_URL })
+  try {
+    const loginResponse = await adminRequest.post('/api/admin/login', {
+      data: {
+        username: 'admin',
+        password: 'vivaah2024',
+      },
+    })
+
+    if (!loginResponse.ok()) {
+      addDefect({
+        title: 'Cleanup failed: admin login unsuccessful',
+        severity: 'High',
+        steps: ['Attempt cleanup after production QA run by calling /api/admin/login.'],
+        expected: 'Admin login should succeed so tracked test users can be removed.',
+        actual: `Admin login failed with HTTP ${loginResponse.status()}.`,
+      })
+      return
+    }
+
+    const userIds = new Set()
+    for (const email of cleanupEmails) {
+      const ids = await lookupUserIdsByEmail(adminRequest, email)
+      if (ids.length === 0) {
+        note(`Cleanup lookup: no user found for ${email}`)
+      }
+      for (const id of ids) userIds.add(id)
+    }
+
+    let deleted = 0
+    let missing = 0
+    let failed = 0
+
+    for (const userId of userIds) {
+      const deleteResponse = await adminRequest.delete(`/api/admin/users/${userId}`)
+      if (deleteResponse.ok()) {
+        deleted += 1
+      } else if (deleteResponse.status() === 404) {
+        missing += 1
+      } else {
+        failed += 1
+        const body = await deleteResponse.text().catch(() => '')
+        note(`Cleanup delete failed for user ${userId}: HTTP ${deleteResponse.status()} ${body}`)
+      }
+    }
+
+    note(`Cleanup summary: trackedEmails=${cleanupEmails.size}, targetedUsers=${userIds.size}, deleted=${deleted}, missing=${missing}, failed=${failed}`)
+
+    if (failed > 0) {
+      addDefect({
+        title: 'Cleanup incomplete: one or more test profiles were not deleted',
+        severity: 'High',
+        steps: ['Run production QA flow', 'Execute cleanup via admin API for tracked test users.'],
+        expected: 'All tracked test users should be deleted.',
+        actual: `${failed} deletion request(s) failed.`,
+      })
+    }
+  } finally {
+    await adminRequest.dispose()
   }
 }
 
@@ -50,6 +156,7 @@ async function createAccountAndReachBasics(page, seed) {
   const phone10 = `92555${String(seed).slice(-5).padStart(5, '0')}`.slice(0, 10)
   const email = `qa.profile.${seed}@example.com`
   const password = `QaProd!${seed}`
+  trackCleanupEmail(email)
 
   await openSignupModal(page)
 
@@ -722,52 +829,55 @@ async function testNonWorkingCompanyRule(page, seed) {
 async function run() {
   const browser = await chromium.launch({ headless: true })
 
-  // Scenario A/C/D: end-to-end with persistence + preferences rules
   try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
-    const page = await context.newPage()
-    const seed = Date.now().toString().slice(-8)
-    const creds = await createAccountAndReachBasics(page, seed)
-    note(`Primary scenario account: ${creds.email}`)
+    // Scenario A/C/D: end-to-end with persistence + preferences rules
+    try {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+      const page = await context.newPage()
+      const seed = Date.now().toString().slice(-8)
+      const creds = await createAccountAndReachBasics(page, seed)
+      note(`Primary scenario account: ${creds.email}`)
 
-    await fillBasics(page)
-    await fillLocationEducationWorking(page)
-    await fillReligion(page)
-    await fillFamily(page)
-    await fillLifestyle(page)
-    await fillAbout(page)
-    const profileId = await testPreferencesAndProceed(page)
+      await fillBasics(page)
+      await fillLocationEducationWorking(page)
+      await fillReligion(page)
+      await fillFamily(page)
+      await fillLifestyle(page)
+      await fillAbout(page)
+      const profileId = await testPreferencesAndProceed(page)
 
-    await loginAndReadProfile(context, creds, profileId)
-    await context.close()
-  } catch (err) {
-    addDefect({
-      title: 'Primary scenario execution failure',
-      severity: 'High',
-      steps: ['Run end-to-end production profile creation scenario.'],
-      expected: 'Scenario should complete and validate persistence.',
-      actual: err instanceof Error ? err.message : String(err),
-    })
+      await loginAndReadProfile(context, creds, profileId)
+      await context.close()
+    } catch (err) {
+      addDefect({
+        title: 'Primary scenario execution failure',
+        severity: 'High',
+        steps: ['Run end-to-end production profile creation scenario.'],
+        expected: 'Scenario should complete and validate persistence.',
+        actual: err instanceof Error ? err.message : String(err),
+      })
+    }
+
+    // Scenario B: non-working occupation should not require company
+    try {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+      const page = await context.newPage()
+      const seed = (Date.now() + 17).toString().slice(-8)
+      await testNonWorkingCompanyRule(page, seed)
+      await context.close()
+    } catch (err) {
+      addDefect({
+        title: 'Non-working occupation scenario execution failure',
+        severity: 'High',
+        steps: ['Run non-working occupation requirement validation scenario.'],
+        expected: 'Scenario should execute successfully.',
+        actual: err instanceof Error ? err.message : String(err),
+      })
+    }
+  } finally {
+    await cleanupTrackedAccounts()
+    await browser.close()
   }
-
-  // Scenario B: non-working occupation should not require company
-  try {
-    const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
-    const page = await context.newPage()
-    const seed = (Date.now() + 17).toString().slice(-8)
-    await testNonWorkingCompanyRule(page, seed)
-    await context.close()
-  } catch (err) {
-    addDefect({
-      title: 'Non-working occupation scenario execution failure',
-      severity: 'High',
-      steps: ['Run non-working occupation requirement validation scenario.'],
-      expected: 'Scenario should execute successfully.',
-      actual: err instanceof Error ? err.message : String(err),
-    })
-  }
-
-  await browser.close()
 
   const report = {
     testedAt: new Date().toISOString(),
