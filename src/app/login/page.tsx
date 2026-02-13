@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Heart, Mail, Lock, Eye, EyeOff, Loader2, ChevronDown, ArrowRight } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
@@ -15,11 +16,44 @@ function LoginForm() {
   const autoSignIn = searchParams.get('autoSignIn')
   const message = searchParams.get('message')
 
+  const { status } = useSession()
+
+  // Redirect authenticated users away from login to avoid loops
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    const redirectAuthed = async () => {
+      try {
+        const profileRes = await fetch('/api/user/profile-status')
+        const profileData = await profileRes.json()
+        if (profileData.hasProfile) {
+          router.push(callbackUrl)
+        } else {
+          router.push('/profile/complete?fromGoogleAuth=true')
+        }
+      } catch {
+        // If profile check fails and user came from Google sign-up,
+        // send to profile completion (safe default) instead of dashboard
+        if (fromGoogle) {
+          router.push('/profile/complete?fromGoogleAuth=true')
+        } else {
+          router.push(callbackUrl)
+        }
+      }
+    }
+    redirectAuthed()
+  }, [status, router, callbackUrl, fromGoogle])
+
   // Auto-signin effect for users coming from /register
   useEffect(() => {
     if (autoSignIn === 'true' && typeof window !== 'undefined') {
       const storedEmail = sessionStorage.getItem('autoSignInEmail')
       const storedPassword = sessionStorage.getItem('autoSignInPassword')
+      const storedName = sessionStorage.getItem('autoSignInName')
+      const storedProfileData = sessionStorage.getItem('profileCreationData')
+      const parsedProfileData = storedProfileData ? JSON.parse(storedProfileData) : null
+      const nameParts = (storedName || '').trim().split(/\s+/).filter(Boolean)
+      const firstName = nameParts[0] || 'User'
+      const lastName = nameParts.slice(1).join(' ') || 'User'
       
       if (storedEmail && storedPassword) {
         // Auto-signin silently
@@ -49,12 +83,15 @@ function LoginForm() {
                   const createRes = await fetch('/api/profile/create-from-modal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      email: storedEmail,
-                      firstName: 'User',
-                      lastName: '',
-                    }),
-                  })
+                  body: JSON.stringify({
+                    email: storedEmail,
+                    firstName,
+                    lastName,
+                    gender: parsedProfileData?.gender,
+                    dateOfBirth: parsedProfileData?.dateOfBirth,
+                    profileFor: parsedProfileData?.profileFor,
+                  }),
+                })
                   
                   if (createRes.ok) {
                     const createData = await createRes.json()
@@ -76,7 +113,7 @@ function LoginForm() {
         })
       }
     }
-  }, [autoSignIn, router])
+  }, [autoSignIn, router, callbackUrl])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -179,7 +216,9 @@ function LoginForm() {
           type="button"
           onClick={() => {
             setGoogleLoading(true)
-            signIn('google', { callbackUrl })
+            // Always route through /login after OAuth so the profile-status
+            // check in the useEffect runs before deciding where to send the user
+            signIn('google', { callbackUrl: '/login?fromGoogle=true' })
           }}
           disabled={googleLoading}
           className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"

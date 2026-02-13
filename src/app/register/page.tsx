@@ -321,6 +321,7 @@ export default function RegisterPage() {
         // Store credentials temporarily for auto-signin on login page
         sessionStorage.setItem('autoSignInEmail', formData.email)
         sessionStorage.setItem('autoSignInPassword', formData.password)
+        sessionStorage.setItem('autoSignInName', formData.name)
         
         // Redirect to login which will auto-signin and route based on profile status
         router.push('/login?registered=true&autoSignIn=true')
@@ -380,6 +381,23 @@ export default function RegisterPage() {
                   dateOfBirth: registrationData?.dateOfBirth,
                 }
                 sessionStorage.setItem('registrationData', JSON.stringify(dataToStore))
+
+                // Persist signup payload for /profile/complete after OAuth.
+                // This prevents redirecting new users back to dashboard with no profile.
+                const nameParts = formData.name.trim().split(/\s+/).filter(Boolean)
+                const signupPayload = {
+                  firstName: dataToStore.firstName || nameParts[0] || 'User',
+                  lastName: dataToStore.lastName || nameParts.slice(1).join(' ') || 'User',
+                  phone: formData.phone ? `${countryCode}${formData.phone}` : undefined,
+                  gender: dataToStore.gender,
+                  dateOfBirth: dataToStore.dateOfBirth,
+                  profileFor: dataToStore.profileFor,
+                }
+
+                sessionStorage.setItem('signupFormData', JSON.stringify(signupPayload))
+                localStorage.setItem('signupFormData', JSON.stringify(signupPayload))
+                document.cookie = `signupFormData=${encodeURIComponent(JSON.stringify(signupPayload))}; path=/; max-age=900; SameSite=Lax`
+
                 // Redirect to login which will check profile status after OAuth
                 signIn('google', { callbackUrl: '/login?fromGoogle=true' })
               }}
