@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Heart, Mail, Lock, Eye, EyeOff, Loader2, ChevronDown, ArrowRight } from 'lucide-react'
@@ -12,7 +12,51 @@ function LoginForm() {
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
   const registered = searchParams.get('registered')
   const fromGoogle = searchParams.get('fromGoogle')
+  const autoSignIn = searchParams.get('autoSignIn')
   const message = searchParams.get('message')
+
+  // Auto-signin effect for users coming from /register
+  useEffect(() => {
+    if (autoSignIn === 'true' && typeof window !== 'undefined') {
+      const storedEmail = sessionStorage.getItem('autoSignInEmail')
+      const storedPassword = sessionStorage.getItem('autoSignInPassword')
+      
+      if (storedEmail && storedPassword) {
+        // Auto-signin silently
+        setEmail(storedEmail)
+        setPassword(storedPassword)
+        
+        // Perform signin
+        signIn('credentials', {
+          email: storedEmail,
+          password: storedPassword,
+          redirect: false,
+        }).then(async (result) => {
+          sessionStorage.removeItem('autoSignInEmail')
+          sessionStorage.removeItem('autoSignInPassword')
+          
+          if (result?.ok) {
+            // Check profile status and route accordingly
+            try {
+              const profileRes = await fetch('/api/user/profile-status')
+              const profileData = await profileRes.json()
+              
+              if (profileData.hasProfile) {
+                router.push(callbackUrl)
+              } else {
+                router.push('/profile/complete?step=1')
+              }
+            } catch {
+              router.push(callbackUrl)
+            }
+            router.refresh()
+          } else {
+            setError(result?.error || 'Signin failed')
+          }
+        })
+      }
+    }
+  }, [autoSignIn, router])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

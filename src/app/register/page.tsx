@@ -318,20 +318,12 @@ export default function RegisterPage() {
         // Clear the registration data from sessionStorage
         sessionStorage.removeItem('registrationData')
         
-        // Auto-sign in with credentials
-        const signInResult = await signIn('credentials', {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-        })
+        // Store credentials temporarily for auto-signin on login page
+        sessionStorage.setItem('autoSignInEmail', formData.email)
+        sessionStorage.setItem('autoSignInPassword', formData.password)
         
-        if (signInResult?.ok) {
-          // Account created and signed in - go to profile creation step 1
-          router.push('/profile/complete?step=1')
-        } else {
-          // Fallback: ask user to sign in manually
-          router.push('/login?registered=true')
-        }
+        // Redirect to login which will auto-signin and route based on profile status
+        router.push('/login?registered=true&autoSignIn=true')
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')
