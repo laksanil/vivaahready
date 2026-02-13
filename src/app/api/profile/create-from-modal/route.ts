@@ -223,17 +223,27 @@ export async function POST(request: Request) {
       // but only use the session user, not the body email
     }
 
+    // Select minimal fields only. Avoid selecting full profile columns here because
+    // schema drift on non-critical columns should not block core signup progress.
+    const userLookupSelect = {
+      id: true,
+      email: true,
+      name: true,
+      phone: true,
+      profile: { select: { id: true } },
+    } as const
+
     // Try to find user by email first
     let user = await prisma.user.findUnique({
       where: { email: data.email },
-      include: { profile: true }
+      select: userLookupSelect,
     })
 
     // If not found by email, try to get user from authenticated session
     if (!user && sessionEmail) {
       user = await prisma.user.findUnique({
         where: { email: sessionEmail },
-        include: { profile: true }
+        select: userLookupSelect,
       })
     }
 
@@ -253,7 +263,7 @@ export async function POST(request: Request) {
           name: session?.user?.name || data.firstName || 'User',
           phone: data.phone || null,
         },
-        include: { profile: true }
+        select: userLookupSelect,
       })
     }
 
@@ -285,7 +295,8 @@ export async function POST(request: Request) {
           lastName: { equals: data.lastName, mode: 'insensitive' },
           dateOfBirth: data.dateOfBirth,
         },
-        include: {
+        select: {
+          id: true,
           user: { select: { email: true } },
         },
       })
@@ -508,7 +519,10 @@ export async function POST(request: Request) {
         try {
           const referrerProfile = await prisma.profile.findFirst({
             where: { referralCode: data.referredBy },
-            include: { user: { select: { email: true, name: true } } },
+            select: {
+              id: true,
+              user: { select: { email: true, name: true } },
+            },
           })
           if (referrerProfile?.user?.email) {
             const count = await getReferralCount(data.referredBy!)

@@ -11,6 +11,7 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
   const registered = searchParams.get('registered')
+  const fromGoogle = searchParams.get('fromGoogle')
   const message = searchParams.get('message')
 
   const [email, setEmail] = useState('')
@@ -37,7 +38,22 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.push(callbackUrl)
+        // After successful login, check if user has profile
+        try {
+          const profileRes = await fetch('/api/user/profile-status')
+          const profileData = await profileRes.json()
+          
+          if (profileData.hasProfile) {
+            // User has profile - go to dashboard
+            router.push(callbackUrl)
+          } else {
+            // User has no profile - go to profile creation step 1
+            router.push('/profile/complete?step=1')
+          }
+        } catch (err) {
+          // Fallback to callbackUrl if profile check fails
+          router.push(callbackUrl)
+        }
         router.refresh()
       }
     } catch (err) {

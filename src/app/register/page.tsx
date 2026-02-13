@@ -317,7 +317,21 @@ export default function RegisterPage() {
         }
         // Clear the registration data from sessionStorage
         sessionStorage.removeItem('registrationData')
-        router.push('/login?registered=true')
+        
+        // Auto-sign in with credentials
+        const signInResult = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        })
+        
+        if (signInResult?.ok) {
+          // Account created and signed in - go to profile creation step 1
+          router.push('/profile/complete?step=1')
+        } else {
+          // Fallback: ask user to sign in manually
+          router.push('/login?registered=true')
+        }
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')
@@ -365,7 +379,17 @@ export default function RegisterPage() {
               type="button"
               onClick={() => {
                 setGoogleLoading(true)
-                signIn('google', { callbackUrl: '/dashboard' })
+                // Store registration data before OAuth redirect
+                const dataToStore = {
+                  profileFor: registrationData?.profileFor,
+                  gender: registrationData?.gender,
+                  firstName: registrationData?.firstName,
+                  lastName: registrationData?.lastName,
+                  dateOfBirth: registrationData?.dateOfBirth,
+                }
+                sessionStorage.setItem('registrationData', JSON.stringify(dataToStore))
+                // Redirect to login which will check profile status after OAuth
+                signIn('google', { callbackUrl: '/login?fromGoogle=true' })
               }}
               disabled={googleLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3.5 border-2 border-primary-600 rounded-lg text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors font-semibold text-lg"

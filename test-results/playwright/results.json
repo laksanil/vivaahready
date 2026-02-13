@@ -172,7 +172,7 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "failed",
-                      "duration": 12574,
+                      "duration": 13088,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Education & Career/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Education & Career/i })\u001b[22m\n",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Education & Career/i })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Education & Career/i })\u001b[22m\n\n    at completeBasics (/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/end-to-end-flow.spec.ts:119:76)\n    at completeSignupFlow (/Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/end-to-end-flow.spec.ts:242:3)\n    at /Users/lakshminagasamudra/Desktop/vivaahready/tests/e2e/end-to-end-flow.spec.ts:411:5",
@@ -196,7 +196,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-02-13T09:27:11.592Z",
+                      "startTime": "2026-02-13T20:26:27.372Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -224,244 +224,6 @@
               "file": "end-to-end-flow.spec.ts",
               "line": 410,
               "column": 3
-            },
-            {
-              "title": "User B signs up and completes profile with photo upload",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.963Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-2bcfbe504ceeb37c357a",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 414,
-              "column": 3
-            },
-            {
-              "title": "User C signs up and completes profile with photo upload",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.964Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-40ec6f356dc3c5b924b5",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 418,
-              "column": 3
-            },
-            {
-              "title": "Admin approves new profiles",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.964Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-97d7eb2b63b4ff59f33b",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 422,
-              "column": 3
-            },
-            {
-              "title": "User B logs in, completes photos, and likes User A",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.964Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-5a7a3151440050d0758f",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 442,
-              "column": 3
-            },
-            {
-              "title": "User A matches, messages, and edits profile",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.965Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-a211f3503982ed0c0e4d",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 458,
-              "column": 3
-            },
-            {
-              "title": "User A explores matches, connections, messages, search, and reconsider",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.965Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-a86178e46f97a09d514c",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 497,
-              "column": 3
-            },
-            {
-              "title": "Admin reviews management pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 180000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": -1,
-                      "parallelIndex": -1,
-                      "status": "skipped",
-                      "duration": 0,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-02-13T09:27:24.965Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "b3f038ebd1002c7fd6bd-8bc4dbc549778675e534",
-              "file": "end-to-end-flow.spec.ts",
-              "line": 544,
-              "column": 3
             }
           ]
         }
@@ -470,10 +232,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-13T09:26:52.385Z",
-    "duration": 32675.575,
+    "startTime": "2026-02-13T20:26:15.796Z",
+    "duration": 25465.733,
     "expected": 0,
-    "skipped": 7,
+    "skipped": 0,
     "unexpected": 1,
     "flaky": 0
   }

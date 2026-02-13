@@ -337,20 +337,10 @@ function DashboardContent() {
     handleGoogleAuthCallback()
   }, [status, shouldCreateProfile, session?.user?.email, creatingProfile, createdProfileId, router])
 
-  // Auto-show create profile modal if user needs to create profile (and not handling Google auth)
+  // Auto-show create profile modal if user needs to create profile
   useEffect(() => {
-    // Don't show modal if there's stored signup data - user might be mid-OAuth flow
-    // They should be on /profile/complete processing this data, not on dashboard
-    // Check cookie, sessionStorage, and localStorage
-    const hasCookie = typeof document !== 'undefined' && document.cookie.includes('signupFormData=')
-    const hasStoredFormData = typeof window !== 'undefined' &&
-      (hasCookie || sessionStorage.getItem('signupFormData') || localStorage.getItem('signupFormData'))
-    if (hasStoredFormData) {
-      console.log('Signup data found (cookie or storage) - redirecting to profile/complete')
-      // Redirect to profile/complete to process the stored data
-      router.push('/profile/complete?fromGoogleAuth=true')
-      return
-    }
+    // ProfileCompletionGuard and login page handle redirecting users to /profile/complete if they have no profile
+    // Don't check for stored form data here as it can cause redirect loops
 
     // Don't show modal if user just completed registration (redirected with status=pending)
     // The session might not have updated hasProfile yet, so we trust the URL param
