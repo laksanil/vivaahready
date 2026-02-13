@@ -438,7 +438,7 @@ function AdminProfilesContent() {
 
   // Render table row based on active tab
   const renderTableRow = (profile: Profile) => {
-    const isLoading = actionLoading === profile.user.id || actionLoading === profile.id || (profile.deletionRequest && actionLoading === profile.deletionRequest.id)
+    const isLoading = actionLoading === profile.user.id || (profile.id != null && actionLoading === profile.id) || (profile.deletionRequest && actionLoading === profile.deletionRequest.id)
 
     // Deletions tab view
     if (activeTab === 'deletions' && profile.deletionRequest) {
