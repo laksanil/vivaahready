@@ -44,7 +44,27 @@ function LoginForm() {
               if (profileData.hasProfile) {
                 router.push(callbackUrl)
               } else {
-                router.push('/profile/complete?step=1')
+                // No profile - create an empty one so user can start filling it in
+                try {
+                  const createRes = await fetch('/api/profile/create-from-modal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      email: storedEmail,
+                      firstName: 'User',
+                      lastName: '',
+                    }),
+                  })
+                  
+                  if (createRes.ok) {
+                    const createData = await createRes.json()
+                    router.push(`/profile/complete?profileId=${createData.profileId}&step=1`)
+                  } else {
+                    router.push('/profile/complete?step=1')
+                  }
+                } catch {
+                  router.push('/profile/complete?step=1')
+                }
               }
             } catch {
               router.push(callbackUrl)
@@ -91,8 +111,27 @@ function LoginForm() {
             // User has profile - go to dashboard
             router.push(callbackUrl)
           } else {
-            // User has no profile - go to profile creation step 1
-            router.push('/profile/complete?step=1')
+            // No profile - create an empty one so user can start filling it in
+            try {
+              const createRes = await fetch('/api/profile/create-from-modal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email,
+                  firstName: 'User',
+                  lastName: '',
+                }),
+              })
+              
+              if (createRes.ok) {
+                const createData = await createRes.json()
+                router.push(`/profile/complete?profileId=${createData.profileId}&step=1`)
+              } else {
+                router.push('/profile/complete?step=1')
+              }
+            } catch {
+              router.push('/profile/complete?step=1')
+            }
           }
         } catch (err) {
           // Fallback to callbackUrl if profile check fails

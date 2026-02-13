@@ -369,12 +369,15 @@ async function fillAbout(page) {
 }
 
 async function testPreferencesAndProceed(page) {
+  const prefsDialog = page.getByRole('dialog').first()
   const continueBtn = page.getByRole('button', { name: /^Continue$/ }).last()
 
-  const ageToggle = page.locator('input[aria-label="prefAge deal-breaker"], div:has(label:has-text("Age Range")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
-  const heightToggle = page.locator('input[aria-label="prefHeight deal-breaker"], div:has(label:has-text("Height Range")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
-  const maritalToggle = page.locator('input[aria-label="prefMaritalStatus deal-breaker"], div:has(h4:has-text("Marital Status")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
-  const religionToggle = page.locator('input[aria-label="prefReligion deal-breaker"], div:has(h4:has-text("Religion Preference")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
+  const ageToggle = prefsDialog.locator('input[aria-label="prefAge deal-breaker"], div:has(label:has-text("Age Range")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
+  const heightToggle = prefsDialog.locator('input[aria-label="prefHeight deal-breaker"], div:has(label:has-text("Height Range")) label:has-text("Deal-breaker") input[type="checkbox"]').first()
+  const maritalSection = prefsDialog.locator('div:has(h4:has-text("Marital Status"))').first()
+  const religionSection = prefsDialog.locator('div:has(h4:has-text("Religion Preference"))').first()
+  const maritalToggle = maritalSection.locator('input[aria-label="prefMaritalStatus deal-breaker"], label:has-text("Deal-breaker") input[type="checkbox"]').first()
+  const religionToggle = religionSection.locator('input[aria-label="prefReligion deal-breaker"], label:has-text("Deal-breaker") input[type="checkbox"]').first()
 
   const setToggleState = async (toggle, shouldBeChecked) => {
     const current = await toggle.isChecked().catch(() => null)
@@ -416,7 +419,7 @@ async function testPreferencesAndProceed(page) {
     }
   }
 
-  const anyMarital = page.locator('div:has(h4:has-text("Marital Status")) label:has-text("Any")')
+  const anyMarital = maritalSection.locator('label:has-text("Any")')
   const maritalDefaultChecked = await maritalToggle.isChecked().catch(() => false)
   if (maritalDefaultChecked && await anyMarital.count() > 0 && await anyMarital.first().isVisible()) {
     addDefect({
@@ -427,7 +430,7 @@ async function testPreferencesAndProceed(page) {
     })
   }
 
-  const dmReligion = page.getByRole('button', { name: /Doesn\'t Matter \(Any Religion\)/i })
+  const dmReligion = religionSection.getByRole('button', { name: /Doesn\'t Matter \(Any Religion\)/i })
   const religionDefaultChecked = await religionToggle.isChecked().catch(() => false)
   if (religionDefaultChecked && await dmReligion.count() > 0 && await dmReligion.first().isVisible()) {
     addDefect({
