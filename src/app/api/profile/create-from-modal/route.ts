@@ -319,6 +319,8 @@ export async function POST(request: Request) {
 
     // Create profile with all fields
     const profile = await prisma.profile.create({
+      // Select only what we need to keep signup resilient to non-critical schema drift.
+      select: { id: true },
       data: {
         userId: user.id,
         odNumber: vrId,

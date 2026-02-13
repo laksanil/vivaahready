@@ -127,6 +127,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const modalContainerRef = useRef<HTMLDivElement>(null)
 
   // Capture referral code from URL params into sessionStorage and cookie
   // Cookie survives Google OAuth redirect; sessionStorage does not always
@@ -144,6 +145,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [countryCode, setCountryCode] = useState('+1')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [createdAccount, setCreatedAccount] = useState<{ userId: string; email: string; password: string } | null>(null)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -185,6 +187,36 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
   const [photoVisibility, setPhotoVisibility] = useState('verified_only')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const setSessionValue = (key: string, value: string) => {
+    try {
+      sessionStorage.setItem(key, value)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  const getSessionValue = (key: string) => {
+    try {
+      return sessionStorage.getItem(key)
+    } catch {
+      return null
+    }
+  }
+
+  const removeSessionValue = (key: string) => {
+    try {
+      sessionStorage.removeItem(key)
+    } catch {
+      // Ignore storage cleanup errors
+    }
+  }
+
+  useEffect(() => {
+    if (!error) return
+    modalContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [error])
 
   if (!isOpen) return null
 
@@ -250,32 +282,42 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     try {
       // Step 1: Create user account ONLY (profile created in step 2 after basics)
       const fullName = `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'New User'
+      const normalizedEmail = email.trim().toLowerCase()
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: fullName,
-          email,
+          email: normalizedEmail,
           password,
           phone: phone ? `${countryCode}${phone}` : undefined,
         }),
       })
 
-      const data = await response.json()
+      const data = await response.json().catch(() => ({}))
 
       if (!response.ok) {
-        setError(data.error || 'Registration failed')
+        setError(data.error || 'Registration failed. Please try again.')
         setLoading(false)
         return
       }
 
-      sessionStorage.setItem('newUserId', data.userId)
-      sessionStorage.setItem('newUserEmail', email)
-      // Store password in sessionStorage for auto-login after photo upload
-      sessionStorage.setItem('newUserPassword', password)
+      setEmail(normalizedEmail)
+      const userId = String(data.userId || '')
+      if (!userId) {
+        setError('Registration completed but could not continue. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      setCreatedAccount({ userId, email: normalizedEmail, password })
+      setSessionValue('newUserId', userId)
+      setSessionValue('newUserEmail', normalizedEmail)
+      // Store password for auto-login after profile completion
+      setSessionValue('newUserPassword', password)
 
       // Move to basics step - profile will be created after basics are filled
-      setStep(step + 1)
+      setStep((prev) => prev + 1)
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -287,7 +329,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const handleCreateProfile = async () => {
     if (loading) return // Prevent double-click
 
-    const userEmail = sessionStorage.getItem('newUserEmail') || email
+    const userEmail = getSessionValue('newUserEmail') || createdAccount?.email || email
     if (!userEmail) {
       setError('Session expired. Please start over.')
       return
@@ -297,7 +339,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
-      const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
+      const referredBy = getSessionValue('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
       const profilePayload = {
         ...formData,
         email: userEmail,
@@ -341,16 +383,17 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
             return
           } else {
             // User canceled - clean up orphan user account
-            const orphanUserId = sessionStorage.getItem('newUserId')
+            const orphanUserId = getSessionValue('newUserId') || createdAccount?.userId
             if (orphanUserId) {
               fetch('/api/user/cleanup-orphan', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: orphanUserId }),
               }).catch(() => {}) // Fire and forget
-              sessionStorage.removeItem('newUserId')
-              sessionStorage.removeItem('newUserEmail')
-              sessionStorage.removeItem('newUserPassword')
+              removeSessionValue('newUserId')
+              removeSessionValue('newUserEmail')
+              removeSessionValue('newUserPassword')
+              setCreatedAccount(null)
             }
             setStep(1) // Reset to registration step
             setLoading(false)
@@ -369,7 +412,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Refresh session so hasProfile is updated immediately
       await updateSession()
 
-      setStep(step + 1) // Move to next section (location_education)
+      setStep((prev) => prev + 1) // Move to next section (location_education)
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -390,7 +433,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
     try {
       // Get the newUserId from sessionStorage for authorization
-      const newUserId = sessionStorage.getItem('newUserId')
+      const newUserId = getSessionValue('newUserId') || createdAccount?.userId
 
       // Calculate next internal step
       const nextInternalStep = step + 1
@@ -647,7 +690,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Mark signup as complete by setting signupStep to 9
       // signupStep 9 = complete (photos done)
       // This prevents ProfileCompletionGuard from redirecting back to /profile/complete
-      const newUserId = sessionStorage.getItem('newUserId')
+      const newUserId = getSessionValue('newUserId') || createdAccount?.userId
       const stepResponse = await fetch(`/api/profile/${createdProfileId}`, {
         method: 'PUT',
         headers: {
@@ -663,10 +706,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
       if (isAdminMode) {
         // Get stored temp password and email for callback
-        const tempPassword = sessionStorage.getItem('adminTempPassword') || ''
-        const createdEmail = sessionStorage.getItem('adminCreatedEmail') || email
-        sessionStorage.removeItem('adminTempPassword')
-        sessionStorage.removeItem('adminCreatedEmail')
+        const tempPassword = getSessionValue('adminTempPassword') || ''
+        const createdEmail = getSessionValue('adminCreatedEmail') || email
+        removeSessionValue('adminTempPassword')
+        removeSessionValue('adminCreatedEmail')
 
         if (onAdminSuccess) {
           onAdminSuccess(createdProfileId, tempPassword, createdEmail)
@@ -675,8 +718,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       } else {
         // Welcome email already sent after account creation (step 3)
         // Get stored email and password from sessionStorage for auto-login
-        const storedEmail = sessionStorage.getItem('newUserEmail')
-        const storedPassword = sessionStorage.getItem('newUserPassword')
+        const storedEmail = getSessionValue('newUserEmail') || createdAccount?.email || null
+        const storedPassword = getSessionValue('newUserPassword') || createdAccount?.password || null
 
         if (storedEmail && storedPassword) {
           // Sign in with credentials
@@ -687,9 +730,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           })
 
           // Clean up session storage
-          sessionStorage.removeItem('newUserId')
-          sessionStorage.removeItem('newUserEmail')
-          sessionStorage.removeItem('newUserPassword')
+          removeSessionValue('newUserId')
+          removeSessionValue('newUserEmail')
+          removeSessionValue('newUserPassword')
+          setCreatedAccount(null)
 
           if (result?.ok) {
             onClose()
@@ -701,9 +745,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           }
         } else {
           // Fallback to login page if no stored credentials
-          sessionStorage.removeItem('newUserId')
-          sessionStorage.removeItem('newUserEmail')
-          sessionStorage.removeItem('newUserPassword')
+          removeSessionValue('newUserId')
+          removeSessionValue('newUserEmail')
+          removeSessionValue('newUserPassword')
+          setCreatedAccount(null)
           onClose()
           router.push('/login?registered=true&message=Profile created successfully! Please login to continue.')
         }
@@ -761,7 +806,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
+      <div ref={modalContainerRef} className="relative bg-white shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
           {/* Top bar with back, title, close */}

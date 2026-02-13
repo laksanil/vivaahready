@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
+import { Prisma } from '@prisma/client'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
   getEffectiveUniversity,
@@ -19,21 +20,78 @@ export async function GET(
     const targetUser = await getTargetUserId(request, session)
 
     // Fetch the profile with user info
-    const profile = await prisma.profile.findUnique({
-      where: { id: params.id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            emailVerified: true,
-            phoneVerified: true,
+    let profile: {
+      id: string
+      userId: string
+      firstName: string | null
+      lastName: string | null
+      gender: string | null
+      dateOfBirth: string | null
+      age: string | null
+      height: string | null
+      maritalStatus: string | null
+      motherTongue: string | null
+      signupStep: number | null
+      approvalStatus: string | null
+      user: {
+        id: string
+        name: string
+        email: string
+        phone: string | null
+        emailVerified: Date | null
+        phoneVerified: Date | null
+      }
+    } | null = null
+
+    try {
+      profile = await prisma.profile.findUnique({
+        where: { id: params.id },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              emailVerified: true,
+              phoneVerified: true,
+            },
           },
         },
-      },
-    })
+      })
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2022') {
+        profile = await prisma.profile.findUnique({
+          where: { id: params.id },
+          select: {
+            id: true,
+            userId: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            dateOfBirth: true,
+            age: true,
+            height: true,
+            maritalStatus: true,
+            motherTongue: true,
+            signupStep: true,
+            approvalStatus: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                emailVerified: true,
+                phoneVerified: true,
+              },
+            },
+          },
+        })
+      } else {
+        throw error
+      }
+    }
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
@@ -112,7 +170,32 @@ export async function PUT(
     // Get the profile to verify it exists
     const existingProfile = await prisma.profile.findUnique({
       where: { id: profileId },
-      include: { user: { select: { id: true, email: true, phone: true } } },
+      select: {
+        id: true,
+        userId: true,
+        country: true,
+        grewUpIn: true,
+        citizenship: true,
+        zipCode: true,
+        qualification: true,
+        university: true,
+        user: { select: { id: true, email: true, phone: true } },
+        occupation: true,
+        employerName: true,
+        annualIncome: true,
+        openToRelocation: true,
+        prefAgeMin: true,
+        prefAgeMax: true,
+        prefHeightMin: true,
+        prefHeightMax: true,
+        prefMaritalStatus: true,
+        prefReligion: true,
+        prefReligions: true,
+        prefAgeIsDealbreaker: true,
+        prefHeightIsDealbreaker: true,
+        prefMaritalStatusIsDealbreaker: true,
+        prefReligionIsDealbreaker: true,
+      },
     })
 
     if (!existingProfile) {
@@ -369,6 +452,7 @@ export async function PUT(
     const updatedProfile = await prisma.profile.update({
       where: { id: profileId },
       data: updateData,
+      select: { id: true },
     })
 
     return NextResponse.json({

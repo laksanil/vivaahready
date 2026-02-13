@@ -1,25 +1,135 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import { useState, Suspense, useEffect, useCallback } from 'react'
 import { signIn } from 'next-auth/react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Heart, Mail, Lock, Eye, EyeOff, Loader2, ChevronDown, ArrowRight } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
 
+type StoredProfileData = {
+  gender?: string
+  dateOfBirth?: string
+  profileFor?: string
+}
+
+const normalizeEmail = (value: string) => value.trim().toLowerCase()
+
+const sanitizeCallbackPath = (value: string | null) => {
+  if (!value || !value.startsWith('/')) return '/dashboard'
+  return value
+}
+
+const getSessionValue = (key: string) => {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+const removeSessionValue = (key: string) => {
+  try {
+    sessionStorage.removeItem(key)
+  } catch {
+    // Ignore storage cleanup errors
+  }
+}
+
+const parseProfileCreationData = (value: string | null): StoredProfileData | null => {
+  if (!value) return null
+  try {
+    return JSON.parse(value) as StoredProfileData
+  } catch {
+    return null
+  }
+}
+
+const fallbackNameFromStoredData = (storedName: string | null | undefined, loginEmail: string) => {
+  const nameParts = (storedName || '').trim().split(/\s+/).filter(Boolean)
+  if (nameParts.length > 0) {
+    return {
+      firstName: nameParts[0],
+      lastName: nameParts.slice(1).join(' ') || 'User',
+    }
+  }
+
+  const emailLocalPart = loginEmail.split('@')[0] || ''
+  const emailNameParts = emailLocalPart.split(/[._-]+/).filter(Boolean)
+  return {
+    firstName: emailNameParts[0] || 'User',
+    lastName: emailNameParts.slice(1).join(' ') || 'User',
+  }
+}
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const callbackUrl = sanitizeCallbackPath(searchParams.get('callbackUrl'))
   const registered = searchParams.get('registered')
   const fromGoogle = searchParams.get('fromGoogle')
   const autoSignIn = searchParams.get('autoSignIn')
   const message = searchParams.get('message')
 
   const { status } = useSession()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [showEmailForm, setShowEmailForm] = useState(false)
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
+  const [autoSignInLoading, setAutoSignInLoading] = useState(false)
+
+  const routeAfterCredentialLogin = useCallback(async (
+    loginEmail: string,
+    nameFallback: { firstName: string; lastName: string },
+    profileData: StoredProfileData | null
+  ) => {
+    try {
+      const profileRes = await fetch('/api/user/profile-status')
+      const profileDataResult = await profileRes.json()
+
+      if (profileDataResult.hasProfile) {
+        router.push(callbackUrl)
+        return
+      }
+
+      try {
+        const createRes = await fetch('/api/profile/create-from-modal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: loginEmail,
+            firstName: nameFallback.firstName || 'User',
+            lastName: nameFallback.lastName || 'User',
+            gender: profileData?.gender,
+            dateOfBirth: profileData?.dateOfBirth,
+            profileFor: profileData?.profileFor,
+          }),
+        })
+
+        if (createRes.ok) {
+          const createData = await createRes.json()
+          router.push(`/profile/complete?profileId=${createData.profileId}&step=1`)
+          return
+        }
+      } catch {
+        // Fall through to profile completion route without a profileId
+      }
+
+      router.push('/profile/complete?step=1')
+    } catch {
+      router.push(callbackUrl)
+    } finally {
+      router.refresh()
+    }
+  }, [router, callbackUrl])
 
   // Redirect authenticated users away from login to avoid loops
   useEffect(() => {
+    if (loading || autoSignInLoading) return
     if (status !== 'authenticated') return
     const redirectAuthed = async () => {
       try {
@@ -41,88 +151,61 @@ function LoginForm() {
       }
     }
     redirectAuthed()
-  }, [status, router, callbackUrl, fromGoogle])
+  }, [status, router, callbackUrl, fromGoogle, loading, autoSignInLoading])
 
   // Auto-signin effect for users coming from /register
   useEffect(() => {
-    if (autoSignIn === 'true' && typeof window !== 'undefined') {
-      const storedEmail = sessionStorage.getItem('autoSignInEmail')
-      const storedPassword = sessionStorage.getItem('autoSignInPassword')
-      const storedName = sessionStorage.getItem('autoSignInName')
-      const storedProfileData = sessionStorage.getItem('profileCreationData')
-      const parsedProfileData = storedProfileData ? JSON.parse(storedProfileData) : null
-      const nameParts = (storedName || '').trim().split(/\s+/).filter(Boolean)
-      const firstName = nameParts[0] || 'User'
-      const lastName = nameParts.slice(1).join(' ') || 'User'
-      
-      if (storedEmail && storedPassword) {
-        // Auto-signin silently
-        setEmail(storedEmail)
-        setPassword(storedPassword)
-        
-        // Perform signin
-        signIn('credentials', {
-          email: storedEmail,
+    if (autoSignIn !== 'true') return
+    if (typeof window === 'undefined') return
+    let isCancelled = false
+
+    const runAutoSignIn = async () => {
+      const storedEmail = getSessionValue('autoSignInEmail')
+      const storedPassword = getSessionValue('autoSignInPassword')
+      const storedName = getSessionValue('autoSignInName')
+      const parsedProfileData = parseProfileCreationData(getSessionValue('profileCreationData'))
+
+      if (!storedEmail || !storedPassword) return
+
+      const normalizedEmail = normalizeEmail(storedEmail)
+      const nameFallback = fallbackNameFromStoredData(storedName, normalizedEmail)
+
+      setAutoSignInLoading(true)
+      setEmail(normalizedEmail)
+      setPassword(storedPassword)
+
+      try {
+        const result = await signIn('credentials', {
+          email: normalizedEmail,
           password: storedPassword,
           redirect: false,
-        }).then(async (result) => {
-          sessionStorage.removeItem('autoSignInEmail')
-          sessionStorage.removeItem('autoSignInPassword')
-          
-          if (result?.ok) {
-            // Check profile status and route accordingly
-            try {
-              const profileRes = await fetch('/api/user/profile-status')
-              const profileData = await profileRes.json()
-              
-              if (profileData.hasProfile) {
-                router.push(callbackUrl)
-              } else {
-                // No profile - create an empty one so user can start filling it in
-                try {
-                  const createRes = await fetch('/api/profile/create-from-modal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    email: storedEmail,
-                    firstName,
-                    lastName,
-                    gender: parsedProfileData?.gender,
-                    dateOfBirth: parsedProfileData?.dateOfBirth,
-                    profileFor: parsedProfileData?.profileFor,
-                  }),
-                })
-                  
-                  if (createRes.ok) {
-                    const createData = await createRes.json()
-                    router.push(`/profile/complete?profileId=${createData.profileId}&step=1`)
-                  } else {
-                    router.push('/profile/complete?step=1')
-                  }
-                } catch {
-                  router.push('/profile/complete?step=1')
-                }
-              }
-            } catch {
-              router.push(callbackUrl)
-            }
-            router.refresh()
-          } else {
-            setError(result?.error || 'Signin failed')
-          }
         })
+
+        if (isCancelled) return
+        if (result?.ok) {
+          await routeAfterCredentialLogin(normalizedEmail, nameFallback, parsedProfileData)
+          return
+        }
+
+        setError(result?.error || 'Signin failed')
+      } finally {
+        removeSessionValue('autoSignInEmail')
+        removeSessionValue('autoSignInPassword')
+        removeSessionValue('autoSignInName')
+        removeSessionValue('profileCreationData')
+        setAutoSignInLoading(false)
       }
     }
-  }, [autoSignIn, router, callbackUrl])
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [showEmailForm, setShowEmailForm] = useState(false)
-  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
+    runAutoSignIn().catch(() => {
+      setError('Auto sign-in failed. Please sign in manually.')
+      setAutoSignInLoading(false)
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [autoSignIn, routeAfterCredentialLogin])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,8 +213,11 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      const normalizedEmail = normalizeEmail(email)
+      setEmail(normalizedEmail)
+
       const result = await signIn('credentials', {
-        email,
+        email: normalizedEmail,
         password,
         redirect: false,
       })
@@ -139,44 +225,10 @@ function LoginForm() {
       if (result?.error) {
         setError(result.error)
       } else {
-        // After successful login, check if user has profile
-        try {
-          const profileRes = await fetch('/api/user/profile-status')
-          const profileData = await profileRes.json()
-          
-          if (profileData.hasProfile) {
-            // User has profile - go to dashboard
-            router.push(callbackUrl)
-          } else {
-            // No profile - create an empty one so user can start filling it in
-            try {
-              const createRes = await fetch('/api/profile/create-from-modal', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  email,
-                  firstName: 'User',
-                  lastName: '',
-                }),
-              })
-              
-              if (createRes.ok) {
-                const createData = await createRes.json()
-                router.push(`/profile/complete?profileId=${createData.profileId}&step=1`)
-              } else {
-                router.push('/profile/complete?step=1')
-              }
-            } catch {
-              router.push('/profile/complete?step=1')
-            }
-          }
-        } catch (err) {
-          // Fallback to callbackUrl if profile check fails
-          router.push(callbackUrl)
-        }
-        router.refresh()
+        const nameFallback = fallbackNameFromStoredData(null, normalizedEmail)
+        await routeAfterCredentialLogin(normalizedEmail, nameFallback, null)
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)

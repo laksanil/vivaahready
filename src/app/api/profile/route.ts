@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
     // Check if profile already exists
     const existingProfile = await prisma.profile.findUnique({
       where: { userId: targetUser.userId },
+      select: { id: true },
     })
 
     if (existingProfile) {
@@ -151,36 +153,73 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId: targetUser.userId },
-      include: { user: { select: { name: true, email: true, phone: true, emailVerified: true, phoneVerified: true } } },
-    })
+    let profile: Record<string, unknown> | null = null
+    try {
+      profile = await prisma.profile.findUnique({
+        where: { userId: targetUser.userId },
+        include: { user: { select: { name: true, email: true, phone: true, emailVerified: true, phoneVerified: true } } },
+      })
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2022') {
+        profile = await prisma.profile.findUnique({
+          where: { userId: targetUser.userId },
+          select: {
+            id: true,
+            userId: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            dateOfBirth: true,
+            age: true,
+            height: true,
+            motherTongue: true,
+            maritalStatus: true,
+            currentLocation: true,
+            signupStep: true,
+            approvalStatus: true,
+            user: {
+              select: {
+                name: true,
+                email: true,
+                phone: true,
+                emailVerified: true,
+                phoneVerified: true,
+              },
+            },
+          },
+        })
+      } else {
+        throw error
+      }
+    }
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     // Use stored firstName/lastName from Profile, fallback to parsing user.name for legacy data
-    let firstName = profile.firstName || ''
-    let lastName = profile.lastName || ''
+    const profileDataRaw = profile as Record<string, unknown>
+    const userRaw = profileDataRaw.user as Record<string, unknown> | undefined
+    let firstName = (profileDataRaw.firstName as string | null) || ''
+    let lastName = (profileDataRaw.lastName as string | null) || ''
 
     // Fallback for legacy profiles that don't have firstName/lastName stored
-    if (!firstName && profile.user.name) {
-      const nameParts = profile.user.name.trim().split(' ')
+    if (!firstName && typeof userRaw?.name === 'string') {
+      const nameParts = userRaw.name.trim().split(' ')
       firstName = nameParts[0] || ''
       // Don't use parsed lastName from "Firstname L." format - it would just be "L."
     }
 
     // Return profile with firstName, lastName, contact info, and verification status
-    const { user, ...profileData } = profile
+    const { user: _user, ...profileData } = profileDataRaw
     return NextResponse.json({
       ...profileData,
       firstName,
       lastName,
-      email: user.email,
-      phone: user.phone,
-      emailVerified: !!user.emailVerified,
-      phoneVerified: !!user.phoneVerified,
+      email: userRaw?.email || null,
+      phone: userRaw?.phone || null,
+      emailVerified: !!userRaw?.emailVerified,
+      phoneVerified: !!userRaw?.phoneVerified,
     })
   } catch (error) {
     console.error('Profile fetch error:', error)
@@ -199,6 +238,10 @@ export async function PUT(request: Request) {
     // Check if profile exists first
     const existingProfile = await prisma.profile.findUnique({
       where: { userId: targetUser.userId },
+      select: {
+        id: true,
+        university: true,
+      },
     })
 
     if (!existingProfile) {

@@ -18,6 +18,54 @@ function formatDisplayName(fullName: string | null | undefined): string {
   return `${firstName} ${lastInitial}.`
 }
 
+const authUserSelect = {
+  id: true,
+  email: true,
+  password: true,
+  name: true,
+  emailVerified: true,
+  profile: {
+    select: {
+      id: true,
+      approvalStatus: true,
+    },
+  },
+  subscription: {
+    select: {
+      plan: true,
+    },
+  },
+} as const
+
+async function findUserForAuthByEmail(rawEmail: string) {
+  const email = rawEmail.trim()
+  const normalizedEmail = email.toLowerCase()
+
+  const exactUser = await prisma.user.findUnique({
+    where: { email },
+    select: authUserSelect,
+  })
+  if (exactUser) return exactUser
+
+  if (email !== normalizedEmail) {
+    const normalizedUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      select: authUserSelect,
+    })
+    if (normalizedUser) return normalizedUser
+  }
+
+  return prisma.user.findFirst({
+    where: {
+      email: {
+        equals: email,
+        mode: 'insensitive',
+      },
+    },
+    select: authUserSelect,
+  })
+}
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
@@ -43,10 +91,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Please enter your email and password')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { profile: true, subscription: true },
-        })
+        const email = credentials.email.trim()
+        const user = await findUserForAuthByEmail(email)
 
         if (!user || !user.password) {
           throw new Error('No account found with this email')
@@ -88,14 +134,11 @@ export const authOptions: NextAuthOptions = {
       // Handle Google sign-in
       if (account?.provider === 'google') {
         try {
-          const email = user.email
+          const email = user.email?.trim().toLowerCase()
           if (!email) return false
 
           // Check if user exists
-          let existingUser = await prisma.user.findUnique({
-            where: { email },
-            include: { profile: true, subscription: true },
-          })
+          let existingUser = await findUserForAuthByEmail(email)
 
           // If user doesn't exist, create one
           if (!existingUser) {
@@ -106,7 +149,7 @@ export const authOptions: NextAuthOptions = {
                 emailVerified: new Date(), // Google emails are verified
                 lastLogin: new Date(),
               },
-              include: { profile: true, subscription: true },
+              select: authUserSelect,
             })
 
             // Send welcome email for new users (fire and forget)
@@ -140,10 +183,7 @@ export const authOptions: NextAuthOptions = {
 
       // On initial sign-in, set token.id
       if (account?.provider === 'google' && user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          include: { profile: true, subscription: true },
-        })
+        const dbUser = await findUserForAuthByEmail(user.email)
         if (dbUser) {
           token.id = dbUser.id
           token.hasProfile = !!dbUser.profile
@@ -168,7 +208,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id },
-            include: { profile: true, subscription: true },
+            select: authUserSelect,
           })
           if (dbUser) {
             token.hasProfile = !!dbUser.profile
