@@ -114,6 +114,11 @@ function AdminProfilesContent() {
     profile: null,
   })
   const [tabCounts, setTabCounts] = useState<Record<string, number>>({})
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
+  const [bulkDeleteConfirmModal, setBulkDeleteConfirmModal] = useState(false)
+
+  const supportsMultiSelect = activeTab === 'incomplete' || activeTab === 'no_profile'
 
   const tabs = [
     { id: 'all', label: 'All Profiles', count: tabCounts.all },
@@ -151,6 +156,7 @@ function AdminProfilesContent() {
       setProfiles(data.profiles || [])
       setTotalPages(data.totalPages || 1)
       setTotalCount(data.total || 0)
+      setSelectedIds(new Set())
       // Update tab counts if returned (only on first page)
       if (data.tabCounts) {
         setTabCounts(data.tabCounts)
@@ -166,6 +172,7 @@ function AdminProfilesContent() {
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as TabType)
     setPage(1)
+    setSelectedIds(new Set())
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -224,6 +231,53 @@ function AdminProfilesContent() {
     } finally {
       setActionLoading(null)
       setDeleteConfirmModal({ isOpen: false, profile: null })
+    }
+  }
+
+  const toggleSelectOne = (userId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(userId)) {
+        next.delete(userId)
+      } else {
+        next.add(userId)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === profiles.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(profiles.map((p) => p.user.id)))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    setBulkDeleteLoading(true)
+    try {
+      const res = await fetch('/api/admin/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: Array.from(selectedIds) }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        showToast(`${data.deletedCount} account(s) deleted successfully`, 'success')
+        setSelectedIds(new Set())
+        fetchProfiles()
+      } else {
+        const error = await res.json()
+        showToast(error.error || 'Failed to delete accounts', 'error')
+      }
+    } catch (err) {
+      console.error('Bulk delete failed:', err)
+      showToast('Failed to delete accounts', 'error')
+    } finally {
+      setBulkDeleteLoading(false)
+      setBulkDeleteConfirmModal(false)
     }
   }
 
@@ -376,8 +430,18 @@ function AdminProfilesContent() {
         { key: 'actions', label: 'Actions' },
       ]
     }
+    const selectAllCheckbox = (
+      <input
+        type="checkbox"
+        checked={profiles.length > 0 && selectedIds.size === profiles.length}
+        onChange={toggleSelectAll}
+        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+      />
+    )
+
     if (activeTab === 'incomplete') {
       return [
+        { key: 'select', label: selectAllCheckbox, className: 'w-10' },
         { key: 'vrId', label: 'VR ID' },
         { key: 'user', label: 'User' },
         { key: 'progress', label: 'Progress' },
@@ -388,6 +452,7 @@ function AdminProfilesContent() {
     }
     if (activeTab === 'no_profile') {
       return [
+        { key: 'select', label: selectAllCheckbox, className: 'w-10' },
         { key: 'user', label: 'User' },
         { key: 'email', label: 'Email' },
         { key: 'phone', label: 'Phone' },
@@ -558,7 +623,15 @@ function AdminProfilesContent() {
     if (activeTab === 'incomplete') {
       const missingFields = getMissingFields(profile)
       return (
-        <tr key={profile.id || profile.user.id} className="hover:bg-gray-50 bg-orange-50/50">
+        <tr key={profile.id || profile.user.id} className={`hover:bg-gray-50 ${selectedIds.has(profile.user.id) ? 'bg-orange-100' : 'bg-orange-50/50'}`}>
+          <td className="px-4 py-3 w-10">
+            <input
+              type="checkbox"
+              checked={selectedIds.has(profile.user.id)}
+              onChange={() => toggleSelectOne(profile.user.id)}
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+          </td>
           <td className="px-4 py-3">
             <span className="font-mono text-sm text-gray-600">{profile.odNumber || '-'}</span>
           </td>
@@ -637,7 +710,15 @@ function AdminProfilesContent() {
     // No Profile tab view - accounts without any profile
     if (activeTab === 'no_profile') {
       return (
-        <tr key={profile.user.id} className="hover:bg-gray-50 bg-blue-50/30">
+        <tr key={profile.user.id} className={`hover:bg-gray-50 ${selectedIds.has(profile.user.id) ? 'bg-blue-100' : 'bg-blue-50/30'}`}>
+          <td className="px-4 py-3 w-10">
+            <input
+              type="checkbox"
+              checked={selectedIds.has(profile.user.id)}
+              onChange={() => toggleSelectOne(profile.user.id)}
+              className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+          </td>
           <td className="px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -923,8 +1004,32 @@ function AdminProfilesContent() {
         </AdminSearchFilter>
       </AdminTabs>
 
+      {/* Bulk action bar */}
+      {supportsMultiSelect && selectedIds.size > 0 && (
+        <div className="mb-4 flex items-center gap-4 bg-primary-50 border border-primary-200 rounded-lg px-4 py-3">
+          <span className="text-sm font-medium text-primary-700">
+            {selectedIds.size} selected
+          </span>
+          <AdminButton
+            variant="danger"
+            onClick={() => setBulkDeleteConfirmModal(true)}
+            className="px-3 py-1.5 text-sm"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete Selected
+          </AdminButton>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="text-sm text-gray-500 hover:text-gray-700 ml-auto"
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 6 : activeTab === 'no_profile' ? 6 : 8} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 7 : activeTab === 'no_profile' ? 7 : 8} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : activeTab === 'no_profile' ? <User className="h-12 w-12" /> : <Users className="h-12 w-12" />}
@@ -1018,6 +1123,19 @@ function AdminProfilesContent() {
         confirmVariant="primary"
         isLoading={actionLoading === unsuspendConfirmModal.profile?.user.id}
         icon={<UserCheck className="h-5 w-5 text-green-500" />}
+      />
+
+      {/* Bulk Delete Confirmation Modal */}
+      <AdminConfirmModal
+        isOpen={bulkDeleteConfirmModal}
+        onClose={() => setBulkDeleteConfirmModal(false)}
+        onConfirm={handleBulkDelete}
+        title="Delete Selected Accounts"
+        message={`Are you sure you want to permanently delete ${selectedIds.size} account(s)? This will remove all associated data including profiles, messages, and connections. This action cannot be undone.`}
+        confirmText={`Delete ${selectedIds.size} Account(s)`}
+        confirmVariant="danger"
+        isLoading={bulkDeleteLoading}
+        icon={<Trash2 className="h-5 w-5 text-red-500" />}
       />
     </div>
   )

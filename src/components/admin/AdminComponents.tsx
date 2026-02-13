@@ -105,7 +105,7 @@ export function AdminSearchFilter({
 // TABLE COMPONENT
 // ============================================
 interface AdminTableProps {
-  headers: { key: string; label: string; className?: string }[]
+  headers: { key: string; label: string | ReactNode; className?: string }[]
   children: ReactNode
   loading?: boolean
   emptyMessage?: string
