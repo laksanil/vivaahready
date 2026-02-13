@@ -467,7 +467,7 @@ export default async function HomePage() {
                 &quot;I was tired of swiping on apps that didn&apos;t understand what I was looking for. VivaahReady felt different — the matches actually aligned with my values and preferences.&quot;
               </p>
               <div className="border-t border-gray-100 pt-4">
-                <p className="font-semibold text-gray-900">Priya S.</p>
+                <p className="font-semibold text-gray-900">Smitha P.</p>
                 <p className="text-sm text-gray-500">Joined 2025</p>
               </div>
             </div>
@@ -478,7 +478,7 @@ export default async function HomePage() {
                 &quot;The privacy-first approach gave me confidence. I didn&apos;t have to worry about my profile being publicly visible. Only mutual matches can see each other.&quot;
               </p>
               <div className="border-t border-gray-100 pt-4">
-                <p className="font-semibold text-gray-900">Rahul M.</p>
+                <p className="font-semibold text-gray-900">Suma K.</p>
                 <p className="text-sm text-gray-500">Joined 2025</p>
               </div>
             </div>
@@ -489,7 +489,7 @@ export default async function HomePage() {
                 &quot;My parents and I both loved that profiles are verified. It&apos;s serious matchmaking, not casual browsing. The one-time fee means no subscription pressure.&quot;
               </p>
               <div className="border-t border-gray-100 pt-4">
-                <p className="font-semibold text-gray-900">Ananya K.</p>
+                <p className="font-semibold text-gray-900">Gayathri A.</p>
                 <p className="text-sm text-gray-500">Joined 2025</p>
               </div>
             </div>
