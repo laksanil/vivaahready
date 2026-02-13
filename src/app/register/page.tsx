@@ -365,7 +365,7 @@ export default function RegisterPage() {
               type="button"
               onClick={() => {
                 setGoogleLoading(true)
-                signIn('google', { callbackUrl: '/profile/complete?fromGoogleAuth=true' })
+                signIn('google', { callbackUrl: '/dashboard' })
               }}
               disabled={googleLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3.5 border-2 border-primary-600 rounded-lg text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors font-semibold text-lg"
