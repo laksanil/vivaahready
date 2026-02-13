@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, Users, Heart,
   Loader2, ShieldAlert, ClipboardCheck, LogOut, AlertTriangle,
-  UserPlus, Menu, X, Settings
+  UserPlus, Menu, X, Settings, Calendar, MessageCircle
 } from 'lucide-react'
 import { ToastProvider } from '@/components/Toast'
 
@@ -183,6 +183,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Heart className="h-5 w-5 mr-3" aria-hidden="true" />
               Matches
+            </Link>
+            <Link
+              href="/admin/events"
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/events' || pathname.startsWith('/admin/events/') ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <Calendar className="h-5 w-5 mr-3" aria-hidden="true" />
+              Events
+            </Link>
+            <Link
+              href="/admin/messages"
+              role="menuitem"
+              className={`flex items-center px-6 py-3 text-gray-200 hover:bg-gray-800 hover:text-white transition-colors ${
+                pathname === '/admin/messages' ? 'bg-gray-800 text-white' : ''
+              }`}
+            >
+              <MessageCircle className="h-5 w-5 mr-3" aria-hidden="true" />
+              Messages
             </Link>
 
             <div className="mt-4 mx-4 border-t border-gray-700 pt-4">

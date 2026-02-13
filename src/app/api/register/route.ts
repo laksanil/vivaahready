@@ -13,12 +13,18 @@ const registerSchema = z.object({
   profileFor: z.string().optional(),
   gender: z.string().optional(),
   dateOfBirth: z.string().optional(),
+  // UTM tracking
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+  utm_content: z.string().optional(),
+  utm_term: z.string().optional(),
 })
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password, phone, profileFor, gender, dateOfBirth } = registerSchema.parse(body)
+    const { name, email, password, phone, profileFor, gender, dateOfBirth, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = registerSchema.parse(body)
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -62,7 +68,9 @@ export async function POST(request: Request) {
         message: 'Account created successfully',
         userId: user.id,
         // Return profile data for profile creation flow
-        profileData: profileFor ? { profileFor, gender, dateOfBirth } : null
+        profileData: profileFor ? { profileFor, gender, dateOfBirth } : null,
+        // Pass UTM params forward to profile creation
+        utm_params: { utm_source, utm_medium, utm_campaign, utm_content, utm_term }
       },
       { status: 201 }
     )

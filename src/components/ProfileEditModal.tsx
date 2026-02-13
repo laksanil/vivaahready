@@ -14,7 +14,10 @@ import {
   PreferencesPage2Section,
   ContactSection,
 } from './ProfileFormSections'
-import { heightToInches } from '@/lib/constants'
+import {
+  validateLocationEducationStep,
+  validatePartnerPreferencesMustHaves,
+} from '@/lib/profileFlowValidation'
 
 // Placeholder phrases that shouldn't be accepted
 const INVALID_ABOUTME_PHRASES = [
@@ -109,31 +112,13 @@ export default function ProfileEditModal({
     }
 
     if (section === 'preferences_1') {
-      const prefAgeMin = formData.prefAgeMin as string || ''
-      const prefAgeMax = formData.prefAgeMax as string || ''
-      const prefHeightMin = formData.prefHeightMin as string || ''
-      const prefHeightMax = formData.prefHeightMax as string || ''
+      const preferenceValidation = validatePartnerPreferencesMustHaves(formData)
+      errors.push(...preferenceValidation.errors)
+    }
 
-      if (!prefAgeMin) errors.push('Minimum age preference is required')
-      if (!prefAgeMax) errors.push('Maximum age preference is required')
-      if (!prefHeightMin) errors.push('Minimum height preference is required')
-      if (!prefHeightMax) errors.push('Maximum height preference is required')
-
-      // Validate age range
-      if (prefAgeMin && prefAgeMax) {
-        const minAge = parseInt(prefAgeMin)
-        const maxAge = parseInt(prefAgeMax)
-        if (minAge > maxAge) {
-          errors.push('Minimum age cannot be greater than maximum age')
-        }
-      }
-
-      // Validate height range
-      if (prefHeightMin && prefHeightMax) {
-        if (heightToInches(prefHeightMin) > heightToInches(prefHeightMax)) {
-          errors.push('Minimum height cannot be greater than maximum height')
-        }
-      }
+    if (section === 'location_education') {
+      const locationEducationValidation = validateLocationEducationStep(formData)
+      errors.push(...locationEducationValidation.errors)
     }
 
     return errors
@@ -156,7 +141,10 @@ export default function ProfileEditModal({
       const response = await fetch(apiEndpoint, {
         method: httpMethod,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          _editSection: section,
+        }),
       })
 
       if (!response.ok) {

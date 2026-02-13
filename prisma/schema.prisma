@@ -224,6 +224,15 @@ model Profile {
   referralCode      String?  @unique // Auto-generated code for sharing referral links
   referredBy        String?  // Referral code of the user who referred this profile
   referralBoostStart DateTime? // When the referral boost (3+ referrals) was activated
+
+  // Campaign/Acquisition Tracking
+  utm_source        String?  // e.g., "google", "facebook", "instagram"
+  utm_medium        String?  // e.g., "cpc", "organic", "social"
+  utm_campaign      String?  // e.g., "spring-promo", "summer-launch"
+  utm_content       String?  // e.g., "ad-variant-a", "email-banner"
+  utm_term          String?  // e.g., "indian matrimony"
+  acquisitionChannel String? // High-level channel: "organic", "paid_search", "social", "referral"
+
   isImported        Boolean  @default(false)
 
   // Lifetime Stats (never decrease, used to showcase platform value)
@@ -390,4 +399,120 @@ model Settings {
   promoPrice          Int?     // Optional promo price
   promoEndDate        DateTime? // When promo expires
   updatedAt           DateTime @updatedAt
+}
+
+// Events (Singles Meetups, etc.)
+model Event {
+  id              String   @id @default(cuid())
+  slug            String   @unique // URL-friendly identifier (e.g., "march-2025-vegetarian")
+  title           String   // "Singles Zoom Meetup - March 2025"
+  description     String?  // Rich description
+  eventDate       DateTime // Event date and time
+  timezone        String   @default("America/Los_Angeles") // PST
+  duration        Int      @default(60) // Duration in minutes
+
+  // Capacity
+  maxMaleSpots    Int      @default(10)
+  maxFemaleSpots  Int      @default(10)
+
+  // Eligibility
+  minAge          Int      @default(24)
+  maxAge          Int      @default(35)
+  dietaryReq      String?  // "vegetarian" or null for all
+  locationReq     String?  // "California" or null for all
+
+  // Pricing
+  price           Int      @default(25) // Price in dollars
+
+  // Event details
+  zoomLink        String?  // Zoom meeting link (hidden until event day)
+  zoomPassword    String?  // Zoom password if needed
+
+  // Status
+  status          String   @default("upcoming") // upcoming, live, completed, cancelled
+  isPublished     Boolean  @default(true)
+
+  // Minimum to run (secret - not shown to users)
+  minAttendeesToRun Int    @default(10)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  registrations   EventRegistration[]
+
+  @@index([status])
+  @@index([eventDate])
+  @@index([slug])
+}
+
+// Event Registrations
+model EventRegistration {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  profileId       String   // Links to Profile (has VR ID / odNumber)
+
+  // Registration status
+  status          String   @default("registered") // registered, waitlisted, cancelled, attended, no_show
+
+  // Payment
+  paymentStatus   String   @default("pending") // pending, paid, refunded
+  paymentId       String?  // Square transaction ID
+  amountPaid      Int?     // Amount in cents
+
+  // Communication preferences
+  whatsappOptIn   Boolean  @default(false)
+  smsOptIn        Boolean  @default(false)
+
+  // Tracking
+  registeredAt    DateTime @default(now())
+  cancelledAt     DateTime?
+  cancellationReason String? // Why they cancelled
+  refundedAt      DateTime?
+  refundId        String?  // Square refund ID
+  attendedAt      DateTime? // Marked when they join the Zoom
+
+  // Waitlist position (null if not on waitlist)
+  waitlistPosition Int?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([eventId, profileId]) // One registration per profile per event
+  @@index([eventId])
+  @@index([profileId])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+// Support Messages (from chatbot escalation or contact form)
+model SupportMessage {
+  id              String   @id @default(cuid())
+
+  // Sender info (can be anonymous or logged in user)
+  userId          String?  // If logged in
+  name            String?  // Name if provided
+  email           String?  // Email if provided
+  phone           String?  // Phone if provided
+
+  // Message content
+  subject         String?  // Optional subject
+  message         String   // The actual message
+  context         String?  // Where the message came from (e.g., "marchevent", "chatbot")
+
+  // Admin response
+  status          String   @default("new") // new, read, replied, resolved
+  adminResponse   String?  // Admin's response
+  respondedAt     DateTime?
+  respondedVia    String?  // email, sms, whatsapp
+
+  // Chat history (JSON array of chat messages if from chatbot)
+  chatHistory     String?  // JSON string of chat messages
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
 }

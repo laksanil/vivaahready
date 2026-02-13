@@ -64,6 +64,7 @@ function PhotosUploadContent() {
 
   const profileId = searchParams.get('profileId')
   const fromSignup = searchParams.get('fromSignup') === 'true'
+  const returnTo = searchParams.get('returnTo')
 
   const [photos, setPhotos] = useState<{ file: File; preview: string; validated: boolean }[]>([])
   const [loading, setLoading] = useState(false)
@@ -180,8 +181,12 @@ function PhotosUploadContent() {
         })
       }
 
-      // Redirect to dashboard with success message
-      router.push('/dashboard?status=pending')
+      // Redirect to returnTo URL if provided (e.g., event payment), otherwise dashboard
+      if (returnTo) {
+        router.push(returnTo)
+      } else {
+        router.push('/dashboard?status=pending')
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save. Please try again.'
       setError(errorMessage)

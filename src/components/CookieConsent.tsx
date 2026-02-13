@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false)
+  const bannerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     // Check if user has already dismissed the notice
@@ -22,10 +23,35 @@ export default function CookieConsent() {
     setShowBanner(false)
   }
 
+  useEffect(() => {
+    const previousPaddingBottom = document.body.style.paddingBottom
+
+    if (!showBanner) {
+      document.body.style.paddingBottom = previousPaddingBottom
+      return
+    }
+
+    const applyBottomPadding = () => {
+      const bannerHeight = bannerRef.current?.offsetHeight ?? 0
+      document.body.style.paddingBottom = bannerHeight > 0 ? `${bannerHeight + 8}px` : previousPaddingBottom
+    }
+
+    applyBottomPadding()
+    window.addEventListener('resize', applyBottomPadding)
+
+    return () => {
+      window.removeEventListener('resize', applyBottomPadding)
+      document.body.style.paddingBottom = previousPaddingBottom
+    }
+  }, [showBanner])
+
   if (!showBanner) return null
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 bg-white border-t border-gray-200 shadow-lg">
+    <div
+      ref={bannerRef}
+      className="fixed bottom-0 left-0 right-0 z-30 p-4 md:p-6 bg-white border-t border-gray-200 shadow-lg"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex-1 pr-8">

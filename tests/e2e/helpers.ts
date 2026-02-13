@@ -71,7 +71,9 @@ export async function createProfile(
     currentLocation: 'San Jose, CA',
     zipCode: '95112',
     qualification: 'bachelors_cs',
+    university: 'San Jose State University',
     occupation: 'software_engineer',
+    employerName: 'E2E QA Systems',
     annualIncome: '75k-100k',
     openToRelocation: 'yes',
     religion: 'Hindu',
@@ -125,10 +127,30 @@ export async function createUserWithProfile(
   const { userId } = await registerUser(request, baseURL, user, password)
   const { profileId } = await createProfile(request, baseURL, user, overrides)
   // Mark signup flow complete so profile completion guard doesn't redirect in UI flows.
-  await request.put(`${baseURL}/api/profile/${profileId}`, {
-    data: { signupStep: 10 },
+  // signupStep >= 8 now enforces core partner-preference validation on this endpoint.
+  const completionResponse = await request.put(`${baseURL}/api/profile/${profileId}`, {
+    data: {
+      signupStep: 9,
+      prefAgeMin: '25',
+      prefAgeMax: '35',
+      prefHeightMin: `5'0"`,
+      prefHeightMax: `6'2"`,
+      prefMaritalStatus: 'never_married',
+      prefReligions: ['Hindu'],
+      prefReligion: 'Hindu',
+      prefAgeIsDealbreaker: true,
+      prefHeightIsDealbreaker: true,
+      prefMaritalStatusIsDealbreaker: true,
+      prefReligionIsDealbreaker: true,
+    },
     headers: { 'x-new-user-id': userId },
   })
+
+  if (!completionResponse.ok()) {
+    const body = await completionResponse.text()
+    throw new Error(`Profile completion update failed (${completionResponse.status()}): ${body}`)
+  }
+
   return { userId, profileId }
 }
 
@@ -187,11 +209,26 @@ export async function adminRejectProfile(
 export async function loginViaUi(page: Page, email: string, password: string = DEFAULT_PASSWORD): Promise<void> {
   await page.goto('/login')
   // Click to expand email form (hidden by default, Google is primary)
-  await page.click('text=/Don\'t have Gmail/i')
+  const emailToggle = page.getByRole('button', { name: /Don\'t have Gmail|Use another email|Sign in with email/i }).first()
+  if (await emailToggle.isVisible().catch(() => false)) {
+    await emailToggle.click()
+  }
   await page.waitForTimeout(300)
   await page.fill('#email', email)
   await page.fill('#password', password)
-  await page.getByRole('button', { name: /Sign In/i }).click()
+  const emailSubmitButton = page.getByRole('button', { name: /^Sign In with Email$/i }).first()
+  if (await emailSubmitButton.count()) {
+    await emailSubmitButton.click()
+  } else {
+    await page.locator('form:has(#email) button[type="submit"]').first().click()
+  }
+
+  // Ensure we actually left /login and reached an authenticated area.
+  await page.waitForURL(url => {
+    const path = url.pathname.toLowerCase()
+    return !path.startsWith('/login') &&
+      (path.startsWith('/dashboard') || path.startsWith('/matches') || path.startsWith('/profile'))
+  }, { timeout: 60000 })
 }
 
 export async function adminLoginViaUi(page: Page): Promise<void> {

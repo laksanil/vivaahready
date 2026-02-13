@@ -17,6 +17,12 @@ import {
   PreferencesPage1Section,
   PreferencesPage2Section,
 } from './ProfileFormSections'
+import {
+  getEffectiveUniversity,
+  isNonWorkingOccupation,
+  validateLocationEducationStep,
+  validatePartnerPreferencesMustHaves,
+} from '@/lib/profileFlowValidation'
 
 interface FindMatchModalProps {
   isOpen: boolean
@@ -158,6 +164,21 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     prefMaritalStatusIsDealbreaker: true,
   })
 
+  useEffect(() => {
+    const activeOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
+    if (activeOrder[step - 1] !== 'preferences_1') return
+
+    setFormData(prev => {
+      const updates: Record<string, unknown> = {}
+      if (prev.prefAgeIsDealbreaker === undefined || prev.prefAgeIsDealbreaker === null) updates.prefAgeIsDealbreaker = true
+      if (prev.prefHeightIsDealbreaker === undefined || prev.prefHeightIsDealbreaker === null) updates.prefHeightIsDealbreaker = true
+      if (prev.prefMaritalStatusIsDealbreaker === undefined || prev.prefMaritalStatusIsDealbreaker === null) updates.prefMaritalStatusIsDealbreaker = true
+      if (prev.prefReligionIsDealbreaker === undefined || prev.prefReligionIsDealbreaker === null) updates.prefReligionIsDealbreaker = true
+      if (Object.keys(updates).length === 0) return prev
+      return { ...prev, ...updates }
+    })
+  }, [isAdminMode, step])
+
   // Photo upload state
   const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([])
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
@@ -187,22 +208,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const isBasicsComplete = !!(formData.createdBy && formData.gender && hasAgeOrDOB && formData.height && formData.maritalStatus && formData.motherTongue)
 
   // Education & Career section validation (includes location fields)
-  const isUSALocation = (formData.country as string || 'USA') === 'USA'
-  const occupationValue = (formData.occupation as string || '').toLowerCase()
-  const isNonWorkingOccupation = ['student', 'homemaker', 'home maker', 'retired', 'not working', 'unemployed'].some(
-    status => occupationValue.includes(status)
-  )
-  const isLocationEducationComplete = !!(
-    formData.country &&
-    formData.grewUpIn &&
-    formData.citizenship &&
-    (!isUSALocation || formData.zipCode) && // zipCode only required for USA
-    formData.qualification &&
-    formData.university &&
-    formData.occupation &&
-    (isNonWorkingOccupation || formData.employerName) &&
-    formData.openToRelocation // relocation is now required
-  )
+  const locationEducationValidation = validateLocationEducationStep(formData)
+  const isLocationEducationComplete = locationEducationValidation.isValid
 
   // Family section validation - Family Location and Family Values are required
   const familyLocationValue = formData.familyLocation as string || ''
@@ -231,9 +238,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const communityValue = formData.community as string || ''
   const isReligionComplete = religionValue !== '' && communityValue !== ''
 
-  // Preferences Page 1 validation - No required fields, "Doesn't Matter" is a valid choice
-  // Diet, Smoking, Drinking default to "Doesn't Matter" (empty string) which is acceptable
-  const isPreferences1Complete = true
+  // Partner Preferences must-haves validation
+  const preferences1Validation = validatePartnerPreferencesMustHaves(formData)
+  const isPreferences1Complete = preferences1Validation.isValid
 
   const handleCreateAccount = async () => {
     if (!email || !password) return
@@ -396,7 +403,34 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       const nextSignupStep = nextInternalStep - 1
 
       // Check if this is the last profile section (preferences_2)
-      const isLastSection = sectionOrder[step - 1] === 'preferences_2'
+      const currentSection = sectionOrder[step - 1]
+      const isLastSection = currentSection === 'preferences_2'
+      const isPreferenceSection = currentSection === 'preferences_1' || currentSection === 'preferences_2'
+      const employerValue = ((formData.employerName as string | undefined) || '').trim()
+      const payload: Record<string, unknown> = {
+        ...formData,
+        university: getEffectiveUniversity(formData.university, formData.universityOther),
+        employerName: isNonWorkingOccupation(formData.occupation) ? (employerValue || null) : employerValue,
+        signupStep: nextSignupStep, // Track which step to complete next (1-8, 9=complete)
+      }
+
+      if (isPreferenceSection) {
+        payload.prefAgeIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefAgeIsDealbreaker
+        payload.prefHeightIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefHeightIsDealbreaker
+        payload.prefMaritalStatusIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker
+        payload.prefReligionIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefReligionIsDealbreaker
+
+        if (preferences1Validation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker) {
+          payload.prefMaritalStatus = preferences1Validation.sanitizedPrefMaritalStatus
+        }
+
+        if (preferences1Validation.normalizedDealbreakers.prefReligionIsDealbreaker) {
+          payload.prefReligions = preferences1Validation.selectedReligions
+          payload.prefReligion = preferences1Validation.selectedReligions.length === 1
+            ? preferences1Validation.selectedReligions[0]
+            : ''
+        }
+      }
 
       const response = await fetch(`/api/profile/${createdProfileId}`, {
         method: 'PUT',
@@ -404,10 +438,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           'Content-Type': 'application/json',
           ...(newUserId && { 'x-new-user-id': newUserId }),
         },
-        body: JSON.stringify({
-          ...formData,
-          signupStep: nextSignupStep, // Track which step to complete next (1-8, 9=complete)
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -434,13 +465,19 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
 
   const handleSectionContinue = () => {
     const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
+    const currentSection = sectionOrder[step - 1]
+    if (!currentSection || currentSection === 'photos') return
+
+    // If we have a created profile, save data before continuing.
+    // This includes the final signup step (preferences_2), which must persist
+    // and then redirect to /profile/photos.
+    if (createdProfileId) {
+      void handleUpdateProfile()
+      return
+    }
+
     if (step < sectionOrder.length) {
-      // If we have a created profile, save data before continuing
-      if (createdProfileId) {
-        handleUpdateProfile()
-      } else {
-        setStep(step + 1)
-      }
+      setStep(step + 1)
     }
   }
 

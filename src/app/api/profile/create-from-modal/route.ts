@@ -7,6 +7,7 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
+import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -62,6 +63,7 @@ const profileSchema = z.object({
   // Education & Career
   qualification: z.string().optional(),
   university: z.string().optional(),
+  universityOther: z.string().optional(),
   occupation: z.string().optional(),
   employerName: z.string().optional(),
   annualIncome: z.string().optional(),
@@ -192,6 +194,23 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
+    const normalizeText = (value: string | undefined) => value?.trim() || ''
+    const effectiveUniversity = getEffectiveUniversity(data.university, data.universityOther)
+    const employerName = normalizeText(data.employerName)
+
+    if (data.qualification && !effectiveUniversity) {
+      return NextResponse.json(
+        { error: 'College/University is required.' },
+        { status: 400 }
+      )
+    }
+
+    if (data.occupation && !isNonWorkingOccupation(data.occupation) && !employerName) {
+      return NextResponse.json(
+        { error: 'Company/Organization is required for working occupations.' },
+        { status: 400 }
+      )
+    }
 
     // Get the authenticated session first
     const session = await getServerSession(authOptions)
@@ -327,9 +346,9 @@ export async function POST(request: Request) {
 
         // Education & Career
         qualification: data.qualification,
-        university: data.university,
+        university: effectiveUniversity || null,
         occupation: data.occupation,
-        employerName: data.employerName,
+        employerName: employerName || null,
         annualIncome: data.annualIncome,
         educationCareerDetails: data.educationCareerDetails,
 

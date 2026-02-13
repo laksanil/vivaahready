@@ -4,6 +4,11 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
+import {
+  getEffectiveUniversity,
+  validateLocationEducationStep,
+  validatePartnerPreferencesMustHaves,
+} from '@/lib/profileFlowValidation'
 
 export async function GET(
   request: Request,
@@ -133,6 +138,10 @@ export async function PUT(
     }
 
     const body = normalizeSameAsMinePreferences(await request.json(), existingProfile)
+    const normalizeText = (value: unknown): string => {
+      return typeof value === 'string' ? value.trim() : ''
+    }
+    const requestedSignupStep = body.signupStep !== undefined ? Number(body.signupStep) : undefined
 
     // Build update data - only include fields that are provided
     const updateData: Record<string, unknown> = {}
@@ -155,9 +164,12 @@ export async function PUT(
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
-    if (body.university !== undefined) updateData.university = body.university
+    if (body.university !== undefined || body.universityOther !== undefined) {
+      const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
+      updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
+    }
     if (body.occupation !== undefined) updateData.occupation = body.occupation
-    if (body.employerName !== undefined) updateData.employerName = body.employerName
+    if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
 
@@ -198,6 +210,8 @@ export async function PUT(
     if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
     if (body.instagram !== undefined) updateData.instagram = body.instagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
+    if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
+    if (body.referredBy !== undefined) updateData.referredBy = body.referredBy
     if (body.bloodGroup !== undefined) updateData.bloodGroup = body.bloodGroup
     if (body.anyDisability !== undefined) updateData.anyDisability = body.anyDisability
     if (body.disabilityDetails !== undefined) updateData.disabilityDetails = body.disabilityDetails
@@ -277,11 +291,58 @@ export async function PUT(
       }
     }
 
+    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 3) {
+      const locationEducationValidation = validateLocationEducationStep({
+        ...mergedState,
+        universityOther: body.universityOther,
+      })
+
+      if (!locationEducationValidation.isValid) {
+        return NextResponse.json(
+          { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 8) {
+      const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
+
+      if (!preferencesValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
+      }
+
+      updateData.prefAgeIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefAgeIsDealbreaker
+      updateData.prefHeightIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefHeightIsDealbreaker
+      updateData.prefMaritalStatusIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker
+      updateData.prefReligionIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefReligionIsDealbreaker
+
+      if (preferencesValidation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker) {
+        updateData.prefMaritalStatus = preferencesValidation.sanitizedPrefMaritalStatus
+      }
+
+      if (preferencesValidation.normalizedDealbreakers.prefReligionIsDealbreaker) {
+        updateData.prefReligions = preferencesValidation.selectedReligions
+        updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
+          ? preferencesValidation.selectedReligions[0]
+          : ''
+      }
+    }
+
     // Signup progress tracking
     // IMPORTANT: Phone number is REQUIRED to proceed past step 1 (basics)
     // Users cannot move to step 2+ without a phone number
     if (body.signupStep !== undefined) {
-      if (body.signupStep > 1) {
+      if (Number.isNaN(requestedSignupStep)) {
+        return NextResponse.json({ error: 'Invalid signup step.' }, { status: 400 })
+      }
+
+      if ((requestedSignupStep || 0) > 1) {
         // Check if phone exists in DB or is being provided in this request
         const existingPhone = existingProfile.user?.phone?.trim() || ''
         const providedPhone = body.phone?.trim() || ''
@@ -293,7 +354,7 @@ export async function PUT(
           )
         }
       }
-      updateData.signupStep = body.signupStep
+      updateData.signupStep = requestedSignupStep
     }
 
     // Update phone number on User model if provided

@@ -4,13 +4,13 @@ import { describe, it, expect } from 'vitest'
  * Deal-breaker Validation Tests
  *
  * Tests to ensure that "Deal-breaker" flags cannot be set when a preference
- * has "Doesn't Matter" or empty value selected. This is a recurring bug
+ * has "Doesn't Matter" selected. This is a recurring bug
  * that has appeared multiple times - these tests prevent regression.
  *
  * Bug: Users could mark a preference as "Deal-breaker" while having
  * "Doesn't Matter" selected, which is a contradictory state.
  *
- * Fix: When user selects "Doesn't Matter" or empty value, the corresponding
+ * Fix: When user selects explicit "Doesn't Matter", the corresponding
  * deal-breaker flag is automatically cleared.
  */
 
@@ -36,7 +36,7 @@ const prefToDealBreakerMap: Record<string, string> = {
 // Helper function that mirrors the logic in handlePreferenceChange
 const isDoesntMatterValue = (value: string): boolean => {
   const normalizedValue = value.toLowerCase()
-  return normalizedValue === 'doesnt_matter' || normalizedValue === '' || normalizedValue === "doesn't matter"
+  return normalizedValue === 'doesnt_matter' || normalizedValue === "doesn't matter"
 }
 
 // Simulates the form state update logic from handlePreferenceChange
@@ -116,8 +116,8 @@ describe('Deal-breaker Validation', () => {
       expect(isDoesntMatterValue('Doesnt_Matter')).toBe(true)
     })
 
-    it('detects empty string as a "doesn\'t matter" value', () => {
-      expect(isDoesntMatterValue('')).toBe(true)
+    it('does not treat empty string as explicit "doesn\'t matter"', () => {
+      expect(isDoesntMatterValue('')).toBe(false)
     })
 
     it('detects "doesn\'t matter" text as a "doesn\'t matter" value', () => {
@@ -180,7 +180,7 @@ describe('Deal-breaker Validation', () => {
       expect(newState.prefGrewUpInIsDealbreaker).toBe(false)
     })
 
-    it('clears deal-breaker when selecting empty value', () => {
+    it('does not clear deal-breaker when selecting empty value', () => {
       const initialState = {
         prefRelocation: 'yes',
         prefRelocationIsDealbreaker: true
@@ -189,7 +189,7 @@ describe('Deal-breaker Validation', () => {
       const newState = handlePreferenceChange(initialState, 'prefRelocation', '')
 
       expect(newState.prefRelocation).toBe('')
-      expect(newState.prefRelocationIsDealbreaker).toBe(false)
+      expect(newState.prefRelocationIsDealbreaker).toBe(true)
     })
 
     it('clears deal-breaker when selecting "doesn\'t matter" text', () => {
@@ -254,7 +254,6 @@ describe('Deal-breaker Validation', () => {
         "doesn't matter",
         "DOESN'T MATTER",
         "Doesn't Matter",
-        '',
       ]
 
       testCases.forEach(value => {
@@ -267,6 +266,18 @@ describe('Deal-breaker Validation', () => {
 
         expect(newState.prefSmokingIsDealbreaker).toBe(false)
       })
+    })
+
+    it('does not clear deal-breaker for empty values', () => {
+      const initialState = {
+        prefSmoking: 'no',
+        prefSmokingIsDealbreaker: true
+      }
+
+      const newState = handlePreferenceChange(initialState, 'prefSmoking', '')
+
+      expect(newState.prefSmoking).toBe('')
+      expect(newState.prefSmokingIsDealbreaker).toBe(true)
     })
 
     it('preserves other state fields when updating', () => {

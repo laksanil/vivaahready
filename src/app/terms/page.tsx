@@ -302,7 +302,53 @@ export default function TermsOfUsePage() {
 
             {/* Section 17 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">17. General Provisions</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">17. SMS and Text Message Communications</h2>
+              <p className="text-gray-600 mb-3">
+                VivaahReady uses SMS/text messaging to send you important account notifications, verification codes, and match updates. By providing your phone number during account registration, you explicitly consent to receive SMS communications from VivaahReady.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.1 Types of Messages</h3>
+              <p className="text-gray-600 mb-3">We send SMS messages for:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Account verification and two-factor authentication codes;</li>
+                <li>Profile approval and status notifications;</li>
+                <li>New interest and match alerts;</li>
+                <li>Important account security updates;</li>
+                <li>Service announcements and important updates.</li>
+              </ul>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.2 Message Frequency</h3>
+              <p className="text-gray-600">
+                Message frequency depends on your account activity and notification preferences. You may receive between 1-10 SMS messages per month on average.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.3 Opting Out</h3>
+              <p className="text-gray-600 mb-3">
+                You can opt out of SMS communications at any time by:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Replying "STOP" to any SMS message you receive;</li>
+                <li>Updating your notification preferences in your account settings;</li>
+                <li>Contacting us at <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                After you opt out, you will receive one confirmation message. You will no longer receive SMS messages from VivaahReady, except as required by law.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.4 Help and Support</h3>
+              <p className="text-gray-600">
+                For help with SMS messages, reply "HELP" to any message. Standard message and data rates apply according to your carrier's plan. VivaahReady is not responsible for any charges imposed by your mobile carrier.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.5 Carrier Compliance</h3>
+              <p className="text-gray-600">
+                Our SMS communications comply with the Telephone Consumer Protection Act (TCPA) and all applicable carrier regulations. VivaahReady will never sell, trade, or share your phone number with third parties for marketing purposes. We may share your phone number with our SMS service provider (Twilio) solely for the purpose of delivering SMS messages to you.
+              </p>
+            </section>
+
+            {/* Section 18 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">18. General Provisions</h2>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
                 <li><strong>Entire Agreement:</strong> These Terms, together with the Privacy Policy, constitute the entire agreement between you and VivaahReady regarding the Service.</li>
                 <li><strong>Severability:</strong> If any provision of these Terms is found to be unenforceable, the remaining provisions will continue in full force and effect.</li>
@@ -312,9 +358,9 @@ export default function TermsOfUsePage() {
               </ul>
             </section>
 
-            {/* Section 18 */}
+            {/* Section 19 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">18. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">19. Contact Us</h2>
               <p className="text-gray-600 mb-3">
                 If you have any questions about these Terms, please contact us at:
               </p>

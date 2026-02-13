@@ -253,15 +253,47 @@ export default function PrivacyPolicyPage() {
 
             {/* Section 12 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">12. Changes to This Policy</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">12. SMS and Text Message Communications</h2>
+              <p className="text-gray-600 mb-3">
+                VivaahReady uses SMS/text messaging to send you important account notifications, verification codes, and match updates. Your consent to SMS communications is obtained during account registration.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">12.1 SMS Usage</h3>
+              <p className="text-gray-600 mb-3">We send SMS messages for:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>Account verification and security codes;</li>
+                <li>Profile approval notifications;</li>
+                <li>New interest and match notifications;</li>
+                <li>Service updates and important account changes.</li>
+              </ul>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">12.2 Message Frequency</h3>
               <p className="text-gray-600">
-                We may update this Privacy Policy from time to time to reflect changes in our practices or for legal, operational, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our platform with a new effective date. For significant changes, we may also send you an email notification. Your continued use of VivaahReady after such changes constitutes your acceptance of the revised policy.
+                The frequency of SMS messages depends on your activity and notification preferences. You may receive between 1-10 messages per month.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">12.3 Opting Out</h3>
+              <p className="text-gray-600">
+                You can opt out of SMS communications at any time by replying "STOP" to any message. You will receive a confirmation message. Standard message and data rates apply. For questions about SMS communications, text "HELP" or contact <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
+              </p>
+              
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">12.4 Carrier Compliance</h3>
+              <p className="text-gray-600">
+                Our SMS communications comply with Telephone Consumer Protection Act (TCPA) regulations and carrier requirements. We will never spam you or sell your phone number.
               </p>
             </section>
 
             {/* Section 13 */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">13. Contact Us</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">13. Changes to This Policy</h2>
+              <p className="text-gray-600">
+                We may update this Privacy Policy from time to time to reflect changes in our practices or for legal, operational, or regulatory reasons. We will notify you of any material changes by posting the updated policy on our platform with a new effective date. For significant changes, we may also send you an email notification. Your continued use of VivaahReady after such changes constitutes your acceptance of the revised policy.
+              </p>
+            </section>
+
+            {/* Section 14 */}
+            <section>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">14. Contact Us</h2>
               <p className="text-gray-600 mb-3">
                 If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at:
               </p>

@@ -894,7 +894,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
           )}
         </div>
         <div className="relative">
-          <label className="form-label">College/University</label>
+          <label className="form-label">College/University <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={universitySearch || (formData.university as string === 'other' ? '' : formData.university as string) || ''}
@@ -905,6 +905,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
             onFocus={() => setShowUniversityDropdown(true)}
             className="input-field"
             placeholder="Type to search universities..."
+            required
           />
           {showUniversityDropdown && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
@@ -974,8 +975,28 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
           )}
         </div>
         <div>
-          <label className="form-label">Company/Organization</label>
-          <input type="text" name="employerName" value={formData.employerName as string || ''} onChange={handleChange} className="input-field" placeholder="Company name" />
+          {(() => {
+            const occupation = (formData.occupation as string || '').toLowerCase()
+            const isNonWorking = ['student', 'homemaker', 'home maker', 'retired', 'not working', 'unemployed'].some(
+              status => occupation.includes(status)
+            )
+            return (
+              <>
+                <label className="form-label">
+                  Company/Organization {!isNonWorking && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="text"
+                  name="employerName"
+                  value={formData.employerName as string || ''}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder={isNonWorking ? "Company name (optional)" : "Company name"}
+                  required={!isNonWorking}
+                />
+              </>
+            )
+          })()}
         </div>
       </div>
       <div>
@@ -1958,6 +1979,7 @@ function DealBreakerToggle({
 }) {
   const fieldName = `${field}IsDealbreaker`
   const isChecked = formData[fieldName] === true || formData[fieldName] === 'true'
+  const inputId = `${fieldName}-toggle`
 
   // Map deal-breaker fields to their corresponding value fields
   const getRelatedFields = (dealBreakerField: string): string[] => {
@@ -2014,9 +2036,11 @@ function DealBreakerToggle({
   return (
     <label className="flex items-center gap-1.5 cursor-pointer select-none">
       <input
+        id={inputId}
         type="checkbox"
         checked={isChecked}
         onChange={(e) => handleToggle(e.target.checked)}
+        aria-label={`${field} deal-breaker`}
         className="rounded border-red-300 text-red-600 focus:ring-red-500 h-3.5 w-3.5"
       />
       <span className={`text-xs ${isChecked ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
@@ -2201,7 +2225,7 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     const normalizedValue = value.toLowerCase()
 
     // Check if user selected a "doesn't matter" type value
-    const isDoesntMatter = normalizedValue === 'doesnt_matter' || normalizedValue === '' || normalizedValue === "doesn't matter"
+    const isDoesntMatter = normalizedValue === 'doesnt_matter' || normalizedValue === "doesn't matter"
 
     // If selecting "doesn't matter" and this field has a deal-breaker toggle, clear the deal-breaker
     if (isDoesntMatter && prefToDealBreakerMap[name]) {
@@ -2231,7 +2255,11 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
     const current = (formData[field] as string || '').split(', ').filter(v => v)
     if (checked) {
-      setFormData(prev => ({ ...prev, [field]: [...current, value].join(', ') }))
+      const withoutAny = value === 'doesnt_matter' ? [] : current.filter(v => v !== 'doesnt_matter')
+      const nextValues = value === 'doesnt_matter'
+        ? ['doesnt_matter']
+        : [...withoutAny, value]
+      setFormData(prev => ({ ...prev, [field]: Array.from(new Set(nextValues)).join(', ') }))
     } else {
       setFormData(prev => ({ ...prev, [field]: current.filter(v => v !== value).join(', ') }))
     }
@@ -2246,6 +2274,32 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const userGender = formData.gender as string || ''
   const userReligion = formData.religion as string || ''
   const isEditingProfile = Boolean(formData.id)
+
+  useEffect(() => {
+    if (showOnlyOptional) return
+
+    setFormData(prev => {
+      const updates: Record<string, unknown> = {}
+      if (prev.prefAgeIsDealbreaker === undefined || prev.prefAgeIsDealbreaker === null) updates.prefAgeIsDealbreaker = true
+      if (prev.prefHeightIsDealbreaker === undefined || prev.prefHeightIsDealbreaker === null) updates.prefHeightIsDealbreaker = true
+      if (prev.prefMaritalStatusIsDealbreaker === undefined || prev.prefMaritalStatusIsDealbreaker === null) updates.prefMaritalStatusIsDealbreaker = true
+      if (prev.prefReligionIsDealbreaker === undefined || prev.prefReligionIsDealbreaker === null) updates.prefReligionIsDealbreaker = true
+      if (Object.keys(updates).length === 0) return prev
+      return { ...prev, ...updates }
+    })
+  }, [showOnlyOptional, setFormData])
+
+  useEffect(() => {
+    if (showOnlyOptional) return
+    const maritalDealbreakerEnabled = formData.prefMaritalStatusIsDealbreaker === true || formData.prefMaritalStatusIsDealbreaker === 'true'
+    if (!maritalDealbreakerEnabled) return
+
+    const current = (formData.prefMaritalStatus as string || '').split(', ').filter(v => v)
+    if (current.length === 0 || !current.includes('doesnt_matter')) return
+
+    const filtered = current.filter(v => v !== 'doesnt_matter')
+    setFormData(prev => ({ ...prev, prefMaritalStatus: filtered.join(', ') }))
+  }, [formData.prefMaritalStatus, formData.prefMaritalStatusIsDealbreaker, showOnlyOptional, setFormData])
 
   // Sync fallback defaults into formData so saved values always match what's displayed.
   // Without this, selects can show a fallback value (e.g. user's own religion) while

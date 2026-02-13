@@ -5,6 +5,11 @@ import { prisma } from '@/lib/prisma'
 import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
+import {
+  getEffectiveUniversity,
+  validateLocationEducationStep,
+  validatePartnerPreferencesMustHaves,
+} from '@/lib/profileFlowValidation'
 
 /**
  * Format display name as "Firstname L." for privacy
@@ -121,6 +126,13 @@ export async function POST(request: Request) {
         prefIncome: body.prefIncome,
         idealPartnerDesc: body.partnerPreferences || body.idealPartnerDesc,
         approvalStatus: 'pending', // All new profiles start as pending
+        // Campaign tracking
+        utm_source: body.utm_source,
+        utm_medium: body.utm_medium,
+        utm_campaign: body.utm_campaign,
+        utm_content: body.utm_content,
+        utm_term: body.utm_term,
+        acquisitionChannel: body.utm_source ? (body.utm_source === 'direct' ? 'organic' : body.utm_medium === 'social' ? 'social' : body.utm_medium === 'cpc' || body.utm_medium === 'ppc' ? 'paid_search' : 'other') : 'organic',
       },
     })
 
@@ -194,6 +206,10 @@ export async function PUT(request: Request) {
     }
 
     const body = normalizeSameAsMinePreferences(await request.json(), existingProfile || undefined)
+    const normalizeText = (value: unknown): string => {
+      return typeof value === 'string' ? value.trim() : ''
+    }
+    const editSection = typeof body._editSection === 'string' ? body._editSection : ''
 
     // Build update data - only include fields that are in the schema
     const updateData: Record<string, unknown> = {}
@@ -213,7 +229,7 @@ export async function PUT(request: Request) {
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship
-    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
     if (body.facebookInstagram !== undefined) updateData.facebookInstagram = body.facebookInstagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.instagram !== undefined) updateData.instagram = body.instagram
@@ -222,7 +238,10 @@ export async function PUT(request: Request) {
     if (body.caste !== undefined) updateData.caste = body.caste
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.qualification !== undefined) updateData.qualification = body.qualification
-    if (body.university !== undefined) updateData.university = body.university
+    if (body.university !== undefined || body.universityOther !== undefined) {
+      const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
+      updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
+    }
     if (body.occupation !== undefined) updateData.occupation = body.occupation
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.fatherName !== undefined) updateData.fatherName = body.fatherName
@@ -324,7 +343,7 @@ export async function PUT(request: Request) {
 
     // Additional fields
     if (body.religion !== undefined) updateData.religion = body.religion
-    if (body.employerName !== undefined) updateData.employerName = body.employerName
+    if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.workingAs !== undefined) updateData.workingAs = body.workingAs
     if (body.livesWithFamily !== undefined) updateData.livesWithFamily = body.livesWithFamily
     if (body.createdBy !== undefined) updateData.createdBy = body.createdBy
@@ -367,6 +386,47 @@ export async function PUT(request: Request) {
     if (body.prefSubCommunityIsDealbreaker !== undefined) updateData.prefSubCommunityIsDealbreaker = body.prefSubCommunityIsDealbreaker === true || body.prefSubCommunityIsDealbreaker === 'true'
     if (body.prefPetsIsDealbreaker !== undefined) updateData.prefPetsIsDealbreaker = body.prefPetsIsDealbreaker === true || body.prefPetsIsDealbreaker === 'true'
     if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker === true || body.prefReligionIsDealbreaker === 'true'
+
+    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+
+    if (editSection === 'location_education') {
+      const locationEducationValidation = validateLocationEducationStep({
+        ...mergedState,
+        universityOther: body.universityOther,
+      })
+      if (!locationEducationValidation.isValid) {
+        return NextResponse.json(
+          { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (editSection === 'preferences_1') {
+      const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
+      if (!preferencesValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
+      }
+
+      updateData.prefAgeIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefAgeIsDealbreaker
+      updateData.prefHeightIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefHeightIsDealbreaker
+      updateData.prefMaritalStatusIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker
+      updateData.prefReligionIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefReligionIsDealbreaker
+
+      if (preferencesValidation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker) {
+        updateData.prefMaritalStatus = preferencesValidation.sanitizedPrefMaritalStatus
+      }
+
+      if (preferencesValidation.normalizedDealbreakers.prefReligionIsDealbreaker) {
+        updateData.prefReligions = preferencesValidation.selectedReligions
+        updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
+          ? preferencesValidation.selectedReligions[0]
+          : ''
+      }
+    }
 
     // Update User model fields (name, email, phone)
     const userUpdateData: Record<string, unknown> = {}

@@ -15,6 +15,10 @@ import {
   PreferencesPage1Section,
   PreferencesPage2Section,
 } from '@/components/ProfileFormSections'
+import {
+  validateLocationEducationStep,
+  validatePartnerPreferencesMustHaves,
+} from '@/lib/profileFlowValidation'
 
 // Local step order for /profile/complete page (8 steps)
 // This page is used when users need to complete their profile after Google OAuth signup
@@ -69,7 +73,17 @@ function ProfileCompleteContent() {
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [error, setError] = useState('')
-  const [formData, setFormData] = useState<Record<string, unknown>>({})
+  const [formData, setFormData] = useState<Record<string, unknown>>({
+    maritalStatus: 'never_married',
+    anyDisability: 'none',
+    country: 'USA',
+    grewUpIn: 'USA',
+    citizenship: 'USA',
+    prefAgeIsDealbreaker: true,
+    prefHeightIsDealbreaker: true,
+    prefReligionIsDealbreaker: true,
+    prefMaritalStatusIsDealbreaker: true,
+  })
 
   // Handle profile creation from Google auth (when redirected here with stored form data)
   useEffect(() => {
@@ -214,7 +228,10 @@ function ProfileCompleteContent() {
           await updateSession() // Refresh session so hasProfile is updated
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           // Pre-fill form with the data (includes phone from account step)
-          setFormData(formDataToUse)
+          setFormData(prev => ({
+            ...prev,
+            ...formDataToUse,
+          }))
           // Start at step 1 (basics) - user needs to fill name, gender, age, etc.
           // Phone is already saved from the account step
           setStep(1)
@@ -382,6 +399,9 @@ function ProfileCompleteContent() {
             prefHasChildren: data.prefHasChildren,
             prefHasChildrenIsDealbreaker: data.prefHasChildrenIsDealbreaker,
             prefReligion: data.prefReligion,
+            prefReligions: Array.isArray(data.prefReligions)
+              ? data.prefReligions
+              : (data.prefReligion && data.prefReligion !== 'doesnt_matter' ? [data.prefReligion] : []),
             prefReligionIsDealbreaker: data.prefReligionIsDealbreaker ?? true,
             prefCommunity: data.prefCommunity,
             prefCommunityIsDealbreaker: data.prefCommunityIsDealbreaker,
@@ -489,6 +509,25 @@ function ProfileCompleteContent() {
     try {
       const signupStep = getSignupStepFromLocalStep(nextStep)
       const dataToSave = mergeOtherFields(formData)
+      const activeSection = SECTION_ORDER[step - 1]
+
+      if (activeSection === 'preferences_1' || activeSection === 'preferences_2') {
+        dataToSave.prefAgeIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefAgeIsDealbreaker
+        dataToSave.prefHeightIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefHeightIsDealbreaker
+        dataToSave.prefMaritalStatusIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker
+        dataToSave.prefReligionIsDealbreaker = preferences1Validation.normalizedDealbreakers.prefReligionIsDealbreaker
+
+        if (preferences1Validation.normalizedDealbreakers.prefMaritalStatusIsDealbreaker) {
+          dataToSave.prefMaritalStatus = preferences1Validation.sanitizedPrefMaritalStatus
+        }
+
+        if (preferences1Validation.normalizedDealbreakers.prefReligionIsDealbreaker) {
+          dataToSave.prefReligions = preferences1Validation.selectedReligions
+          dataToSave.prefReligion = preferences1Validation.selectedReligions.length === 1
+            ? preferences1Validation.selectedReligions[0]
+            : ''
+        }
+      }
 
       const response = await fetch(`/api/profile/${profileId}`, {
         method: 'PUT',
@@ -527,6 +566,20 @@ function ProfileCompleteContent() {
     }
   }
 
+  useEffect(() => {
+    if (SECTION_ORDER[step - 1] !== 'preferences_1') return
+
+    setFormData(prev => {
+      const updates: Record<string, unknown> = {}
+      if (prev.prefAgeIsDealbreaker === undefined || prev.prefAgeIsDealbreaker === null) updates.prefAgeIsDealbreaker = true
+      if (prev.prefHeightIsDealbreaker === undefined || prev.prefHeightIsDealbreaker === null) updates.prefHeightIsDealbreaker = true
+      if (prev.prefMaritalStatusIsDealbreaker === undefined || prev.prefMaritalStatusIsDealbreaker === null) updates.prefMaritalStatusIsDealbreaker = true
+      if (prev.prefReligionIsDealbreaker === undefined || prev.prefReligionIsDealbreaker === null) updates.prefReligionIsDealbreaker = true
+      if (Object.keys(updates).length === 0) return prev
+      return { ...prev, ...updates }
+    })
+  }, [step])
+
   // Section validations
   // Basics validation (phone is already collected in signup modal, no need to validate here)
   const hasAgeOrDOB = !!(formData.dateOfBirth || formData.age)
@@ -542,22 +595,8 @@ function ProfileCompleteContent() {
   )
 
   // Location & Education validation
-  const isUSALocation = (formData.country as string || 'USA') === 'USA'
-  const occupationValue = (formData.occupation as string || '').toLowerCase()
-  const isNonWorkingOccupation = ['student', 'homemaker', 'home maker', 'retired', 'not working', 'unemployed'].some(
-    status => occupationValue.includes(status)
-  )
-  const isLocationEducationComplete = !!(
-    formData.country &&
-    formData.grewUpIn &&
-    formData.citizenship &&
-    (!isUSALocation || formData.zipCode) &&
-    formData.qualification &&
-    formData.university &&
-    formData.occupation &&
-    (isNonWorkingOccupation || formData.employerName) &&
-    formData.openToRelocation
-  )
+  const locationEducationValidation = validateLocationEducationStep(formData)
+  const isLocationEducationComplete = locationEducationValidation.isValid
 
   // Religion validation
   const religionValue = formData.religion as string || ''
@@ -586,16 +625,9 @@ function ProfileCompleteContent() {
     !formData.linkedinError
   )
 
-  // Preferences Page 1 validation - Age and Height are required (both min and max)
-  const prefAgeMinValue = formData.prefAgeMin as string || ''
-  const prefAgeMaxValue = formData.prefAgeMax as string || ''
-  const prefHeightMinValue = formData.prefHeightMin as string || ''
-  const prefHeightMaxValue = formData.prefHeightMax as string || ''
-  const isPreferences1Complete =
-    prefAgeMinValue !== '' &&
-    prefAgeMaxValue !== '' &&
-    prefHeightMinValue !== '' &&
-    prefHeightMaxValue !== ''
+  // Partner Preferences must-have validation
+  const preferences1Validation = validatePartnerPreferencesMustHaves(formData)
+  const isPreferences1Complete = preferences1Validation.isValid
 
   const currentSection = SECTION_ORDER[step - 1]
   const totalSteps = SECTION_ORDER.length

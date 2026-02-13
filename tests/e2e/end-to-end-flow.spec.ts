@@ -124,7 +124,18 @@ async function completeLocationEducation(page: Page) {
   await mockZipLookup(page)
   await page.fill('input[name="zipCode"]', '10001')
   await page.selectOption('select[name="qualification"]', 'bachelors_cs')
+  const universityInput = page.locator('input[placeholder="Type to search universities..."]').first()
+  await universityInput.click()
+  await universityInput.fill('Stanford')
+  const universityOption = page.getByRole('button', { name: /Stanford University/i }).first()
+  if (await universityOption.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await universityOption.click()
+  } else {
+    await page.getByRole('button', { name: /Other \(specify below\)/i }).first().click()
+    await page.fill('input[name="universityOther"]', 'Stanford University')
+  }
   await page.selectOption('select[name="occupation"]', 'software_engineer')
+  await page.fill('input[name="employerName"]', 'E2E QA Systems')
   await page.selectOption('select[name="annualIncome"]', '75k-100k')
   await page.selectOption('select[name="openToRelocation"]', 'yes')
   await page.getByRole('button', { name: /Continue/i }).click()
@@ -164,11 +175,58 @@ async function completeAboutMe(page: Page) {
   await expect(page.getByRole('heading', { name: /Partner Preferences/i })).toBeVisible()
 }
 
-async function skipPreferences(page: Page) {
-  await page.getByRole('button', { name: /Continue/i }).click()
+async function completePartnerPreferences(page: Page) {
+  await page.selectOption('select[name="prefAgeMin"]', '25')
+  await page.selectOption('select[name="prefAgeMax"]', '35')
+  await page.selectOption('select[name="prefHeightMin"]', `5'0"`)
+  await page.selectOption('select[name="prefHeightMax"]', `6'2"`)
+
+  const neverMarried = page
+    .locator('div:has(h4:has-text("Marital Status")) label:has-text("Never Married") input[type="checkbox"]')
+    .first()
+  if (!(await neverMarried.isChecked().catch(() => false))) {
+    await neverMarried.check()
+  }
+
+  const continueButton = page.getByRole('button', { name: /Continue/i }).first()
+  if (await continueButton.isDisabled()) {
+    const hinduPill = page
+      .locator('div:has(h4:has-text("Religion Preference")) button:has-text("Hindu")')
+      .first()
+    if (await hinduPill.isVisible().catch(() => false)) {
+      await hinduPill.click()
+    }
+  }
+
+  await expect(continueButton).toBeEnabled({ timeout: 15000 })
+  const preferences1Save = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/') && response.request().method() === 'PUT'
+  )
+  await continueButton.click()
+  const preferences1SaveResponse = await preferences1Save
+  if (!preferences1SaveResponse.ok()) {
+    const body = await preferences1SaveResponse.text()
+    throw new Error(`Failed to save partner preferences step (${preferences1SaveResponse.status()}): ${body}`)
+  }
   await expect(page.getByRole('heading', { name: /More Preferences/i })).toBeVisible()
-  await page.getByRole('button', { name: /Continue/i }).click()
-  await expect(page.getByRole('heading', { name: /Add Your Photos/i })).toBeVisible({ timeout: 30000 })
+
+  const preferences2Save = page.waitForResponse(
+    (response) => response.url().includes('/api/profile/') && response.request().method() === 'PUT'
+  )
+  await page.getByRole('button', { name: /Continue|Create Profile/i }).first().click()
+  const preferences2SaveResponse = await preferences2Save
+  if (!preferences2SaveResponse.ok()) {
+    const body = await preferences2SaveResponse.text()
+    throw new Error(`Failed to save more preferences step (${preferences2SaveResponse.status()}): ${body}`)
+  }
+
+  const movedToPhotos = await page.waitForURL(/\/profile\/photos/i, { timeout: 30000 })
+    .then(() => true)
+    .catch(() => false)
+
+  if (!movedToPhotos) {
+    await expect(page.getByRole('heading', { name: /Add Your Photos|Almost Done! Add Your Photos/i })).toBeVisible({ timeout: 30000 })
+  }
 }
 
 async function uploadModalPhoto(page: Page) {
@@ -188,12 +246,11 @@ async function completeSignupFlow(page: Page, user: typeof userA) {
   await completeFamily(page)
   await completeLifestyle(page)
   await completeAboutMe(page)
-  await skipPreferences(page)
+  await completePartnerPreferences(page)
   await uploadModalPhoto(page)
 
   if (page.url().includes('/login')) {
     await login(page, user.email, password)
-    await page.waitForURL(/dashboard/, { timeout: 60000 })
   }
 
   await signOut(page, user.firstName)
@@ -201,9 +258,31 @@ async function completeSignupFlow(page: Page, user: typeof userA) {
 
 async function login(page: Page, email: string, userPassword: string) {
   await page.goto('/login')
+
+  const emailInput = page.locator('#email')
+  const emailInputVisible = await emailInput.isVisible().catch(() => false)
+  if (!emailInputVisible) {
+    const toggle = page.getByRole('button', { name: /Don't have Gmail\? Sign in with email/i }).first()
+    if (await toggle.isVisible().catch(() => false)) {
+      await toggle.click()
+    }
+    await expect(emailInput).toBeVisible({ timeout: 15000 })
+  }
+
   await page.fill('#email', email)
   await page.fill('#password', userPassword)
-  await page.getByRole('button', { name: /Sign In/i }).click()
+  const emailSignIn = page.getByRole('button', { name: /Sign In with Email/i }).first()
+  if (await emailSignIn.isVisible().catch(() => false)) {
+    await emailSignIn.click()
+  } else {
+    await page.getByRole('button', { name: /^Sign In$/i }).first().click()
+  }
+
+  await page.waitForURL(url => {
+    const path = url.pathname.toLowerCase()
+    return !path.startsWith('/login') &&
+      (path.startsWith('/dashboard') || path.startsWith('/matches') || path.startsWith('/profile'))
+  }, { timeout: 60000 })
 }
 
 async function signOut(page: Page, firstName: string) {
