@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
+const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === 'true'
+
 const nextConfig = {
+  // Keep E2E dev-server artifacts isolated from local dev/build output.
+  ...(isPlaywrightTest ? { distDir: '.next-e2e' } : {}),
   images: {
     remotePatterns: [
       {

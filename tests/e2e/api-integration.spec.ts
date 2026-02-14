@@ -1,10 +1,11 @@
-import { test, expect, request as apiRequest, type APIRequestContext, type BrowserContext } from '@playwright/test'
+import { test, expect, request as apiRequest, type APIRequestContext } from '@playwright/test'
 import {
   buildTestUser,
   createUserWithProfile,
   uploadProfilePhoto,
   adminLogin,
   adminApproveProfile,
+  loginViaUi,
   DEFAULT_PASSWORD,
 } from './helpers'
 
@@ -14,8 +15,6 @@ test.describe.serial('API integration coverage', () => {
   let adminRequest: APIRequestContext
   let userARequest: APIRequestContext
   let userBRequest: APIRequestContext
-  let userAContext: BrowserContext | null = null
-  let userBContext: BrowserContext | null = null
   let userAId = ''
   let userBId = ''
   let profileAId = ''
@@ -45,22 +44,15 @@ test.describe.serial('API integration coverage', () => {
     const loginWithUi = async (email: string) => {
       const context = await browser.newContext({ baseURL })
       const page = await context.newPage()
-      await page.goto(`${baseURL}/login`)
-      // Click to expand email form (hidden by default, Google is primary)
-      await page.click('text=/Don\'t have Gmail/i')
-      await page.waitForTimeout(300)
-      await page.fill('#email', email)
-      await page.fill('#password', DEFAULT_PASSWORD)
-      await page.getByRole('button', { name: /Sign In/i }).click()
-      await page.waitForURL(/dashboard|matches/, { timeout: 60000 })
+      await loginViaUi(page, email, DEFAULT_PASSWORD)
+      const storageState = await context.storageState()
       await page.close()
-      return context
+      await context.close()
+      return apiRequest.newContext({ baseURL, storageState })
     }
 
-    userAContext = await loginWithUi(userA.email)
-    userBContext = await loginWithUi(userB.email)
-    userARequest = userAContext.request
-    userBRequest = userBContext.request
+    userARequest = await loginWithUi(userA.email)
+    userBRequest = await loginWithUi(userB.email)
 
     // Create mutual interest so messaging can be exercised (via admin impersonation)
     await userARequest.post('/api/interest', { data: { profileId: profileBId } })
@@ -69,8 +61,8 @@ test.describe.serial('API integration coverage', () => {
 
   test.afterAll(async () => {
     await adminRequest?.dispose()
-    await userAContext?.close()
-    await userBContext?.close()
+    await userARequest?.dispose()
+    await userBRequest?.dispose()
   })
 
   test('public profiles endpoint returns data', async ({ request }) => {

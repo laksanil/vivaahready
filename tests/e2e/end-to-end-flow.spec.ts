@@ -347,18 +347,50 @@ async function likeProfile(page: Page, firstName: string) {
     .first()
   await expect(card).toBeVisible({ timeout: 30000 })
 
+  const interestResponsePromise = page.waitForResponse(
+    (response) => response.url().includes('/api/interest') && response.request().method() === 'POST',
+    { timeout: 15000 }
+  ).catch(() => null)
+
   const namedLikeButton = card.getByRole('button', { name: /Like Back|Like|Express Interest|Accept Interest/i }).first()
   if (await namedLikeButton.isVisible().catch(() => false)) {
     await namedLikeButton.click()
   } else {
-    // Directory cards use icon-only interest buttons (no accessible name).
-    // In that variant, the pass button is the one with title="Pass".
-    const iconOnlyLikeButton = card.locator('button:not([title="Pass"])').last()
-    await expect(iconOnlyLikeButton).toBeVisible()
-    await iconOnlyLikeButton.click()
+    // Directory cards may render icon-only buttons, so choose the first non-pass button.
+    const cardButtons = card.locator('button')
+    const totalButtons = await cardButtons.count()
+    let clickedInterest = false
+    for (let i = 0; i < totalButtons; i += 1) {
+      const candidate = cardButtons.nth(i)
+      const label = `${await candidate.innerText().catch(() => '')} ${await candidate.getAttribute('aria-label') || ''} ${await candidate.getAttribute('title') || ''}`.toLowerCase()
+      if (label.includes('pass')) continue
+      await candidate.click()
+      clickedInterest = true
+      break
+    }
+    if (!clickedInterest) {
+      throw new Error(`Could not find an interest button for ${firstName}`)
+    }
   }
 
-  await expect(card).toHaveCount(0)
+  const interestResponse = await interestResponsePromise
+  if (!interestResponse || !interestResponse.ok()) {
+    throw new Error(`Failed to express interest for ${firstName}`)
+  }
+
+  const cardRemoved = await card.waitFor({ state: 'detached', timeout: 15000 }).then(() => true).catch(() => false)
+  if (!cardRemoved) {
+    const sentTab = page.getByRole('button', { name: /Sent/i }).first()
+    if (await sentTab.isVisible().catch(() => false)) {
+      await sentTab.click()
+    }
+    await expect(
+      page.locator('div.bg-white.rounded-lg, div.bg-white.rounded-xl', {
+        has: page.getByRole('heading', { name: new RegExp(firstName, 'i') })
+      }).first()
+    ).toBeVisible({ timeout: 15000 })
+  }
+
   if (hasSearchInput) {
     await searchInput.fill('')
   }
