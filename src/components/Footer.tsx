@@ -81,6 +81,11 @@ export function Footer() {
                     Contact
                   </Link>
                 </li>
+                <li>
+                  <Link href="/feedback" className="text-white/60 hover:text-white text-sm transition-colors duration-200">
+                    Feedback
+                  </Link>
+                </li>
               </ul>
             </nav>
 
@@ -181,6 +186,44 @@ export function Footer() {
                   </svg>
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Explore by City & Language */}
+        <div className="border-t border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <nav aria-label="Explore by City">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-white/70 mb-3">
+                  Explore by City
+                </h3>
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  <li><Link href="/indian-matchmaking-new-york" className="text-white/60 hover:text-white text-sm transition-colors duration-200">New York</Link></li>
+                  <li><Link href="/indian-matchmaking-bay-area" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Bay Area</Link></li>
+                  <li><Link href="/indian-matchmaking-chicago" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Chicago</Link></li>
+                  <li><Link href="/indian-matchmaking-houston" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Houston</Link></li>
+                  <li><Link href="/indian-matchmaking-dallas" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Dallas</Link></li>
+                  <li><Link href="/indian-matchmaking-atlanta" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Atlanta</Link></li>
+                  <li><Link href="/indian-matchmaking-seattle" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Seattle</Link></li>
+                  <li><Link href="/indian-matchmaking" className="text-white/60 hover:text-white text-sm transition-colors duration-200">View All &rarr;</Link></li>
+                </ul>
+              </nav>
+              <nav aria-label="Explore by Language">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-white/70 mb-3">
+                  Explore by Language
+                </h3>
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  <li><Link href="/telugu-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Telugu</Link></li>
+                  <li><Link href="/tamil-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Tamil</Link></li>
+                  <li><Link href="/hindi-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Hindi</Link></li>
+                  <li><Link href="/punjabi-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Punjabi</Link></li>
+                  <li><Link href="/gujarati-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Gujarati</Link></li>
+                  <li><Link href="/bengali-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Bengali</Link></li>
+                  <li><Link href="/marathi-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Marathi</Link></li>
+                  <li><Link href="/kannada-matrimony-usa" className="text-white/60 hover:text-white text-sm transition-colors duration-200">Kannada</Link></li>
+                </ul>
+              </nav>
             </div>
           </div>
         </div>

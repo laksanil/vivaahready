@@ -6,6 +6,7 @@ import { Providers } from './providers'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import CookieConsent from '@/components/CookieConsent'
+import FeedbackWidget from '@/components/FeedbackWidget'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -140,6 +141,9 @@ export default function RootLayout({
           <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">{children}</main>
           <Suspense fallback={null}>
             <Footer />
+          </Suspense>
+          <Suspense fallback={null}>
+            <FeedbackWidget />
           </Suspense>
           <CookieConsent />
         </Providers>

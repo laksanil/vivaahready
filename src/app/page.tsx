@@ -497,6 +497,49 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* SEO Internal Links — Find Matchmaking Near You */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="section-title">Find Indian Matchmaking Near You</h2>
+            <p className="mt-3 text-gray-500">
+              Connecting Indian singles across the United States
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <a href="/indian-matchmaking-new-york" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">New York</span>
+            </a>
+            <a href="/indian-matchmaking-bay-area" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Bay Area</span>
+            </a>
+            <a href="/indian-matchmaking-chicago" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Chicago</span>
+            </a>
+            <a href="/indian-matchmaking-houston" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Houston</span>
+            </a>
+            <a href="/telugu-matrimony-usa" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Telugu Matrimony</span>
+            </a>
+            <a href="/tamil-matrimony-usa" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Tamil Matrimony</span>
+            </a>
+            <a href="/hindi-matrimony-usa" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Hindi Matrimony</span>
+            </a>
+            <a href="/punjabi-matrimony-usa" className="block p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-primary-200 hover:bg-primary-50/30 transition-colors text-center">
+              <span className="font-medium text-gray-900 text-sm">Punjabi Matrimony</span>
+            </a>
+          </div>
+          <div className="text-center mt-6">
+            <a href="/indian-matchmaking" className="text-primary-600 hover:text-primary-700 font-semibold text-sm">
+              View all locations and communities &rarr;
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section - Light background */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

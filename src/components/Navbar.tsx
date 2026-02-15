@@ -155,6 +155,11 @@ export function Navbar() {
             <Link href="/contact" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               Contact Us
             </Link>
+            {(session || isAdminViewMode) && (
+              <Link href="/feedback" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+                Feedback
+              </Link>
+            )}
 
             {status === 'loading' && !isAdminViewMode ? (
               <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
@@ -320,6 +325,15 @@ export function Navbar() {
             >
               Contact Us
             </Link>
+            {(session || isAdminViewMode) && (
+              <Link
+                href="/feedback"
+                className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Feedback
+              </Link>
+            )}
 
             {(session || isAdminViewMode) ? (
               <>
