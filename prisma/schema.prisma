@@ -32,6 +32,7 @@ model User {
   reportsFiled    Report[] @relation("ReportsFiled")
   reportsReceived Report[] @relation("ReportsReceived")
   deletionRequest DeletionRequest?
+  feedback        Feedback[]
 }
 
 model Profile {
@@ -515,4 +516,57 @@ model SupportMessage {
   @@index([status])
   @@index([userId])
   @@index([createdAt])
+}
+
+// User Feedback (2-step structured feedback with dynamic follow-ups)
+model Feedback {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // User context (populated server-side at submit time)
+  userPhone             String   // Normalized E.164 phone (e.g. +14085551234)
+  userPhoneLast4        String   // Last 4 digits for quick masking
+  userCountryCode       String?  // Country code if known
+  userName              String?  // User's display name
+  isVerified            Boolean? // VivaahReady verification status
+  profileId             String?  // User's profile ID if exists
+  matchesCount          Int?     // Total matches at submit time
+  interestsSentCount    Int?     // Interests sent count
+  interestsReceivedCount Int?    // Interests received count
+
+  // Context / metadata
+  fromUrl               String?  // Page where feedback was initiated
+  submitUrl             String?  // Page at time of submission
+  userAgent             String?  // Browser user-agent string
+
+  // Step A: Quick feedback
+  overallStars          Int      // 1-5 overall rating (required)
+  primaryIssue          String   // enum-like: ease_of_use, match_quality, profile_experience, communication, technical, pricing, trust_safety, other
+  summaryText           String?  // One sentence summary (max 140 chars)
+
+  // Step B: Dynamic follow-up answers stored as JSON
+  stepBData             String?  // JSON blob of dynamic answers keyed by question
+
+  // Close-the-loop
+  nps                   Int?     // 0-10 Net Promoter Score
+  referralSource        String?  // where_heard: whatsapp, friend, instagram, google, other
+  wantsFollowup         Boolean  @default(false)
+  followupContact       String?  // phone or email for follow-up
+  followupTimeWindow    String?  // preferred time
+
+  // Bug-report extras
+  severity              String?  // minor, major
+  issueTags             String?  // JSON array of selected issue tags
+  screenshotUrl         String?  // URL or base64 ref
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userPhone])
+  @@index([primaryIssue])
+  @@index([overallStars])
+  @@index([createdAt])
+  @@index([isVerified])
 }
