@@ -268,7 +268,7 @@ export default function GetVerifiedPage() {
                         </p>
                         <p className="text-xs text-purple-700 flex items-start gap-1.5">
                           <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-                          Use your registered email as the memo/note
+                          Add your VR ID (e.g. VR20260213030) in the Zelle note
                         </p>
                         <p className="text-xs text-purple-700 flex items-start gap-1.5">
                           <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
