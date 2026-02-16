@@ -14,10 +14,11 @@ export async function GET() {
     cachedLocationId = locationId
 
     return NextResponse.json({ locationId })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error getting Square location:', error)
+    const message = error instanceof Error ? error.message : 'Failed to get location'
     return NextResponse.json(
-      { error: 'Failed to get location' },
+      { error: message },
       { status: 500 }
     )
   }

@@ -86,6 +86,16 @@ export async function POST(request: NextRequest) {
     }
 
     const payment = response.payment
+    if (payment.status !== 'COMPLETED') {
+      console.error('Square payment not completed:', {
+        status: payment.status,
+        paymentId: payment.id,
+      })
+      return NextResponse.json(
+        { error: 'Payment was not completed. Please try again.' },
+        { status: 400 }
+      )
+    }
 
     // Payment successful - update subscription
     if (user.subscription) {
@@ -122,10 +132,30 @@ export async function POST(request: NextRequest) {
       paymentId: payment.id,
       receiptUrl: payment.receiptUrl,
     })
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Square payment error:', error)
+
+    // Extract meaningful error details from Square SDK errors
+    let message = 'Payment processing failed'
+    let details: unknown = undefined
+
+    if (error && typeof error === 'object') {
+      const err = error as Record<string, unknown>
+
+      // Square SDK v44 throws errors with an `errors` array
+      if (Array.isArray(err.errors) && err.errors.length > 0) {
+        const sqErr = err.errors[0] as Record<string, string>
+        message = sqErr.detail || sqErr.message || message
+        details = err.errors
+      } else if (err.message && typeof err.message === 'string') {
+        message = err.message
+      }
+    }
+
+    console.error('Square payment error details:', { message, details })
+
     return NextResponse.json(
-      { error: 'Payment processing failed' },
+      { error: message, details },
       { status: 500 }
     )
   }
