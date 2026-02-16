@@ -123,6 +123,15 @@ export default function IndianMatchmakingHubPage() {
                 Built specifically for the Indian diaspora in America
               </span>
             </Link>
+            <Link
+              href="/indian-matrimony-usa"
+              className="block p-5 bg-primary-50/50 rounded-lg border border-primary-100 hover:border-primary-300 transition-colors"
+            >
+              <span className="font-semibold text-gray-900">Indian Matrimony USA</span>
+              <span className="block mt-1 text-sm text-gray-500">
+                Trusted matrimony for Indian families and professionals in America
+              </span>
+            </Link>
           </div>
         </div>
       </section>

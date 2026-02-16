@@ -66,6 +66,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/blog/caught-between-dating-apps-and-arranged-marriage`,
+      lastModified: new Date('2026-02-16'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/blog/indian-families-america-marriage-gap`,
       lastModified: new Date('2026-02-14'),
       changeFrequency: 'yearly',
@@ -76,6 +82,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // SEO money pages (priority 0.85)
   const moneyPages: MetadataRoute.Sitemap = [
     '/indian-matchmaking-usa',
+    '/indian-matrimony-usa',
     '/verified-indian-matrimony',
     '/privacy-first-matchmaking',
     '/nri-matrimony-usa',

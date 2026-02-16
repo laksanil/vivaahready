@@ -30,6 +30,8 @@ export const metadata: Metadata = {
     'Christian matrimony',
     // Location-specific
     'Indian matchmaking USA',
+    'Indian matrimony USA',
+    'Indian matrimony in USA',
     'Indian matrimony America',
     'NRI matrimony',
     'US Indian matrimony',

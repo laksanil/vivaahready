@@ -79,6 +79,7 @@ export default function IndianMatchmakingUsaPage() {
       faqs={faqs}
       jsonLd={jsonLd}
       relatedPages={[
+        { href: '/indian-matrimony-usa', label: 'Indian Matrimony USA', description: 'Trusted matrimony for Indian families in America' },
         { href: '/verified-indian-matrimony', label: 'Verified Indian Matrimony', description: 'Learn about our verification process' },
         { href: '/privacy-first-matchmaking', label: 'Privacy-First Matchmaking', description: 'How we protect your identity' },
         { href: '/nri-matrimony-usa', label: 'NRI Matrimony in the USA', description: 'Made for the Indian diaspora' },
