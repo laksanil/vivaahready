@@ -1332,7 +1332,7 @@ export async function sendAccountSuspendedEmail(
                     </a>
 
                     <!-- WhatsApp button -->
-                    <a href="https://wa.me/19252022767" style="display: inline-block; background-color: #25D366; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; margin: 8px;">
+                    <a href="https://wa.me/15103968605" style="display: inline-block; background-color: #25D366; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; margin: 8px;">
                       WhatsApp Support
                     </a>
                   </td>
@@ -1347,7 +1347,7 @@ export async function sendAccountSuspendedEmail(
                       <strong>Email:</strong> <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
                     </p>
                     <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                      <strong>WhatsApp:</strong> <a href="https://wa.me/19252022767" style="color: #25D366; text-decoration: none;">+1 (925) 202-2767</a>
+                      <strong>WhatsApp:</strong> <a href="https://wa.me/15103968605" style="color: #25D366; text-decoration: none;">+1 (510) 396-8605</a>
                     </p>
                   </td>
                 </tr>
@@ -1625,7 +1625,7 @@ export async function sendAnnouncementEmail(email: string) {
                       <strong>Email:</strong> <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
                     </p>
                     <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                      <strong>WhatsApp:</strong> <a href="https://wa.me/19252022767" style="color: #25D366; text-decoration: none;">+1 (925) 202-2767</a>
+                      <strong>WhatsApp:</strong> <a href="https://wa.me/15103968605" style="color: #25D366; text-decoration: none;">+1 (510) 396-8605</a>
                     </p>
                   </td>
                 </tr>
