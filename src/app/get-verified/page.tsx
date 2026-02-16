@@ -21,6 +21,8 @@ import {
 import { PayPalPaymentForm } from '@/components/PayPalPaymentForm'
 import { SquarePaymentForm } from '@/components/SquarePaymentForm'
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+
 // FAQ Accordion Item
 function FAQItem({ question, answer, defaultOpen = false }: {
   question: string
@@ -238,21 +240,75 @@ export default function GetVerifiedPage() {
 
               {/* Right: Payment Card or What Unlocks */}
               {showPayment ? (
-                <div className="space-y-4">
-                  <PayPalPaymentForm
-                    amount={pricing?.price || 50}
-                    onSuccess={() => router.push('/dashboard')}
-                  />
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 border-t border-stone-200" />
-                    <span className="text-xs text-stone-400">or pay with card</span>
-                    <div className="flex-1 border-t border-stone-200" />
+                IS_PRODUCTION ? (
+                  <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-lg">
+                    <h2 className="text-lg font-semibold text-stone-900 mb-4 text-center">
+                      Complete Verification
+                    </h2>
+                    <div className="text-center mb-4">
+                      <div className="text-3xl font-bold text-stone-900">${pricing?.price || 50}</div>
+                      <p className="text-xs text-stone-500 mt-1">One-time payment</p>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg">💸</span>
+                        <span className="font-semibold text-purple-900">Pay with Zelle</span>
+                      </div>
+                      <p className="text-sm text-purple-800 mb-3">
+                        Send <span className="font-bold">${pricing?.price || 50}.00</span> via Zelle to:
+                      </p>
+                      <div className="bg-white rounded-lg p-3 border border-purple-200 text-center">
+                        <p className="text-lg font-mono font-bold text-stone-900">5103968605</p>
+                        <p className="text-xs text-stone-500 mt-1">Phone number</p>
+                      </div>
+                      <div className="mt-3 space-y-1.5">
+                        <p className="text-xs text-purple-700 flex items-start gap-1.5">
+                          <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                          Open your banking app and send via Zelle
+                        </p>
+                        <p className="text-xs text-purple-700 flex items-start gap-1.5">
+                          <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                          Use your registered email as the memo/note
+                        </p>
+                        <p className="text-xs text-purple-700 flex items-start gap-1.5">
+                          <Check className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                          Verification activates within 24 hours
+                        </p>
+                      </div>
+                    </div>
+                    <div className="border-t border-stone-100 pt-4 mt-4">
+                      <div className="flex items-center justify-center gap-4 mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <Lock className="h-4 w-4 text-green-600" />
+                          <span className="text-xs font-medium text-green-700">Secure Payment</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Shield className="h-4 w-4 text-stone-500" />
+                          <span className="text-xs font-medium text-stone-600">Bank Protected</span>
+                        </div>
+                      </div>
+                      <p className="text-center text-xs text-stone-500">
+                        Zelle payments are sent directly through your bank. Fast, free, and secure.
+                      </p>
+                    </div>
                   </div>
-                  <SquarePaymentForm
-                    amount={pricing?.price || 50}
-                    onSuccess={() => router.push('/dashboard')}
-                  />
-                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <PayPalPaymentForm
+                      amount={pricing?.price || 50}
+                      onSuccess={() => router.push('/dashboard')}
+                    />
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 border-t border-stone-200" />
+                      <span className="text-xs text-stone-400">or pay with card</span>
+                      <div className="flex-1 border-t border-stone-200" />
+                    </div>
+                    <SquarePaymentForm
+                      amount={pricing?.price || 50}
+                      onSuccess={() => router.push('/dashboard')}
+                    />
+                  </div>
+                )
               ) : (
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
                   <h2 className="text-sm font-semibold text-stone-900 mb-3">What verification unlocks</h2>
