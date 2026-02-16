@@ -38,7 +38,7 @@ export default function AdminMessagesPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null)
   const [response, setResponse] = useState('')
-  const [responseMethod, setResponseMethod] = useState<'sms' | 'whatsapp'>('sms')
+  const [responseMethod, setResponseMethod] = useState<'email' | 'sms' | 'whatsapp'>('email')
   const [sending, setSending] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -123,6 +123,16 @@ export default function AdminMessagesPage() {
     }
   }
 
+  const getAvailableResponseMethods = (msg: SupportMessage): Array<'email' | 'sms' | 'whatsapp'> => {
+    const methods: Array<'email' | 'sms' | 'whatsapp'> = []
+    if (msg.email) methods.push('email')
+    if (msg.phone) {
+      methods.push('sms')
+      methods.push('whatsapp')
+    }
+    return methods
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'new':
@@ -151,7 +161,7 @@ export default function AdminMessagesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Support Messages</h1>
-          <p className="text-gray-600 text-sm mt-1">Respond to user inquiries via SMS or WhatsApp</p>
+          <p className="text-gray-600 text-sm mt-1">Respond to user inquiries from chatbot and contact form</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -185,17 +195,21 @@ export default function AdminMessagesPage() {
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-gray-900 mb-2">No Messages</h2>
-          <p className="text-gray-600">Support messages from the chatbot will appear here.</p>
+          <p className="text-gray-600">Support messages from chatbot and contact form submissions will appear here.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {messages.map(msg => (
+          {messages.map(msg => {
+            const availableMethods = getAvailableResponseMethods(msg)
+            return (
             <div key={msg.id} className="bg-white rounded-lg shadow overflow-hidden">
               {/* Message Header */}
               <div
                 className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => {
                   setSelectedMessage(selectedMessage === msg.id ? null : msg.id)
+                  if (msg.email) setResponseMethod('email')
+                  else if (msg.phone) setResponseMethod('sms')
                   if (msg.status === 'new') markAsRead(msg.id)
                 }}
               >
@@ -296,36 +310,45 @@ export default function AdminMessagesPage() {
                         rows={3}
                       />
                       <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Send via:</span>
-                          <select
-                            value={responseMethod}
-                            onChange={e => setResponseMethod(e.target.value as 'sms' | 'whatsapp')}
-                            className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
-                          >
-                            <option value="sms">SMS</option>
-                            <option value="whatsapp">WhatsApp</option>
-                          </select>
-                        </div>
-                        <button
-                          onClick={() => sendResponse(msg.id)}
-                          disabled={sending || !response.trim()}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-                        >
-                          {sending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Send className="w-4 h-4" />
-                          )}
-                          Send Response
-                        </button>
+                        {availableMethods.length > 0 ? (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">Send via:</span>
+                              <select
+                                value={availableMethods.includes(responseMethod) ? responseMethod : availableMethods[0]}
+                                onChange={e => setResponseMethod(e.target.value as 'email' | 'sms' | 'whatsapp')}
+                                className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
+                              >
+                                {availableMethods.includes('email') && <option value="email">Email</option>}
+                                {availableMethods.includes('sms') && <option value="sms">SMS</option>}
+                                {availableMethods.includes('whatsapp') && <option value="whatsapp">WhatsApp</option>}
+                              </select>
+                            </div>
+                            <button
+                              onClick={() => sendResponse(msg.id)}
+                              disabled={sending || !response.trim()}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                            >
+                              {sending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Send className="w-4 h-4" />
+                              )}
+                              Send Response
+                            </button>
+                          </>
+                        ) : (
+                          <p className="text-sm text-amber-700">
+                            No contact method available for this message.
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>
