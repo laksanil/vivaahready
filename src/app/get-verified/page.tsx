@@ -19,6 +19,7 @@ import {
   Check,
 } from 'lucide-react'
 import { PayPalPaymentForm } from '@/components/PayPalPaymentForm'
+import { SquarePaymentForm } from '@/components/SquarePaymentForm'
 
 // FAQ Accordion Item
 function FAQItem({ question, answer, defaultOpen = false }: {
@@ -237,10 +238,21 @@ export default function GetVerifiedPage() {
 
               {/* Right: Payment Card or What Unlocks */}
               {showPayment ? (
-                <PayPalPaymentForm
-                  amount={pricing?.price || 50}
-                  onSuccess={() => router.push('/dashboard')}
-                />
+                <div className="space-y-4">
+                  <PayPalPaymentForm
+                    amount={pricing?.price || 50}
+                    onSuccess={() => router.push('/dashboard')}
+                  />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 border-t border-stone-200" />
+                    <span className="text-xs text-stone-400">or pay with card</span>
+                    <div className="flex-1 border-t border-stone-200" />
+                  </div>
+                  <SquarePaymentForm
+                    amount={pricing?.price || 50}
+                    onSuccess={() => router.push('/dashboard')}
+                  />
+                </div>
               ) : (
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
                   <h2 className="text-sm font-semibold text-stone-900 mb-3">What verification unlocks</h2>
