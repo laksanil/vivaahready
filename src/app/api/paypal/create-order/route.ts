@@ -4,6 +4,26 @@ import { authOptions } from '@/lib/auth'
 import { createPayPalOrder } from '@/lib/paypal'
 import { prisma } from '@/lib/prisma'
 
+// Get current price from database
+async function getCurrentPrice(): Promise<number> {
+  try {
+    const settings = await prisma.settings.findUnique({
+      where: { id: 'default' },
+    })
+
+    if (!settings) return 50
+
+    const now = new Date()
+    if (settings.promoPrice && settings.promoEndDate && new Date(settings.promoEndDate) > now) {
+      return settings.promoPrice
+    }
+
+    return settings.verificationPrice
+  } catch {
+    return 50
+  }
+}
+
 export async function POST() {
   try {
     const session = await getServerSession(authOptions)
@@ -12,8 +32,10 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Create PayPal order for $50 verification payment
-    const order = await createPayPalOrder('50.00', session.user.email, session.user.id)
+    const amount = await getCurrentPrice()
+    const amountStr = amount.toFixed(2)
+
+    const order = await createPayPalOrder(amountStr, session.user.email, session.user.id)
 
     // Track the pending payment for recovery if capture fails
     await prisma.pendingPayment.upsert({
@@ -25,7 +47,7 @@ export async function POST() {
       create: {
         userId: session.user.id,
         paypalOrderId: order.id,
-        amount: '50.00',
+        amount: amountStr,
         status: 'pending',
       },
     })

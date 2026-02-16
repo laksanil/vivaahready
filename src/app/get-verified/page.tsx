@@ -18,7 +18,7 @@ import {
   Loader2,
   Check,
 } from 'lucide-react'
-import { SquarePaymentForm } from '@/components/SquarePaymentForm'
+import { PayPalPaymentForm } from '@/components/PayPalPaymentForm'
 
 // FAQ Accordion Item
 function FAQItem({ question, answer, defaultOpen = false }: {
@@ -237,7 +237,7 @@ export default function GetVerifiedPage() {
 
               {/* Right: Payment Card or What Unlocks */}
               {showPayment ? (
-                <SquarePaymentForm
+                <PayPalPaymentForm
                   amount={pricing?.price || 50}
                   onSuccess={() => router.push('/dashboard')}
                 />
