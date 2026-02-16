@@ -1,19 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import {
+  CheckCircle,
+  Clock,
+  Copy,
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
   MessageCircle,
   Phone,
-  Clock,
-  CheckCircle,
   RefreshCw,
-  Loader2,
+  Search,
   Send,
   User,
-  ChevronDown,
-  ChevronUp,
-  Mail,
 } from 'lucide-react'
+
+type ResponseMethod = 'email' | 'sms' | 'whatsapp'
+type NeedsResponseFilter = 'all' | 'yes' | 'no'
+type ResponseKindFilter = 'all' | ResponseMethod | 'none'
 
 interface SupportMessage {
   id: string
@@ -32,323 +38,655 @@ interface SupportMessage {
   createdAt: string
 }
 
+interface MessageSummary {
+  newCount: number
+  needsResponseCount: number
+  repliedCount: number
+  resolvedCount: number
+}
+
+function formatDateTime(value: string | null): string {
+  if (!value) return '-'
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function formatContext(context: string | null): string {
+  if (!context) return 'unknown'
+  return context.replace(/_/g, ' ')
+}
+
+function needsResponse(message: SupportMessage): boolean {
+  return message.status === 'new' || message.status === 'read'
+}
+
+function getAvailableResponseMethods(message: SupportMessage): ResponseMethod[] {
+  const methods: ResponseMethod[] = []
+  if (message.email) methods.push('email')
+  if (message.phone) {
+    methods.push('sms')
+    methods.push('whatsapp')
+  }
+  return methods
+}
+
+function parseChatHistory(history: string | null): Array<{ role: string; content: string }> {
+  if (!history) return []
+  try {
+    const parsed = JSON.parse(history)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(
+      (entry): entry is { role: string; content: string } =>
+        !!entry &&
+        typeof entry === 'object' &&
+        typeof (entry as { role?: string }).role === 'string' &&
+        typeof (entry as { content?: string }).content === 'string'
+    )
+  } catch {
+    return []
+  }
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard.writeText(text)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+      className="text-gray-400 hover:text-gray-600 transition-colors"
+      title="Copy"
+    >
+      {copied ? <span className="text-xs text-green-600">Copied</span> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case 'new':
+      return <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">New</span>
+    case 'read':
+      return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Read</span>
+    case 'replied':
+      return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Replied</span>
+    case 'resolved':
+      return <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium">Resolved</span>
+    default:
+      return <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">{status}</span>
+  }
+}
+
+const STATUS_OPTIONS = ['all', 'new', 'read', 'replied', 'resolved'] as const
+const CONTEXT_OPTIONS = ['all', 'contact_form', 'chatbot', 'marchevent'] as const
+
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<SupportMessage[]>([])
+  const [summary, setSummary] = useState<MessageSummary | null>(null)
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedMessage, setSelectedMessage] = useState<string | null>(null)
-  const [response, setResponse] = useState('')
-  const [responseMethod, setResponseMethod] = useState<'email' | 'sms' | 'whatsapp'>('email')
-  const [sending, setSending] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('all')
 
-  const fetchMessages = async () => {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<(typeof STATUS_OPTIONS)[number]>('all')
+  const [contextFilter, setContextFilter] = useState<(typeof CONTEXT_OPTIONS)[number]>('all')
+  const [needsResponseFilter, setNeedsResponseFilter] = useState<NeedsResponseFilter>('all')
+  const [responseKindFilter, setResponseKindFilter] = useState<ResponseKindFilter>('all')
+
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
+  const [replyMethods, setReplyMethods] = useState<Record<string, ResponseMethod>>({})
+  const [sendingMessageId, setSendingMessageId] = useState<string | null>(null)
+  const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null)
+
+  const fetchMessages = useCallback(async (showLoadingSpinner: boolean) => {
+    if (showLoadingSpinner) setLoading(true)
+    else setRefreshing(true)
+    setError(null)
+
     try {
-      setLoading(true)
-      const res = await fetch(`/api/admin/messages?status=${statusFilter}`)
-      if (!res.ok) throw new Error('Failed to fetch')
+      const params = new URLSearchParams({
+        status: statusFilter,
+        context: contextFilter,
+        needsResponse: needsResponseFilter,
+        responseKind: responseKindFilter,
+        search: searchQuery.trim(),
+        limit: '150',
+      })
+
+      const res = await fetch(`/api/admin/messages?${params}`)
       const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch messages')
+      }
+
       setMessages(data.messages || [])
-    } catch (err) {
-      setError('Failed to load messages')
+      setTotal(data.total || 0)
+      setSummary(data.summary || null)
+    } catch (fetchError) {
+      const message = fetchError instanceof Error ? fetchError.message : 'Failed to load messages'
+      setError(message)
     } finally {
       setLoading(false)
+      setRefreshing(false)
+    }
+  }, [contextFilter, needsResponseFilter, responseKindFilter, searchQuery, statusFilter])
+
+  useEffect(() => {
+    fetchMessages(true)
+  }, [fetchMessages])
+
+  const updateStatus = async (messageId: string, nextStatus: 'new' | 'read' | 'replied' | 'resolved') => {
+    setUpdatingMessageId(messageId)
+    try {
+      const res = await fetch('/api/admin/messages/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, status: nextStatus }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update status')
+      }
+
+      setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, status: nextStatus } : msg)))
+    } catch (statusError) {
+      const message = statusError instanceof Error ? statusError.message : 'Failed to update status'
+      setError(message)
+    } finally {
+      setUpdatingMessageId(null)
     }
   }
 
-  useEffect(() => {
-    fetchMessages()
-  }, [statusFilter])
-
   const sendResponse = async (messageId: string) => {
-    if (!response.trim()) return
+    const draft = (replyDrafts[messageId] || '').trim()
+    if (!draft) return
 
-    setSending(true)
+    const message = messages.find((item) => item.id === messageId)
+    if (!message) return
+
+    const availableMethods = getAvailableResponseMethods(message)
+    if (!availableMethods.length) {
+      setError('No response method available for this message')
+      return
+    }
+
+    const method = replyMethods[messageId] || availableMethods[0]
+
+    setSendingMessageId(messageId)
+    setError(null)
     try {
       const res = await fetch('/api/admin/messages/respond', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messageId,
-          response,
-          method: responseMethod,
+          response: draft,
+          method,
         }),
       })
 
       const data = await res.json()
-
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to send')
+        throw new Error(data.error || 'Failed to send response')
       }
 
-      // Update local state
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === messageId
-            ? { ...m, status: 'replied', adminResponse: response, respondedVia: responseMethod, respondedAt: new Date().toISOString() }
-            : m
+      const nowIso = new Date().toISOString()
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                status: 'replied',
+                adminResponse: draft,
+                respondedVia: method,
+                respondedAt: nowIso,
+              }
+            : msg
         )
       )
-      setResponse('')
-      setSelectedMessage(null)
-      alert('Response sent successfully!')
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to send response')
+      setReplyDrafts((prev) => ({ ...prev, [messageId]: '' }))
+    } catch (sendError) {
+      const messageText = sendError instanceof Error ? sendError.message : 'Failed to send response'
+      setError(messageText)
     } finally {
-      setSending(false)
+      setSendingMessageId(null)
     }
   }
 
-  const markAsRead = async (messageId: string) => {
-    try {
-      await fetch('/api/admin/messages/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messageId, status: 'read' }),
-      })
-      setMessages(prev =>
-        prev.map(m => (m.id === messageId ? { ...m, status: 'read' } : m))
-      )
-    } catch (err) {
-      console.error('Failed to mark as read:', err)
-    }
-  }
+  const toggleMessageDetails = (message: SupportMessage) => {
+    const willOpen = selectedMessageId !== message.id
+    setSelectedMessageId(willOpen ? message.id : null)
 
-  const parseChatHistory = (history: string | null): Array<{ role: string; content: string }> => {
-    if (!history) return []
-    try {
-      return JSON.parse(history)
-    } catch {
-      return []
-    }
-  }
+    if (!willOpen) return
 
-  const getAvailableResponseMethods = (msg: SupportMessage): Array<'email' | 'sms' | 'whatsapp'> => {
-    const methods: Array<'email' | 'sms' | 'whatsapp'> = []
-    if (msg.email) methods.push('email')
-    if (msg.phone) {
-      methods.push('sms')
-      methods.push('whatsapp')
+    if (message.status === 'new') {
+      void updateStatus(message.id, 'read')
     }
-    return methods
-  }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'new':
-        return <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">New</span>
-      case 'read':
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-medium">Read</span>
-      case 'replied':
-        return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">Replied</span>
-      case 'resolved':
-        return <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium">Resolved</span>
-      default:
-        return <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{status}</span>
+    if (!replyMethods[message.id]) {
+      const availableMethods = getAvailableResponseMethods(message)
+      if (availableMethods.length > 0) {
+        setReplyMethods((prev) => ({ ...prev, [message.id]: availableMethods[0] }))
+      }
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
       </div>
     )
   }
 
+  const selectedMessage = messages.find((item) => item.id === selectedMessageId) || null
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Support Messages</h1>
-          <p className="text-gray-600 text-sm mt-1">Respond to user inquiries from chatbot and contact form</p>
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <MessageCircle className="h-6 w-6 text-primary-600" />
+          Support Messages
+        </h1>
+        <p className="text-gray-600 mt-1">Contact and chatbot messages with response tracking.</p>
+      </div>
+
+      {summary && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="text-gray-500 text-xs font-semibold uppercase mb-1">New</div>
+            <p className="text-2xl font-bold text-gray-900">{summary.newCount}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="text-gray-500 text-xs font-semibold uppercase mb-1">Needs Response</div>
+            <p className="text-2xl font-bold text-amber-700">{summary.needsResponseCount}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="text-gray-500 text-xs font-semibold uppercase mb-1">Replied</div>
+            <p className="text-2xl font-bold text-emerald-700">{summary.repliedCount}</p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="text-gray-500 text-xs font-semibold uppercase mb-1">Resolved</div>
+            <p className="text-2xl font-bold text-gray-900">{summary.resolvedCount}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
-          >
-            <option value="all">All Messages</option>
-            <option value="new">New</option>
-            <option value="read">Read</option>
-            <option value="replied">Replied</option>
-            <option value="resolved">Resolved</option>
-          </select>
-          <button
-            onClick={fetchMessages}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </button>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr),180px,180px,180px,180px,auto] gap-3 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search name, email, phone, subject, message..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
         </div>
+
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value as (typeof STATUS_OPTIONS)[number])}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        >
+          <option value="all">All Statuses</option>
+          <option value="new">New</option>
+          <option value="read">Read</option>
+          <option value="replied">Replied</option>
+          <option value="resolved">Resolved</option>
+        </select>
+
+        <select
+          value={contextFilter}
+          onChange={(event) => setContextFilter(event.target.value as (typeof CONTEXT_OPTIONS)[number])}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        >
+          <option value="all">All Sources</option>
+          <option value="contact_form">Contact Form</option>
+          <option value="chatbot">Chatbot</option>
+          <option value="marchevent">March Event</option>
+        </select>
+
+        <select
+          value={needsResponseFilter}
+          onChange={(event) => setNeedsResponseFilter(event.target.value as NeedsResponseFilter)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        >
+          <option value="all">Any Response State</option>
+          <option value="yes">Needs Response</option>
+          <option value="no">Responded/Resolved</option>
+        </select>
+
+        <select
+          value={responseKindFilter}
+          onChange={(event) => setResponseKindFilter(event.target.value as ResponseKindFilter)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        >
+          <option value="all">Any Response Kind</option>
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="none">No Response Sent</option>
+        </select>
+
+        <button
+          type="button"
+          onClick={() => fetchMessages(false)}
+          disabled={refreshing}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-60"
+        >
+          {refreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          Refresh
+        </button>
+      </div>
+
+      <div className="mb-4 text-sm text-gray-600">
+        {total} message{total === 1 ? '' : 's'}
+        {(statusFilter !== 'all' || contextFilter !== 'all' || needsResponseFilter !== 'all' || responseKindFilter !== 'all' || searchQuery.trim())
+          ? ' (filtered)'
+          : ''}
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg mb-4 text-sm">
           {error}
         </div>
       )}
 
       {messages.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">No Messages</h2>
-          <p className="text-gray-600">Support messages from chatbot and contact form submissions will appear here.</p>
+        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+          <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">No messages found</h2>
+          <p className="text-gray-600">Support and contact submissions will appear here.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {messages.map(msg => {
-            const availableMethods = getAvailableResponseMethods(msg)
-            return (
-            <div key={msg.id} className="bg-white rounded-lg shadow overflow-hidden">
-              {/* Message Header */}
-              <div
-                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => {
-                  setSelectedMessage(selectedMessage === msg.id ? null : msg.id)
-                  if (msg.email) setResponseMethod('email')
-                  else if (msg.phone) setResponseMethod('sms')
-                  if (msg.status === 'new') markAsRead(msg.id)
-                }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900">{msg.name || 'Anonymous'}</span>
-                        {getStatusBadge(msg.status)}
-                        {msg.context && (
-                          <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded">
-                            {msg.context}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                        {msg.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {msg.email}
-                          </span>
-                        )}
-                        {msg.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {msg.phone}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(msg.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 mt-2 line-clamp-2">{msg.message}</p>
-                    </div>
-                  </div>
-                  {selectedMessage === msg.id ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-              </div>
-
-              {/* Expanded Details */}
-              {selectedMessage === msg.id && (
-                <div className="border-t border-gray-100 p-4">
-                  {/* Full Message */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Full Message</h4>
-                    <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 whitespace-pre-wrap">
-                      {msg.message}
-                    </div>
-                  </div>
-
-                  {/* Chat History */}
-                  {msg.chatHistory && parseChatHistory(msg.chatHistory).length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Chat History</h4>
-                      <div className="bg-gray-50 p-3 rounded-lg space-y-2 max-h-48 overflow-y-auto">
-                        {parseChatHistory(msg.chatHistory).map((chat, idx) => (
-                          <div
-                            key={idx}
-                            className={`text-sm ${
-                              chat.role === 'user' ? 'text-blue-700' : 'text-gray-600'
-                            }`}
-                          >
-                            <strong>{chat.role === 'user' ? 'User' : 'Bot'}:</strong> {chat.content}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1160px]">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Contact</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Source</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Subject</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Message</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Response Kind</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Response Sent On</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Received On</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {messages.map((message) => {
+                  const isSelected = selectedMessageId === message.id
+                  const availableMethods = getAvailableResponseMethods(message)
+                  return (
+                    <Fragment key={message.id}>
+                      <tr key={message.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 align-top">
+                          <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                            <User className="h-3.5 w-3.5 text-gray-400" />
+                            {message.name || 'Anonymous'}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Previous Response */}
-                  {msg.adminResponse && (
-                    <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-center gap-2 text-sm text-green-700 mb-1">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Responded via {msg.respondedVia} on {msg.respondedAt ? new Date(msg.respondedAt).toLocaleString() : ''}</span>
-                      </div>
-                      <p className="text-sm text-green-800">{msg.adminResponse}</p>
-                    </div>
-                  )}
-
-                  {/* Response Form */}
-                  {msg.status !== 'resolved' && (
-                    <div className="border-t border-gray-100 pt-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2">Send Response</h4>
-                      <textarea
-                        value={response}
-                        onChange={e => setResponse(e.target.value)}
-                        placeholder="Type your response..."
-                        className="w-full p-3 border border-gray-200 rounded-lg text-sm resize-none"
-                        rows={3}
-                      />
-                      <div className="flex items-center justify-between mt-3">
-                        {availableMethods.length > 0 ? (
-                          <>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-600">Send via:</span>
-                              <select
-                                value={availableMethods.includes(responseMethod) ? responseMethod : availableMethods[0]}
-                                onChange={e => setResponseMethod(e.target.value as 'email' | 'sms' | 'whatsapp')}
-                                className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
-                              >
-                                {availableMethods.includes('email') && <option value="email">Email</option>}
-                                {availableMethods.includes('sms') && <option value="sms">SMS</option>}
-                                {availableMethods.includes('whatsapp') && <option value="whatsapp">WhatsApp</option>}
-                              </select>
-                            </div>
+                          <div className="mt-1 space-y-1">
+                            {message.email && (
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                <Mail className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="max-w-[220px] truncate">{message.email}</span>
+                                <CopyButton text={message.email} />
+                              </div>
+                            )}
+                            {message.phone && (
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                <Phone className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="font-mono">{message.phone}</span>
+                                <CopyButton text={message.phone} />
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                            {formatContext(message.context)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 align-top text-sm text-gray-700">
+                          {message.subject || '-'}
+                        </td>
+                        <td className="px-4 py-3 align-top text-sm text-gray-700 max-w-[280px]">
+                          <p className="max-h-10 overflow-hidden">{message.message}</p>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <div className="space-y-1">
+                            <StatusBadge status={message.status} />
+                            {needsResponse(message) ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                Needs response
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                Responded
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top text-xs text-gray-700 uppercase">
+                          {message.respondedVia || '-'}
+                        </td>
+                        <td className="px-4 py-3 align-top text-xs text-gray-600 whitespace-nowrap">
+                          {formatDateTime(message.respondedAt)}
+                        </td>
+                        <td className="px-4 py-3 align-top text-xs text-gray-600 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5 text-gray-400" />
+                            {formatDateTime(message.createdAt)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => sendResponse(msg.id)}
-                              disabled={sending || !response.trim()}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                              type="button"
+                              onClick={() => toggleMessageDetails(message)}
+                              className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
                             >
-                              {sending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Send className="w-4 h-4" />
-                              )}
-                              Send Response
+                              {isSelected ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {isSelected ? 'Hide' : 'View'}
                             </button>
-                          </>
-                        ) : (
-                          <p className="text-sm text-amber-700">
-                            No contact method available for this message.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )})}
+                            {message.status === 'new' && (
+                              <button
+                                type="button"
+                                onClick={() => updateStatus(message.id, 'read')}
+                                disabled={updatingMessageId === message.id}
+                                className="text-xs px-2 py-1 rounded border border-yellow-300 text-yellow-700 hover:bg-yellow-50 disabled:opacity-50"
+                              >
+                                Mark Read
+                              </button>
+                            )}
+                            {message.status !== 'resolved' && (
+                              <button
+                                type="button"
+                                onClick={() => updateStatus(message.id, 'resolved')}
+                                disabled={updatingMessageId === message.id}
+                                className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                              >
+                                Resolve
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {isSelected && selectedMessage && selectedMessage.id === message.id && (
+                        <tr className="bg-gray-50/60">
+                          <td className="px-4 py-4" colSpan={9}>
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                              <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Full Message</h3>
+                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{message.message}</p>
+                                </div>
+
+                                {message.chatHistory && parseChatHistory(message.chatHistory).length > 0 && (
+                                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Chat History</h3>
+                                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                                      {parseChatHistory(message.chatHistory).map((chatItem, idx) => (
+                                        <div
+                                          key={`${message.id}-chat-${idx}`}
+                                          className={`text-sm ${chatItem.role === 'user' ? 'text-blue-700' : 'text-gray-700'}`}
+                                        >
+                                          <span className="font-medium">{chatItem.role === 'user' ? 'User' : 'Bot'}:</span>{' '}
+                                          {chatItem.content}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Message Actions</h3>
+                                  <div className="flex flex-wrap gap-2">
+                                    {message.status !== 'new' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => updateStatus(message.id, 'new')}
+                                        disabled={updatingMessageId === message.id}
+                                        className="text-xs px-2.5 py-1.5 rounded border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-50"
+                                      >
+                                        Mark New
+                                      </button>
+                                    )}
+                                    {message.status !== 'read' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => updateStatus(message.id, 'read')}
+                                        disabled={updatingMessageId === message.id}
+                                        className="text-xs px-2.5 py-1.5 rounded border border-yellow-300 text-yellow-700 hover:bg-yellow-50 disabled:opacity-50"
+                                      >
+                                        Mark Read
+                                      </button>
+                                    )}
+                                    {message.status !== 'resolved' && (
+                                      <button
+                                        type="button"
+                                        onClick={() => updateStatus(message.id, 'resolved')}
+                                        disabled={updatingMessageId === message.id}
+                                        className="text-xs px-2.5 py-1.5 rounded border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                      >
+                                        Mark Resolved
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Response Tracking</h3>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                      <p className="text-xs text-gray-500 uppercase font-semibold">Needs Response</p>
+                                      <p className="font-medium text-gray-900">{needsResponse(message) ? 'Yes' : 'No'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500 uppercase font-semibold">Response Kind</p>
+                                      <p className="font-medium text-gray-900">{message.respondedVia || '-'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500 uppercase font-semibold">Response Sent On</p>
+                                      <p className="font-medium text-gray-900">{formatDateTime(message.respondedAt)}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500 uppercase font-semibold">Received On</p>
+                                      <p className="font-medium text-gray-900">{formatDateTime(message.createdAt)}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {message.adminResponse && (
+                                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
+                                      <CheckCircle className="h-4 w-4" />
+                                      Response sent via {message.respondedVia || '-'} on {formatDateTime(message.respondedAt)}
+                                    </div>
+                                    <p className="text-sm text-green-800 whitespace-pre-wrap">{message.adminResponse}</p>
+                                  </div>
+                                )}
+
+                                {availableMethods.length > 0 ? (
+                                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Send Response</h3>
+                                    <textarea
+                                      value={replyDrafts[message.id] || ''}
+                                      onChange={(event) =>
+                                        setReplyDrafts((prev) => ({ ...prev, [message.id]: event.target.value }))
+                                      }
+                                      placeholder="Type your response..."
+                                      className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                      rows={4}
+                                    />
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-3">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Send via:</span>
+                                        <select
+                                          value={replyMethods[message.id] || availableMethods[0]}
+                                          onChange={(event) =>
+                                            setReplyMethods((prev) => ({
+                                              ...prev,
+                                              [message.id]: event.target.value as ResponseMethod,
+                                            }))
+                                          }
+                                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                        >
+                                          {availableMethods.includes('email') && <option value="email">Email</option>}
+                                          {availableMethods.includes('sms') && <option value="sms">SMS</option>}
+                                          {availableMethods.includes('whatsapp') && <option value="whatsapp">WhatsApp</option>}
+                                        </select>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => sendResponse(message.id)}
+                                        disabled={sendingMessageId === message.id || !(replyDrafts[message.id] || '').trim()}
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                      >
+                                        {sendingMessageId === message.id ? (
+                                          <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Send className="h-4 w-4" />
+                                        )}
+                                        Send Response
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+                                    No contact method available for this message.
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

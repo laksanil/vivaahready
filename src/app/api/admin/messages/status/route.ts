@@ -16,9 +16,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const normalizedStatus = String(status).toLowerCase()
+    const validStatuses = new Set(['new', 'read', 'replied', 'resolved'])
+    if (!validStatuses.has(normalizedStatus)) {
+      return NextResponse.json({ error: 'Invalid status value' }, { status: 400 })
+    }
+
     await prisma.supportMessage.update({
       where: { id: messageId },
-      data: { status },
+      data: { status: normalizedStatus },
     })
 
     return NextResponse.json({ success: true })
