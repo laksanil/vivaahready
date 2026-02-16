@@ -3,6 +3,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircle, Lock, Shield, CreditCard } from 'lucide-react'
+import {
+  getSquareAppIdConfigError,
+  getSquareSdkUrl,
+  resolveSquareWebEnvironment,
+} from '@/lib/squareClientConfig'
 
 // Square Web Payments SDK types
 interface Square {
@@ -68,19 +73,27 @@ export function SquarePaymentForm({
   const paymentsRef = useRef<Payments | null>(null)
 
   const appId = process.env.NEXT_PUBLIC_SQUARE_APP_ID || ''
-  const environment = process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox'
+  const environment = resolveSquareWebEnvironment(
+    appId,
+    process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT
+  )
 
   // Load Square SDK
   useEffect(() => {
+    const appIdConfigError = getSquareAppIdConfigError(appId)
+    if (appIdConfigError) {
+      setError(`${appIdConfigError} Please contact support.`)
+      setLoading(false)
+      return
+    }
+
     if (window.Square) {
       setSdkLoaded(true)
       return
     }
 
     const script = document.createElement('script')
-    script.src = environment === 'production'
-      ? 'https://web.squarecdn.com/v1/square.js'
-      : 'https://sandbox.web.squarecdn.com/v1/square.js'
+    script.src = getSquareSdkUrl(environment)
     script.async = true
     script.onload = () => setSdkLoaded(true)
     script.onerror = () => setError('Failed to load payment SDK')
@@ -92,7 +105,7 @@ export function SquarePaymentForm({
         cardRef.current.destroy().catch(console.error)
       }
     }
-  }, [environment])
+  }, [environment, appId])
 
   // Initialize card form when SDK is loaded
   useEffect(() => {
@@ -102,7 +115,11 @@ export function SquarePaymentForm({
       try {
         // Get location ID from our API
         const locationRes = await fetch('/api/square/location')
-        const locationData = await locationRes.json()
+        const locationData = await locationRes.json().catch(() => ({}))
+
+        if (!locationRes.ok) {
+          throw new Error(locationData?.error || 'Could not fetch Square location')
+        }
 
         if (!locationData.locationId) {
           throw new Error('Could not get Square location')

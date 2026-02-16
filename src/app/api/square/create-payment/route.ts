@@ -5,6 +5,31 @@ import { prisma } from '@/lib/prisma'
 import { squareClient, getLocationId, dollarsToCents } from '@/lib/square'
 import { randomUUID } from 'crypto'
 
+type SquareErrorItem = {
+  category?: string
+  code?: string
+  detail?: string
+  message?: string
+}
+
+function extractSquareErrors(error: unknown): SquareErrorItem[] {
+  if (!error || typeof error !== 'object') return []
+
+  const err = error as Record<string, unknown>
+  const candidate =
+    err.errors ||
+    (typeof err.body === 'object' && err.body !== null ? (err.body as Record<string, unknown>).errors : undefined) ||
+    (typeof err.result === 'object' && err.result !== null ? (err.result as Record<string, unknown>).errors : undefined)
+
+  return Array.isArray(candidate) ? (candidate as SquareErrorItem[]) : []
+}
+
+function firstSquareErrorMessage(squareErrors: SquareErrorItem[]): string | null {
+  const first = squareErrors.find(item => (item?.detail && item.detail.trim()) || (item?.message && item.message.trim()))
+  if (!first) return null
+  return first.detail?.trim() || first.message?.trim() || null
+}
+
 // Get current price from database
 async function getCurrentPrice(): Promise<number> {
   try {
@@ -135,27 +160,28 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.error('Square payment error:', error)
 
-    // Extract meaningful error details from Square SDK errors
-    let message = 'Payment processing failed'
-    let details: unknown = undefined
+    const squareErrors = extractSquareErrors(error)
+    if (squareErrors.length > 0) {
+      const message =
+        firstSquareErrorMessage(squareErrors) ||
+        'Payment could not be processed. Please check card details or try a different card.'
 
-    if (error && typeof error === 'object') {
-      const err = error as Record<string, unknown>
-
-      // Square SDK v44 throws errors with an `errors` array
-      if (Array.isArray(err.errors) && err.errors.length > 0) {
-        const sqErr = err.errors[0] as Record<string, string>
-        message = sqErr.detail || sqErr.message || message
-        details = err.errors
-      } else if (err.message && typeof err.message === 'string') {
-        message = err.message
-      }
+      console.error('Square payment error details:', { message, details: squareErrors })
+      return NextResponse.json(
+        { error: message, details: squareErrors },
+        { status: 400 }
+      )
     }
 
-    console.error('Square payment error details:', { message, details })
+    const fallbackMessage =
+      error && typeof error === 'object' && typeof (error as any).message === 'string'
+        ? (error as any).message
+        : 'Payment processing failed'
+
+    console.error('Square payment error details:', { message: fallbackMessage })
 
     return NextResponse.json(
-      { error: message, details },
+      { error: fallbackMessage },
       { status: 500 }
     )
   }

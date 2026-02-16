@@ -16,6 +16,11 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { MARCH_EVENT_CONFIG } from '@/lib/marchEventConfig'
+import {
+  getSquareAppIdConfigError,
+  getSquareSdkUrl,
+  resolveSquareWebEnvironment,
+} from '@/lib/squareClientConfig'
 
 // Square SDK types
 interface Square {
@@ -74,7 +79,10 @@ function PaymentContent() {
   const paymentsRef = useRef<Payments | null>(null)
 
   const appId = process.env.NEXT_PUBLIC_SQUARE_APP_ID || ''
-  const environment = process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT || 'sandbox'
+  const environment = resolveSquareWebEnvironment(
+    appId,
+    process.env.NEXT_PUBLIC_SQUARE_ENVIRONMENT
+  )
   const amount = MARCH_EVENT_CONFIG.priceDollars
 
   // Redirect if no registration ID
@@ -93,15 +101,20 @@ function PaymentContent() {
 
   // Load Square SDK
   useEffect(() => {
+    const appIdConfigError = getSquareAppIdConfigError(appId)
+    if (appIdConfigError) {
+      setError(`${appIdConfigError} Please contact support.`)
+      setLoading(false)
+      return
+    }
+
     if (window.Square) {
       setSdkLoaded(true)
       return
     }
 
     const script = document.createElement('script')
-    script.src = environment === 'production'
-      ? 'https://web.squarecdn.com/v1/square.js'
-      : 'https://sandbox.web.squarecdn.com/v1/square.js'
+    script.src = getSquareSdkUrl(environment)
     script.async = true
     script.onload = () => setSdkLoaded(true)
     script.onerror = () => setError('Failed to load payment SDK')
@@ -112,7 +125,7 @@ function PaymentContent() {
         cardRef.current.destroy().catch(console.error)
       }
     }
-  }, [environment])
+  }, [environment, appId])
 
   // Initialize card form
   useEffect(() => {
@@ -121,7 +134,11 @@ function PaymentContent() {
     const initializeCard = async () => {
       try {
         const locationRes = await fetch('/api/square/location')
-        const locationData = await locationRes.json()
+        const locationData = await locationRes.json().catch(() => ({}))
+
+        if (!locationRes.ok) {
+          throw new Error(locationData?.error || 'Could not get payment location')
+        }
 
         if (!locationData.locationId) {
           throw new Error('Could not get payment location')
