@@ -33,22 +33,6 @@ export async function GET() {
       locationError = err instanceof Error ? err.message : String(err)
     }
 
-    // Try to get merchant info
-    let merchant = null
-    let merchantError = null
-    try {
-      const response = await squareClient.merchants.list()
-      const merchants = response.merchant ? [response.merchant] : []
-      merchant = merchants.map((m: Record<string, unknown>) => ({
-        id: m.id,
-        businessName: m.businessName,
-        country: m.country,
-        status: m.status,
-      }))
-    } catch (err: unknown) {
-      merchantError = err instanceof Error ? err.message : String(err)
-    }
-
     return NextResponse.json({
       environment: env,
       tokens: {
@@ -59,8 +43,6 @@ export async function GET() {
       },
       locations,
       locationError,
-      merchant,
-      merchantError,
     })
   } catch (error: unknown) {
     return NextResponse.json(
