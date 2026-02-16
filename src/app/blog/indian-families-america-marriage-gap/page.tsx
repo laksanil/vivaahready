@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowLeft, Clock, ChevronDown } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
@@ -88,6 +89,18 @@ const faqJsonLd = {
   })),
 }
 
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  return (
+    <details className="group border border-gray-200 rounded-xl overflow-hidden">
+      <summary className="flex items-center justify-between cursor-pointer p-5 bg-gray-50 hover:bg-gray-100 transition-colors">
+        <span className="text-base font-semibold text-gray-900 pr-4">{question}</span>
+        <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0 group-open:rotate-180 transition-transform" />
+      </summary>
+      <div className="p-5 text-gray-600 leading-relaxed">{answer}</div>
+    </details>
+  )
+}
+
 export default function BlogPost() {
   return (
     <>
@@ -100,32 +113,50 @@ export default function BlogPost() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
-      <article className="bg-white">
+      <article className="min-h-screen bg-white">
+        {/* Back link */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Blog
+          </Link>
+        </div>
+
         {/* Hero */}
-        <header className="bg-gradient-to-br from-white via-silver-50 to-silver-100 py-16 md:py-20">
+        <header className="py-12 md:py-16">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-primary-600 font-medium text-sm uppercase tracking-wider mb-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-50 text-primary-700 mb-6">
               Founder&apos;s Story
-            </p>
-            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+            </span>
+            <h1 className="font-display text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-900 leading-tight">
               Raising Indian Children in America: The Marriage Conversation We Didn&rsquo;t Have
             </h1>
-            <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
               A founder&rsquo;s story about tradition, the Y2K IT wave, and the quiet marriage gap
               many Indian families in the USA face.
             </p>
-            <time
-              dateTime="2026-02-14"
-              className="mt-4 inline-block text-sm text-gray-500"
-            >
-              February 14, 2026
-            </time>
+            <div className="mt-6 flex items-center justify-center gap-4 text-sm text-gray-400">
+              <time dateTime="2026-02-14">February 14, 2026</time>
+              <span className="w-1 h-1 rounded-full bg-gray-300" />
+              <div className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                6 min read
+              </div>
+            </div>
           </div>
         </header>
 
+        {/* Divider */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="border-t border-gray-200" />
+        </div>
+
         {/* Body */}
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="prose prose-lg prose-gray max-w-none">
+          <div className="prose prose-lg prose-gray max-w-none prose-headings:font-display prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-primary-300 prose-blockquote:text-gray-600">
             <p>
               When my husband and I came to the United States during the Y2K years, we carried more
               than degrees and job offers.
@@ -234,32 +265,27 @@ export default function BlogPost() {
             <p>Not from urgency.</p>
             <p>But from reflection.</p>
 
-            <p className="mt-8">
-              <em>
-                &mdash; Lakshmi
-                <br />
-                Founder, VivaahReady
-              </em>
+            <p className="mt-10 border-l-4 border-primary-200 pl-5 italic text-gray-600">
+              &mdash; Lakshmi
+              <br />
+              Founder, VivaahReady
             </p>
           </div>
 
           {/* FAQ Section */}
-          <section className="mt-16 border-t border-gray-200 pt-12">
+          <section className="mt-16 pt-12 border-t border-gray-200">
             <h2 className="font-display text-2xl font-bold text-gray-900 mb-8">
               Frequently Asked Questions
             </h2>
-            <dl className="space-y-6">
+            <div className="space-y-4">
               {faqs.map((faq, i) => (
-                <div key={i} className="border-b border-gray-100 pb-6 last:border-b-0">
-                  <dt className="text-lg font-semibold text-gray-900 mb-2">{faq.question}</dt>
-                  <dd className="text-gray-600 leading-relaxed">{faq.answer}</dd>
-                </div>
+                <FAQItem key={i} question={faq.question} answer={faq.answer} />
               ))}
-            </dl>
+            </div>
           </section>
 
           {/* CTA Section */}
-          <section className="mt-16 bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-8 md:p-12 text-center">
+          <section className="mt-16 bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-2xl p-8 md:p-12 text-center">
             <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 mb-4">
               Ready to Start the Conversation?
             </h2>
@@ -269,16 +295,16 @@ export default function BlogPost() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/login"
-                className="inline-flex items-center justify-center px-6 py-3 border border-primary-600 text-primary-700 font-medium rounded-lg hover:bg-primary-50 transition-colors"
-              >
-                Sign in to continue
-              </Link>
-              <Link
                 href="/register"
                 className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
               >
                 Create your profile
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Sign in to continue
               </Link>
             </div>
 
