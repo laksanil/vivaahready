@@ -6,8 +6,10 @@ import { getTargetUserId } from '@/lib/admin'
 import { Prisma } from '@prisma/client'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
+  validateAboutMeStep,
   getEffectiveUniversity,
   validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -191,6 +193,8 @@ export async function PUT(
         prefMaritalStatus: true,
         prefReligion: true,
         prefReligions: true,
+        referralSource: true,
+        prefQualification: true,
         prefAgeIsDealbreaker: true,
         prefHeightIsDealbreaker: true,
         prefMaritalStatusIsDealbreaker: true,
@@ -390,6 +394,16 @@ export async function PUT(
       }
     }
 
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 7) {
+      const aboutMeValidation = validateAboutMeStep(mergedState)
+      if (!aboutMeValidation.isValid) {
+        return NextResponse.json(
+          { error: aboutMeValidation.errors[0] || 'Please complete all required About Me fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
     if (requestedSignupStep !== undefined && requestedSignupStep >= 8) {
       const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
 
@@ -414,6 +428,17 @@ export async function PUT(
         updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
           ? preferencesValidation.selectedReligions[0]
           : ''
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 9) {
+      const preferencesAdditionalValidation = validatePartnerPreferencesAdditional(mergedState)
+
+      if (!preferencesAdditionalValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesAdditionalValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
       }
     }
 

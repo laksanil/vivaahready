@@ -16,6 +16,7 @@ import {
 } from './ProfileFormSections'
 import {
   validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -113,6 +114,11 @@ export default function ProfileEditModal({
 
     if (section === 'preferences_1') {
       const preferenceValidation = validatePartnerPreferencesMustHaves(formData)
+      errors.push(...preferenceValidation.errors)
+    }
+
+    if (section === 'preferences_2') {
+      const preferenceValidation = validatePartnerPreferencesAdditional(formData)
       errors.push(...preferenceValidation.errors)
     }
 

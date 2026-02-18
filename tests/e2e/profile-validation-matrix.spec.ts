@@ -226,4 +226,78 @@ test.describe.serial('Profile validation matrix (API)', () => {
     expect(profile.linkedinProfile).toBeNull()
     expect(profile.referralSource).toBe('google')
   })
+
+  test('enforces required referral source and partner education preference', async () => {
+    const missingReferralEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'aboutme',
+        referralSource: '',
+      },
+    })
+    expect(missingReferralEdit.status()).toBe(400)
+    const missingReferralEditPayload = await missingReferralEdit.json()
+    expect(String(missingReferralEditPayload.error || '')).toMatch(/referral source is required/i)
+
+    const validReferralEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'aboutme',
+        referralSource: 'google',
+      },
+    })
+    expect(validReferralEdit.ok()).toBeTruthy()
+
+    const missingEducationEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'preferences_2',
+        prefQualification: '',
+      },
+    })
+    expect(missingEducationEdit.status()).toBe(400)
+    const missingEducationEditPayload = await missingEducationEdit.json()
+    expect(String(missingEducationEditPayload.error || '')).toMatch(/minimum education is required/i)
+
+    const validEducationEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'preferences_2',
+        prefQualification: 'bachelors',
+      },
+    })
+    expect(validEducationEdit.ok()).toBeTruthy()
+
+    const missingReferralSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
+      data: {
+        signupStep: 7,
+        referralSource: '',
+      },
+    })
+    expect(missingReferralSignup.status()).toBe(400)
+    const missingReferralSignupPayload = await missingReferralSignup.json()
+    expect(String(missingReferralSignupPayload.error || '')).toMatch(/referral source is required/i)
+
+    const validReferralSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
+      data: {
+        signupStep: 7,
+        referralSource: 'google',
+      },
+    })
+    expect(validReferralSignup.ok()).toBeTruthy()
+
+    const missingEducationSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
+      data: {
+        signupStep: 9,
+        prefQualification: '',
+      },
+    })
+    expect(missingEducationSignup.status()).toBe(400)
+    const missingEducationSignupPayload = await missingEducationSignup.json()
+    expect(String(missingEducationSignupPayload.error || '')).toMatch(/minimum education is required/i)
+
+    const validEducationSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
+      data: {
+        signupStep: 9,
+        prefQualification: 'bachelors',
+      },
+    })
+    expect(validEducationSignup.ok()).toBeTruthy()
+  })
 })

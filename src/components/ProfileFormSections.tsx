@@ -2370,7 +2370,6 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
   const prefCitizenshipIsDealbreaker = isDealbreaker(formData, 'prefCitizenship')
   const prefGrewUpInIsDealbreaker = isDealbreaker(formData, 'prefGrewUpIn')
   const prefRelocationIsDealbreaker = isDealbreaker(formData, 'prefRelocation')
-  const prefEducationIsDealbreaker = isDealbreaker(formData, 'prefEducation')
   const prefIncomeIsDealbreaker = isDealbreaker(formData, 'prefIncome')
   const prefLocationIsDealbreaker = isDealbreaker(formData, 'prefLocation')
   const prefMotherTongueIsDealbreaker = isDealbreaker(formData, 'prefMotherTongue')
@@ -2796,15 +2795,15 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Minimum Education</label>
+                <label className="form-label mb-0">Minimum Education <span className="text-red-500">*</span></label>
                 <DealBreakerToggle field="prefEducation" formData={formData} setFormData={setFormData} />
               </div>
-              <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handlePreferenceChange} className="input-field">
-                {prefEducationIsDealbreaker ? <option value="">Select</option> : <option value="">Doesn&apos;t Matter</option>}
+              <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handlePreferenceChange} className="input-field" required>
+                <option value="">Select</option>
                 {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
-              {prefEducationIsDealbreaker && !(formData.prefQualification as string) && (
-                <p className="text-xs text-red-500 mt-1">Deal-breaker: Must select a minimum education</p>
+              {!(formData.prefQualification as string) && (
+                <p className="text-xs text-red-500 mt-1">Minimum education preference is required.</p>
               )}
             </div>
             <div>

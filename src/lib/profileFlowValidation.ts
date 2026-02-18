@@ -51,6 +51,20 @@ const dedupeCaseInsensitive = (values: string[]): string[] => {
   return out
 }
 
+const NO_PREFERENCE_VALUES = new Set([
+  '',
+  'doesnt matter',
+  "doesn't matter",
+  'any',
+  'no preference',
+])
+
+const isNoPreference = (value: unknown): boolean => {
+  const normalized = normalizeString(value)
+  if (!normalized) return true
+  return NO_PREFERENCE_VALUES.has(toSearchable(normalized))
+}
+
 const getSelectedReligions = (data: UnknownRecord): string[] => {
   const prefReligions = Array.isArray(data.prefReligions)
     ? data.prefReligions.map(v => normalizeString(v)).filter(Boolean)
@@ -114,6 +128,36 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
 
   if (occupation && !isNonWorkingOccupation(occupation) && !employerName) {
     errors.push('Company/Organization is required for working occupations.')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+
+export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  const referralSource = normalizeString(data.referralSource)
+
+  if (!referralSource) {
+    errors.push('Referral source is required.')
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+
+export function validatePartnerPreferencesAdditional(
+  data: UnknownRecord
+): { isValid: boolean; errors: string[] } {
+  const errors: string[] = []
+  const prefQualification = normalizeString(data.prefQualification)
+
+  if (isNoPreference(prefQualification)) {
+    errors.push('Partner preference minimum education is required.')
   }
 
   return {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  validateAboutMeStep,
   validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -158,6 +160,32 @@ describe('profile flow validation matrix', () => {
         prefReligionIsDealbreaker: false,
       })
 
+      expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+    })
+  })
+
+  describe('aboutme + preferences_2 required fields', () => {
+    it('fails aboutme validation when referral source is missing', () => {
+      const result = validateAboutMeStep({ aboutMe: 'Test about me' })
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Referral source is required.')
+    })
+
+    it('passes aboutme validation when referral source is present', () => {
+      const result = validateAboutMeStep({ aboutMe: 'Test about me', referralSource: 'google' })
+      expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+    })
+
+    it('fails preferences_2 validation when minimum education is missing', () => {
+      const result = validatePartnerPreferencesAdditional({})
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Partner preference minimum education is required.')
+    })
+
+    it('passes preferences_2 validation when minimum education is present', () => {
+      const result = validatePartnerPreferencesAdditional({ prefQualification: 'masters_cs' })
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })

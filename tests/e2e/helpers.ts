@@ -129,6 +129,10 @@ export async function createUserWithProfile(
 ): Promise<{ userId: string; profileId: string }> {
   const { userId } = await registerUser(request, baseURL, user, password)
   const { profileId } = await createProfile(request, baseURL, user, overrides)
+  const resolvedPrefQualification =
+    typeof overrides.prefQualification === 'string' && overrides.prefQualification.trim()
+      ? overrides.prefQualification
+      : 'bachelors'
   // Mark signup flow complete so profile completion guard doesn't redirect in UI flows.
   // signupStep >= 8 now enforces core partner-preference validation on this endpoint.
   const completionResponse = await request.put(`${baseURL}/api/profile/${profileId}`, {
@@ -141,6 +145,7 @@ export async function createUserWithProfile(
       prefMaritalStatus: 'never_married',
       prefReligions: ['Hindu'],
       prefReligion: 'Hindu',
+      prefQualification: resolvedPrefQualification,
       prefAgeIsDealbreaker: true,
       prefHeightIsDealbreaker: true,
       prefMaritalStatusIsDealbreaker: true,

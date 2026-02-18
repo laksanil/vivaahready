@@ -18,9 +18,11 @@ import {
   PreferencesPage2Section,
 } from './ProfileFormSections'
 import {
+  validateAboutMeStep,
   getEffectiveUniversity,
   isNonWorkingOccupation,
   validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -259,10 +261,12 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const linkedinUrl = formData.linkedinProfile as string || ''
   const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
   const hasValidLinkedIn = linkedinUrl === 'no_linkedin' || linkedinRegex.test(linkedinUrl)
+  const aboutMeValidation = validateAboutMeStep(formData)
   const isAboutMeComplete = !!(
     formData.aboutMe &&
     hasValidLinkedIn &&
-    !formData.linkedinError
+    !formData.linkedinError &&
+    aboutMeValidation.isValid
   )
 
   // Religion section validation - Religion and Community are required
@@ -273,6 +277,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   // Partner Preferences must-haves validation
   const preferences1Validation = validatePartnerPreferencesMustHaves(formData)
   const isPreferences1Complete = preferences1Validation.isValid
+  const preferences2Validation = validatePartnerPreferencesAdditional(formData)
+  const isPreferences2Complete = preferences2Validation.isValid
 
   const handleCreateAccount = async () => {
     if (!email || !password) return
@@ -1191,7 +1197,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           {currentSection === 'preferences_2' && (
             <div className="space-y-4">
               <PreferencesPage2Section {...sectionProps} />
-              {renderContinueButton(handleSectionContinue)}
+              {renderContinueButton(handleSectionContinue, !isPreferences2Complete)}
             </div>
           )}
 

@@ -7,8 +7,10 @@ import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
+  validateAboutMeStep,
   getEffectiveUniversity,
   validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -241,6 +243,8 @@ export async function PUT(request: Request) {
       select: {
         id: true,
         university: true,
+        referralSource: true,
+        prefQualification: true,
       },
     })
 
@@ -445,6 +449,16 @@ export async function PUT(request: Request) {
       }
     }
 
+    if (editSection === 'aboutme') {
+      const aboutMeValidation = validateAboutMeStep(mergedState)
+      if (!aboutMeValidation.isValid) {
+        return NextResponse.json(
+          { error: aboutMeValidation.errors[0] || 'Please complete all required About Me fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
     if (editSection === 'preferences_1') {
       const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
       if (!preferencesValidation.isValid) {
@@ -468,6 +482,16 @@ export async function PUT(request: Request) {
         updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
           ? preferencesValidation.selectedReligions[0]
           : ''
+      }
+    }
+
+    if (editSection === 'preferences_2') {
+      const preferencesAdditionalValidation = validatePartnerPreferencesAdditional(mergedState)
+      if (!preferencesAdditionalValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesAdditionalValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
       }
     }
 

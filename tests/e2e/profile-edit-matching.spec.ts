@@ -146,6 +146,7 @@ test.describe.serial('Profile edit flow + matching regression coverage', () => {
           prefMaritalStatus: 'never_married',
           prefReligions: ['Hindu'],
           prefReligion: 'Hindu',
+          prefQualification: 'bachelors',
           prefAgeIsDealbreaker: true,
           prefHeightIsDealbreaker: true,
           prefMaritalStatusIsDealbreaker: true,

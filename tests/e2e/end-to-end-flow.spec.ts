@@ -172,6 +172,7 @@ async function completeAboutMe(page: Page) {
   await page.fill('textarea[name="aboutMe"]', 'I am a test user who values family, growth, and kindness.')
   const linkedinSelect = page.locator('label:has-text("LinkedIn")').locator('..').locator('select')
   await linkedinSelect.selectOption('no_linkedin')
+  await page.selectOption('select[name="referralSource"]', 'google')
   await page.getByRole('button', { name: /Continue/i }).click()
   await expect(page.getByRole('heading', { name: /Partner Preferences/i })).toBeVisible()
 }
@@ -210,6 +211,7 @@ async function completePartnerPreferences(page: Page) {
     throw new Error(`Failed to save partner preferences step (${preferences1SaveResponse.status()}): ${body}`)
   }
   await expect(page.getByRole('heading', { name: /More Preferences/i })).toBeVisible()
+  await page.selectOption('select[name="prefQualification"]', 'bachelors')
 
   const preferences2Save = page.waitForResponse(
     (response) => response.url().includes('/api/profile/') && response.request().method() === 'PUT'
