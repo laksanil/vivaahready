@@ -245,7 +245,7 @@ export default async function GetVerifiedPage() {
             />
             <FAQItem
               question="Is the payment secure?"
-              answer="Yes. All payments are processed through Stripe, a trusted payment processor."
+              answer="Yes. All payments are processed through PayPal, a trusted payment processor."
             />
           </div>
         </div>

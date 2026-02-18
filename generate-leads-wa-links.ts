@@ -167,7 +167,7 @@ https://vivaahready.com
 
 Questions:
 support@vivaahready.com
-WhatsApp: +1 (925) 819-3653
+WhatsApp: +1 (925) 577-7559
 
 Warmly,
 Team VivaahReady`;

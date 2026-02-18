@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
               <p style="color: #4b5563; line-height: 1.6;">
                 In the meantime, if you have any urgent questions, feel free to message us on
-                <a href="https://wa.me/15103968605" style="color: #dc2626; text-decoration: none;">WhatsApp</a>.
+                <a href="https://wa.me/19255777559" style="color: #dc2626; text-decoration: none;">WhatsApp</a>.
               </p>
 
               <p style="color: #4b5563; margin-top: 24px;">
@@ -110,7 +110,7 @@ Our team will review your inquiry and get back to you within 24 hours.
 Your message:
 "${normalizedMessage.substring(0, 200)}${normalizedMessage.length > 200 ? '...' : ''}"
 
-In the meantime, if you have any urgent questions, feel free to message us on WhatsApp at https://wa.me/15103968605.
+In the meantime, if you have any urgent questions, feel free to message us on WhatsApp at https://wa.me/19255777559.
 
 Warm regards,
 The VivaahReady Team

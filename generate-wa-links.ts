@@ -38,7 +38,7 @@ If you signed up with Gmail, just click "Continue with Google" to log in. Otherw
 
 Thank you for your patience and trust in VivaahReady!
 
-For any questions, reach us at support@vivaahready.com or WhatsApp: +1 (925) 819-3653`;
+For any questions, reach us at support@vivaahready.com or WhatsApp: +1 (925) 577-7559`;
 
   // Generate VCF
   let vcf = "";

@@ -50,7 +50,7 @@ CAPACITY:
 HOW TO PAY:
 - Click "Register Now - $25" button
 - Complete profile if needed
-- Pay securely with credit/debit card via Square
+- Pay securely via PayPal or Zelle
 - Simple and quick process!
 
 HOW IT WORKS:

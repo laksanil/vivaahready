@@ -19,7 +19,6 @@ import {
   Check,
 } from 'lucide-react'
 import { PayPalPaymentForm } from '@/components/PayPalPaymentForm'
-import { SquarePaymentForm } from '@/components/SquarePaymentForm'
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 
@@ -293,21 +292,10 @@ export default function GetVerifiedPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <PayPalPaymentForm
+                  <PayPalPaymentForm
                       amount={pricing?.price || 50}
                       onSuccess={() => router.push('/dashboard')}
                     />
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 border-t border-stone-200" />
-                      <span className="text-xs text-stone-400">or pay with card</span>
-                      <div className="flex-1 border-t border-stone-200" />
-                    </div>
-                    <SquarePaymentForm
-                      amount={pricing?.price || 50}
-                      onSuccess={() => router.push('/dashboard')}
-                    />
-                  </div>
                 )
               ) : (
                 <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">

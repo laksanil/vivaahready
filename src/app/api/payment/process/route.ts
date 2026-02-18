@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     // For now, we'll simulate a successful payment
-    // In production, this would integrate with Stripe or another payment processor
+    // In production, payments are processed via PayPal or Zelle
 
     // Update or create subscription with payment info
     await prisma.subscription.upsert({

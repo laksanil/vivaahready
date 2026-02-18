@@ -195,7 +195,7 @@ function buildEmailHTML(): string {
 
               <p style="margin: 0; color: #9ca3af; font-size: 13px; text-align: center; line-height: 1.6;">
                 Questions? Reach us at <a href="mailto:support@vivaahready.com" style="color: #dc2626; text-decoration: none;">support@vivaahready.com</a>
-                <br>WhatsApp: +1 (925) 819-3653
+                <br>WhatsApp: +1 (925) 577-7559
               </p>
             </td>
           </tr>
@@ -245,7 +245,7 @@ Get 50% off verification as a founding member.
 
 Create your free profile: https://vivaahready.com
 
-Questions? support@vivaahready.com | WhatsApp: +1 (925) 819-3653
+Questions? support@vivaahready.com | WhatsApp: +1 (925) 577-7559
 
 Warmly,
 Team VivaahReady`

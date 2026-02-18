@@ -613,7 +613,7 @@ export default function MarchEventPage() {
                 step: 4,
                 title: 'Payment',
                 description: 'Pay $25 securely to confirm your spot.',
-                helper: 'Powered by Square',
+                helper: 'Secure payment',
                 color: 'from-green-500 to-green-600',
               },
             ].map((item) => (

@@ -4,8 +4,11 @@ import { authOptions } from '@/lib/auth'
 import { createPayPalOrder } from '@/lib/paypal'
 import { prisma } from '@/lib/prisma'
 
-// Get current price from database
+// Get current price from database (DEV_VERIFICATION_PRICE overrides for local testing)
 async function getCurrentPrice(): Promise<number> {
+  const devPrice = process.env.DEV_VERIFICATION_PRICE
+  if (devPrice) return parseFloat(devPrice)
+
   try {
     const settings = await prisma.settings.findUnique({
       where: { id: 'default' },

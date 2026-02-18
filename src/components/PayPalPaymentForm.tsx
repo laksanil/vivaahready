@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, AlertCircle, Lock, Shield } from 'lucide-react'
 
 // PayPal SDK types
 interface PayPalButtonsInstance {
   close: () => void
+  isEligible?: () => boolean
+  render: (selector: string) => Promise<void>
 }
 
 interface PayPalActions {
@@ -15,12 +17,12 @@ interface PayPalActions {
 
 interface PayPalButtons {
   (options: {
-    style?: Record<string, string>
+    style?: Record<string, string | number>
     createOrder: () => Promise<string>
     onApprove: (data: { orderID: string }, actions: PayPalActions) => Promise<void>
     onError: (err: unknown) => void
     onCancel: () => void
-  }): { render: (selector: string) => Promise<PayPalButtonsInstance> }
+  }): PayPalButtonsInstance
 }
 
 interface PayPalNamespace {
@@ -49,97 +51,113 @@ export function PayPalPaymentForm({
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const buttonContainerRef = useRef<HTMLDivElement>(null)
-  const buttonsInstanceRef = useRef<PayPalButtonsInstance | null>(null)
+  const mountedRef = useRef(true)
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
 
-  const renderButtons = useCallback(async () => {
-    if (!window.paypal || !buttonContainerRef.current) return
+  useEffect(() => {
+    mountedRef.current = true
 
-    // Clear previous buttons
-    if (buttonsInstanceRef.current) {
-      buttonsInstanceRef.current.close()
-      buttonsInstanceRef.current = null
-    }
-    buttonContainerRef.current.innerHTML = ''
+    async function renderButtons() {
+      if (!window.paypal || !buttonContainerRef.current || !mountedRef.current) return
 
-    try {
-      const instance = await window.paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'gold',
-          shape: 'rect',
-          label: 'paypal',
-          height: '48',
-        },
+      // Clear container
+      buttonContainerRef.current.innerHTML = ''
 
-        createOrder: async () => {
-          setError(null)
-          const response = await fetch('/api/paypal/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          })
+      try {
+        const buttons = window.paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal',
+            height: 48,
+          },
 
-          const data = await response.json()
-
-          if (!response.ok || !data.orderId) {
-            throw new Error(data.error || 'Failed to create payment order')
-          }
-
-          return data.orderId
-        },
-
-        onApprove: async (data: { orderID: string }) => {
-          setProcessing(true)
-          setError(null)
-
-          try {
-            const response = await fetch('/api/paypal/capture-order', {
+          createOrder: async () => {
+            setError(null)
+            const response = await fetch('/api/paypal/create-order', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ orderId: data.orderID }),
             })
 
-            const result = await response.json()
+            const data = await response.json()
 
-            if (!response.ok || !result.success) {
-              throw new Error(result.error || 'Payment capture failed')
+            if (!response.ok || !data.orderId) {
+              throw new Error(data.error || 'Failed to create payment order')
             }
 
-            // Success
-            if (onSuccess) {
-              onSuccess()
-            } else {
-              router.push('/dashboard?verified=true')
+            return data.orderId
+          },
+
+          onApprove: async (data: { orderID: string }) => {
+            setProcessing(true)
+            setError(null)
+
+            try {
+              const response = await fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: data.orderID }),
+              })
+
+              const result = await response.json()
+
+              if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Payment capture failed')
+              }
+
+              if (onSuccess) {
+                onSuccess()
+              } else {
+                router.push('/dashboard?verified=true')
+              }
+            } catch (err) {
+              console.error('Payment capture error:', err)
+              setError(err instanceof Error ? err.message : 'Payment failed. Please try again.')
+              setProcessing(false)
             }
-          } catch (err) {
-            console.error('Payment capture error:', err)
-            setError(err instanceof Error ? err.message : 'Payment failed. Please try again.')
+          },
+
+          onError: (err: unknown) => {
+            console.error('PayPal error:', err)
+            setError('Something went wrong with PayPal. Please try again.')
             setProcessing(false)
+          },
+
+          onCancel: () => {
+            setError(null)
+            setProcessing(false)
+          },
+        })
+
+        if (typeof buttons.isEligible === 'function' && !buttons.isEligible()) {
+          if (mountedRef.current) {
+            setError('PayPal is not available. Try a different browser or disable content blockers.')
           }
-        },
+          return
+        }
 
-        onError: (err: unknown) => {
-          console.error('PayPal error:', err)
-          setError('Something went wrong with PayPal. Please try again.')
-          setProcessing(false)
-        },
+        await buttons.render('#paypal-button-container')
 
-        onCancel: () => {
+        // Buttons rendered successfully — clear any stale error from React double-render
+        if (mountedRef.current) {
           setError(null)
-          setProcessing(false)
-        },
-      }).render('#paypal-button-container')
-
-      buttonsInstanceRef.current = instance
-    } catch (err) {
-      console.error('Error rendering PayPal buttons:', err)
-      setError('Failed to load PayPal. Please refresh the page.')
+        }
+      } catch (err) {
+        // Ignore "zoid destroyed" errors — happens in React dev mode double-render
+        const errMsg = err instanceof Error ? err.message : String(err)
+        if (/zoid|destroyed/i.test(errMsg)) {
+          console.warn('PayPal zoid cleanup (expected in dev mode):', errMsg)
+          return
+        }
+        if (mountedRef.current) {
+          console.error('Error rendering PayPal buttons:', err)
+          setError(`Failed to load PayPal: ${errMsg}`)
+        }
+      }
     }
-  }, [onSuccess, router])
 
-  // Load PayPal SDK
-  useEffect(() => {
     if (!clientId) {
       setError('PayPal is not configured. Please contact support.')
       setLoading(false)
@@ -153,24 +171,30 @@ export function PayPalPaymentForm({
     }
 
     const script = document.createElement('script')
-    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&disable-funding=credit,card`
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD&intent=capture&enable-funding=applepay,venmo&disable-funding=credit`
     script.async = true
     script.onload = () => {
+      if (!mountedRef.current) return
+      if (!window.paypal?.Buttons) {
+        setError('PayPal SDK loaded but did not initialize. Try disabling content blockers.')
+        setLoading(false)
+        return
+      }
       setLoading(false)
       renderButtons()
     }
     script.onerror = () => {
-      setError('Failed to load PayPal SDK')
+      if (!mountedRef.current) return
+      setError('Failed to load PayPal SDK. Check network/content-blocker settings.')
       setLoading(false)
     }
     document.body.appendChild(script)
 
     return () => {
-      if (buttonsInstanceRef.current) {
-        buttonsInstanceRef.current.close()
-      }
+      mountedRef.current = false
     }
-  }, [clientId, renderButtons])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId])
 
   return (
     <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-lg">
@@ -192,7 +216,10 @@ export function PayPalPaymentForm({
             <div className="flex-1">
               <p className="text-sm text-red-800">{error}</p>
               <button
-                onClick={() => setError(null)}
+                onClick={() => {
+                  setError(null)
+                  window.location.reload()
+                }}
                 className="mt-2 text-sm text-red-700 hover:text-red-800 font-medium underline underline-offset-2"
               >
                 Try Again
