@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import CookieConsent from '@/components/CookieConsent'
 import FeedbackWidget from '@/components/FeedbackWidget'
+import PushNotificationPrompt from '@/components/PushNotificationPrompt'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -148,6 +149,7 @@ export default function RootLayout({
             <FeedbackWidget />
           </Suspense>
           <CookieConsent />
+          <PushNotificationPrompt />
         </Providers>
       </body>
     </html>

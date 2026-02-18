@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
-import { sendMatchNotificationSms, formatPhoneNumber } from '@/lib/twilio'
+import { sendMatchNotificationSms, formatPhoneNumber } from '@/lib/sns'
 
 export async function GET(request: Request) {
   try {

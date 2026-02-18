@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/admin'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
-import { sendSms } from '@/lib/twilio'
+import { sendSms } from '@/lib/sns'
 
 export async function POST(request: Request) {
   const isAdmin = await isAdminAuthenticated()

@@ -33,6 +33,8 @@ model User {
   reportsReceived Report[] @relation("ReportsReceived")
   deletionRequest DeletionRequest?
   feedback        Feedback[]
+  pushSubscriptions      PushSubscription[]
+  notificationPreference NotificationPreference?
 }
 
 model Profile {
@@ -569,4 +571,32 @@ model Feedback {
   @@index([overallStars])
   @@index([createdAt])
   @@index([isVerified])
+}
+
+// Push notification subscriptions (Web Push API)
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// User notification preferences (per-channel and per-event toggles)
+model NotificationPreference {
+  id                     String  @id @default(cuid())
+  userId                 String  @unique
+  emailEnabled           Boolean @default(true)
+  smsEnabled             Boolean @default(true)
+  pushEnabled            Boolean @default(true)
+  matchNotifications     Boolean @default(true)
+  interestNotifications  Boolean @default(true)
+  messageNotifications   Boolean @default(true)
+  marketingEmails        Boolean @default(false)
+  user                   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

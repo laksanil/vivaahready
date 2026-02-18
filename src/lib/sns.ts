@@ -1,13 +1,19 @@
-import twilio from 'twilio'
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns'
+import type { MessageAttributeValue } from '@aws-sdk/client-sns'
 import { isTestMode } from '@/lib/testMode'
 
-// Initialize Twilio client only if credentials are available
-const accountSid = process.env.TWILIO_ACCOUNT_SID
-const authToken = process.env.TWILIO_AUTH_TOKEN
-const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER || '+15103968605'
+// Initialize SNS client only if credentials are available
+const region = process.env.AWS_REGION || 'us-east-1'
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 
-const twilioClient = accountSid && authToken ? twilio(accountSid, authToken) : null
+const snsClient =
+  accessKeyId && secretAccessKey
+    ? new SNSClient({
+        region,
+        credentials: { accessKeyId, secretAccessKey },
+      })
+    : null
 
 interface SendSmsParams {
   to: string
@@ -21,7 +27,7 @@ interface SendSmsResult {
 }
 
 /**
- * Send an SMS message using Twilio
+ * Send an SMS message using Amazon SNS
  */
 export async function sendSms({ to, body }: SendSmsParams): Promise<SendSmsResult> {
   if (isTestMode) {
@@ -29,38 +35,42 @@ export async function sendSms({ to, body }: SendSmsParams): Promise<SendSmsResul
     return { success: true, messageId: 'test-sms' }
   }
 
-  if (!twilioClient) {
-    console.warn('SMS not sent: Twilio credentials not configured')
+  if (!snsClient) {
+    console.warn('SMS not sent: AWS credentials not configured')
     return { success: false, error: 'SMS service not configured' }
   }
 
   try {
-    // Use Messaging Service if available (required for A2P 10DLC), otherwise use phone number
-    const messageOptions: {
-      to: string
-      body: string
-      from?: string
-      messagingServiceSid?: string
-    } = {
-      to,
-      body,
+    const messageAttributes: Record<string, MessageAttributeValue> = {
+      'AWS.SNS.SMS.SMSType': {
+        DataType: 'String',
+        StringValue: 'Transactional',
+      },
     }
 
-    if (messagingServiceSid) {
-      messageOptions.messagingServiceSid = messagingServiceSid
-    } else {
-      messageOptions.from = twilioPhoneNumber
+    // Optional sender ID (shown as the "from" name on some carriers)
+    const senderId = process.env.SNS_SMS_SENDER_ID
+    if (senderId) {
+      messageAttributes['AWS.SNS.SMS.SenderID'] = {
+        DataType: 'String',
+        StringValue: senderId,
+      }
     }
 
-    const message = await twilioClient.messages.create(messageOptions)
+    const command = new PublishCommand({
+      PhoneNumber: formatPhoneNumber(to),
+      Message: body,
+      MessageAttributes: messageAttributes,
+    })
 
-    console.log('SMS sent successfully:', message.sid)
-    return { success: true, messageId: message.sid }
+    const result = await snsClient.send(command)
+    console.log('SMS sent successfully via SNS:', result.MessageId)
+    return { success: true, messageId: result.MessageId }
   } catch (error) {
-    console.error('SMS sending error:', error)
+    console.error('SNS SMS sending error:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 }
@@ -76,7 +86,10 @@ export async function sendOtpSms(phoneNumber: string, otp: string): Promise<Send
 /**
  * Send welcome SMS to new users
  */
-export async function sendWelcomeSms(phoneNumber: string, firstName: string): Promise<SendSmsResult> {
+export async function sendWelcomeSms(
+  phoneNumber: string,
+  firstName: string
+): Promise<SendSmsResult> {
   const body = `Welcome to VivaahReady, ${firstName}! Your account has been created. Start exploring meaningful connections today at vivaahready.com. Reply STOP to opt out.`
   return sendSms({ to: phoneNumber, body })
 }
@@ -129,7 +142,7 @@ export async function sendProfileViewedSms(
 }
 
 /**
- * Format phone number to E.164 format for Twilio
+ * Format phone number to E.164 format for SNS
  * Expects phone numbers in format: +1XXXXXXXXXX or similar
  */
 export function formatPhoneNumber(phone: string): string {

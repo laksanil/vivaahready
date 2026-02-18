@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateOtp, setOtp } from '@/lib/otpStore'
-import { sendOtpSms, formatPhoneNumber } from '@/lib/twilio'
+import { sendOtpSms, formatPhoneNumber } from '@/lib/sns'
 
 export async function POST() {
   try {

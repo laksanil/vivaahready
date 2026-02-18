@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
-import { sendMatchAcceptedSms, formatPhoneNumber } from '@/lib/twilio'
+import { sendMatchAcceptedSms, formatPhoneNumber } from '@/lib/sns'
 
 // PATCH - Update match status (accept/reject)
 export async function PATCH(
