@@ -3,12 +3,11 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Check, X, Eye, Clock, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink, CreditCard, AlertCircle } from 'lucide-react'
+import { Check, X, Eye, User, MapPin, Briefcase, GraduationCap, Loader2, RefreshCw, Linkedin, Instagram, Camera, ZoomIn, ChevronLeft, ChevronRight, ExternalLink, CreditCard, AlertCircle } from 'lucide-react'
 import { adminLinks } from '@/lib/adminLinks'
 import { extractPhotoUrls } from '@/lib/utils'
 import { useToast } from '@/components/Toast'
-import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminBadge, AdminModal, AdminTableSkeleton } from '@/components/admin/AdminComponents'
+import { AdminTabs, AdminPageHeader, AdminEmptyState, AdminButton, AdminModal, AdminTableSkeleton } from '@/components/admin/AdminComponents'
 
 interface PendingProfile {
   id: string
@@ -38,19 +37,12 @@ interface PendingProfile {
   }
 }
 
-interface PaymentStats {
-  total: number
-  paid: number
-  unpaid: number
-}
-
-type TabType = 'pending' | 'rejected'
+type TabType = 'unpaid' | 'paid'
 
 export default function AdminApprovalsPage() {
   const { showToast } = useToast()
-  const [activeTab, setActiveTab] = useState<TabType>('pending')
+  const [activeTab, setActiveTab] = useState<TabType>('unpaid')
   const [pendingProfiles, setPendingProfiles] = useState<PendingProfile[]>([])
-  const [rejectedProfiles, setRejectedProfiles] = useState<PendingProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null)
@@ -61,8 +53,6 @@ export default function AdminApprovalsPage() {
     currentIndex: 0,
     profileName: ''
   })
-  const [pendingStats, setPendingStats] = useState<PaymentStats>({ total: 0, paid: 0, unpaid: 0 })
-  const [rejectedStats, setRejectedStats] = useState<PaymentStats>({ total: 0, paid: 0, unpaid: 0 })
 
   const openPhotoModal = (profile: PendingProfile) => {
     const photos = extractPhotoUrls(profile.photoUrls)
@@ -101,16 +91,9 @@ export default function AdminApprovalsPage() {
   const fetchProfiles = async () => {
     setLoading(true)
     try {
-      const [pendingRes, rejectedRes] = await Promise.all([
-        fetch('/api/admin/approve?status=pending'),
-        fetch('/api/admin/approve?status=rejected')
-      ])
+      const pendingRes = await fetch('/api/admin/approve?status=pending')
       const pendingData = await pendingRes.json()
-      const rejectedData = await rejectedRes.json()
       setPendingProfiles(pendingData.profiles || [])
-      setRejectedProfiles(rejectedData.profiles || [])
-      setPendingStats(pendingData.stats || { total: 0, paid: 0, unpaid: 0 })
-      setRejectedStats(rejectedData.stats || { total: 0, paid: 0, unpaid: 0 })
     } catch (error) {
       console.error('Error fetching profiles:', error)
       showToast('Failed to load profiles. Please refresh the page.', 'error')
@@ -119,9 +102,9 @@ export default function AdminApprovalsPage() {
     }
   }
 
-  // Keep for backwards compatibility
-  const profiles = activeTab === 'pending' ? pendingProfiles : rejectedProfiles
-  const setProfiles = activeTab === 'pending' ? setPendingProfiles : setRejectedProfiles
+  const paidProfiles = pendingProfiles.filter(profile => !!profile.user.subscription?.profilePaid)
+  const unpaidProfiles = pendingProfiles.filter(profile => !profile.user.subscription?.profilePaid)
+  const profiles = activeTab === 'paid' ? paidProfiles : unpaidProfiles
 
   const handleApprove = async (profileId: string) => {
     setActionLoading(profileId)
@@ -133,9 +116,7 @@ export default function AdminApprovalsPage() {
       })
 
       if (res.ok) {
-        // Remove from whichever list it's in
         setPendingProfiles(prev => prev.filter(p => p.id !== profileId))
-        setRejectedProfiles(prev => prev.filter(p => p.id !== profileId))
         showToast('Profile approved successfully', 'success')
       } else {
         const error = await res.json()
@@ -163,14 +144,7 @@ export default function AdminApprovalsPage() {
       })
 
       if (res.ok) {
-        // Find the profile being rejected
-        const rejectedProfile = pendingProfiles.find(p => p.id === profileId)
-        // Remove from pending
         setPendingProfiles(prev => prev.filter(p => p.id !== profileId))
-        // Add to rejected list with reason
-        if (rejectedProfile) {
-          setRejectedProfiles(prev => [...prev, { ...rejectedProfile, rejectionReason }])
-        }
         setSelectedProfile(null)
         setRejectionReason('')
         showToast('Profile rejected', 'success')
@@ -189,8 +163,8 @@ export default function AdminApprovalsPage() {
   // Loading is now handled in the return below
 
   const tabs = [
-    { id: 'pending', label: 'Pending', count: pendingProfiles.length },
-    { id: 'rejected', label: 'Rejected', count: rejectedProfiles.length },
+    { id: 'unpaid', label: 'Unpaid', count: unpaidProfiles.length },
+    { id: 'paid', label: 'Paid', count: paidProfiles.length },
   ]
 
   return (
@@ -206,24 +180,6 @@ export default function AdminApprovalsPage() {
         }
       />
 
-      {/* Payment Stats Bar */}
-      {!loading && (activeTab === 'pending' ? pendingStats.total : rejectedStats.total) > 0 && (
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Payment Status:</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-            <Check className="h-4 w-4" />
-            {activeTab === 'pending' ? pendingStats.paid : rejectedStats.paid} Paid
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-            <AlertCircle className="h-4 w-4" />
-            {activeTab === 'pending' ? pendingStats.unpaid : rejectedStats.unpaid} Unpaid
-          </div>
-        </div>
-      )}
-
       <AdminTabs
         tabs={tabs}
         activeTab={activeTab}
@@ -234,9 +190,9 @@ export default function AdminApprovalsPage() {
         <AdminTableSkeleton rows={5} columns={4} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
-          icon={activeTab === 'pending' ? <Check className="h-12 w-12" /> : <X className="h-12 w-12" />}
-          title={activeTab === 'pending' ? 'All Caught Up!' : 'No Rejected Profiles'}
-          description={activeTab === 'pending' ? 'No pending profiles to review.' : 'There are no rejected profiles at the moment.'}
+          icon={activeTab === 'unpaid' ? <AlertCircle className="h-12 w-12" /> : <CreditCard className="h-12 w-12" />}
+          title={activeTab === 'unpaid' ? 'No Unpaid Profiles' : 'No Paid Profiles'}
+          description={activeTab === 'unpaid' ? 'No unpaid profiles are waiting for approval.' : 'No paid profiles are waiting for approval.'}
         />
       ) : (
         <div className="space-y-4">
@@ -382,15 +338,6 @@ export default function AdminApprovalsPage() {
                     </p>
                   )}
 
-                  {/* Show rejection reason for rejected profiles */}
-                  {activeTab === 'rejected' && profile.rejectionReason && (
-                    <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-700">
-                        <span className="font-medium">Rejection reason:</span> {profile.rejectionReason}
-                      </p>
-                    </div>
-                  )}
-
                   {/* Referral Source Badge */}
                   {profile.referralSource && (
                     <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700">
@@ -437,16 +384,14 @@ export default function AdminApprovalsPage() {
                     )}
                     Approve
                   </button>
-                  {activeTab === 'pending' && (
-                    <button
-                      onClick={() => setSelectedProfile(profile.id)}
-                      disabled={actionLoading === profile.id}
-                      className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                    >
-                      <X className="h-4 w-4" />
-                      Reject
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setSelectedProfile(profile.id)}
+                    disabled={actionLoading === profile.id}
+                    className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                    Reject
+                  </button>
                 </div>
               </div>
             </div>
