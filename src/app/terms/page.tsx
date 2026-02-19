@@ -190,32 +190,11 @@ export default function TermsOfUsePage() {
               </p>
             </section>
 
-            {/* Section 10.1 - SMS Communications */}
+            {/* Section 10.1 - SMS Communications (brief, references Section 17) */}
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">10.1 SMS/Text Message Communications</h2>
               <p className="text-gray-600 mb-3">
-                By providing your phone number during registration or in your account settings, you expressly consent to receive SMS text messages from VivaahReady. These messages may include:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li><strong>One-Time Passwords (OTP):</strong> Security codes for account verification and login;</li>
-                <li><strong>Match Notifications:</strong> Alerts about new matches, interest expressions received, and mutual connections;</li>
-                <li><strong>Account Alerts:</strong> Important updates about your profile status, subscription, or account security.</li>
-              </ul>
-              <p className="text-gray-600 mt-3">
-                <strong>Message Frequency:</strong> The number of messages you receive will vary based on your account activity and matching notifications. You may receive several messages per week.
-              </p>
-              <p className="text-gray-600 mt-3">
-                <strong>Opting Out:</strong> You may opt out of promotional SMS messages at any time by replying <strong>STOP</strong> to any message. After opting out, you will receive a confirmation message. Note that you will continue to receive essential transactional messages (such as OTP codes) necessary for account security unless you disable SMS entirely in your account settings.
-              </p>
-              <p className="text-gray-600 mt-3">
-                <strong>Help:</strong> For assistance with SMS messages, reply <strong>HELP</strong> to any message or contact us at{' '}
-                <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.
-              </p>
-              <p className="text-gray-600 mt-3">
-                <strong>Carrier Fees:</strong> Standard message and data rates may apply based on your mobile carrier and plan. VivaahReady is not responsible for any fees charged by your wireless provider.
-              </p>
-              <p className="text-gray-600 mt-3">
-                <strong>Supported Carriers:</strong> SMS messages are supported on most major U.S. carriers. Carriers are not liable for delayed or undelivered messages.
+                VivaahReady may send SMS/text messages to users who have opted in. For full details on SMS communications, including opt-in, opt-out, message types, frequency, and your rights, please see <strong>Section 17: SMS and Text Message Communications</strong> below.
               </p>
             </section>
 
@@ -304,45 +283,88 @@ export default function TermsOfUsePage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">17. SMS and Text Message Communications</h2>
               <p className="text-gray-600 mb-3">
-                VivaahReady uses SMS/text messaging to send you important account notifications, verification codes, and match updates. By providing your phone number during account registration, you explicitly consent to receive SMS communications from VivaahReady.
+                VivaahReady (&quot;we,&quot; &quot;us,&quot; &quot;our&quot;) offers an SMS messaging program for account notifications, match alerts, and service updates. By opting in to our SMS program, you agree to the terms outlined in this section.
               </p>
-              
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.1 Types of Messages</h3>
-              <p className="text-gray-600 mb-3">We send SMS messages for:</p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Account verification and two-factor authentication codes;</li>
-                <li>Profile approval and status notifications;</li>
-                <li>New interest and match alerts;</li>
-                <li>Important account security updates;</li>
-                <li>Service announcements and important updates.</li>
-              </ul>
-              
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.2 Message Frequency</h3>
-              <p className="text-gray-600">
-                Message frequency depends on your account activity and notification preferences. You may receive between 1-10 SMS messages per month on average.
-              </p>
-              
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.3 Opting Out</h3>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.1 Opt-In and Consent</h3>
               <p className="text-gray-600 mb-3">
-                You can opt out of SMS communications at any time by:
+                During account registration on vivaahready.com, you may opt in to receive SMS messages by checking the SMS consent checkbox. This checkbox clearly describes the types of messages you will receive, message frequency, data rates, and how to opt out. By checking the SMS consent box, you provide your express written consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number you provide.
+              </p>
+              <p className="text-gray-600 mt-3">
+                <strong>Consent is not a condition of registration or purchase.</strong> You may create an account and use VivaahReady without opting in to SMS communications.
+              </p>
+              <p className="text-gray-600 mt-3">
+                <strong>Opt-in confirmation:</strong> After you opt in, you will receive a welcome SMS message confirming your enrollment in the VivaahReady SMS program. This message will include opt-out instructions.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.2 Types of Messages</h3>
+              <p className="text-gray-600 mb-3">If you opt in, we may send you the following types of SMS messages:</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li><strong>Account Verification:</strong> One-time passwords (OTP) and security codes for login and identity verification;</li>
+                <li><strong>Profile Notifications:</strong> Updates on profile approval status and account changes;</li>
+                <li><strong>Match Alerts:</strong> Notifications when you receive new interest expressions or match suggestions;</li>
+                <li><strong>Connection Updates:</strong> Alerts when a match accepts your interest or when mutual connections are formed;</li>
+                <li><strong>Account Security:</strong> Important security alerts and account activity notifications;</li>
+                <li><strong>Service Updates:</strong> Critical announcements about the VivaahReady platform.</li>
+              </ul>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.3 Message Frequency</h3>
+              <p className="text-gray-600">
+                Message frequency varies based on your account activity and notification preferences. You may receive between 1-10 SMS messages per month on average, though this may vary during periods of high matching activity.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.4 Message and Data Rates</h3>
+              <p className="text-gray-600">
+                Message and data rates may apply. Standard messaging rates from your wireless carrier will apply to all SMS messages sent and received. VivaahReady is not responsible for any fees or charges imposed by your mobile carrier. Please contact your carrier for details about your messaging plan.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.5 Opting Out</h3>
+              <p className="text-gray-600 mb-3">
+                You can opt out of SMS communications at any time using any of the following methods:
               </p>
               <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
-                <li>Replying "STOP" to any SMS message you receive;</li>
-                <li>Updating your notification preferences in your account settings;</li>
-                <li>Contacting us at <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.</li>
+                <li><strong>Text STOP:</strong> Reply <strong>STOP</strong>, <strong>CANCEL</strong>, <strong>END</strong>, <strong>QUIT</strong>, or <strong>UNSUBSCRIBE</strong> to any SMS message you receive from VivaahReady;</li>
+                <li><strong>Email:</strong> Contact us at <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a> and request to be removed from SMS communications;</li>
+                <li><strong>Account Settings:</strong> Update your notification preferences in your account settings on vivaahready.com.</li>
               </ul>
               <p className="text-gray-600 mt-3">
-                After you opt out, you will receive one confirmation message. You will no longer receive SMS messages from VivaahReady, except as required by law.
+                <strong>Opt-out confirmation:</strong> After you opt out by texting STOP, you will receive one final confirmation message stating: &quot;You are unsubscribed from VivaahReady alerts. No more messages will be sent. Reply HELP or email support@vivaahready.com for help.&quot; No further messages will be sent after this confirmation.
               </p>
-              
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.4 Help and Support</h3>
-              <p className="text-gray-600">
-                For help with SMS messages, reply "HELP" to any message. Standard message and data rates apply according to your carrier's plan. VivaahReady is not responsible for any charges imposed by your mobile carrier.
+              <p className="text-gray-600 mt-3">
+                <strong>Re-opting in:</strong> If you have opted out and wish to receive SMS messages again, you may re-enable SMS notifications in your account settings on vivaahready.com or by contacting support@vivaahready.com.
               </p>
-              
-              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.5 Carrier Compliance</h3>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.6 Help and Support</h3>
+              <p className="text-gray-600 mb-3">
+                For help or questions about our SMS program:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li><strong>Text HELP:</strong> Reply <strong>HELP</strong> to any SMS message you receive from VivaahReady;</li>
+                <li><strong>Email:</strong> Contact us at <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:text-primary-700">support@vivaahready.com</a>.</li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                When you text HELP, you will receive a response with support contact information and program details.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.7 Supported Carriers</h3>
               <p className="text-gray-600">
-                Our SMS communications comply with the Telephone Consumer Protection Act (TCPA) and all applicable carrier regulations. VivaahReady will never sell, trade, or share your phone number with third parties for marketing purposes. We may share your phone number with our SMS service provider (Amazon Web Services) solely for the purpose of delivering SMS messages to you.
+                SMS messages are supported on most major U.S. carriers including AT&amp;T, Verizon, T-Mobile, Sprint, and others. Carriers are not liable for delayed or undelivered messages. Message delivery is subject to effective transmission by your wireless carrier.
+              </p>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.8 Privacy and Data Protection</h3>
+              <p className="text-gray-600 mb-3">
+                Your phone number and SMS opt-in consent data will be handled in accordance with our <a href="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</a>. Specifically:
+              </p>
+              <ul className="list-disc list-inside text-gray-600 space-y-2 ml-4">
+                <li>VivaahReady will <strong>never sell, trade, or share</strong> your phone number with third parties for marketing purposes;</li>
+                <li>Your phone number may be shared with our SMS service provider (Amazon Web Services) solely for the purpose of delivering SMS messages to you;</li>
+                <li>We maintain records of your opt-in consent, including the date, time, and method of consent;</li>
+                <li>Your opt-in/opt-out preferences are stored securely and can be updated at any time.</li>
+              </ul>
+
+              <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.9 TCPA Compliance</h3>
+              <p className="text-gray-600">
+                Our SMS communications comply with the Telephone Consumer Protection Act (TCPA), the CAN-SPAM Act, and all applicable federal and state regulations, as well as wireless carrier requirements and industry guidelines (CTIA). We obtain express written consent before sending any SMS messages and honor all opt-out requests promptly.
               </p>
             </section>
 
