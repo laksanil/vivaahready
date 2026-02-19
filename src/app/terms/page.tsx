@@ -342,7 +342,7 @@ export default function TermsOfUsePage() {
               
               <h3 className="text-lg font-medium text-gray-800 mt-4 mb-3">17.5 Carrier Compliance</h3>
               <p className="text-gray-600">
-                Our SMS communications comply with the Telephone Consumer Protection Act (TCPA) and all applicable carrier regulations. VivaahReady will never sell, trade, or share your phone number with third parties for marketing purposes. We may share your phone number with our SMS service provider (Twilio) solely for the purpose of delivering SMS messages to you.
+                Our SMS communications comply with the Telephone Consumer Protection Act (TCPA) and all applicable carrier regulations. VivaahReady will never sell, trade, or share your phone number with third parties for marketing purposes. We may share your phone number with our SMS service provider (Amazon Web Services) solely for the purpose of delivering SMS messages to you.
               </p>
             </section>
 
