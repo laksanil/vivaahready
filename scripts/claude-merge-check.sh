@@ -113,7 +113,21 @@ CI_STATUS=$(gh pr checks "$PR_NUMBER" 2>/dev/null || echo "")
 if [[ -z "$CI_STATUS" ]]; then
     print_check "WARN" "No CI checks found"
 else
-    # Count passing and failing checks
+    # Check the CI Gate job specifically (the single required status check)
+    CI_GATE_STATUS=$(echo "$CI_STATUS" | grep "CI Gate" || echo "")
+    if [[ -n "$CI_GATE_STATUS" ]]; then
+        if echo "$CI_GATE_STATUS" | grep -q "pass"; then
+            print_check "PASS" "CI Gate passed (all checks succeeded)"
+        elif echo "$CI_GATE_STATUS" | grep -q "fail"; then
+            print_check "FAIL" "CI Gate failed - one or more checks did not pass"
+        else
+            print_check "WARN" "CI Gate still running"
+        fi
+    else
+        print_check "WARN" "CI Gate check not found - CI may still be starting"
+    fi
+
+    # Also show individual check details
     PASSING=$(echo "$CI_STATUS" | grep -c "pass" || true)
     FAILING=$(echo "$CI_STATUS" | grep -c "fail" || true)
     PENDING=$(echo "$CI_STATUS" | grep -c "pending\|running" || true)

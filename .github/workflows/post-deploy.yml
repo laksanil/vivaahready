@@ -1,0 +1,67 @@
+name: Post-Deploy Smoke Test
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    name: Production Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Vercel deployment
+        run: |
+          echo "Waiting 120 seconds for Vercel deployment to complete..."
+          sleep 120
+
+      - name: Health check - Homepage
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vivaahready.com)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Homepage returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Homepage OK (HTTP 200)"
+
+      - name: Health check - Terms page
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vivaahready.com/terms)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Terms page returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Terms page OK (HTTP 200)"
+
+      - name: Health check - Privacy page
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vivaahready.com/privacy)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Privacy page returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Privacy page OK (HTTP 200)"
+
+      - name: Health check - Auth API
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://vivaahready.com/api/auth/providers)
+          if [ "$STATUS" -ge 500 ]; then
+            echo "Auth API returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Auth API OK (HTTP $STATUS)"
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `Production smoke test failed after deploy (${context.sha.substring(0, 7)})`,
+              body: `The post-deploy smoke test failed after merging commit ${context.sha}.\n\nRun: ${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}\n\nPlease investigate immediately.`,
+              labels: ['bug', 'production']
+            });
