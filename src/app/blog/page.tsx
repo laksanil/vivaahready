@@ -19,6 +19,19 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'indian-american-marriage-arranged-dating-apps-middle-path-usa',
+    title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
+    description:
+      'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like for families across the Bay Area, New York, Chicago, Dallas, Austin, and Houston.',
+    excerpt:
+      'If you are an Indian American professional, an NRI family settled in the US, or a parent quietly searching through every Indian matrimony site in the USA hoping to find the right match for your son or daughter, this is written for you.',
+    date: '2026-02-19',
+    dateFormatted: 'February 19, 2026',
+    readTime: '12 min read',
+    category: 'Perspectives',
+    author: 'Lakshmi',
+  },
+  {
     slug: 'caught-between-dating-apps-and-arranged-marriage',
     title: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
     description:
