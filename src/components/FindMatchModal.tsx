@@ -152,7 +152,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
-  const [smsConsent, setSmsConsent] = useState(true) // Default checked - user can uncheck if they prefer
+  const [smsConsent, setSmsConsent] = useState(false)
+  const [termsConsent, setTermsConsent] = useState(false)
 
   // Profile form data - initialize with defaults for fields that have default UI values
   const [formData, setFormData] = useState<Record<string, unknown>>({
@@ -959,8 +960,39 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               ) : null}
 
-              {/* Only show signup options if name AND phone are filled */}
+              {/* Consent checkboxes - shown after phone is filled */}
               {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 ? (
+                <div className="mt-5 space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={smsConsent}
+                      onChange={(e) => setSmsConsent(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-gray-600">
+                      I consent to receive SMS and WhatsApp messages from VivaahReady regarding my account, matches, and service updates. Standard messaging rates may apply.
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={termsConsent}
+                      onChange={(e) => setTermsConsent(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm text-gray-600">
+                      By continuing, I agree to the{' '}
+                      <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
+                      {' '}and{' '}
+                      <Link href="/terms" className="text-primary-600 hover:underline">Terms & Conditions</Link>.
+                    </span>
+                  </label>
+                </div>
+              ) : null}
+
+              {/* Only show signup options if name, phone, and consents are filled */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && smsConsent && termsConsent ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
@@ -1135,12 +1167,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               )}
 
-              <p className="mt-6 text-center text-xs text-gray-500">
-                By creating an account, you agree to our{' '}
-                <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
-                {' '}and{' '}
-                <Link href="/terms" className="text-primary-600 hover:underline">T&C</Link>.
-              </p>
             </div>
           )}
 
