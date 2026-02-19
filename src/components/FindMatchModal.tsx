@@ -972,14 +972,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                     />
                     <div className="text-sm text-gray-600">
                       <p>
-                        By checking this box, I consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number provided above for account notifications, match alerts, and service updates.
+                        By checking this box, I consent to receive automated SMS and WhatsApp messages from <strong>VivaahReady</strong> at the phone number provided above for account notifications, match alerts, and service updates. Message frequency varies. Message and data rates may apply. Reply STOP to opt out. Reply HELP or email{' '}
+                        <a href="mailto:support@vivaahready.com" className="text-primary-600 hover:underline">support@vivaahready.com</a>
+                        {' '}for support. Consent is not a condition of registration. View our{' '}
+                        <Link href="/terms" className="text-primary-600 hover:underline">Terms & Conditions</Link>
+                        {' '}and{' '}
+                        <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>.
                       </p>
-                      <ul className="mt-1 text-xs text-gray-500 list-disc list-inside space-y-0.5">
-                        <li>Message frequency varies</li>
-                        <li>Message and data rates may apply</li>
-                        <li>Reply STOP to cancel, HELP for help</li>
-                        <li>Consent is not a condition of registration</li>
-                      </ul>
                     </div>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer">
