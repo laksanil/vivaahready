@@ -970,9 +970,17 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       onChange={(e) => setSmsConsent(e.target.checked)}
                       className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
-                    <span className="text-sm text-gray-600">
-                      I expressly consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number provided, including account notifications, match alerts, and service updates. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time. Consent is not a condition of registration.
-                    </span>
+                    <div className="text-sm text-gray-600">
+                      <p>
+                        By checking this box, I consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number provided above for account notifications, match alerts, and service updates.
+                      </p>
+                      <ul className="mt-1 text-xs text-gray-500 list-disc list-inside space-y-0.5">
+                        <li>Message frequency varies</li>
+                        <li>Message and data rates may apply</li>
+                        <li>Reply STOP to cancel, HELP for help</li>
+                        <li>Consent is not a condition of registration</li>
+                      </ul>
+                    </div>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
@@ -982,10 +990,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
                     <span className="text-sm text-gray-600">
-                      By continuing, I agree to the{' '}
-                      <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>
+                      I agree to the{' '}
+                      <Link href="/terms" className="text-primary-600 hover:underline">Terms & Conditions</Link>
                       {' '}and{' '}
-                      <Link href="/terms" className="text-primary-600 hover:underline">Terms & Conditions</Link>.
+                      <Link href="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>.
                     </span>
                   </label>
                 </div>
