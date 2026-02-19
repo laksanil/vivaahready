@@ -998,8 +998,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                 </div>
               ) : null}
 
-              {/* Only show signup options if name, phone, and consents are filled */}
-              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && smsConsent && termsConsent ? (
+              {/* Only show signup options if name, phone, and terms consent are filled (SMS consent is optional per TCPA) */}
+              {(formData.firstName as string) && (formData.lastName as string) && phone && phone.length >= 10 && termsConsent ? (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
