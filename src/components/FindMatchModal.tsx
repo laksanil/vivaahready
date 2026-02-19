@@ -971,7 +971,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
                       className="mt-0.5 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
                     <span className="text-sm text-gray-600">
-                      I consent to receive SMS and WhatsApp messages from VivaahReady regarding my account, matches, and service updates. Standard messaging rates may apply.
+                      I expressly consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number provided, including account notifications, match alerts, and service updates. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time. Consent is not a condition of registration.
                     </span>
                   </label>
                   <label className="flex items-start gap-3 cursor-pointer">
