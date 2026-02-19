@@ -29,9 +29,6 @@ async function trialClickVisible(page: any) {
   }
 }
 
-// Skip in CI - requires Cloudinary credentials for photo uploads
-test.skip(!!process.env.CI, 'Skipped in CI: requires Cloudinary credentials')
-
 test.describe.serial('UI feature coverage (non-payment)', () => {
   test.describe.configure({ timeout: 180000 })
   let adminRequest: APIRequestContext

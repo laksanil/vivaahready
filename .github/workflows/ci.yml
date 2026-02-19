@@ -141,6 +141,9 @@ jobs:
           DATABASE_URL_E2E: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
           E2E_TEST: "true"
           PLAYWRIGHT_TEST: "true"
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

@@ -12,10 +12,9 @@ import {
 
 const baseURL = process.env.TEST_BASE_URL || 'http://127.0.0.1:3001'
 
-// Skip in CI - requires Cloudinary credentials for photo uploads
-test.skip(!!process.env.CI, 'Skipped in CI: requires Cloudinary credentials')
-
 test.describe.serial('API integration coverage', () => {
+  test.describe.configure({ timeout: 180000 })
+
   let adminRequest: APIRequestContext
   let userARequest: APIRequestContext
   let userBRequest: APIRequestContext

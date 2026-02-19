@@ -437,9 +437,6 @@ async function lookupUserIdFromAdminProfiles(page: Page, email: string) {
   return match ? match[1] : ''
 }
 
-// Skip in CI - requires Cloudinary credentials and admin setup
-test.skip(!!process.env.CI, 'Skipped in CI: requires Cloudinary credentials and admin setup')
-
 test.describe.serial('End-to-end user journey', () => {
   test.describe.configure({ timeout: 180000 })
   let userAId = ''

@@ -36,9 +36,6 @@ async function openPartnerPreferencesEditor(page: import('@playwright/test').Pag
   await expect(page.getByRole('heading', { name: /Edit Partner Preferences/i })).toBeVisible()
 }
 
-// Skip in CI - requires Cloudinary credentials for photo uploads
-test.skip(!!process.env.CI, 'Skipped in CI: requires Cloudinary credentials')
-
 test.describe.serial('Profile edit flow + matching regression coverage', () => {
   test.describe.configure({ timeout: 180000 })
 

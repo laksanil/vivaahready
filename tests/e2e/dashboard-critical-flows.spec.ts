@@ -11,9 +11,6 @@ import {
 
 const baseURL = process.env.TEST_BASE_URL || 'http://127.0.0.1:3001'
 
-// Skip in CI - requires Cloudinary credentials for photo uploads
-test.skip(!!process.env.CI, 'Skipped in CI: requires Cloudinary credentials')
-
 test.describe.serial('Dashboard critical flows', () => {
   test.describe.configure({ timeout: 180000 })
 
