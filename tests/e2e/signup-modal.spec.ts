@@ -101,7 +101,12 @@ test.describe('Basic Info Section (Step 2)', () => {
       await phoneInput.fill('5551234567')
       await page.waitForTimeout(500)
 
-      // Google button should appear after name + phone
+      // Check the terms consent checkbox
+      const termsCheckbox = page.locator('input[type="checkbox"]').last()
+      await termsCheckbox.check()
+      await page.waitForTimeout(500)
+
+      // Google button should appear after name + phone + terms consent
       const googleButton = page.locator('button:has-text("Google")')
       const hasGoogleOrName = await googleButton.isVisible() || await firstNameInput.isVisible()
       expect(hasGoogleOrName).toBeTruthy()
@@ -135,7 +140,16 @@ test.describe('Form Validation', () => {
       await page.locator('input[type="tel"]').fill('5551234567')
       await page.waitForTimeout(500)
 
-      // After filling name + phone, Google button should appear
+      // Google button should NOT be visible yet (terms checkbox not checked)
+      const googleVisibleBeforeConsent = await googleButton.isVisible()
+      expect(googleVisibleBeforeConsent).toBeFalsy()
+
+      // Check the terms consent checkbox
+      const termsCheckbox = page.locator('input[type="checkbox"]').last()
+      await termsCheckbox.check()
+      await page.waitForTimeout(500)
+
+      // After filling name + phone + checking terms, Google button should appear
       const googleVisibleAfter = await googleButton.isVisible()
       expect(googleVisibleAfter).toBeTruthy()
     }
@@ -158,6 +172,11 @@ test.describe('Section Navigation', () => {
 
       // Then fill phone (appears after name)
       await page.locator('input[type="tel"]').fill('5551234567').catch(() => {})
+      await page.waitForTimeout(500)
+
+      // Check the terms consent checkbox
+      const termsCheckbox = page.locator('input[type="checkbox"]').last()
+      await termsCheckbox.check().catch(() => {})
       await page.waitForTimeout(500)
 
       // Click the "Don't have Gmail?" toggle to show email form
