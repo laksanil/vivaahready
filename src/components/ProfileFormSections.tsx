@@ -869,6 +869,24 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
     setShowUniversityDropdown(false)
   }
 
+  // When user types a college name and clicks away without selecting from dropdown,
+  // accept the typed text as a custom entry so validation doesn't fail
+  const handleUniversityBlur = () => {
+    if (universitySearch.trim() && (formData.university as string) !== universitySearch.trim()) {
+      const typed = universitySearch.trim()
+      // Check if it matches a known university
+      const exactMatch = US_UNIVERSITIES.find(u => u.toLowerCase() === typed.toLowerCase())
+      if (exactMatch) {
+        setFormData(prev => ({ ...prev, university: exactMatch }))
+      } else {
+        // Accept as custom entry directly (no need for "Other" flow)
+        setFormData(prev => ({ ...prev, university: typed }))
+      }
+      setUniversitySearch('')
+    }
+    setShowUniversityDropdown(false)
+  }
+
   const isOtherUniversity = (formData.university as string) === 'other' ||
     ((formData.university as string) && !US_UNIVERSITIES.includes(formData.university as string) && (formData.university as string) !== '')
 
@@ -903,9 +921,13 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
               setShowUniversityDropdown(true)
             }}
             onFocus={() => setShowUniversityDropdown(true)}
+            onBlur={() => {
+              // Small delay so dropdown click can fire first
+              setTimeout(handleUniversityBlur, 200)
+            }}
             className="input-field"
             placeholder="Type to search universities..."
-            required
+            required={(formData.university as string) !== 'other'}
           />
           {showUniversityDropdown && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
@@ -924,16 +946,16 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
                 ))
               ) : (
                 <div className="px-3 py-2 text-sm text-gray-500">
-                  No matches found. Select &quot;Other&quot; to enter manually.
+                  No matches found. Click outside to use &quot;{universitySearch}&quot; as entered.
                 </div>
               )}
             </div>
           )}
-          {/* Click outside to close */}
+          {/* Click outside to close — also accepts typed text */}
           {showUniversityDropdown && (
             <div
               className="fixed inset-0 z-40"
-              onClick={() => setShowUniversityDropdown(false)}
+              onClick={handleUniversityBlur}
             />
           )}
           {isOtherUniversity && (formData.university as string) !== 'other' && (
@@ -944,7 +966,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
       {/* Other university text input */}
       {(formData.university as string) === 'other' && (
         <div>
-          <label className="form-label">Specify University/College</label>
+          <label className="form-label">Specify University/College <span className="text-red-500">*</span></label>
           <input
             type="text"
             name="universityOther"
@@ -952,6 +974,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
             onChange={handleChange}
             className="input-field"
             placeholder="Enter your university or college name"
+            required
           />
         </div>
       )}
