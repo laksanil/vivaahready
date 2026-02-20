@@ -851,8 +851,52 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
 }
 
 export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [qualificationSearch, setQualificationSearch] = useState('')
+  const [showQualificationDropdown, setShowQualificationDropdown] = useState(false)
   const [universitySearch, setUniversitySearch] = useState('')
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false)
+
+  // Filter qualifications based on search
+  const filteredQualifications = QUALIFICATION_OPTIONS.filter(opt =>
+    opt.label.toLowerCase().includes(qualificationSearch.toLowerCase()) ||
+    opt.value.toLowerCase().includes(qualificationSearch.toLowerCase())
+  )
+
+  const handleQualificationSelect = (opt: { value: string; label: string }) => {
+    if (opt.value === 'other') {
+      setFormData(prev => ({ ...prev, qualification: 'other' }))
+    } else {
+      setFormData(prev => ({ ...prev, qualification: opt.value, qualificationOther: '' }))
+    }
+    setQualificationSearch('')
+    setShowQualificationDropdown(false)
+  }
+
+  // When user types a degree and clicks away without selecting from dropdown,
+  // accept the typed text as a custom entry
+  const handleQualificationBlur = () => {
+    if (qualificationSearch.trim() && (formData.qualification as string) !== qualificationSearch.trim()) {
+      const typed = qualificationSearch.trim()
+      const exactMatch = QUALIFICATION_OPTIONS.find(o => o.label.toLowerCase() === typed.toLowerCase())
+      if (exactMatch) {
+        setFormData(prev => ({ ...prev, qualification: exactMatch.value, qualificationOther: '' }))
+      } else {
+        // Save as 'other' with the typed text as qualificationOther
+        setFormData(prev => ({ ...prev, qualification: 'other', qualificationOther: typed }))
+      }
+      setQualificationSearch('')
+    }
+    setShowQualificationDropdown(false)
+  }
+
+  // Display label for the current qualification value
+  const qualificationDisplayValue = (() => {
+    const val = formData.qualification as string
+    if (!val) return ''
+    if (val === 'other') return formData.qualificationOther as string || ''
+    const match = QUALIFICATION_OPTIONS.find(o => o.value === val)
+    return match ? match.label : val
+  })()
 
   // Filter universities based on search
   const filteredUniversities = US_UNIVERSITIES.filter(uni =>
@@ -893,22 +937,53 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <div>
+        <div className="relative">
           <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
-          <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field" required>
-            <option value="">Select</option>
-            {/* Show legacy value as first option if it doesn't match standard options */}
-            {(formData.qualification as string) && !isValueInOptions(formData.qualification as string, QUALIFICATION_OPTIONS) && (
-              <option value={formData.qualification as string}>
-                {formData.qualification as string} (Current)
-              </option>
-            )}
-            {QUALIFICATION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          {(formData.qualification as string) === 'other' && (
-            <input type="text" name="qualificationOther" value={formData.qualificationOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify qualification" />
+          <input
+            type="text"
+            value={qualificationSearch || qualificationDisplayValue}
+            onChange={(e) => {
+              setQualificationSearch(e.target.value)
+              setShowQualificationDropdown(true)
+            }}
+            onFocus={() => setShowQualificationDropdown(true)}
+            onBlur={() => {
+              setTimeout(handleQualificationBlur, 200)
+            }}
+            className="input-field"
+            placeholder="Type to search degrees..."
+            required
+          />
+          {showQualificationDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+              {filteredQualifications.length > 0 ? (
+                filteredQualifications.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleQualificationSelect(opt)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      opt.value === 'other' ? 'font-medium text-primary-600 border-t border-gray-200' : ''
+                    } ${(formData.qualification as string) === opt.value ? 'bg-primary-50 font-medium' : ''}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No matches found. Click outside to use &quot;{qualificationSearch}&quot; as entered.
+                </div>
+              )}
+            </div>
+          )}
+          {showQualificationDropdown && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={handleQualificationBlur}
+            />
+          )}
+          {(formData.qualification as string) === 'other' && (formData.qualificationOther as string) && (
+            <p className="text-xs text-gray-500 mt-1">Custom entry: {formData.qualificationOther as string}</p>
           )}
         </div>
         <div className="relative">
