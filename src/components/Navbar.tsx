@@ -5,10 +5,8 @@ import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2, Edit, Bell } from 'lucide-react'
+import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2, Edit } from 'lucide-react'
 import DeleteProfileModal from './DeleteProfileModal'
-import NotificationBell from './NotificationBell'
-import { isSidebarPage } from './UserSidebar'
 
 export function Navbar() {
   const { data: session, status } = useSession()
@@ -76,8 +74,8 @@ export function Navbar() {
     }
   }, [session, viewAsUser])
 
-  // Don't show navbar on admin pages (but not /admin-messages which is user-facing)
-  if (pathname?.startsWith('/admin/') || pathname === '/admin') {
+  // Don't show navbar on admin pages
+  if (pathname?.startsWith('/admin')) {
     return null
   }
 
@@ -88,7 +86,6 @@ export function Navbar() {
   }
 
   const isAdminViewMode = !!viewAsUser
-  const onSidebarPage = isSidebarPage(pathname) && (!!session || isAdminViewMode)
 
   return (
     <nav className="bg-primary-600 shadow-md sticky top-0 z-50">
@@ -134,8 +131,7 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Show app nav links only when NOT on sidebar pages (sidebar handles these) */}
-            {!onSidebarPage && (session || isAdminViewMode) && (
+            {(session || isAdminViewMode) && (
               <>
                 <Link href={buildUrl('/matches')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   My Matches
@@ -146,15 +142,13 @@ export function Navbar() {
                 <Link href={buildUrl('/profile')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                   Edit Profile
                 </Link>
-                <Link href="/get-verified" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                  Get Verified
-                </Link>
               </>
             )}
-            {/* Always show Blog, About, Contact, Feedback in the header */}
-            <Link href="/blog" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-              Blog
-            </Link>
+            {(session || isAdminViewMode) && (
+              <Link href="/get-verified" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+                Get Verified
+              </Link>
+            )}
             <Link href="/about" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               About
             </Link>
@@ -165,11 +159,6 @@ export function Navbar() {
               <Link href="/feedback" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                 Feedback
               </Link>
-            )}
-
-            {/* Show notification bell only when NOT on sidebar pages */}
-            {!onSidebarPage && (session || isAdminViewMode) && (
-              <NotificationBell />
             )}
 
             {status === 'loading' && !isAdminViewMode ? (
@@ -200,54 +189,49 @@ export function Navbar() {
 
                 {isProfileMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg py-1.5 border border-gray-100">
-                    {/* Show full menu on non-sidebar pages, minimal on sidebar pages */}
-                    {!onSidebarPage && (
-                      <>
-                        <Link
-                          href={buildUrl('/dashboard')}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          Dashboard
-                        </Link>
-                        <Link
-                          href={buildUrl('/profile')}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          <Settings className="h-4 w-4 mr-2" />
-                          My Profile
-                        </Link>
-                        <Link
-                          href={buildUrl('/matches')}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          <Heart className="h-4 w-4 mr-2" />
-                          My Matches
-                        </Link>
-                        <Link
-                          href={buildUrl('/connections')}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          <Users className="h-4 w-4 mr-2" />
-                          Connections
-                        </Link>
-                        <Link
-                          href={buildUrl('/messages')}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Messages
-                        </Link>
-                      </>
-                    )}
+                    <Link
+                      href={buildUrl('/dashboard')}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Link>
+                    <Link
+                      href={buildUrl('/profile')}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Link>
+                    <Link
+                      href={buildUrl('/matches')}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <Heart className="h-4 w-4 mr-2" />
+                      My Matches
+                    </Link>
+                    <Link
+                      href={buildUrl('/connections')}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Connections
+                    </Link>
+                    <Link
+                      href={buildUrl('/messages')}
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Messages
+                    </Link>
                     {!isAdminViewMode && (
                       <>
-                        {!onSidebarPage && <hr className="my-1.5 border-gray-100" />}
+                        <hr className="my-1.5 border-gray-100" />
                         <button
                           onClick={() => {
                             setIsProfileMenuOpen(false)
@@ -293,8 +277,7 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 py-3 space-y-1">
-            {/* App nav links only when NOT on sidebar pages */}
-            {!onSidebarPage && (session || isAdminViewMode) && (
+            {(session || isAdminViewMode) && (
               <>
                 <Link
                   href={buildUrl('/matches')}
@@ -317,23 +300,17 @@ export function Navbar() {
                 >
                   Edit Profile
                 </Link>
-                <Link
-                  href="/get-verified"
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Get Verified
-                </Link>
               </>
             )}
-            {/* Always show Blog, About, Contact, Feedback */}
-            <Link
-              href="/blog"
-              className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Blog
-            </Link>
+            {(session || isAdminViewMode) && (
+              <Link
+                href="/get-verified"
+                className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Get Verified
+              </Link>
+            )}
             <Link
               href="/about"
               className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
@@ -358,7 +335,7 @@ export function Navbar() {
               </Link>
             )}
 
-            {!onSidebarPage && (session || isAdminViewMode) ? (
+            {(session || isAdminViewMode) ? (
               <>
                 <hr className="my-2 border-gray-100" />
                 <Link
@@ -395,7 +372,7 @@ export function Navbar() {
                   </>
                 )}
               </>
-            ) : !onSidebarPage ? (
+            ) : (
               <>
                 <hr className="my-2 border-gray-100" />
                 <Link
@@ -406,7 +383,7 @@ export function Navbar() {
                   Sign In
                 </Link>
               </>
-            ) : null}
+            )}
           </div>
         </div>
       )}

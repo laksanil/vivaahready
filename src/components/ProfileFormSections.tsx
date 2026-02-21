@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Phone, Shield, CheckCircle, ChevronDown } from 'lucide-react'
-import { HEIGHT_OPTIONS, heightToInches, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES, EDUCATION_LEVEL_OPTIONS, FIELD_OF_STUDY_OPTIONS, PREF_EDUCATION_LEVEL_OPTIONS, PREF_FIELD_OPTIONS } from '@/lib/constants'
+import { HEIGHT_OPTIONS, heightToInches, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -851,8 +851,52 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
 }
 
 export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [qualificationSearch, setQualificationSearch] = useState('')
+  const [showQualificationDropdown, setShowQualificationDropdown] = useState(false)
   const [universitySearch, setUniversitySearch] = useState('')
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false)
+
+  // Filter qualifications based on search
+  const filteredQualifications = QUALIFICATION_OPTIONS.filter(opt =>
+    opt.label.toLowerCase().includes(qualificationSearch.toLowerCase()) ||
+    opt.value.toLowerCase().includes(qualificationSearch.toLowerCase())
+  )
+
+  const handleQualificationSelect = (opt: { value: string; label: string }) => {
+    if (opt.value === 'other') {
+      setFormData(prev => ({ ...prev, qualification: 'other' }))
+    } else {
+      setFormData(prev => ({ ...prev, qualification: opt.value, qualificationOther: '' }))
+    }
+    setQualificationSearch('')
+    setShowQualificationDropdown(false)
+  }
+
+  // When user types a degree and clicks away without selecting from dropdown,
+  // accept the typed text as a custom entry
+  const handleQualificationBlur = () => {
+    if (qualificationSearch.trim() && (formData.qualification as string) !== qualificationSearch.trim()) {
+      const typed = qualificationSearch.trim()
+      const exactMatch = QUALIFICATION_OPTIONS.find(o => o.label.toLowerCase() === typed.toLowerCase())
+      if (exactMatch) {
+        setFormData(prev => ({ ...prev, qualification: exactMatch.value, qualificationOther: '' }))
+      } else {
+        // Save as 'other' with the typed text as qualificationOther
+        setFormData(prev => ({ ...prev, qualification: 'other', qualificationOther: typed }))
+      }
+      setQualificationSearch('')
+    }
+    setShowQualificationDropdown(false)
+  }
+
+  // Display label for the current qualification value
+  const qualificationDisplayValue = (() => {
+    const val = formData.qualification as string
+    if (!val) return ''
+    if (val === 'other') return formData.qualificationOther as string || ''
+    const match = QUALIFICATION_OPTIONS.find(o => o.value === val)
+    return match ? match.label : val
+  })()
 
   // Filter universities based on search
   const filteredUniversities = US_UNIVERSITIES.filter(uni =>
@@ -892,39 +936,55 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
 
   return (
     <>
-      {/* Education Level + Field of Study + Major (3-field system) */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Education Level <span className="text-red-500">*</span></label>
-          <select name="educationLevel" value={formData.educationLevel as string || ''} onChange={handleChange} className="input-field" required>
-            <option value="">Select</option>
-            {EDUCATION_LEVEL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="form-label">Field of Study <span className="text-red-500">*</span></label>
-          <select name="fieldOfStudy" value={formData.fieldOfStudy as string || ''} onChange={handleChange} className="input-field" required>
-            <option value="">Select</option>
-            {FIELD_OF_STUDY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Major / Specialization</label>
+        <div className="relative">
+          <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
           <input
             type="text"
-            name="major"
-            value={formData.major as string || ''}
-            onChange={handleChange}
+            value={qualificationSearch || qualificationDisplayValue}
+            onChange={(e) => {
+              setQualificationSearch(e.target.value)
+              setShowQualificationDropdown(true)
+            }}
+            onFocus={() => setShowQualificationDropdown(true)}
+            onBlur={() => {
+              setTimeout(handleQualificationBlur, 200)
+            }}
             className="input-field"
-            placeholder="e.g., School Psychology, Data Science"
+            placeholder="Type to search degrees..."
+            required
           />
-          <p className="text-xs text-gray-500 mt-1">Optional: Your specific area of study</p>
+          {showQualificationDropdown && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+              {filteredQualifications.length > 0 ? (
+                filteredQualifications.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleQualificationSelect(opt)}
+                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                      opt.value === 'other' ? 'font-medium text-primary-600 border-t border-gray-200' : ''
+                    } ${(formData.qualification as string) === opt.value ? 'bg-primary-50 font-medium' : ''}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-2 text-sm text-gray-500">
+                  No matches found. Click outside to use &quot;{qualificationSearch}&quot; as entered.
+                </div>
+              )}
+            </div>
+          )}
+          {showQualificationDropdown && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={handleQualificationBlur}
+            />
+          )}
+          {(formData.qualification as string) === 'other' && (formData.qualificationOther as string) && (
+            <p className="text-xs text-gray-500 mt-1">Custom entry: {formData.qualificationOther as string}</p>
+          )}
         </div>
         <div className="relative">
           <label className="form-label">College/University <span className="text-red-500">*</span></label>
@@ -2035,7 +2095,6 @@ function DealBreakerToggle({
       'prefCommunity': ['prefCommunity'],
       'prefRelocation': ['prefRelocation'],
       'prefEducation': ['prefQualification'],
-      'prefFieldOfStudy': ['prefFieldOfStudy'],
       'prefIncome': ['prefIncome'],
       'prefGotra': ['prefGotra'],
     }
@@ -2245,7 +2304,6 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
     'prefGrewUpIn': 'prefGrewUpInIsDealbreaker',
     'prefRelocation': 'prefRelocationIsDealbreaker',
     'prefQualification': 'prefEducationIsDealbreaker',
-    'prefFieldOfStudy': 'prefFieldOfStudyIsDealbreaker',
     'prefIncome': 'prefIncomeIsDealbreaker',
     'prefFamilyValues': 'prefFamilyValuesIsDealbreaker',
     'prefFamilyLocationCountry': 'prefFamilyLocationCountryIsDealbreaker',
@@ -2840,24 +2898,12 @@ export function PreferencesUnifiedSection({ formData, handleChange, setFormData,
               </div>
               <select name="prefQualification" value={formData.prefQualification as string || ''} onChange={handlePreferenceChange} className="input-field" required>
                 <option value="">Select</option>
-                {PREF_EDUCATION_LEVEL_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                {PREF_EDUCATION_OPTIONS.filter(opt => opt.value !== 'doesnt_matter').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
               </select>
               {!(formData.prefQualification as string) && (
                 <p className="text-xs text-red-500 mt-1">Minimum education preference is required.</p>
               )}
             </div>
-            <div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                <label className="form-label mb-0">Preferred Field</label>
-                <DealBreakerToggle field="prefFieldOfStudy" formData={formData} setFormData={setFormData} />
-              </div>
-              <select name="prefFieldOfStudy" value={formData.prefFieldOfStudy as string || ''} onChange={handlePreferenceChange} className="input-field">
-                <option value="">Any field</option>
-                {PREF_FIELD_OPTIONS.filter(opt => opt.value !== 'any').map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
                 <label className="form-label mb-0">Minimum Income</label>

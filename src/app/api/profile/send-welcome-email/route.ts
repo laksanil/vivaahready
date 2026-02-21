@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/email'
-import { storeNotification } from '@/lib/notifications'
 
 export async function POST(request: Request) {
   try {
@@ -28,11 +27,6 @@ export async function POST(request: Request) {
 
     // Send welcome email
     await sendWelcomeEmail(profile.user.email, profile.user.name || profile.firstName || 'there')
-    await storeNotification('welcome', session.user.id, {
-      name: profile.user.name || profile.firstName || 'there',
-    }, {
-      deliveryModes: ['email'],
-    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -7,13 +7,7 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
-import {
-  getEffectiveOccupation,
-  getEffectiveUniversity,
-  isNonWorkingOccupation,
-  normalizeLifestyleOtherSelections,
-  validateBasicsStep,
-} from '@/lib/profileFlowValidation'
+import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -68,13 +62,9 @@ const profileSchema = z.object({
 
   // Education & Career
   qualification: z.string().optional(),
-  educationLevel: z.string().optional(),
-  fieldOfStudy: z.string().optional(),
-  major: z.string().optional(),
   university: z.string().optional(),
   universityOther: z.string().optional(),
   occupation: z.string().optional(),
-  occupationOther: z.string().optional(),
   employerName: z.string().optional(),
   annualIncome: z.string().optional(),
   educationCareerDetails: z.string().optional(),
@@ -132,10 +122,7 @@ const profileSchema = z.object({
   allergiesOrMedical: z.string().optional(),
   aboutMe: z.string().optional(),
   referralSource: z.string().optional(),
-  referralSourceOther: z.string().optional(),
-  referralOrganization: z.string().optional(),
   referredBy: z.string().optional(),
-  _isPartialSave: z.boolean().optional(),
 
   // Partner Preferences
   prefAgeDiff: z.string().optional(),
@@ -206,31 +193,9 @@ const profileSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const parsedData = normalizeSameAsMinePreferences(profileSchema.parse(body))
-    const lifestyleOtherNormalization = normalizeLifestyleOtherSelections(parsedData)
-    if (lifestyleOtherNormalization.errors.length > 0) {
-      return NextResponse.json(
-        { error: lifestyleOtherNormalization.errors[0] },
-        { status: 400 }
-      )
-    }
-
-    const data = {
-      ...parsedData,
-      ...lifestyleOtherNormalization.normalizedValues,
-    }
-
-    const basicsValidation = validateBasicsStep(data)
-    if (!basicsValidation.isValid) {
-      return NextResponse.json(
-        { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
-        { status: 400 }
-      )
-    }
-
+    const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
     const normalizeText = (value: string | undefined) => value?.trim() || ''
     const effectiveUniversity = getEffectiveUniversity(data.university, data.universityOther)
-    const effectiveOccupation = getEffectiveOccupation(data.occupation, data.occupationOther)
     const employerName = normalizeText(data.employerName)
 
     if (data.qualification && !effectiveUniversity) {
@@ -240,7 +205,7 @@ export async function POST(request: Request) {
       )
     }
 
-    if (effectiveOccupation && !isNonWorkingOccupation(effectiveOccupation) && !employerName) {
+    if (data.occupation && !isNonWorkingOccupation(data.occupation) && !employerName) {
       return NextResponse.json(
         { error: 'Company/Organization is required for working occupations.' },
         { status: 400 }
@@ -388,17 +353,14 @@ export async function POST(request: Request) {
           : data.familyLocationCountry || data.familyLocation,
         motherTongue: data.motherTongue,
         languagesKnown: data.languagesKnown,
-        linkedinProfile: data.linkedinProfile || null,
+        linkedinProfile: data.linkedinProfile === 'no_linkedin' ? null : data.linkedinProfile,
         instagram: data.instagram,
         facebook: data.facebook,
 
         // Education & Career
-        qualification: data.qualification || data.educationLevel,
-        educationLevel: data.educationLevel,
-        fieldOfStudy: data.fieldOfStudy,
-        major: data.major,
+        qualification: data.qualification,
         university: effectiveUniversity || null,
-        occupation: effectiveOccupation || null,
+        occupation: data.occupation,
         employerName: employerName || null,
         annualIncome: data.annualIncome,
         educationCareerDetails: data.educationCareerDetails,
