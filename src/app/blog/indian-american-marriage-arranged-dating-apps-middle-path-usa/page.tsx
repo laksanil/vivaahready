@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
   description:
-    'Looking for Indian matrimony in the USA? Whether you are in the Bay Area, New York, Chicago, Dallas, Austin, or Houston, VivaahReady founder Lakshmi explains why Indian Americans feel stuck between arranged marriage and dating apps and what a better, commitment-focused process looks like.',
+    'Indian Americans are not confused about marriage. They are confused about the process. VivaahReady founder Lakshmi explores the middle path between arranged marriage and dating apps.',
   keywords: [
     'Indian matrimony USA',
     'Indian American marriage',
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
     description:
-      'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like.',
+      'Indian Americans are not confused about marriage. They are confused about the process. VivaahReady founder Lakshmi explores the middle path between arranged marriage and dating apps.',
     url: 'https://vivaahready.com/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa',
     type: 'article',
     publishedTime: '2026-02-19T00:00:00Z',
@@ -41,7 +41,7 @@ const jsonLd = {
   '@type': 'BlogPosting',
   headline: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
   description:
-    'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like.',
+    'Indian Americans are not confused about marriage. They are confused about the process. VivaahReady founder Lakshmi explores the middle path between arranged marriage and dating apps.',
   datePublished: '2026-02-19T00:00:00Z',
   author: {
     '@type': 'Person',

@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
   description:
-    'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck. Why many Indian Americans feel trapped between dating apps and arranged marriage.',
+    'Why Indian Americans feel caught between dating apps and arranged marriage. Real stories from families across the Bay Area, Dallas, New York, and Chicago.',
   keywords: [
     'Indian American dating',
     'arranged marriage vs dating apps',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
     description:
-      'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck.',
+      'Why Indian Americans feel caught between dating apps and arranged marriage. Real stories from families across the Bay Area, Dallas, New York, and Chicago.',
     url: 'https://vivaahready.com/blog/caught-between-dating-apps-and-arranged-marriage',
     type: 'article',
     publishedTime: '2026-02-16T00:00:00Z',
@@ -34,7 +34,7 @@ const jsonLd = {
   '@type': 'BlogPosting',
   headline: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
   description:
-    'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck.',
+    'Why Indian Americans feel caught between dating apps and arranged marriage. Real stories from families across the Bay Area, Dallas, New York, and Chicago.',
   datePublished: '2026-02-16T00:00:00Z',
   author: {
     '@type': 'Person',
