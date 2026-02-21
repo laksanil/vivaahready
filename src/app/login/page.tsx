@@ -82,35 +82,14 @@ function LoginForm() {
   const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false)
   const [autoSignInLoading, setAutoSignInLoading] = useState(false)
 
-  const fetchAuthenticatedProfileStatus = useCallback(async () => {
-    const maxAttempts = 20
-    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      try {
-        const profileRes = await fetch('/api/user/profile-status', { cache: 'no-store' })
-        const profileDataResult = await profileRes.json()
-        if (profileDataResult?.authenticated === true) {
-          return profileDataResult as { hasProfile: boolean; profileId?: string | null; signupStep?: number }
-        }
-      } catch {
-        // Retry until attempts are exhausted.
-      }
-      await new Promise((resolve) => setTimeout(resolve, 200))
-    }
-    return null
-  }, [])
-
   const routeAfterCredentialLogin = useCallback(async (
     loginEmail: string,
     nameFallback: { firstName: string; lastName: string },
     profileData: StoredProfileData | null
   ) => {
     try {
-      const profileDataResult = await fetchAuthenticatedProfileStatus()
-
-      if (!profileDataResult) {
-        setError('Sign in is taking longer than expected. Please try again.')
-        return
-      }
+      const profileRes = await fetch('/api/user/profile-status')
+      const profileDataResult = await profileRes.json()
 
       if (profileDataResult.hasProfile) {
         router.push(callbackUrl)
@@ -146,7 +125,7 @@ function LoginForm() {
     } finally {
       router.refresh()
     }
-  }, [router, callbackUrl, fetchAuthenticatedProfileStatus])
+  }, [router, callbackUrl])
 
   // Redirect authenticated users away from login to avoid loops
   useEffect(() => {
@@ -154,8 +133,8 @@ function LoginForm() {
     if (status !== 'authenticated') return
     const redirectAuthed = async () => {
       try {
-        const profileData = await fetchAuthenticatedProfileStatus()
-        if (!profileData) return
+        const profileRes = await fetch('/api/user/profile-status')
+        const profileData = await profileRes.json()
         if (profileData.hasProfile) {
           router.push(callbackUrl)
         } else {
@@ -172,7 +151,7 @@ function LoginForm() {
       }
     }
     redirectAuthed()
-  }, [status, router, callbackUrl, fromGoogle, loading, autoSignInLoading, fetchAuthenticatedProfileStatus])
+  }, [status, router, callbackUrl, fromGoogle, loading, autoSignInLoading])
 
   // Auto-signin effect for users coming from /register
   useEffect(() => {

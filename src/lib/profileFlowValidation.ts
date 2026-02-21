@@ -99,169 +99,15 @@ export function getEffectiveUniversity(university: unknown, universityOther?: un
   return primary || manual
 }
 
-export function getEffectiveOccupation(occupation: unknown, occupationOther?: unknown): string {
-  const primary = normalizeString(occupation)
-  const manual = normalizeString(occupationOther)
-
-  if (toSearchable(primary) === 'other') {
-    return manual
-  }
-
-  return primary || manual
-}
-
-const isLinkedInValid = (value: unknown): boolean => {
-  const linkedin = normalizeString(value)
-  if (!linkedin) return false
-  if (linkedin === 'no_linkedin') return true
-  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-  return linkedinRegex.test(linkedin)
-}
-
-const OTHER_OPTION = 'other'
-
-const isOtherValue = (value: string): boolean => {
-  return toSearchable(value) === OTHER_OPTION
-}
-
-type LifestyleFieldKey = 'hobbies' | 'fitness' | 'interests'
-
-const LIFESTYLE_OTHER_FIELD_MAP: Record<LifestyleFieldKey, keyof UnknownRecord> = {
-  hobbies: 'hobbiesOther',
-  fitness: 'fitnessOther',
-  interests: 'interestsOther',
-}
-
-const LIFESTYLE_LABEL_MAP: Record<LifestyleFieldKey, string> = {
-  hobbies: 'hobbies',
-  fitness: 'fitness activities',
-  interests: 'interests',
-}
-
-interface LifestyleOtherNormalizationResult {
-  normalizedValues: Record<LifestyleFieldKey, string>
-  errors: string[]
-}
-
-export function normalizeLifestyleOtherSelections(data: UnknownRecord): LifestyleOtherNormalizationResult {
-  const errors: string[] = []
-  const normalizedValues: Record<LifestyleFieldKey, string> = {
-    hobbies: '',
-    fitness: '',
-    interests: '',
-  }
-
-  for (const field of Object.keys(LIFESTYLE_OTHER_FIELD_MAP) as LifestyleFieldKey[]) {
-    const values = parseCsvList(data[field])
-    const otherTextField = LIFESTYLE_OTHER_FIELD_MAP[field]
-    const otherValues = parseCsvList(data[otherTextField])
-    const hasOther = values.some(isOtherValue)
-
-    if (hasOther && otherValues.length === 0) {
-      errors.push(`Please specify your other ${LIFESTYLE_LABEL_MAP[field]}.`)
-    }
-
-    const baseValues = values.filter(value => !isOtherValue(value))
-    const mergedValues = hasOther
-      ? dedupeCaseInsensitive([...baseValues, ...otherValues])
-      : dedupeCaseInsensitive(baseValues)
-
-    normalizedValues[field] = mergedValues.join(', ')
-  }
-
-  return {
-    normalizedValues,
-    errors,
-  }
-}
-
-export function validateBasicsStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
-  const errors: string[] = []
-
-  const firstName = normalizeString(data.firstName)
-  const lastName = normalizeString(data.lastName)
-  const createdBy = normalizeString(data.createdBy)
-  const gender = normalizeString(data.gender)
-  const dateOfBirth = normalizeString(data.dateOfBirth)
-  const age = normalizeString(data.age)
-  const height = normalizeString(data.height)
-  const maritalStatus = normalizeString(data.maritalStatus)
-  const motherTongue = normalizeString(data.motherTongue)
-
-  if (!firstName) errors.push('First name is required.')
-  if (!lastName) errors.push('Last name is required.')
-  if (!createdBy) errors.push('Profile created by is required.')
-  if (!gender) errors.push('Gender is required.')
-  if (!dateOfBirth && !age) errors.push('Date of birth or age is required.')
-  if (!height) errors.push('Height is required.')
-  if (!maritalStatus) errors.push('Marital status is required.')
-  if (!motherTongue) errors.push('Mother tongue is required.')
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  }
-}
-
-export function validateReligionStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
-  const errors: string[] = []
-  const religion = normalizeString(data.religion)
-  const community = normalizeString(data.community)
-
-  if (!religion) errors.push('Religion is required.')
-  if (!community) errors.push('Community is required.')
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  }
-}
-
-export function validateFamilyStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
-  const errors: string[] = []
-  const familyLocation = normalizeString(data.familyLocation)
-  const familyValues = normalizeString(data.familyValues)
-
-  if (!familyLocation) errors.push('Family location is required.')
-  if (!familyValues) errors.push('Family values are required.')
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  }
-}
-
-export function validateLifestyleStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
-  const errors: string[] = []
-  const dietaryPreference = normalizeString(data.dietaryPreference)
-  const smoking = normalizeString(data.smoking)
-  const drinking = normalizeString(data.drinking)
-  const pets = normalizeString(data.pets)
-  const lifestyleOtherValidation = normalizeLifestyleOtherSelections(data)
-
-  if (!dietaryPreference) errors.push('Diet is required.')
-  if (!smoking) errors.push('Smoking preference is required.')
-  if (!drinking) errors.push('Drinking preference is required.')
-  if (!pets) errors.push('Pets preference is required.')
-  errors.push(...lifestyleOtherValidation.errors)
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  }
-}
-
 export function validateLocationEducationStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
   const country = normalizeString(data.country)
   const grewUpIn = normalizeString(data.grewUpIn)
   const citizenship = normalizeString(data.citizenship)
   const zipCode = normalizeString(data.zipCode)
-  const educationLevel = normalizeString(data.educationLevel)
-  const fieldOfStudy = normalizeString(data.fieldOfStudy)
   const qualification = normalizeString(data.qualification)
   const university = getEffectiveUniversity(data.university, data.universityOther)
-  const occupation = getEffectiveOccupation(data.occupation, data.occupationOther)
+  const occupation = normalizeString(data.occupation)
   const employerName = normalizeString(data.employerName)
   const annualIncome = normalizeString(data.annualIncome)
   const openToRelocation = normalizeString(data.openToRelocation)
@@ -274,9 +120,7 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
     errors.push('ZIP code is required for USA profiles.')
   }
 
-  // New 3-field education: require educationLevel + fieldOfStudy (fallback to old qualification for existing profiles)
-  if (!educationLevel && !qualification) errors.push('Education level is required.')
-  if (!fieldOfStudy && !qualification) errors.push('Field of study is required.')
+  if (!qualification) errors.push('Highest qualification is required.')
   if (!university) errors.push('College/University is required.')
   if (!occupation) errors.push('Occupation is required.')
   if (!annualIncome) errors.push('Annual income is required.')
@@ -294,19 +138,7 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
 
 export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
-  const aboutMe = normalizeString(data.aboutMe)
-  const linkedinProfile = normalizeString(data.linkedinProfile)
   const referralSource = normalizeString(data.referralSource)
-
-  if (!aboutMe) {
-    errors.push('About Me is required.')
-  }
-
-  if (!linkedinProfile) {
-    errors.push('LinkedIn profile is required.')
-  } else if (!isLinkedInValid(linkedinProfile)) {
-    errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn".')
-  }
 
   if (!referralSource) {
     errors.push('Referral source is required.')

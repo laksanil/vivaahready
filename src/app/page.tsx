@@ -5,7 +5,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProfilePhoto from '@/components/ProfilePhoto'
 import FindMatchButton from '@/components/FindMatchButton'
-import BotpressChat from '@/components/BotpressChat'
 
 // JSON-LD Structured Data for SEO
 const jsonLd = {
@@ -556,9 +555,6 @@ export default async function HomePage() {
         </div>
       </section>
     </div>
-
-    {/* Botpress AI Chatbot — answers visitor questions about VivaahReady */}
-    <BotpressChat />
     </>
   )
 }

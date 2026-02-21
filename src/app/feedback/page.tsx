@@ -559,8 +559,8 @@ function FeedbackForm() {
   const stepLabel = PRIMARY_ISSUES.find((i) => i.value === primaryIssue)?.label || ''
 
   return (
-    <div className="min-h-[60vh] py-8 sm:py-12 px-4 md:px-8 xl:px-10">
-      <div className="w-full">
+    <div className="min-h-[60vh] py-8 sm:py-12 px-4">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="h-14 w-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
