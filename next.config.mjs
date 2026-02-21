@@ -1,5 +1,10 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 /** @type {import('next').NextConfig} */
 const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === 'true'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const nextConfig = {
   // Keep E2E dev-server artifacts isolated from local dev/build output.
@@ -19,6 +24,12 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         encoding: false,
+      }
+    }
+    if (isPlaywrightTest) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@botpress/webchat': path.resolve(__dirname, 'src/lib/e2e/botpressWebchatStub.tsx'),
       }
     }
     return config

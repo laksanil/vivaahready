@@ -45,6 +45,8 @@ export async function GET(request: Request) {
       where: {
         gender: myProfile.gender === 'male' ? 'female' : 'male',
         isActive: true,
+        isSuspended: false,
+        approvalStatus: 'approved',
         userId: { not: targetUserId },
       },
       include: {
@@ -194,8 +196,10 @@ export async function GET(request: Request) {
     )
 
     // Mutual matches: either both parties sent interest OR any interest was accepted
+    // Use candidates (not matchingProfiles) because accepted connections should show
+    // regardless of preference matching — once connected, preferences don't matter
     const mutualMatches = await Promise.all(
-      matchingProfiles
+      candidates
         .filter(match => {
           const bothSentInterest = sentToUserIds.has(match.userId) && receivedFromUserIds.has(match.userId)
           const myInterestAccepted = acceptedSentUserIds.has(match.userId)
@@ -239,12 +243,15 @@ export async function GET(request: Request) {
     }
 
     // Determine active referral boosts (3+ referrals, within 30 days of activation)
+    // and engagement boosts (redeemed via coins, within 7 days)
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
     const activeBoostedUserIds = new Set<string>()
     const profilesToActivateBoost: string[] = []
 
     for (const match of allCandidates) {
+      // Referral boost (30-day window)
       const count = referralCountMap.get(match.referralCode || '') || 0
       if (count >= 3) {
         if (!match.referralBoostStart) {
@@ -253,6 +260,11 @@ export async function GET(request: Request) {
         } else if (new Date(match.referralBoostStart) > thirtyDaysAgo) {
           activeBoostedUserIds.add(match.userId)
         }
+      }
+
+      // Engagement boost (7-day window)
+      if (match.engagementBoostStart && new Date(match.engagementBoostStart) > sevenDaysAgo) {
+        activeBoostedUserIds.add(match.userId)
       }
     }
 

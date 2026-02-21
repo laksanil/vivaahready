@@ -32,6 +32,10 @@ export interface ProfileData {
   country: string | null
   occupation: string | null
   qualification: string | null
+  educationLevel?: string | null
+  fieldOfStudy?: string | null
+  major?: string | null
+  university?: string | null
   caste: string | null
   community: string | null
   subCommunity: string | null

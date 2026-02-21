@@ -67,6 +67,8 @@ export async function getMatchResultsForUser(
     where: {
       gender: myProfile.gender === 'male' ? 'female' : 'male',
       isActive: true,
+      isSuspended: false,
+      approvalStatus: 'approved',
       userId: { not: userId },
     },
     include: {
@@ -230,12 +232,15 @@ export async function getMatchResultsForUser(
   }
 
   // Determine active referral boosts (3+ referrals, within 30 days of activation)
+  // and engagement boosts (redeemed via coins, within 7 days)
   const now = new Date()
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const activeBoostedUserIds = new Set<string>()
   const profilesToActivateBoost: string[] = []
 
   for (const match of allCandidates) {
+    // Referral boost (30-day window)
     const count = referralCountMap.get(match.referralCode || '') || 0
     if (count >= 3) {
       if (!match.referralBoostStart) {
@@ -244,6 +249,11 @@ export async function getMatchResultsForUser(
       } else if (new Date(match.referralBoostStart) > thirtyDaysAgo) {
         activeBoostedUserIds.add(match.userId)
       }
+    }
+
+    // Engagement boost (7-day window)
+    if (match.engagementBoostStart && new Date(match.engagementBoostStart) > sevenDaysAgo) {
+      activeBoostedUserIds.add(match.userId)
     }
   }
 

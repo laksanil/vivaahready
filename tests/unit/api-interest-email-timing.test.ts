@@ -47,6 +47,11 @@ vi.mock('@/lib/prisma', () => ({
   prisma: prismaMock,
 }))
 
+vi.mock('@/lib/engagementPoints', () => ({
+  awardInterestPoints: vi.fn().mockResolvedValue({ awarded: true }),
+  awardResponsePoints: vi.fn().mockResolvedValue({ awarded: true }),
+}))
+
 function buildRequest(method: 'POST' | 'PATCH', body: Record<string, unknown>) {
   return new Request('http://localhost/api/interest', {
     method,

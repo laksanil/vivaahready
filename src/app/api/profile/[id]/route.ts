@@ -6,11 +6,17 @@ import { getTargetUserId } from '@/lib/admin'
 import { Prisma } from '@prisma/client'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
+  getEffectiveOccupation,
   validateAboutMeStep,
+  validateBasicsStep,
+  validateFamilyStep,
   getEffectiveUniversity,
+  normalizeLifestyleOtherSelections,
+  validateLifestyleStep,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
+  validateReligionStep,
 } from '@/lib/profileFlowValidation'
 
 export async function GET(
@@ -100,7 +106,15 @@ export async function GET(
     }
 
     // Check interest status if user is logged in
-    let interestStatus = { sentByMe: false, receivedFromThem: false, mutual: false }
+    let interestStatus = {
+      sentByMe: false,
+      receivedFromThem: false,
+      mutual: false,
+      sentInterestId: null as string | null,
+      receivedInterestId: null as string | null,
+      sentStatus: null as string | null,
+      receivedStatus: null as string | null,
+    }
 
     const viewerUserId = targetUser?.userId
     if (viewerUserId && viewerUserId !== profile.userId) {
@@ -130,6 +144,10 @@ export async function GET(
         sentByMe: !!sentInterest,
         receivedFromThem: !!receivedInterest,
         mutual: !!isMutual,
+        sentInterestId: sentInterest?.id || null,
+        receivedInterestId: receivedInterest?.id || null,
+        sentStatus: sentInterest?.status || null,
+        receivedStatus: receivedInterest?.status || null,
       }
     }
 
@@ -175,17 +193,42 @@ export async function PUT(
       select: {
         id: true,
         userId: true,
+        firstName: true,
+        lastName: true,
+        createdBy: true,
+        gender: true,
+        dateOfBirth: true,
+        age: true,
+        height: true,
+        maritalStatus: true,
+        motherTongue: true,
         country: true,
         grewUpIn: true,
         citizenship: true,
         zipCode: true,
         qualification: true,
+        educationLevel: true,
+        fieldOfStudy: true,
+        major: true,
         university: true,
         user: { select: { id: true, email: true, phone: true } },
         occupation: true,
         employerName: true,
         annualIncome: true,
         openToRelocation: true,
+        religion: true,
+        community: true,
+        familyLocation: true,
+        familyValues: true,
+        dietaryPreference: true,
+        smoking: true,
+        drinking: true,
+        hobbies: true,
+        fitness: true,
+        interests: true,
+        pets: true,
+        aboutMe: true,
+        linkedinProfile: true,
         prefAgeMin: true,
         prefAgeMax: true,
         prefHeightMin: true,
@@ -251,11 +294,20 @@ export async function PUT(
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
+    if (body.educationLevel !== undefined) {
+      updateData.educationLevel = body.educationLevel
+      if (!body.qualification) updateData.qualification = body.educationLevel
+    }
+    if (body.fieldOfStudy !== undefined) updateData.fieldOfStudy = body.fieldOfStudy
+    if (body.major !== undefined) updateData.major = body.major
     if (body.university !== undefined || body.universityOther !== undefined) {
       const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
       updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
     }
-    if (body.occupation !== undefined) updateData.occupation = body.occupation
+    if (body.occupation !== undefined || body.occupationOther !== undefined) {
+      const baseOccupation = body.occupation !== undefined ? body.occupation : existingProfile.occupation
+      updateData.occupation = getEffectiveOccupation(baseOccupation, body.occupationOther)
+    }
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
@@ -292,9 +344,47 @@ export async function PUT(
     if (body.interests !== undefined) updateData.interests = body.interests
     if (body.fitness !== undefined) updateData.fitness = body.fitness
 
+    const lifestyleSelectionTouched =
+      body.hobbies !== undefined ||
+      body.hobbiesOther !== undefined ||
+      body.fitness !== undefined ||
+      body.fitnessOther !== undefined ||
+      body.interests !== undefined ||
+      body.interestsOther !== undefined
+
+    if (lifestyleSelectionTouched) {
+      const normalizedLifestyle = normalizeLifestyleOtherSelections({
+        hobbies: body.hobbies !== undefined ? body.hobbies : existingProfile.hobbies,
+        hobbiesOther: body.hobbiesOther,
+        fitness: body.fitness !== undefined ? body.fitness : existingProfile.fitness,
+        fitnessOther: body.fitnessOther,
+        interests: body.interests !== undefined ? body.interests : existingProfile.interests,
+        interestsOther: body.interestsOther,
+      })
+
+      if (normalizedLifestyle.errors.length > 0) {
+        return NextResponse.json(
+          { error: normalizedLifestyle.errors[0] },
+          { status: 400 }
+        )
+      }
+
+      if (body.hobbies !== undefined || body.hobbiesOther !== undefined) {
+        updateData.hobbies = normalizedLifestyle.normalizedValues.hobbies
+      }
+
+      if (body.fitness !== undefined || body.fitnessOther !== undefined) {
+        updateData.fitness = normalizedLifestyle.normalizedValues.fitness
+      }
+
+      if (body.interests !== undefined || body.interestsOther !== undefined) {
+        updateData.interests = normalizedLifestyle.normalizedValues.interests
+      }
+    }
+
     // About Me
     if (body.aboutMe !== undefined) updateData.aboutMe = body.aboutMe
-    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile || null
     if (body.instagram !== undefined) updateData.instagram = body.instagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
@@ -340,6 +430,8 @@ export async function PUT(
     if (body.prefRelocation !== undefined) updateData.prefRelocation = body.prefRelocation
     if (body.prefRelocationIsDealbreaker !== undefined) updateData.prefRelocationIsDealbreaker = body.prefRelocationIsDealbreaker
     if (body.prefQualification !== undefined) updateData.prefQualification = body.prefQualification
+    if (body.prefFieldOfStudy !== undefined) updateData.prefFieldOfStudy = body.prefFieldOfStudy
+    if (body.prefFieldOfStudyIsDealbreaker !== undefined) updateData.prefFieldOfStudyIsDealbreaker = body.prefFieldOfStudyIsDealbreaker
     if (body.prefEducationIsDealbreaker !== undefined) updateData.prefEducationIsDealbreaker = body.prefEducationIsDealbreaker
     if (body.prefWorkArea !== undefined) updateData.prefWorkArea = body.prefWorkArea
     if (body.prefWorkAreaIsDealbreaker !== undefined) updateData.prefWorkAreaIsDealbreaker = body.prefWorkAreaIsDealbreaker
@@ -378,17 +470,66 @@ export async function PUT(
       }
     }
 
-    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+    const mergedState: Record<string, unknown> = {
+      ...existingProfile,
+      ...updateData,
+      occupationOther: body.occupationOther,
+      hobbiesOther: body.hobbiesOther,
+      fitnessOther: body.fitnessOther,
+      interestsOther: body.interestsOther,
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 2) {
+      const basicsValidation = validateBasicsStep(mergedState)
+
+      if (!basicsValidation.isValid) {
+        return NextResponse.json(
+          { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
+          { status: 400 }
+        )
+      }
+    }
 
     if (requestedSignupStep !== undefined && requestedSignupStep >= 3) {
       const locationEducationValidation = validateLocationEducationStep({
         ...mergedState,
+        occupationOther: body.occupationOther,
         universityOther: body.universityOther,
       })
 
       if (!locationEducationValidation.isValid) {
         return NextResponse.json(
           { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 4) {
+      const religionValidation = validateReligionStep(mergedState)
+      if (!religionValidation.isValid) {
+        return NextResponse.json(
+          { error: religionValidation.errors[0] || 'Please complete all required Religion fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 5) {
+      const familyValidation = validateFamilyStep(mergedState)
+      if (!familyValidation.isValid) {
+        return NextResponse.json(
+          { error: familyValidation.errors[0] || 'Please complete all required Family fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 6) {
+      const lifestyleValidation = validateLifestyleStep(mergedState)
+      if (!lifestyleValidation.isValid) {
+        return NextResponse.json(
+          { error: lifestyleValidation.errors[0] || 'Please complete all required Lifestyle fields.' },
           { status: 400 }
         )
       }
@@ -477,7 +618,7 @@ export async function PUT(
     const updatedProfile = await prisma.profile.update({
       where: { id: profileId },
       data: updateData,
-      select: { id: true },
+      select: { id: true, userId: true },
     })
 
     return NextResponse.json({

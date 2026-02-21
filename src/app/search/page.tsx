@@ -15,9 +15,11 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  X,
 } from 'lucide-react'
 import ProfilePhoto from '@/components/ProfilePhoto'
 import { formatHeight } from '@/lib/utils'
+import { EDUCATION_LEVEL_OPTIONS, FIELD_OF_STUDY_OPTIONS, QUALIFICATION_TO_NEW_FIELDS, getEducationLevelLabel, getFieldOfStudyLabel, EDUCATION_BADGES } from '@/lib/constants'
 
 interface Profile {
   id: string
@@ -29,6 +31,10 @@ interface Profile {
   community: string | null
   subCommunity: string | null
   qualification: string | null
+  educationLevel?: string | null
+  fieldOfStudy?: string | null
+  major?: string | null
+  university?: string | null
   occupation: string | null
   dietaryPreference: string | null
   aboutMe: string | null
@@ -50,6 +56,8 @@ export default function SearchPage() {
   const { data: session, status: sessionStatus } = useSession()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
+  const [educationLevelFilter, setEducationLevelFilter] = useState('')
+  const [fieldOfStudyFilter, setFieldOfStudyFilter] = useState('')
   const [matchStatus, setMatchStatus] = useState<string | null>(null)
   const [matchMessage, setMatchMessage] = useState<string>('')
   const [hasPaid, setHasPaid] = useState<boolean | null>(null)
@@ -164,6 +172,17 @@ export default function SearchPage() {
     return height
   }
 
+  // Filter profiles by education dropdowns
+  const filteredProfiles = profiles.filter((p) => {
+    if (!educationLevelFilter && !fieldOfStudyFilter) return true
+    const edLevel = p.educationLevel || (p.qualification ? QUALIFICATION_TO_NEW_FIELDS[p.qualification]?.educationLevel : null) || null
+    const field = p.fieldOfStudy || (p.qualification ? QUALIFICATION_TO_NEW_FIELDS[p.qualification]?.fieldOfStudy : null) || null
+    if (educationLevelFilter && edLevel !== educationLevelFilter) return false
+    if (fieldOfStudyFilter && field !== fieldOfStudyFilter) return false
+    return true
+  })
+  const hasActiveFilters = !!educationLevelFilter || !!fieldOfStudyFilter
+
   // Determine what to show based on user state
   const isApproved = session && hasProfile && approvalStatus === 'approved'
   const isPending = session && hasProfile && approvalStatus === 'pending'
@@ -173,7 +192,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 md:px-8 xl:px-10">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -181,10 +200,43 @@ export default function SearchPage() {
           </h1>
           <p className="text-gray-600 mt-1">
             {isApproved
-              ? `${profiles.length} profiles match your preferences`
+              ? `${hasActiveFilters ? `${filteredProfiles.length} of ` : ''}${profiles.length} profiles match your preferences`
               : 'Find your perfect match'
             }
           </p>
+
+          {/* Education Filters */}
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            <select
+              value={educationLevelFilter}
+              onChange={(e) => setEducationLevelFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            >
+              <option value="">All Education Levels</option>
+              {EDUCATION_LEVEL_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <select
+              value={fieldOfStudyFilter}
+              onChange={(e) => setFieldOfStudyFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            >
+              <option value="">All Fields of Study</option>
+              {FIELD_OF_STUDY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {hasActiveFilters && (
+              <button
+                onClick={() => { setEducationLevelFilter(''); setFieldOfStudyFilter('') }}
+                className="text-sm text-primary-600 hover:text-primary-700 px-2 py-2 flex items-center gap-1"
+              >
+                <X className="h-3.5 w-3.5" />
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Pending Approval Status - Paid and being reviewed */}
@@ -286,22 +338,32 @@ export default function SearchPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
           </div>
-        ) : isPending || isRejected ? null : profiles.length === 0 ? (
+        ) : isPending || isRejected ? null : filteredProfiles.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <Search className="h-16 w-16 mx-auto text-gray-300 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {isApproved ? 'No matches found yet' : 'No profiles available'}
+              {hasActiveFilters ? 'No Matching Profiles' : isApproved ? 'No matches found yet' : 'No profiles available'}
             </h3>
             <p className="text-gray-600">
-              {isApproved
+              {hasActiveFilters
+                ? 'Try adjusting your education filters.'
+                : isApproved
                 ? 'Check back later as new profiles are added regularly'
                 : 'New profiles are being added regularly'
               }
             </p>
+            {hasActiveFilters && (
+              <button
+                onClick={() => { setEducationLevelFilter(''); setFieldOfStudyFilter('') }}
+                className="mt-4 btn-secondary text-sm py-2"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {profiles.map((profile) => (
+            {filteredProfiles.map((profile) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
@@ -443,12 +505,26 @@ function ProfileCard({
               {profile.occupation}
             </div>
           )}
-          {profile.qualification && (
-            <div className="flex items-center">
-              <GraduationCap className="h-4 w-4 mr-2 text-gray-400" />
-              {profile.qualification}
-            </div>
-          )}
+          {(profile.educationLevel || profile.qualification) && (() => {
+            const edLevel = profile.educationLevel || null
+            const badge = edLevel ? EDUCATION_BADGES[edLevel] : null
+            return (
+              <div className="flex items-start">
+                <GraduationCap className="h-4 w-4 mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
+                <div className="flex flex-wrap items-center gap-1">
+                  {badge && (
+                    <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${badge.bg} ${badge.text}`}>
+                      {badge.label}
+                    </span>
+                  )}
+                  <span>
+                    {getEducationLevelLabel(edLevel) || getEducationLevelLabel(profile.qualification)}
+                    {profile.fieldOfStudy && (<span className="text-gray-500"> in {getFieldOfStudyLabel(profile.fieldOfStudy)}</span>)}
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
           {(profile.community || profile.caste) && (
             <div className="flex items-center">
               <User className="h-4 w-4 mr-2 text-gray-400" />

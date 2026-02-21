@@ -5,6 +5,8 @@ import './globals.css'
 import { Providers } from './providers'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import UserSidebar from '@/components/UserSidebar'
+import SidebarLayout from '@/components/SidebarLayout'
 import CookieConsent from '@/components/CookieConsent'
 import FeedbackWidget from '@/components/FeedbackWidget'
 import PushNotificationPrompt from '@/components/PushNotificationPrompt'
@@ -141,7 +143,12 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-16 bg-white/80 backdrop-blur-sm shadow-sm" />}>
             <Navbar />
           </Suspense>
-          <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">{children}</main>
+          <Suspense fallback={null}>
+            <UserSidebar />
+          </Suspense>
+          <SidebarLayout>
+            <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">{children}</main>
+          </SidebarLayout>
           <Suspense fallback={null}>
             <Footer />
           </Suspense>

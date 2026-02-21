@@ -35,6 +35,7 @@ model User {
   feedback        Feedback[]
   pushSubscriptions      PushSubscription[]
   notificationPreference NotificationPreference?
+  notifications          Notification[]
 }
 
 model Profile {
@@ -88,7 +89,10 @@ model Profile {
   familyLocation    String?
 
   // Education & Career
-  qualification     String?  // Bachelors, Masters, Doctor, Ph.D
+  qualification     String?  // Legacy: specific degree value (bachelors_eng, masters_cs, etc.)
+  educationLevel    String?  // New: high_school, associates, bachelors, masters, mba, medical, law, doctorate
+  fieldOfStudy      String?  // New: engineering, cs_it, business, medical_health, law_legal, arts, science, social_sciences, education_field, other
+  major             String?  // New: free text specialization (e.g., "School Psychology")
   university        String?
   occupation        String?
   annualIncome      String?  // Range like "100-150K", ">100k"
@@ -164,6 +168,7 @@ model Profile {
   prefCaste         String?  // Legacy field - kept for backwards compatibility
   prefGotra         String?  // "Different Gothra", "Doesn't Matter"
   prefQualification String?
+  prefFieldOfStudy  String?  // New: preferred field of study (engineering, cs_it, etc.)
   prefWorkArea      String?  // Preferred work area/industry
   prefOccupation    String?  // Preferred occupation/job title
   prefIncome        String?
@@ -206,6 +211,7 @@ model Profile {
   prefGrewUpInIsDealbreaker     Boolean @default(false)
   prefRelocationIsDealbreaker   Boolean @default(false)
   prefEducationIsDealbreaker    Boolean @default(false)
+  prefFieldOfStudyIsDealbreaker Boolean @default(false)
   prefWorkAreaIsDealbreaker     Boolean @default(false)
   prefIncomeIsDealbreaker       Boolean @default(false)
   prefOccupationIsDealbreaker   Boolean @default(false)
@@ -237,6 +243,13 @@ model Profile {
   acquisitionChannel String? // High-level channel: "organic", "paid_search", "social", "referral"
 
   isImported        Boolean  @default(false)
+
+  // Engagement Points System
+  engagementPoints      Int       @default(0)   // Current points balance
+  engagementCoins       Int       @default(0)   // Current coins balance (100 pts = 1 coin)
+  engagementBoosts      Int       @default(0)   // Lifetime boosts used
+  engagementBoostStart  DateTime?               // When current engagement boost was activated (7-day duration)
+  lastPointAwardDate    DateTime?               // Date of last daily login point award
 
   // Lifetime Stats (never decrease, used to showcase platform value)
   lifetimeInterestsReceived  Int  @default(0)  // Total interests ever received
@@ -344,6 +357,8 @@ model DeclinedProfile {
   id              String   @id @default(cuid())
   userId          String   // User who declined
   declinedUserId  String   // User whose profile was declined
+  hiddenFromReconsider Boolean @default(false) // True when removed from reconsider pile permanently
+  source          String?  // Where the decline originated: matches, interest_declined, interest_withdrawn, connection_withdrawn
 
   createdAt       DateTime @default(now())
 
@@ -587,6 +602,27 @@ model PushSubscription {
   @@index([userId])
 }
 
+// In-app notification records
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // welcome, profile_approved, new_interest, interest_accepted, match_available, payment_confirmed, new_message
+  title     String
+  body      String
+  url       String?  // Link to navigate to when clicked
+  data      String?  // JSON blob for extra data
+
+  read      Boolean  @default(false)
+  readAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read, createdAt])
+  @@index([userId, createdAt])
+}
+
 // User notification preferences (per-channel and per-event toggles)
 model NotificationPreference {
   id                     String  @id @default(cuid())
@@ -599,4 +635,84 @@ model NotificationPreference {
   messageNotifications   Boolean @default(true)
   marketingEmails        Boolean @default(false)
   user                   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Engagement point log (audit trail + idempotency for gamification system)
+model EngagementPointLog {
+  id              String   @id @default(cuid())
+  userId          String
+  action          String   // daily_login, express_interest, respond_interest, community_post, coin_conversion, boost_redemption
+  points          Int      // Positive for earned, negative for spent/converted
+  description     String?
+  idempotencyKey  String?  @unique // Prevents double-awarding
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, action])
+}
+
+// Community feed posts (Reddit-like feature)
+model CommunityPost {
+  id            String   @id @default(cuid())
+  authorId      String                       // userId of the author
+  title         String?                      // Optional title
+  body          String                       // Required body text
+  showRealName  Boolean  @default(false)     // false = show VR ID, true = show "FirstName L."
+  likeCount     Int      @default(0)         // Denormalized counter
+  commentCount  Int      @default(0)         // Denormalized counter
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  likes         PostLike[]
+  comments      PostComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model PostLike {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostComment {
+  id           String        @id @default(cuid())
+  postId       String
+  authorId     String
+  body         String
+  showRealName Boolean       @default(false)
+  post         CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+}
+
+// Event interest survey responses (from dashboard banner)
+model EventInterest {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  profileId       String?
+
+  // Survey responses
+  interestLevel   String   // yes, maybe, not_now
+  eventFormat     String?  // in_person, virtual, either
+  preferredCity   String?  // Free text: "San Francisco", "Dallas", etc.
+  eventType       String?  // speed_dating, social_mixer, panel, activity
+  budgetRange     String?  // free, under_25, 25_to_50, over_50
+  suggestions     String?  // Free text for any other ideas
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([interestLevel])
 }
