@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
   description:
-    'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+    'A Bay Area mother shares how she raised Indian children in America between two worlds and the marriage conversation her family never had. Founder of VivaahReady.',
   keywords: [
     'Indian families in the USA',
     'raising Indian children in America',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
     description:
-      'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+      'A Bay Area mother shares how she raised Indian children in America between two worlds and the marriage conversation her family never had. Founder of VivaahReady.',
     url: 'https://vivaahready.com/blog/indian-families-america-marriage-gap',
     type: 'article',
     publishedTime: '2026-02-14T00:00:00Z',
@@ -34,7 +34,7 @@ const jsonLd = {
   '@type': 'BlogPosting',
   headline: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
   description:
-    'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+    'A Bay Area mother shares how she raised Indian children in America between two worlds and the marriage conversation her family never had. Founder of VivaahReady.',
   datePublished: '2026-02-14T00:00:00Z',
   author: {
     '@type': 'Person',
