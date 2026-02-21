@@ -42,6 +42,9 @@ interface ProfileData {
   currentLocation: string | null
   occupation: string | null
   qualification: string | null
+  educationLevel: string | null
+  fieldOfStudy: string | null
+  major: string | null
   university: string | null
   caste: string | null
   community: string | null
@@ -176,6 +179,10 @@ interface ProfileData {
     sentByMe: boolean
     receivedFromThem: boolean
     mutual: boolean
+    sentInterestId?: string | null
+    receivedInterestId?: string | null
+    sentStatus?: string | null
+    receivedStatus?: string | null
   }
 }
 
@@ -302,9 +309,17 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
 
         // Check if blocked due to deal-breaker violations
         if (data.blocked) {
-          setBlockedByDealbreaker(true)
-          setMatchScoreChecked(true)
-          return
+          const hasInterestConnection = !!(
+            profile.interestStatus?.sentByMe ||
+            profile.interestStatus?.receivedFromThem ||
+            profile.interestStatus?.mutual
+          )
+          if (!hasInterestConnection) {
+            setBlockedByDealbreaker(true)
+            setMatchScoreChecked(true)
+            return
+          }
+          setBlockedByDealbreaker(false)
         }
 
         setTheirMatchScore(data.theirMatchScore)
@@ -333,15 +348,40 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     if (!profile || !canAccess) return
     setSendingInterest(true)
     try {
-      const response = await fetch(buildApiUrl('/api/matches'), {
+      // If they already sent interest, accept it directly.
+      if (profile.interestStatus?.receivedFromThem && profile.interestStatus?.receivedInterestId) {
+        const acceptResponse = await fetch(buildApiUrl('/api/interest'), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            interestId: profile.interestStatus.receivedInterestId,
+            action: 'accept',
+          }),
+        })
+        const acceptData = await acceptResponse.json()
+        if (acceptResponse.ok) {
+          fetchProfile()
+          fetchUserStatus()
+          return
+        }
+        if (acceptData?.requiresVerification) {
+          setShowPaymentModal(true)
+        }
+        return
+      }
+
+      const response = await fetch(buildApiUrl('/api/interest'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: profile.userId }),
+        body: JSON.stringify({ profileId: profile.id }),
       })
+      const data = await response.json()
 
       if (response.ok) {
-        // Refresh profile to update interest status
         fetchProfile()
+        fetchUserStatus()
+      } else if (data?.requiresVerification) {
+        setShowPaymentModal(true)
       }
     } catch (error) {
       console.error('Error sending interest:', error)
@@ -375,8 +415,14 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
     )
   }
 
-  // Block access if deal-breaker preferences don't match (either direction)
-  if (blockedByDealbreaker && profile.userId !== viewerUserId) {
+  // Block access if deal-breaker preferences don't match (either direction),
+  // except when an explicit interest relationship already exists.
+  const hasInterestConnection = !!(
+    profile.interestStatus?.sentByMe ||
+    profile.interestStatus?.receivedFromThem ||
+    profile.interestStatus?.mutual
+  )
+  if (blockedByDealbreaker && profile.userId !== viewerUserId && !hasInterestConnection) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-12">
         <div className="max-w-md mx-auto px-4">
@@ -577,39 +623,73 @@ function ProfileCard({
     return val.replace(/_/g, ' ')
   }
 
-  // Helper to format education/qualification with proper labels
+  // Helper to format education using new 3-field system, with fallback to legacy qualification
   const formatEducation = (val: string | null | undefined) => {
     if (!val) return null
-    const educationMap: Record<string, string> = {
+    // New education level labels
+    const levelMap: Record<string, string> = {
       'high_school': 'High School Diploma',
-      'associates': "Associate's Degree (AA, AS)",
+      'associates': "Associate's Degree",
+      'bachelors': "Bachelor's Degree",
+      'masters': "Master's Degree",
+      'mba': 'MBA',
+      'medical': 'Medical Degree',
+      'law': 'Law Degree (JD)',
+      'doctorate': 'Doctorate',
+    }
+    // Legacy qualification labels (for old profiles)
+    const legacyMap: Record<string, string> = {
       'bachelors_arts': 'Bachelor of Arts (BA)',
       'bachelors_science': 'Bachelor of Science (BS)',
-      'bachelors_eng': 'Bachelor of Engineering (BE, BSE)',
-      'bachelors_cs': 'Bachelor of Science - Computer Science (BS CS)',
-      'bba': 'Bachelor of Business Administration (BBA)',
-      'bfa': 'Bachelor of Fine Arts (BFA)',
-      'bsn': 'Bachelor of Science in Nursing (BSN)',
+      'bachelors_eng': 'Bachelor of Engineering (BE)',
+      'bachelors_cs': 'BS - Computer Science',
+      'bba': 'BBA', 'bfa': 'BFA', 'bsn': 'BSN',
       'masters_arts': 'Master of Arts (MA)',
       'masters_science': 'Master of Science (MS)',
       'masters_eng': 'Master of Engineering (MEng)',
-      'masters_cs': 'Master of Science - Computer Science (MS CS)',
-      'mba': 'Master of Business Administration (MBA)',
-      'mfa': 'Master of Fine Arts (MFA)',
-      'mph': 'Master of Public Health (MPH)',
-      'msw': 'Master of Social Work (MSW)',
+      'masters_cs': 'MS - Computer Science',
+      'mfa': 'MFA', 'mph': 'MPH', 'msw': 'MSW',
       'md': 'Doctor of Medicine (MD)',
       'do': 'Doctor of Osteopathic Medicine (DO)',
-      'dds': 'Doctor of Dental Surgery (DDS, DMD)',
+      'dds': 'Doctor of Dental Surgery (DDS)',
       'pharmd': 'Doctor of Pharmacy (PharmD)',
-      'jd': 'Juris Doctor (JD) - Law',
-      'cpa': 'Certified Public Accountant (CPA)',
-      'phd': 'Doctor of Philosophy (PhD)',
-      'edd': 'Doctor of Education (EdD)',
-      'psyd': 'Doctor of Psychology (PsyD)',
+      'jd': 'Juris Doctor (JD)',
+      'cpa': 'CPA', 'phd': 'PhD', 'edd': 'EdD', 'psyd': 'PsyD',
       'other': 'Other',
     }
-    return educationMap[val] || formatValue(val)
+    return levelMap[val] || legacyMap[val] || formatValue(val)
+  }
+
+  // Helper to format field of study
+  const formatFieldOfStudy = (val: string | null | undefined) => {
+    if (!val) return null
+    const fieldMap: Record<string, string> = {
+      'engineering': 'Engineering & Technology',
+      'cs_it': 'Computer Science & IT',
+      'business': 'Business & Finance',
+      'medical_health': 'Medical & Healthcare',
+      'law_legal': 'Law & Legal Studies',
+      'arts': 'Arts & Humanities',
+      'science': 'Science',
+      'social_sciences': 'Social Sciences & Psychology',
+      'education_field': 'Education',
+      'other': 'Other',
+    }
+    return fieldMap[val] || formatValue(val)
+  }
+
+  // Build full education display string: "Master's Degree · Social Sciences & Psychology · School Psychology"
+  const getFullEducationDisplay = () => {
+    const parts: string[] = []
+    const level = formatEducation(profile.educationLevel as string)
+    if (level) parts.push(level)
+    const field = formatFieldOfStudy(profile.fieldOfStudy as string)
+    if (field) parts.push(field)
+    const major = profile.major as string
+    if (major) parts.push(major)
+    if (parts.length > 0) return parts.join(' · ')
+    // Fallback to legacy qualification
+    return formatEducation(profile.qualification as string)
   }
 
   return (
@@ -819,9 +899,9 @@ function ProfileCard({
                   <Briefcase className="w-3 h-3" />{formatValue(profile.occupation)}
                 </span>
               )}
-              {profile.qualification && (
+              {(profile.educationLevel || profile.qualification) && (
                 <span className="text-xs bg-white/20 px-2 py-0.5 flex items-center gap-1">
-                  <GraduationCap className="w-3 h-3" />{formatEducation(profile.qualification)}
+                  <GraduationCap className="w-3 h-3" />{formatEducation(profile.educationLevel as string || profile.qualification as string)}
                 </span>
               )}
               {profile.community && (
@@ -1021,7 +1101,7 @@ function ProfileCard({
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
-              {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{formatEducation(profile.qualification)}</span></>}
+              {(profile.educationLevel || profile.qualification) && <><span className="text-gray-500">Education</span><span className="text-gray-800">{getFullEducationDisplay()}</span></>}
               {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
               {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
               {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}

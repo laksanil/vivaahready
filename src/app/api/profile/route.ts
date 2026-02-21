@@ -7,11 +7,17 @@ import { generateVrId } from '@/lib/vrId'
 import { getTargetUserId } from '@/lib/admin'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
+  getEffectiveOccupation,
   validateAboutMeStep,
+  validateBasicsStep,
+  validateFamilyStep,
   getEffectiveUniversity,
+  normalizeLifestyleOtherSelections,
+  validateLifestyleStep,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
+  validateReligionStep,
 } from '@/lib/profileFlowValidation'
 
 /**
@@ -99,7 +105,10 @@ export async function POST(request: Request) {
         zipCode: body.zipCode,
         community: body.community || body.caste, // community is primary, caste is legacy fallback
         gotra: body.gothra || body.gotra,
-        qualification: body.education || body.qualification,
+        qualification: body.education || body.qualification || body.educationLevel,
+        educationLevel: body.educationLevel,
+        fieldOfStudy: body.fieldOfStudy,
+        major: body.major,
         university: body.educationDetail || body.university,
         occupation: body.occupation,
         annualIncome: body.income || body.annualIncome,
@@ -127,6 +136,7 @@ export async function POST(request: Request) {
         prefCommunity: body.prefCommunity || body.preferredCaste || body.prefCaste, // prefCommunity is primary, prefCaste is legacy fallback
         prefGotra: body.prefGotra,
         prefQualification: body.preferredEducation || body.prefQualification,
+        prefFieldOfStudy: body.prefFieldOfStudy,
         prefIncome: body.prefIncome,
         idealPartnerDesc: body.partnerPreferences || body.idealPartnerDesc,
         approvalStatus: 'pending', // All new profiles start as pending
@@ -242,9 +252,54 @@ export async function PUT(request: Request) {
       where: { userId: targetUser.userId },
       select: {
         id: true,
+        firstName: true,
+        lastName: true,
+        createdBy: true,
+        gender: true,
+        dateOfBirth: true,
+        age: true,
+        height: true,
+        maritalStatus: true,
+        motherTongue: true,
+        country: true,
+        grewUpIn: true,
+        citizenship: true,
+        zipCode: true,
+        qualification: true,
+        educationLevel: true,
+        fieldOfStudy: true,
+        major: true,
         university: true,
+        occupation: true,
+        employerName: true,
+        annualIncome: true,
+        openToRelocation: true,
+        religion: true,
+        community: true,
+        familyLocation: true,
+        familyValues: true,
+        dietaryPreference: true,
+        smoking: true,
+        drinking: true,
+        hobbies: true,
+        fitness: true,
+        interests: true,
+        pets: true,
+        aboutMe: true,
+        linkedinProfile: true,
         referralSource: true,
+        prefAgeMin: true,
+        prefAgeMax: true,
+        prefHeightMin: true,
+        prefHeightMax: true,
+        prefMaritalStatus: true,
+        prefReligion: true,
+        prefReligions: true,
         prefQualification: true,
+        prefAgeIsDealbreaker: true,
+        prefHeightIsDealbreaker: true,
+        prefMaritalStatusIsDealbreaker: true,
+        prefReligionIsDealbreaker: true,
       },
     })
 
@@ -276,7 +331,7 @@ export async function PUT(request: Request) {
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship
-    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile || null
     if (body.facebookInstagram !== undefined) updateData.facebookInstagram = body.facebookInstagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.instagram !== undefined) updateData.instagram = body.instagram
@@ -285,11 +340,21 @@ export async function PUT(request: Request) {
     if (body.caste !== undefined) updateData.caste = body.caste
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.qualification !== undefined) updateData.qualification = body.qualification
+    if (body.educationLevel !== undefined) {
+      updateData.educationLevel = body.educationLevel
+      // Dual-write: also update qualification from educationLevel for backward compat
+      if (!body.qualification) updateData.qualification = body.educationLevel
+    }
+    if (body.fieldOfStudy !== undefined) updateData.fieldOfStudy = body.fieldOfStudy
+    if (body.major !== undefined) updateData.major = body.major
     if (body.university !== undefined || body.universityOther !== undefined) {
       const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
       updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
     }
-    if (body.occupation !== undefined) updateData.occupation = body.occupation
+    if (body.occupation !== undefined || body.occupationOther !== undefined) {
+      const baseOccupation = body.occupation !== undefined ? body.occupation : existingProfile.occupation
+      updateData.occupation = getEffectiveOccupation(baseOccupation, body.occupationOther)
+    }
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.fatherName !== undefined) updateData.fatherName = body.fatherName
     if (body.motherName !== undefined) updateData.motherName = body.motherName
@@ -329,6 +394,7 @@ export async function PUT(request: Request) {
     if (body.prefCaste !== undefined) updateData.prefCaste = body.prefCaste
     if (body.prefGotra !== undefined) updateData.prefGotra = body.prefGotra
     if (body.prefQualification !== undefined) updateData.prefQualification = body.prefQualification
+    if (body.prefFieldOfStudy !== undefined) updateData.prefFieldOfStudy = body.prefFieldOfStudy
     if (body.prefWorkArea !== undefined) updateData.prefWorkArea = body.prefWorkArea
     if (body.prefOccupation !== undefined) updateData.prefOccupation = body.prefOccupation
     if (body.prefIncome !== undefined) updateData.prefIncome = body.prefIncome
@@ -388,6 +454,44 @@ export async function PUT(request: Request) {
     if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
     if (body.referredBy !== undefined) updateData.referredBy = body.referredBy
 
+    const lifestyleSelectionTouched =
+      body.hobbies !== undefined ||
+      body.hobbiesOther !== undefined ||
+      body.fitness !== undefined ||
+      body.fitnessOther !== undefined ||
+      body.interests !== undefined ||
+      body.interestsOther !== undefined
+
+    if (lifestyleSelectionTouched) {
+      const normalizedLifestyle = normalizeLifestyleOtherSelections({
+        hobbies: body.hobbies !== undefined ? body.hobbies : existingProfile.hobbies,
+        hobbiesOther: body.hobbiesOther,
+        fitness: body.fitness !== undefined ? body.fitness : existingProfile.fitness,
+        fitnessOther: body.fitnessOther,
+        interests: body.interests !== undefined ? body.interests : existingProfile.interests,
+        interestsOther: body.interestsOther,
+      })
+
+      if (normalizedLifestyle.errors.length > 0) {
+        return NextResponse.json(
+          { error: normalizedLifestyle.errors[0] },
+          { status: 400 }
+        )
+      }
+
+      if (body.hobbies !== undefined || body.hobbiesOther !== undefined) {
+        updateData.hobbies = normalizedLifestyle.normalizedValues.hobbies
+      }
+
+      if (body.fitness !== undefined || body.fitnessOther !== undefined) {
+        updateData.fitness = normalizedLifestyle.normalizedValues.fitness
+      }
+
+      if (body.interests !== undefined || body.interestsOther !== undefined) {
+        updateData.interests = normalizedLifestyle.normalizedValues.interests
+      }
+    }
+
     // Additional fields
     if (body.religion !== undefined) updateData.religion = body.religion
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
@@ -424,6 +528,7 @@ export async function PUT(request: Request) {
     if (body.prefGrewUpInIsDealbreaker !== undefined) updateData.prefGrewUpInIsDealbreaker = body.prefGrewUpInIsDealbreaker === true || body.prefGrewUpInIsDealbreaker === 'true'
     if (body.prefRelocationIsDealbreaker !== undefined) updateData.prefRelocationIsDealbreaker = body.prefRelocationIsDealbreaker === true || body.prefRelocationIsDealbreaker === 'true'
     if (body.prefEducationIsDealbreaker !== undefined) updateData.prefEducationIsDealbreaker = body.prefEducationIsDealbreaker === true || body.prefEducationIsDealbreaker === 'true'
+    if (body.prefFieldOfStudyIsDealbreaker !== undefined) updateData.prefFieldOfStudyIsDealbreaker = body.prefFieldOfStudyIsDealbreaker === true || body.prefFieldOfStudyIsDealbreaker === 'true'
     if (body.prefWorkAreaIsDealbreaker !== undefined) updateData.prefWorkAreaIsDealbreaker = body.prefWorkAreaIsDealbreaker === true || body.prefWorkAreaIsDealbreaker === 'true'
     if (body.prefIncomeIsDealbreaker !== undefined) updateData.prefIncomeIsDealbreaker = body.prefIncomeIsDealbreaker === true || body.prefIncomeIsDealbreaker === 'true'
     if (body.prefOccupationIsDealbreaker !== undefined) updateData.prefOccupationIsDealbreaker = body.prefOccupationIsDealbreaker === true || body.prefOccupationIsDealbreaker === 'true'
@@ -434,16 +539,64 @@ export async function PUT(request: Request) {
     if (body.prefPetsIsDealbreaker !== undefined) updateData.prefPetsIsDealbreaker = body.prefPetsIsDealbreaker === true || body.prefPetsIsDealbreaker === 'true'
     if (body.prefReligionIsDealbreaker !== undefined) updateData.prefReligionIsDealbreaker = body.prefReligionIsDealbreaker === true || body.prefReligionIsDealbreaker === 'true'
 
-    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+    const mergedState: Record<string, unknown> = {
+      ...existingProfile,
+      ...updateData,
+      occupationOther: body.occupationOther,
+      hobbiesOther: body.hobbiesOther,
+      fitnessOther: body.fitnessOther,
+      interestsOther: body.interestsOther,
+    }
+
+    if (editSection === 'basics') {
+      const basicsValidation = validateBasicsStep(mergedState)
+      if (!basicsValidation.isValid) {
+        return NextResponse.json(
+          { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
+          { status: 400 }
+        )
+      }
+    }
 
     if (editSection === 'location_education') {
       const locationEducationValidation = validateLocationEducationStep({
         ...mergedState,
+        occupationOther: body.occupationOther,
         universityOther: body.universityOther,
       })
       if (!locationEducationValidation.isValid) {
         return NextResponse.json(
           { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (editSection === 'religion') {
+      const religionValidation = validateReligionStep(mergedState)
+      if (!religionValidation.isValid) {
+        return NextResponse.json(
+          { error: religionValidation.errors[0] || 'Please complete all required Religion fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (editSection === 'family') {
+      const familyValidation = validateFamilyStep(mergedState)
+      if (!familyValidation.isValid) {
+        return NextResponse.json(
+          { error: familyValidation.errors[0] || 'Please complete all required Family fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (editSection === 'lifestyle') {
+      const lifestyleValidation = validateLifestyleStep(mergedState)
+      if (!lifestyleValidation.isValid) {
+        return NextResponse.json(
+          { error: lifestyleValidation.errors[0] || 'Please complete all required Lifestyle fields.' },
           { status: 400 }
         )
       }

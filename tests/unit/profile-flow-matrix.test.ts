@@ -1,12 +1,75 @@
 import { describe, expect, it } from 'vitest'
 import {
   validateAboutMeStep,
+  validateBasicsStep,
+  validateFamilyStep,
+  validateLifestyleStep,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
+  validateReligionStep,
 } from '@/lib/profileFlowValidation'
 
 describe('profile flow validation matrix', () => {
+  describe('section-level required-field matrix', () => {
+    const validBasics = {
+      firstName: 'Matrix',
+      lastName: 'User',
+      createdBy: 'self',
+      gender: 'male',
+      dateOfBirth: '01/01/1992',
+      height: `5'10"`,
+      maritalStatus: 'never_married',
+      motherTongue: 'English',
+    }
+
+    const missingBasicsCases: Array<{ field: string; payload: Record<string, unknown>; expected: string }> = [
+      { field: 'firstName', payload: { ...validBasics, firstName: '' }, expected: 'First name is required.' },
+      { field: 'lastName', payload: { ...validBasics, lastName: '' }, expected: 'Last name is required.' },
+      { field: 'createdBy', payload: { ...validBasics, createdBy: '' }, expected: 'Profile created by is required.' },
+      { field: 'gender', payload: { ...validBasics, gender: '' }, expected: 'Gender is required.' },
+      {
+        field: 'dateOfBirth/age',
+        payload: { ...validBasics, dateOfBirth: '', age: '' },
+        expected: 'Date of birth or age is required.',
+      },
+      { field: 'height', payload: { ...validBasics, height: '' }, expected: 'Height is required.' },
+      { field: 'maritalStatus', payload: { ...validBasics, maritalStatus: '' }, expected: 'Marital status is required.' },
+      { field: 'motherTongue', payload: { ...validBasics, motherTongue: '' }, expected: 'Mother tongue is required.' },
+    ]
+
+    for (const testCase of missingBasicsCases) {
+      it(`fails basics when ${testCase.field} is missing`, () => {
+        const result = validateBasicsStep(testCase.payload)
+        expect(result.isValid).toBe(false)
+        expect(result.errors).toContain(testCase.expected)
+      })
+    }
+
+    it('fails religion when religion/community is missing', () => {
+      const result = validateReligionStep({})
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Religion is required.')
+      expect(result.errors).toContain('Community is required.')
+    })
+
+    it('fails family when family location/values are missing', () => {
+      const result = validateFamilyStep({})
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Family location is required.')
+      expect(result.errors).toContain('Family values are required.')
+    })
+
+    it('fails lifestyle when diet/smoking/drinking/pets are missing', () => {
+      const result = validateLifestyleStep({})
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('Diet is required.')
+      expect(result.errors).toContain('Smoking preference is required.')
+      expect(result.errors).toContain('Drinking preference is required.')
+      expect(result.errors).toContain('Pets preference is required.')
+    })
+  })
+
   describe('location_education required-field matrix', () => {
     const validBase = {
       country: 'USA',
@@ -14,6 +77,8 @@ describe('profile flow validation matrix', () => {
       citizenship: 'USA',
       zipCode: '95112',
       qualification: 'bachelors_cs',
+      educationLevel: 'bachelors',
+      fieldOfStudy: 'cs_it',
       university: 'San Jose State University',
       occupation: 'software_engineer',
       employerName: 'QA Systems',
@@ -26,7 +91,7 @@ describe('profile flow validation matrix', () => {
       { name: 'missing grew up in', payload: { ...validBase, grewUpIn: '' }, expected: 'Grew Up In is required.' },
       { name: 'missing citizenship', payload: { ...validBase, citizenship: '' }, expected: 'Citizenship is required.' },
       { name: 'missing USA zip code', payload: { ...validBase, zipCode: '' }, expected: 'ZIP code is required for USA profiles.' },
-      { name: 'missing qualification', payload: { ...validBase, qualification: '' }, expected: 'Highest qualification is required.' },
+      { name: 'missing education level', payload: { ...validBase, qualification: '', educationLevel: '' }, expected: 'Education level is required.' },
       { name: 'missing university', payload: { ...validBase, university: '' }, expected: 'College/University is required.' },
       { name: 'missing occupation', payload: { ...validBase, occupation: '' }, expected: 'Occupation is required.' },
       { name: 'missing annual income', payload: { ...validBase, annualIncome: '' }, expected: 'Annual income is required.' },
@@ -166,14 +231,19 @@ describe('profile flow validation matrix', () => {
   })
 
   describe('aboutme + preferences_2 required fields', () => {
-    it('fails aboutme validation when referral source is missing', () => {
+    it('fails aboutme validation when linkedin and referral source are missing', () => {
       const result = validateAboutMeStep({ aboutMe: 'Test about me' })
       expect(result.isValid).toBe(false)
+      expect(result.errors).toContain('LinkedIn profile is required.')
       expect(result.errors).toContain('Referral source is required.')
     })
 
-    it('passes aboutme validation when referral source is present', () => {
-      const result = validateAboutMeStep({ aboutMe: 'Test about me', referralSource: 'google' })
+    it('passes aboutme validation when required fields are present', () => {
+      const result = validateAboutMeStep({
+        aboutMe: 'Test about me',
+        linkedinProfile: 'no_linkedin',
+        referralSource: 'google',
+      })
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })

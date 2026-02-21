@@ -21,6 +21,7 @@ import {
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import { ProfileData } from './ProfileCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
+import { getEducationLevelLabel, getFieldOfStudyLabel, EDUCATION_BADGES } from '@/lib/constants'
 
 interface DirectoryCardProps {
   profile: ProfileData
@@ -33,6 +34,8 @@ interface DirectoryCardProps {
   isRestricted?: boolean
   /** If true, user has paid but awaiting admin approval */
   hasPaid?: boolean
+  /** If true, removes outer border/bg/shadow so it can be embedded in a parent card container */
+  borderless?: boolean
 }
 
 // Helper to mask sensitive text
@@ -51,6 +54,7 @@ export function DirectoryCard({
   showActions = true,
   isRestricted = false,
   hasPaid = false,
+  borderless = false,
 }: DirectoryCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set())
@@ -105,7 +109,10 @@ export function DirectoryCard({
   return (
     <>
       <div
-        className="bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+        className={borderless
+          ? "cursor-pointer"
+          : "bg-white rounded-lg border border-gray-200 hover:border-primary-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+        }
         onClick={() => router.push(profileUrl)}
       >
         <div className="flex items-stretch">
@@ -237,21 +244,43 @@ export function DirectoryCard({
                 </span>
               </span>
             )}
-            {profile.qualification && (
-              <span className="hidden sm:flex items-center gap-1">
-                <GraduationCap className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[80px] sm:max-w-[100px]">{profile.qualification}</span>
-              </span>
-            )}
           </div>
 
           {/* Occupation Row */}
           {profile.occupation && (
-            <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-1 text-sm text-gray-600 mb-1.5">
               <Briefcase className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
               <span className="truncate">{profile.occupation.replace(/_/g, ' ')}</span>
             </div>
           )}
+
+          {/* Education Row */}
+          {(profile.educationLevel || profile.qualification) && (() => {
+            const edLevel = profile.educationLevel || null
+            const badge = edLevel ? EDUCATION_BADGES[edLevel] : null
+            return (
+              <div className="flex items-start gap-1 text-sm text-gray-600 mb-1.5">
+                <GraduationCap className="h-3.5 w-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex flex-wrap items-center gap-1">
+                  {badge && (
+                    <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded ${badge.bg} ${badge.text}`}>
+                      {badge.label}
+                    </span>
+                  )}
+                  <span className="truncate">
+                    {getEducationLevelLabel(edLevel) || getEducationLevelLabel(profile.qualification)}
+                    {profile.fieldOfStudy && (<span className="text-gray-500"> in {getFieldOfStudyLabel(profile.fieldOfStudy)}</span>)}
+                  </span>
+                  {profile.major && (
+                    <span className="text-xs text-gray-400 truncate max-w-[120px]">· {profile.major}</span>
+                  )}
+                  {profile.university && (
+                    <span className="text-xs text-gray-400 truncate max-w-[120px]">· {profile.university}</span>
+                  )}
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Religion/Community & Marital Status */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -275,94 +304,67 @@ export function DirectoryCard({
 
         {/* Actions Column */}
         {showActions && (
-          <div className="flex flex-col justify-center gap-1.5 sm:gap-2 p-2 sm:p-3 border-l border-gray-100">
+          <div className="w-28 sm:w-36 flex flex-col justify-center gap-1.5 sm:gap-2 p-2 sm:p-3 border-l border-gray-100">
             {/* View Profile Button */}
-            <div className="group relative">
-              <Link
-                href={buildUrl(`/profile/${profile.id}`)}
-                className="block p-2 sm:p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-              >
-                <Eye className="h-5 w-5" />
-              </Link>
-              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                  <div className="font-semibold">View Profile</div>
-                  <div className="text-gray-300">See full details</div>
-                </div>
-              </div>
-            </div>
+            <Link
+              href={buildUrl(`/profile/${profile.id}`)}
+              className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 text-[11px] sm:text-xs font-medium text-gray-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors"
+            >
+              <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>View</span>
+            </Link>
 
             {/* Like Button */}
             {!canLike ? (
-              <div className="group relative">
-                <Link
-                  href={buildUrl('/profile')}
-                  className="block p-2 sm:p-2.5 text-gray-400 bg-gray-100 rounded-lg"
-                >
-                  <Lock className="h-5 w-5" />
-                </Link>
-                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    <div className="font-semibold">Verification Required</div>
-                    <div className="text-gray-300">Get verified to express interest</div>
-                  </div>
-                </div>
-              </div>
+              <Link
+                href={buildUrl('/profile')}
+                className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 text-[11px] sm:text-xs font-medium text-gray-500 bg-gray-100 rounded-lg"
+              >
+                <Lock className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>Verify</span>
+              </Link>
             ) : profile.theyLikedMeFirst && isRestricted ? (
               /* They liked me first but I'm not approved - can't create mutual match */
               <button
                 onClick={(e) => { e.stopPropagation(); setVerificationModalOpen(true) }}
-                className="p-2.5 rounded-lg bg-gray-200 text-gray-400 hover:bg-gray-300 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 text-[11px] sm:text-xs font-medium rounded-lg bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors"
               >
-                <Heart className="h-5 w-5 fill-current" />
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
+                <span>Accept</span>
               </button>
             ) : (
-              <div className="group relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onLike?.() }}
-                  disabled={isLoading}
-                  className={`p-2.5 rounded-lg transition-colors disabled:opacity-50 ${
-                    profile.theyLikedMeFirst
-                      ? 'text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800'
-                      : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
-                  }`}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Heart className={`h-5 w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
-                  )}
-                </button>
-                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    <div className="font-semibold">{profile.theyLikedMeFirst ? 'Accept Interest' : 'Express Interest'}</div>
-                    <div className="text-gray-300">{profile.theyLikedMeFirst ? 'They like you! Click to connect' : 'Let them know you\'re interested'}</div>
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); onLike?.() }}
+                disabled={isLoading}
+                className={`inline-flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 text-[11px] sm:text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${
+                  profile.theyLikedMeFirst
+                    ? 'text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800'
+                    : 'text-primary-700 hover:text-white hover:bg-primary-600 bg-primary-50'
+                }`}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                ) : (
+                  <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
+                )}
+                <span>{profile.theyLikedMeFirst ? 'Accept' : 'Like'}</span>
+              </button>
             )}
 
             {/* Pass Button */}
-            <div className="group relative">
-              <button
-                onClick={(e) => { e.stopPropagation(); onPass?.() }}
-                disabled={isLoading}
-                title="Pass"
-                className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <X className="h-5 w-5" />
-                )}
-              </button>
-              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                  <div className="font-semibold">Skip Profile</div>
-                  <div className="text-gray-300">You can reconsider later</div>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onPass?.() }}
+              disabled={isLoading}
+              title="Pass"
+              className="inline-flex items-center justify-center gap-1.5 px-2 sm:px-2.5 py-2 text-[11px] sm:text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+              ) : (
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
+              )}
+              <span>Pass</span>
+            </button>
           </div>
         )}
       </div>

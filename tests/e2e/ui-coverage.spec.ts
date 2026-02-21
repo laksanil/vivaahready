@@ -43,6 +43,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
   let userCEmail = ''
 
   test.beforeAll(async ({ request }) => {
+    test.setTimeout(180000)
     adminRequest = await apiRequest.newContext({ baseURL })
     await adminLogin(adminRequest, baseURL)
 
@@ -150,6 +151,9 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
     // Dashboard page
     await page.goto('/dashboard')
     await expect(page.locator('h1:has-text("Welcome back")')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('heading', { name: /Engagement Rewards/i })).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText(/Point Earning Actions/i)).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText(/100 points = 1 coin/i)).toBeVisible({ timeout: 20000 })
 
     // Support Messages page
     await page.goto('/admin-messages')

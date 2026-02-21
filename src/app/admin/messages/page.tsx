@@ -17,9 +17,9 @@ import {
   User,
 } from 'lucide-react'
 
-type ResponseMethod = 'email' | 'sms' | 'whatsapp'
+type ResponseMethod = 'email' | 'sms' | 'whatsapp' | 'in_app'
 type NeedsResponseFilter = 'all' | 'yes' | 'no'
-type ResponseKindFilter = 'all' | ResponseMethod | 'none'
+type ResponseKindFilter = 'all' | 'email' | 'sms' | 'whatsapp' | 'in_app' | 'none'
 
 interface SupportMessage {
   id: string
@@ -66,7 +66,7 @@ function needsResponse(message: SupportMessage): boolean {
 }
 
 function getAvailableResponseMethods(message: SupportMessage): ResponseMethod[] {
-  const methods: ResponseMethod[] = []
+  const methods: ResponseMethod[] = ['in_app']
   if (message.email) methods.push('email')
   if (message.phone) {
     methods.push('sms')
@@ -90,6 +90,46 @@ function parseChatHistory(history: string | null): Array<{ role: string; content
   } catch {
     return []
   }
+}
+
+interface ConversationEntry {
+  role: 'user' | 'admin' | 'bot'
+  content: string
+  timestamp: string
+  deliveryMethods?: string[]
+}
+
+function getConversationThread(message: SupportMessage): {
+  chatbotHistory: Array<{ role: string; content: string }>
+  thread: ConversationEntry[]
+} {
+  if (!message.chatHistory) {
+    // Backward compat: build from adminResponse
+    const thread: ConversationEntry[] = []
+    if (message.adminResponse && message.respondedAt) {
+      thread.push({ role: 'admin', content: message.adminResponse, timestamp: message.respondedAt })
+    }
+    return { chatbotHistory: [], thread }
+  }
+
+  try {
+    const parsed = JSON.parse(message.chatHistory)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'thread' in parsed) {
+      return {
+        chatbotHistory: Array.isArray(parsed._chatbotHistory) ? parsed._chatbotHistory : [],
+        thread: Array.isArray(parsed.thread) ? parsed.thread : [],
+      }
+    }
+    if (Array.isArray(parsed)) {
+      const thread: ConversationEntry[] = []
+      if (message.adminResponse && message.respondedAt) {
+        thread.push({ role: 'admin', content: message.adminResponse, timestamp: message.respondedAt })
+      }
+      return { chatbotHistory: parsed, thread }
+    }
+  } catch { /* ignore */ }
+
+  return { chatbotHistory: [], thread: [] }
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -145,7 +185,7 @@ export default function AdminMessagesPage() {
 
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({})
-  const [replyMethods, setReplyMethods] = useState<Record<string, ResponseMethod>>({})
+  const [replyMethods, setReplyMethods] = useState<Record<string, ResponseMethod[]>>({})
   const [sendingMessageId, setSendingMessageId] = useState<string | null>(null)
   const [updatingMessageId, setUpdatingMessageId] = useState<string | null>(null)
 
@@ -217,13 +257,8 @@ export default function AdminMessagesPage() {
     const message = messages.find((item) => item.id === messageId)
     if (!message) return
 
-    const availableMethods = getAvailableResponseMethods(message)
-    if (!availableMethods.length) {
-      setError('No response method available for this message')
-      return
-    }
-
-    const method = replyMethods[messageId] || availableMethods[0]
+    const selected = replyMethods[messageId]
+    const methods = selected && selected.length > 0 ? selected : ['in_app' as ResponseMethod]
 
     setSendingMessageId(messageId)
     setError(null)
@@ -234,7 +269,7 @@ export default function AdminMessagesPage() {
         body: JSON.stringify({
           messageId,
           response: draft,
-          method,
+          methods,
         }),
       })
 
@@ -244,20 +279,37 @@ export default function AdminMessagesPage() {
       }
 
       const nowIso = new Date().toISOString()
+      const respondedVia = methods.join(', ')
       setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? {
-                ...msg,
-                status: 'replied',
-                adminResponse: draft,
-                respondedVia: method,
-                respondedAt: nowIso,
-              }
-            : msg
-        )
+        prev.map((msg) => {
+          if (msg.id !== messageId) return msg
+          // Update chatHistory with new admin entry
+          const { chatbotHistory, thread } = getConversationThread(msg)
+          thread.push({
+            role: 'admin',
+            content: draft,
+            timestamp: nowIso,
+            deliveryMethods: methods,
+          })
+          const updatedHistory = JSON.stringify({
+            ...(chatbotHistory.length > 0 ? { _chatbotHistory: chatbotHistory } : {}),
+            thread,
+          })
+          return {
+            ...msg,
+            status: 'replied',
+            adminResponse: draft,
+            respondedVia,
+            respondedAt: nowIso,
+            chatHistory: updatedHistory,
+          }
+        })
       )
       setReplyDrafts((prev) => ({ ...prev, [messageId]: '' }))
+
+      if (data.warnings && data.warnings.length > 0) {
+        setError(data.warnings.join('; '))
+      }
     } catch (sendError) {
       const messageText = sendError instanceof Error ? sendError.message : 'Failed to send response'
       setError(messageText)
@@ -277,10 +329,7 @@ export default function AdminMessagesPage() {
     }
 
     if (!replyMethods[message.id]) {
-      const availableMethods = getAvailableResponseMethods(message)
-      if (availableMethods.length > 0) {
-        setReplyMethods((prev) => ({ ...prev, [message.id]: availableMethods[0] }))
-      }
+      setReplyMethods((prev) => ({ ...prev, [message.id]: ['in_app'] }))
     }
   }
 
@@ -376,6 +425,7 @@ export default function AdminMessagesPage() {
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
           <option value="all">Any Response Kind</option>
+          <option value="in_app">In-App</option>
           <option value="email">Email</option>
           <option value="sms">SMS</option>
           <option value="whatsapp">WhatsApp</option>
@@ -534,27 +584,95 @@ export default function AdminMessagesPage() {
                           <td className="px-4 py-4" colSpan={9}>
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                               <div className="space-y-4">
+                                {/* Conversation Thread */}
                                 <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Full Message</h3>
-                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{message.message}</p>
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Conversation</h3>
+                                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                                    {/* Original user message */}
+                                    <div className="flex items-start gap-2">
+                                      <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <User className="h-3.5 w-3.5 text-gray-600" />
+                                      </div>
+                                      <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+                                        <p className="text-xs font-semibold text-gray-500 mb-1">{message.name || 'User'}</p>
+                                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{message.message}</p>
+                                        <p className="text-xs text-gray-400 mt-1">{formatDateTime(message.createdAt)}</p>
+                                      </div>
+                                    </div>
+
+                                    {/* Thread entries */}
+                                    {(() => {
+                                      const { thread } = getConversationThread(message)
+                                      return thread.map((entry, idx) => {
+                                        if (entry.role === 'user') {
+                                          return (
+                                            <div key={idx} className="flex items-start gap-2">
+                                              <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <User className="h-3.5 w-3.5 text-gray-600" />
+                                              </div>
+                                              <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+                                                <p className="text-xs font-semibold text-gray-500 mb-1">{message.name || 'User'}</p>
+                                                <p className="text-sm text-gray-800 whitespace-pre-wrap">{entry.content}</p>
+                                                <p className="text-xs text-gray-400 mt-1">{formatDateTime(entry.timestamp)}</p>
+                                              </div>
+                                            </div>
+                                          )
+                                        }
+                                        if (entry.role === 'bot') {
+                                          return (
+                                            <div key={idx} className="flex items-start gap-2 justify-end">
+                                              <div className="flex-1 bg-blue-50 rounded-lg px-3 py-2 border border-blue-200">
+                                                <p className="text-xs font-semibold text-blue-700 mb-1">AI Assistant</p>
+                                                <p className="text-sm text-gray-800 whitespace-pre-wrap">{entry.content}</p>
+                                                <p className="text-xs text-blue-400 mt-1">{formatDateTime(entry.timestamp)}</p>
+                                              </div>
+                                            </div>
+                                          )
+                                        }
+                                        // admin
+                                        return (
+                                          <div key={idx} className="flex items-start gap-2 justify-end">
+                                            <div className="flex-1 bg-green-50 rounded-lg px-3 py-2 border border-green-200">
+                                              <p className="text-xs font-semibold text-green-700 mb-1">Admin</p>
+                                              <p className="text-sm text-gray-800 whitespace-pre-wrap">{entry.content}</p>
+                                              <p className="text-xs text-green-500 mt-1">{formatDateTime(entry.timestamp)}</p>
+                                            </div>
+                                          </div>
+                                        )
+                                      })
+                                    })()}
+
+                                    {getConversationThread(message).thread.length === 0 && !message.adminResponse && (
+                                      <div className="text-center py-2">
+                                        <p className="text-xs text-amber-600">No responses yet</p>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
 
-                                {message.chatHistory && parseChatHistory(message.chatHistory).length > 0 && (
-                                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Chat History</h3>
-                                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                                      {parseChatHistory(message.chatHistory).map((chatItem, idx) => (
-                                        <div
-                                          key={`${message.id}-chat-${idx}`}
-                                          className={`text-sm ${chatItem.role === 'user' ? 'text-blue-700' : 'text-gray-700'}`}
-                                        >
-                                          <span className="font-medium">{chatItem.role === 'user' ? 'User' : 'Bot'}:</span>{' '}
-                                          {chatItem.content}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
+                                {/* Chatbot pre-escalation history (collapsible) */}
+                                {(() => {
+                                  const { chatbotHistory } = getConversationThread(message)
+                                  if (chatbotHistory.length === 0) return null
+                                  return (
+                                    <details className="bg-white border border-gray-200 rounded-lg p-4">
+                                      <summary className="text-sm font-semibold text-gray-900 cursor-pointer">
+                                        Chatbot History ({chatbotHistory.length} messages)
+                                      </summary>
+                                      <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                                        {chatbotHistory.map((chatItem, idx) => (
+                                          <div
+                                            key={`${message.id}-chat-${idx}`}
+                                            className={`text-sm ${chatItem.role === 'user' ? 'text-blue-700' : 'text-gray-700'}`}
+                                          >
+                                            <span className="font-medium">{chatItem.role === 'user' ? 'User' : 'Bot'}:</span>{' '}
+                                            {chatItem.content}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </details>
+                                  )
+                                })()}
 
                                 <div className="bg-white border border-gray-200 rounded-lg p-4">
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Message Actions</h3>
@@ -594,40 +712,8 @@ export default function AdminMessagesPage() {
                               </div>
 
                               <div className="space-y-4">
+
                                 <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                  <h3 className="text-sm font-semibold text-gray-900 mb-2">Response Tracking</h3>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                    <div>
-                                      <p className="text-xs text-gray-500 uppercase font-semibold">Needs Response</p>
-                                      <p className="font-medium text-gray-900">{needsResponse(message) ? 'Yes' : 'No'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-gray-500 uppercase font-semibold">Response Kind</p>
-                                      <p className="font-medium text-gray-900">{message.respondedVia || '-'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-gray-500 uppercase font-semibold">Response Sent On</p>
-                                      <p className="font-medium text-gray-900">{formatDateTime(message.respondedAt)}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-gray-500 uppercase font-semibold">Received On</p>
-                                      <p className="font-medium text-gray-900">{formatDateTime(message.createdAt)}</p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {message.adminResponse && (
-                                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                    <div className="flex items-center gap-2 text-sm text-green-700 mb-2">
-                                      <CheckCircle className="h-4 w-4" />
-                                      Response sent via {message.respondedVia || '-'} on {formatDateTime(message.respondedAt)}
-                                    </div>
-                                    <p className="text-sm text-green-800 whitespace-pre-wrap">{message.adminResponse}</p>
-                                  </div>
-                                )}
-
-                                {availableMethods.length > 0 ? (
-                                  <div className="bg-white border border-gray-200 rounded-lg p-4">
                                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Send Response</h3>
                                     <textarea
                                       value={replyDrafts[message.id] || ''}
@@ -638,29 +724,46 @@ export default function AdminMessagesPage() {
                                       className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                       rows={4}
                                     />
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-3">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm text-gray-600">Send via:</span>
-                                        <select
-                                          value={replyMethods[message.id] || availableMethods[0]}
-                                          onChange={(event) =>
-                                            setReplyMethods((prev) => ({
-                                              ...prev,
-                                              [message.id]: event.target.value as ResponseMethod,
-                                            }))
-                                          }
-                                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                        >
-                                          {availableMethods.includes('email') && <option value="email">Email</option>}
-                                          {availableMethods.includes('sms') && <option value="sms">SMS</option>}
-                                          {availableMethods.includes('whatsapp') && <option value="whatsapp">WhatsApp</option>}
-                                        </select>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-3">
+                                      <div>
+                                        <span className="text-sm text-gray-600 block mb-2">Send via:</span>
+                                        <div className="flex flex-wrap gap-3">
+                                          {([
+                                            { value: 'in_app' as ResponseMethod, label: 'In-App', always: true },
+                                            { value: 'email' as ResponseMethod, label: 'Email', always: false },
+                                            { value: 'sms' as ResponseMethod, label: 'SMS', always: false },
+                                            { value: 'whatsapp' as ResponseMethod, label: 'WhatsApp', always: false },
+                                          ] as const).map((opt) => {
+                                            if (!opt.always && !availableMethods.includes(opt.value)) return null
+                                            const selected = replyMethods[message.id] || ['in_app']
+                                            const isChecked = selected.includes(opt.value)
+                                            return (
+                                              <label key={opt.value} className="flex items-center gap-1.5 text-sm cursor-pointer select-none">
+                                                <input
+                                                  type="checkbox"
+                                                  checked={isChecked}
+                                                  onChange={() => {
+                                                    setReplyMethods((prev) => {
+                                                      const current = prev[message.id] || ['in_app']
+                                                      const next = isChecked
+                                                        ? current.filter((m) => m !== opt.value)
+                                                        : [...current, opt.value]
+                                                      return { ...prev, [message.id]: next.length > 0 ? next : ['in_app'] }
+                                                    })
+                                                  }}
+                                                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                />
+                                                {opt.label}
+                                              </label>
+                                            )
+                                          })}
+                                        </div>
                                       </div>
                                       <button
                                         type="button"
                                         onClick={() => sendResponse(message.id)}
                                         disabled={sendingMessageId === message.id || !(replyDrafts[message.id] || '').trim()}
-                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 whitespace-nowrap"
                                       >
                                         {sendingMessageId === message.id ? (
                                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -671,11 +774,6 @@ export default function AdminMessagesPage() {
                                       </button>
                                     </div>
                                   </div>
-                                ) : (
-                                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-                                    No contact method available for this message.
-                                  </div>
-                                )}
                               </div>
                             </div>
                           </td>

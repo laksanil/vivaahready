@@ -487,7 +487,7 @@ function ViewProfilePageContent() {
   if ((adminProfileId || isImpersonationMode) && !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8">
-        <div className="max-w-3xl mx-auto px-4">
+        <div className="w-full px-4 md:px-8 xl:px-10">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">Unauthorized: Admin access required</p>
             <Link href={buildUrl('/profile')} className="btn-primary">
@@ -502,7 +502,7 @@ function ViewProfilePageContent() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8">
-        <div className="max-w-3xl mx-auto px-4">
+        <div className="w-full px-4 md:px-8 xl:px-10">
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <p className="text-gray-600 mb-4">{error || 'No profile found'}</p>
             <Link href={buildUrl('/profile/create')} className="btn-primary">
@@ -790,7 +790,7 @@ function ViewProfilePageContent() {
       {/* Admin Mode Banner */}
       {isAdminMode && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="w-full px-4 md:px-8 xl:px-10 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5" />
               <span className="font-medium">Admin Mode - Editing {profileUserName}&apos;s Profile</span>
@@ -808,7 +808,7 @@ function ViewProfilePageContent() {
 
       {/* Header Card */}
       <div className="bg-white border-b">
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="w-full px-4 md:px-8 xl:px-10 py-6">
           {/* Name and ID */}
           <div className="bg-gray-700 text-white px-4 py-3 rounded-t-lg -mx-4 -mt-6 mb-6">
             <h1 className="text-xl font-semibold">
@@ -998,7 +998,7 @@ function ViewProfilePageContent() {
       </div>
 
       {/* Tabs and Content */}
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="w-full px-4 md:px-8 xl:px-10 py-6">
         {/* Tabs */}
         <div className="flex mb-6 overflow-x-auto">
           <button

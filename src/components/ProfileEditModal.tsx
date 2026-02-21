@@ -15,9 +15,14 @@ import {
   ContactSection,
 } from './ProfileFormSections'
 import {
+  validateAboutMeStep,
+  validateBasicsStep,
+  validateFamilyStep,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
+  validateReligionStep,
+  validateLifestyleStep,
 } from '@/lib/profileFlowValidation'
 
 // Placeholder phrases that shouldn't be accepted
@@ -42,6 +47,36 @@ const INVALID_ABOUTME_PHRASES = [
   '...',
   '---',
 ]
+
+const normalizeForComparison = (value: string): string => value.trim().toLowerCase().replace(/\s+/g, ' ')
+
+function hasInvalidAboutMePlaceholder(value: string): boolean {
+  const normalized = normalizeForComparison(value)
+  if (!normalized) return false
+
+  const words = new Set(
+    normalized
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+  )
+
+  return INVALID_ABOUTME_PHRASES.some((phrase) => {
+    const invalidPhrase = normalizeForComparison(phrase)
+
+    if (normalized === invalidPhrase) {
+      return true
+    }
+
+    if (invalidPhrase.includes(' ')) {
+      return normalized.includes(invalidPhrase)
+    }
+
+    const phraseToken = invalidPhrase.replace(/[^a-z0-9]/g, '')
+    if (!phraseToken) return false
+    return words.has(phraseToken)
+  })
+}
 
 interface ProfileEditModalProps {
   isOpen: boolean
@@ -82,34 +117,40 @@ export default function ProfileEditModal({
   const validationErrors = useMemo(() => {
     const errors: string[] = []
 
+    if (section === 'basics') {
+      const basicsValidation = validateBasicsStep(formData)
+      errors.push(...basicsValidation.errors)
+    }
+
+    if (section === 'religion') {
+      const religionValidation = validateReligionStep(formData)
+      errors.push(...religionValidation.errors)
+    }
+
+    if (section === 'family') {
+      const familyValidation = validateFamilyStep(formData)
+      errors.push(...familyValidation.errors)
+    }
+
+    if (section === 'lifestyle') {
+      const lifestyleValidation = validateLifestyleStep(formData)
+      errors.push(...lifestyleValidation.errors)
+    }
+
     if (section === 'aboutme') {
-      const aboutMe = (formData.aboutMe as string || '').trim().toLowerCase()
-      const linkedinProfile = formData.linkedinProfile as string || ''
-      const referralSource = formData.referralSource as string || ''
+      const aboutMe = (formData.aboutMe as string || '').trim()
+      const aboutMeValidation = validateAboutMeStep(formData)
 
       // Check aboutMe
       if (!aboutMe) {
         errors.push('About Me is required')
       } else if (aboutMe.length < 50) {
         errors.push('About Me must be at least 50 characters')
-      } else if (INVALID_ABOUTME_PHRASES.some(phrase => aboutMe === phrase || aboutMe.includes(phrase))) {
+      } else if (hasInvalidAboutMePlaceholder(aboutMe)) {
         errors.push('Please write a meaningful description about yourself')
       }
 
-      // Check LinkedIn
-      if (!linkedinProfile) {
-        errors.push('LinkedIn profile is required')
-      } else if (linkedinProfile !== 'no_linkedin') {
-        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-        if (!linkedinRegex.test(linkedinProfile)) {
-          errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn"')
-        }
-      }
-
-      // Check referral source
-      if (!referralSource) {
-        errors.push('Referral source is required')
-      }
+      errors.push(...aboutMeValidation.errors)
     }
 
     if (section === 'preferences_1') {
@@ -127,7 +168,7 @@ export default function ProfileEditModal({
       errors.push(...locationEducationValidation.errors)
     }
 
-    return errors
+    return Array.from(new Set(errors))
   }, [section, formData])
 
   const isValid = validationErrors.length === 0

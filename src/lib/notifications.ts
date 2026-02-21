@@ -23,9 +23,12 @@ export type NotificationEvent =
   | 'profile_approved'
   | 'new_interest'
   | 'interest_accepted'
+  | 'interest_rejected'
+  | 'interest_withdrawn'
   | 'match_available'
   | 'payment_confirmed'
   | 'new_message'
+  | 'connection_withdrawn'
 
 interface NotifyOptions {
   /** The notification event type */
@@ -40,6 +43,26 @@ interface NotifyResult {
   email: boolean
   sms: boolean
   push: boolean
+}
+
+export type NotificationDeliveryMode = 'in_app' | 'email' | 'sms' | 'push'
+
+interface StoreNotificationOptions {
+  deliveryModes?: NotificationDeliveryMode[]
+  sendPush?: boolean
+}
+
+function buildNotificationData(
+  data: Record<string, string>,
+  deliveryModes: NotificationDeliveryMode[],
+  sentAt: string = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
+): string {
+  const modes = Array.from(new Set<NotificationDeliveryMode>(['in_app', ...deliveryModes]))
+  return JSON.stringify({
+    ...data,
+    __deliveryModes: modes,
+    __sentAt: sentAt,
+  })
 }
 
 /**
@@ -78,7 +101,7 @@ export async function notify({ event, userId, data }: NotifyOptions): Promise<No
   const eventEnabled = isEventEnabled(event, prefs)
   if (!eventEnabled) return result
 
-  // Fire all channels in parallel (fire-and-forget pattern)
+  // Fire all channels in parallel
   const promises: Promise<void>[] = []
 
   // Email
@@ -114,6 +137,28 @@ export async function notify({ event, userId, data }: NotifyOptions): Promise<No
   })
 
   await Promise.allSettled(promises)
+
+  const pushPayload = getPushPayload(event, data)
+  const deliveryModes: NotificationDeliveryMode[] = ['in_app']
+  if (result.email) deliveryModes.push('email')
+  if (result.sms) deliveryModes.push('sms')
+  if (result.push) deliveryModes.push('push')
+
+  try {
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: event,
+        title: pushPayload.title,
+        body: pushPayload.body,
+        url: pushPayload.url || null,
+        data: buildNotificationData(data, deliveryModes),
+      },
+    })
+  } catch (err) {
+    console.error(`[notify] Failed to store notification for ${event}:`, err)
+  }
+
   return result
 }
 
@@ -126,6 +171,9 @@ function isEventEnabled(
       return prefs.matchNotifications
     case 'new_interest':
     case 'interest_accepted':
+    case 'interest_rejected':
+    case 'interest_withdrawn':
+    case 'connection_withdrawn':
       return prefs.interestNotifications
     case 'new_message':
       return prefs.messageNotifications
@@ -191,8 +239,8 @@ async function sendEventSms(event: NotificationEvent, phone: string, data: Recor
   return result?.success ?? false
 }
 
-async function sendEventPush(event: NotificationEvent, userId: string, data: Record<string, string>): Promise<boolean> {
-  const pushPayloads: Record<NotificationEvent, { title: string; body: string; url: string; tag: string }> = {
+function getPushPayload(event: NotificationEvent, data: Record<string, string>): { title: string; body: string; url: string; tag: string } {
+  const payloads: Record<NotificationEvent, { title: string; body: string; url: string; tag: string }> = {
     welcome: {
       title: 'Welcome to VivaahReady!',
       body: 'Complete your profile to start finding meaningful connections.',
@@ -217,6 +265,18 @@ async function sendEventPush(event: NotificationEvent, userId: string, data: Rec
       url: '/messages',
       tag: 'interest-accepted',
     },
+    interest_rejected: {
+      title: 'Interest Declined',
+      body: `${data.rejectedByName || 'Someone'} has declined your interest.`,
+      url: '/matches?tab=sent',
+      tag: 'interest-rejected',
+    },
+    interest_withdrawn: {
+      title: 'Interest Withdrawn',
+      body: `${data.withdrawnByName || 'Someone'} has withdrawn their interest.`,
+      url: '/matches?tab=received',
+      tag: 'interest-withdrawn',
+    },
     match_available: {
       title: 'New Matches Available!',
       body: `You have ${data.matchCount || 'new'} potential matches waiting.`,
@@ -235,11 +295,55 @@ async function sendEventPush(event: NotificationEvent, userId: string, data: Rec
       url: '/messages',
       tag: 'new-message',
     },
+    connection_withdrawn: {
+      title: 'Connection Withdrawn',
+      body: `${data.withdrawnByName || 'Someone'} has withdrawn from the connection.`,
+      url: '/connections',
+      tag: 'connection-withdrawn',
+    },
   }
+  return payloads[event] || { title: 'Notification', body: 'You have a new notification.', url: '/dashboard', tag: 'general' }
+}
 
-  const payload = pushPayloads[event]
-  if (!payload) return false
-
+async function sendEventPush(event: NotificationEvent, userId: string, data: Record<string, string>): Promise<boolean> {
+  const payload = getPushPayload(event, data)
   const result = await sendPushToUser(userId, payload)
   return result.sent > 0
+}
+
+/**
+ * Lightweight helper: stores an in-app notification and sends a push notification.
+ * Use this from API routes that already handle email/SMS directly,
+ * to avoid double-sending those channels.
+ */
+export async function storeNotification(
+  event: NotificationEvent,
+  userId: string,
+  data: Record<string, string> = {},
+  options: StoreNotificationOptions = {}
+): Promise<void> {
+  const payload = getPushPayload(event, data)
+  const deliveryModes = new Set<NotificationDeliveryMode>(['in_app', ...(options.deliveryModes || [])])
+
+  if (options.sendPush !== false) {
+    try {
+      const pushResult = await sendPushToUser(userId, payload)
+      if (pushResult.sent > 0) {
+        deliveryModes.add('push')
+      }
+    } catch (err) {
+      console.error(`[storeNotification] Push failed for ${event}:`, err)
+    }
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: event,
+      title: payload.title,
+      body: payload.body,
+      url: payload.url || null,
+      data: buildNotificationData(data, Array.from(deliveryModes)),
+    },
+  })
 }

@@ -4,6 +4,79 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 
+type DeclineSource = 'matches' | 'interest_declined' | 'interest_withdrawn' | 'connection_withdrawn'
+
+async function upsertDeclinedProfile(
+  userId: string,
+  declinedUserId: string,
+  options?: { source?: DeclineSource; hiddenFromReconsider?: boolean }
+) {
+  const hiddenFromReconsider = options?.hiddenFromReconsider ?? false
+  const source = options?.source
+
+  try {
+    return await prisma.declinedProfile.upsert({
+      where: {
+        userId_declinedUserId: {
+          userId,
+          declinedUserId,
+        },
+      },
+      update: {
+        hiddenFromReconsider,
+        ...(source ? { source } : {}),
+      },
+      create: {
+        userId,
+        declinedUserId,
+        hiddenFromReconsider,
+        ...(source ? { source } : {}),
+      },
+    })
+  } catch (error) {
+    if (!source) {
+      throw error
+    }
+
+    // Backward-compatible fallback when local DB/client doesn't include `source` yet.
+    console.warn('Declined source write failed; retrying without source:', error)
+    try {
+      return await prisma.declinedProfile.upsert({
+        where: {
+          userId_declinedUserId: {
+            userId,
+            declinedUserId,
+          },
+        },
+        update: {
+          hiddenFromReconsider,
+        },
+        create: {
+          userId,
+          declinedUserId,
+          hiddenFromReconsider,
+        },
+      })
+    } catch (fallbackError) {
+      // Final fallback when local DB is behind schema (e.g., no hiddenFromReconsider yet).
+      console.warn('Declined hidden flag write failed; retrying minimal upsert:', fallbackError)
+      return prisma.declinedProfile.upsert({
+        where: {
+          userId_declinedUserId: {
+            userId,
+            declinedUserId,
+          },
+        },
+        update: {},
+        create: {
+          userId,
+          declinedUserId,
+        },
+      })
+    }
+  }
+}
+
 // POST - Decline a profile (add to declined list)
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +88,7 @@ export async function POST(request: NextRequest) {
     }
     const currentUserId = targetUser.userId
 
-    const { declinedUserId } = await request.json()
+    const { declinedUserId, source } = await request.json()
 
     if (!declinedUserId) {
       return NextResponse.json({ error: 'declinedUserId is required' }, { status: 400 })
@@ -26,19 +99,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cannot decline yourself' }, { status: 400 })
     }
 
-    // Create the declined profile record
-    const declined = await prisma.declinedProfile.upsert({
-      where: {
-        userId_declinedUserId: {
-          userId: currentUserId,
-          declinedUserId: declinedUserId,
-        },
-      },
-      update: {}, // No update needed if exists
-      create: {
-        userId: currentUserId,
-        declinedUserId: declinedUserId,
-      },
+    // Create/update the declined profile record.
+    const declined = await upsertDeclinedProfile(currentUserId, declinedUserId, {
+      source,
+      hiddenFromReconsider: false,
     })
 
     // Also reject any pending interest from this user
@@ -57,6 +121,50 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error declining profile:', error)
     return NextResponse.json({ error: 'Failed to decline profile' }, { status: 500 })
+  }
+}
+
+// PATCH - Permanently remove from reconsider pile while keeping it declined
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    // Get target user ID (supports admin impersonation)
+    const targetUser = await getTargetUserId(request, session)
+    if (!targetUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const currentUserId = targetUser.userId
+
+    const { declinedUserId } = await request.json()
+
+    if (!declinedUserId) {
+      return NextResponse.json({ error: 'declinedUserId is required' }, { status: 400 })
+    }
+
+    if (declinedUserId === currentUserId) {
+      return NextResponse.json({ error: 'Cannot decline yourself' }, { status: 400 })
+    }
+
+    const declined = await upsertDeclinedProfile(currentUserId, declinedUserId, {
+      hiddenFromReconsider: true,
+    })
+
+    // Keep any incoming pending interest from this profile rejected.
+    await prisma.match.updateMany({
+      where: {
+        senderId: declinedUserId,
+        receiverId: currentUserId,
+        status: 'pending',
+      },
+      data: {
+        status: 'rejected',
+      },
+    })
+
+    return NextResponse.json({ success: true, declined })
+  } catch (error) {
+    console.error('Error removing profile from reconsider pile:', error)
+    return NextResponse.json({ error: 'Failed to remove profile from reconsider pile' }, { status: 500 })
   }
 }
 
@@ -105,14 +213,57 @@ export async function GET(request: NextRequest) {
     const currentUserId = targetUser.userId
 
     // Get all declined profiles with their profile data
-    const declinedRecords = await prisma.declinedProfile.findMany({
-      where: {
-        userId: currentUserId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+    let declinedRecords: Array<{ declinedUserId: string; createdAt: Date; source?: string | null }>
+
+    try {
+      declinedRecords = await prisma.declinedProfile.findMany({
+        where: {
+          userId: currentUserId,
+          hiddenFromReconsider: false,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          declinedUserId: true,
+          createdAt: true,
+          source: true,
+        },
+      })
+    } catch (error) {
+      // Backward-compatible fallback when local DB/client doesn't include `source` yet.
+      console.warn('Declined source read failed; retrying without source:', error)
+      try {
+        declinedRecords = await prisma.declinedProfile.findMany({
+          where: {
+            userId: currentUserId,
+            hiddenFromReconsider: false,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            declinedUserId: true,
+            createdAt: true,
+          },
+        })
+      } catch (fallbackError) {
+        // Final fallback when local DB is behind schema (e.g., no hiddenFromReconsider yet).
+        console.warn('Declined hidden flag read failed; retrying minimal query:', fallbackError)
+        declinedRecords = await prisma.declinedProfile.findMany({
+          where: {
+            userId: currentUserId,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          select: {
+            declinedUserId: true,
+            createdAt: true,
+          },
+        })
+      }
+    }
 
     // Get the profile data for each declined user
     const declinedUserIds = declinedRecords.map(d => d.declinedUserId)
@@ -137,12 +288,13 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Add the declined date to each profile
+    // Add the declined date and source to each profile
     const profilesWithDeclinedDate = profiles.map(profile => {
       const declinedRecord = declinedRecords.find(d => d.declinedUserId === profile.userId)
       return {
         ...profile,
         declinedAt: declinedRecord?.createdAt,
+        declineSource: declinedRecord?.source || null,
       }
     })
 
