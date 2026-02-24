@@ -12,6 +12,25 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/sign-up',
+        destination: '/register',
+        permanent: true,
+      },
+      {
+        source: '/signup',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/index.html',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
   webpack: (config, { isServer }) => {
     // Fix for face-api.js which tries to use fs module
     if (!isServer) {
