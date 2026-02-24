@@ -59,6 +59,18 @@ export const metadata: Metadata = {
     'Vivaah Ready',
   ],
 
+  // Icons (favicon + app icons for Google search, browsers, mobile)
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+
   // Robots & Indexing
   robots: {
     index: true,
@@ -136,6 +148,35 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#dc2626" />
+        {/* Organization structured data for Google search logo */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'VivaahReady',
+              url: 'https://vivaahready.com',
+              logo: 'https://vivaahready.com/logo-original-red.png',
+              image: 'https://vivaahready.com/logo-original-red.png',
+              description: 'Premium Indian matchmaking service for US diaspora. Verified profiles, privacy-first approach.',
+              sameAs: [
+                'https://www.instagram.com/vivaahready',
+                'https://www.facebook.com/vivaahready',
+                'https://www.linkedin.com/company/vivaahready',
+              ],
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'customer service',
+                url: 'https://vivaahready.com/contact',
+              },
+            }),
+          }}
+        />
+      </head>
       <body className="font-sans min-h-screen flex flex-col bg-white">
         <Providers>
           <Suspense fallback={<div className="h-16 bg-white/80 backdrop-blur-sm shadow-sm" />}>
