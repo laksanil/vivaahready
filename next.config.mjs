@@ -20,6 +20,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/signup',
+        destination: '/login',
+        permanent: true,
+      },
+      {
         source: '/index.html',
         destination: '/',
         permanent: true,
