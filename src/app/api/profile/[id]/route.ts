@@ -234,6 +234,7 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
 
     // Basic fields
+    if (body.createdBy !== undefined) updateData.createdBy = body.createdBy
     if (body.firstName !== undefined) updateData.firstName = body.firstName
     if (body.lastName !== undefined) updateData.lastName = body.lastName
     if (body.gender !== undefined) updateData.gender = body.gender
@@ -243,11 +244,13 @@ export async function PUT(
     if (body.maritalStatus !== undefined) updateData.maritalStatus = body.maritalStatus
     if (body.hasChildren !== undefined) updateData.hasChildren = body.hasChildren
     if (body.motherTongue !== undefined) updateData.motherTongue = body.motherTongue
+    if (body.languagesKnown !== undefined) updateData.languagesKnown = body.languagesKnown
 
     // Location & Education
     if (body.country !== undefined) updateData.country = body.country
     if (body.grewUpIn !== undefined) updateData.grewUpIn = body.grewUpIn
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship
+    if (body.residencyStatus !== undefined) updateData.residencyStatus = body.residencyStatus
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
@@ -259,6 +262,7 @@ export async function PUT(
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
+    if (body.educationCareerDetails !== undefined) updateData.educationCareerDetails = body.educationCareerDetails
 
     // Religion & Astro
     if (body.religion !== undefined) updateData.religion = body.religion
@@ -267,9 +271,20 @@ export async function PUT(
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.nakshatra !== undefined) updateData.nakshatra = body.nakshatra
     if (body.rashi !== undefined) updateData.rashi = body.rashi
+    if (body.raasi !== undefined) updateData.raasi = body.raasi
     if (body.timeOfBirth !== undefined) updateData.timeOfBirth = body.timeOfBirth
     if (body.placeOfBirth !== undefined) updateData.placeOfBirth = body.placeOfBirth
+    if (body.placeOfBirthState !== undefined) updateData.placeOfBirthState = body.placeOfBirthState
+    if (body.placeOfBirthCity !== undefined) updateData.placeOfBirthCity = body.placeOfBirthCity
     if (body.manglik !== undefined) updateData.manglik = body.manglik
+    if (body.doshas !== undefined) updateData.doshas = body.doshas
+    // Religion-specific fields
+    if (body.maslak !== undefined) updateData.maslak = body.maslak
+    if (body.namazPractice !== undefined) updateData.namazPractice = body.namazPractice
+    if (body.amritdhari !== undefined) updateData.amritdhari = body.amritdhari
+    if (body.turban !== undefined) updateData.turban = body.turban
+    if (body.churchAttendance !== undefined) updateData.churchAttendance = body.churchAttendance
+    if (body.baptized !== undefined) updateData.baptized = body.baptized
 
     // Family
     if (body.familyLocation !== undefined) updateData.familyLocation = body.familyLocation
@@ -282,6 +297,8 @@ export async function PUT(
     if (body.numberOfBrothers !== undefined) updateData.numberOfBrothers = body.numberOfBrothers
     if (body.numberOfSisters !== undefined) updateData.numberOfSisters = body.numberOfSisters
     if (body.siblingDetails !== undefined) updateData.siblingDetails = body.siblingDetails
+    if (body.familyDetails !== undefined) updateData.familyDetails = body.familyDetails
+    if (body.livesWithFamily !== undefined) updateData.livesWithFamily = body.livesWithFamily
 
     // Lifestyle
     if (body.dietaryPreference !== undefined) updateData.dietaryPreference = body.dietaryPreference
@@ -302,6 +319,7 @@ export async function PUT(
     if (body.bloodGroup !== undefined) updateData.bloodGroup = body.bloodGroup
     if (body.anyDisability !== undefined) updateData.anyDisability = body.anyDisability
     if (body.disabilityDetails !== undefined) updateData.disabilityDetails = body.disabilityDetails
+    if (body.allergiesOrMedical !== undefined) updateData.allergiesOrMedical = body.allergiesOrMedical
 
     // Partner Preferences - Page 1
     if (body.prefAgeMin !== undefined) updateData.prefAgeMin = body.prefAgeMin
