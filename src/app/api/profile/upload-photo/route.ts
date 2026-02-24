@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
 import { isTestMode } from '@/lib/testMode'
 
+export const maxDuration = 60 // 60 seconds for Cloudinary upload
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
 
