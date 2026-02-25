@@ -288,12 +288,21 @@ describe('profileFlowValidation', () => {
   })
 
   describe('validateAboutMeStep', () => {
-    it('fails when required about me fields are missing', () => {
+    it('fails when required social/referral fields are missing', () => {
       const result = validateAboutMeStep({})
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('About Me is required.')
       expect(result.errors).toContain('LinkedIn profile is required.')
       expect(result.errors).toContain('Referral source is required.')
+    })
+
+    it('does not require About Me text when linkedin and referral source are provided', () => {
+      const result = validateAboutMeStep({
+        aboutMe: '',
+        linkedinProfile: 'https://linkedin.com/in/test-user',
+        referralSource: 'google',
+      })
+      expect(result.isValid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
 
     it('fails when linkedin URL is invalid', () => {
