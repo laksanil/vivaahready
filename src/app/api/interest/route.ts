@@ -5,8 +5,70 @@ import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { incrementInterestStats, incrementMutualMatchesForBoth } from '@/lib/lifetimeStats'
 import { sendNewInterestEmail, sendInterestAcceptedEmail } from '@/lib/email'
+import { storeNotification } from '@/lib/notifications'
+import { awardInterestPoints, awardResponsePoints } from '@/lib/engagementPoints'
 
 export const dynamic = 'force-dynamic'
+
+async function addWithdrawnInterestToDeclined(userId: string, declinedUserId: string) {
+  try {
+    await prisma.declinedProfile.upsert({
+      where: {
+        userId_declinedUserId: {
+          userId,
+          declinedUserId,
+        },
+      },
+      update: {
+        hiddenFromReconsider: false,
+        source: 'interest_withdrawn',
+      },
+      create: {
+        userId,
+        declinedUserId,
+        hiddenFromReconsider: false,
+        source: 'interest_withdrawn',
+      },
+    })
+  } catch (error) {
+    // Backward-compatible fallback if local DB/client doesn't support `source` yet.
+    console.warn('Declined source write failed for withdrawn interest, retrying without source:', error)
+    try {
+      await prisma.declinedProfile.upsert({
+        where: {
+          userId_declinedUserId: {
+            userId,
+            declinedUserId,
+          },
+        },
+        update: {
+          hiddenFromReconsider: false,
+        },
+        create: {
+          userId,
+          declinedUserId,
+          hiddenFromReconsider: false,
+        },
+      })
+    } catch (fallbackError) {
+      // Final fallback when local DB is behind schema (e.g., no hiddenFromReconsider yet).
+      console.warn('Declined hidden flag write failed, retrying minimal upsert:', fallbackError)
+      await prisma.declinedProfile.upsert({
+        where: {
+          userId_declinedUserId: {
+            userId,
+            declinedUserId,
+          },
+        },
+        update: {},
+        create: {
+          userId,
+          declinedUserId,
+        },
+      })
+    }
+  }
+}
 
 // GET - Get interests (received, sent, or check mutual with specific profile)
 export async function GET(request: Request) {
@@ -201,9 +263,14 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    // Get the target profile
-    const targetProfile = await prisma.profile.findUnique({
-      where: { id: profileId },
+    // Get the target profile (must be currently visible/eligible in matching)
+    const targetProfile = await prisma.profile.findFirst({
+      where: {
+        id: profileId,
+        isActive: true,
+        isSuspended: false,
+        approvalStatus: 'approved',
+      },
       include: {
         user: {
           select: { id: true, name: true, email: true, phone: true }
@@ -212,7 +279,7 @@ export async function POST(request: Request) {
     })
 
     if (!targetProfile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Profile not available' }, { status: 404 })
     }
 
     // Check if interest already exists
@@ -275,6 +342,11 @@ export async function POST(request: Request) {
       // Increment lifetime mutual matches for both users
       await incrementMutualMatchesForBoth(currentUserId, targetProfile.userId)
 
+      // Award engagement points for expressing interest
+      awardInterestPoints(currentUserId, newInterest.id).catch(err =>
+        console.error('Failed to award interest points:', err)
+      )
+
       // Send mutual match email to the other person (who expressed interest first)
       // Get current user's profile info
       const currentUserProfile = await prisma.profile.findUnique({
@@ -286,9 +358,9 @@ export async function POST(request: Request) {
         select: { name: true }
       })
 
-      if (targetProfile.user.email && currentUserProfile) {
-        const currentUserFirstName = currentUserProfile.firstName || currentUser?.name?.split(' ')[0] || 'Someone'
+      const currentUserFirstName = currentUserProfile?.firstName || currentUser?.name?.split(' ')[0] || 'Someone'
 
+      if (targetProfile.user.email && currentUserProfile) {
         // Await email to ensure it completes before serverless function ends
         try {
           const emailResult = await sendInterestAcceptedEmail(
@@ -302,6 +374,12 @@ export async function POST(request: Request) {
           console.error('Failed to send mutual match email:', emailError)
         }
       }
+
+      // Always store in-app notification for the other user (regardless of email)
+      storeNotification('interest_accepted', targetProfile.userId, {
+        matchName: currentUserFirstName,
+        recipientName: targetProfile.user.name || 'there',
+      }).catch(err => console.error('Failed to store mutual match notification:', err))
 
       return NextResponse.json({
         message: "It's a match! You both expressed interest.",
@@ -330,6 +408,11 @@ export async function POST(request: Request) {
     // Increment lifetime stats for both sender and receiver
     await incrementInterestStats(currentUserId, targetProfile.userId)
 
+    // Award engagement points for expressing interest
+    awardInterestPoints(currentUserId, newInterest.id).catch(err =>
+      console.error('Failed to award interest points:', err)
+    )
+
     // Send email notification to the receiver about the new interest
     // Get sender's profile info for the email
     const senderUser = await prisma.user.findUnique({
@@ -337,10 +420,10 @@ export async function POST(request: Request) {
       select: { name: true, profile: { select: { id: true, firstName: true } } }
     })
 
-    if (senderUser && targetProfile.user.email) {
-      const senderFirstName = senderUser.profile?.firstName || senderUser.name?.split(' ')[0] || 'Someone'
-      const senderProfileId = senderUser.profile?.id || ''
+    const senderFirstName = senderUser?.profile?.firstName || senderUser?.name?.split(' ')[0] || 'Someone'
+    const senderProfileId = senderUser?.profile?.id || ''
 
+    if (senderUser && targetProfile.user.email) {
       console.log('Sending new interest email to:', targetProfile.user.email, 'from:', senderFirstName)
 
       // Await email to ensure it completes before serverless function ends
@@ -359,6 +442,12 @@ export async function POST(request: Request) {
     } else {
       console.warn('Skipping interest email - senderUser:', !!senderUser, 'targetEmail:', targetProfile.user.email)
     }
+
+    // Always store in-app notification for the receiver (regardless of email)
+    storeNotification('new_interest', targetProfile.userId, {
+      senderName: senderFirstName,
+      recipientName: targetProfile.user.name || 'there',
+    }).catch(err => console.error('Failed to store new interest notification:', err))
 
     return NextResponse.json({
       message: 'Interest sent successfully',
@@ -493,6 +582,12 @@ export async function PATCH(request: Request) {
         }
         newStatus = 'rejected'
         responseMessage = 'Interest declined. You can reconsider later if you change your mind.'
+
+        // Notify the sender that their interest was declined
+        storeNotification('interest_rejected', interest.senderId, {
+          rejectedByName: interest.receiver.name?.split(' ')[0] || 'Someone',
+          recipientName: interest.sender.name || 'there',
+        }).catch(err => console.error('Failed to store interest rejected notification:', err))
         break
 
       case 'reconsider':
@@ -513,9 +608,25 @@ export async function PATCH(request: Request) {
       case 'withdraw':
         if (interest.status === 'accepted') {
           // Can withdraw even accepted interest (but receiver keeps their accepted status)
+          await addWithdrawnInterestToDeclined(currentUserId, interest.receiverId)
           newStatus = 'withdrawn'
           responseMessage = 'Interest withdrawn.'
+
+          // Notify receiver that sender withdrew from an accepted connection
+          storeNotification('connection_withdrawn', interest.receiverId, {
+            withdrawnByName: interest.sender.name?.split(' ')[0] || 'Someone',
+            recipientName: interest.receiver.name || 'there',
+          }).catch(err => console.error('Failed to store connection withdrawn notification:', err))
         } else {
+          // Ensure declined entry is added before deleting so profile doesn't reappear in feed.
+          await addWithdrawnInterestToDeclined(currentUserId, interest.receiverId)
+
+          // Notify receiver that sender withdrew their pending interest
+          storeNotification('interest_withdrawn', interest.receiverId, {
+            withdrawnByName: interest.sender.name?.split(' ')[0] || 'Someone',
+            recipientName: interest.receiver.name || 'there',
+          }).catch(err => console.error('Failed to store interest withdrawn notification:', err))
+
           // Delete the interest entirely if it was pending/rejected
           await prisma.match.delete({
             where: { id: interestId }
@@ -537,6 +648,13 @@ export async function PATCH(request: Request) {
       data: { status: newStatus }
     })
 
+    // Award engagement points for responding to an interest (accept or reject)
+    if (action === 'accept' || action === 'reject') {
+      awardResponsePoints(currentUserId, interestId).catch(err =>
+        console.error('Failed to award response points:', err)
+      )
+    }
+
     // Increment lifetime mutual matches when a connection is created (accept or reconsider)
     if (action === 'accept' || action === 'reconsider') {
       await incrementMutualMatchesForBoth(interest.senderId, interest.receiverId)
@@ -548,9 +666,9 @@ export async function PATCH(request: Request) {
         select: { id: true, firstName: true }
       })
 
-      if (interest.sender.email && receiverProfile) {
-        const receiverFirstName = receiverProfile.firstName || interest.receiver.name?.split(' ')[0] || 'Someone'
+      const receiverFirstName = receiverProfile?.firstName || interest.receiver.name?.split(' ')[0] || 'Someone'
 
+      if (interest.sender.email && receiverProfile) {
         // Await email to ensure it completes before serverless function ends
         try {
           const emailResult = await sendInterestAcceptedEmail(
@@ -564,6 +682,12 @@ export async function PATCH(request: Request) {
           console.error('Failed to send interest accepted email:', emailError)
         }
       }
+
+      // Always store in-app notification for the sender (regardless of email)
+      storeNotification('interest_accepted', interest.senderId, {
+        matchName: receiverFirstName,
+        recipientName: interest.sender.name || 'there',
+      }).catch(err => console.error('Failed to store interest accepted notification:', err))
     }
 
     return NextResponse.json({

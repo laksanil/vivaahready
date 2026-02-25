@@ -79,6 +79,8 @@ export const VISIBLE_FIELDS = [
  * Get a partially blurred profile for non-complete users
  */
 export function getBlurredProfileData(profile: any): any {
+  const hasLinkedIn = !!profile.linkedinProfile && profile.linkedinProfile !== 'no_linkedin'
+
   return {
     ...profile,
     // Mask sensitive data
@@ -88,7 +90,7 @@ export function getBlurredProfileData(profile: any): any {
     } : undefined,
     currentLocation: maskLocation(profile.currentLocation),
     annualIncome: profile.annualIncome ? 'Disclosed to members' : null,
-    linkedinProfile: profile.linkedinProfile ? 'Available' : null,
+    linkedinProfile: hasLinkedIn ? 'Available' : null,
     facebookInstagram: profile.facebookInstagram ? 'Available' : null,
     familyLocation: profile.familyLocation ? maskLocation(profile.familyLocation) : null,
     fatherName: profile.fatherName ? '••••••' : null,

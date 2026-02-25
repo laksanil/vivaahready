@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { sendMatchNotificationSms, formatPhoneNumber } from '@/lib/sns'
+import { storeNotification } from '@/lib/notifications'
 
 export async function GET(request: Request) {
   try {
@@ -18,6 +19,11 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'received'
 
     const targetUserId = targetUser.userId
+    const myDeclinedProfiles = await prisma.declinedProfile.findMany({
+      where: { userId: targetUserId },
+      select: { declinedUserId: true },
+    })
+    const declinedUserIds = new Set(myDeclinedProfiles.map((d) => d.declinedUserId))
 
     let matches = []
 
@@ -149,8 +155,14 @@ export async function GET(request: Request) {
       }
     }
 
-    // Filter out matches without profile data
-    matches = matches.filter((m: any) => m.gender)
+    // Filter out matches without profile data, non-approved/suspended/inactive profiles, and declined profiles.
+    matches = matches.filter((m: any) =>
+      m.gender &&
+      m.approvalStatus === 'approved' &&
+      m.isActive !== false &&
+      m.isSuspended !== true &&
+      !declinedUserIds.has(m.userId)
+    )
 
     return NextResponse.json({ matches })
   } catch (error) {
@@ -215,6 +227,7 @@ export async function POST(request: Request) {
         where: { id: currentUserId },
         select: { profile: { select: { firstName: true } } }
       })
+      const deliveryModes: Array<'sms'> = []
 
       if (receiver?.phone && receiver.phoneVerified) {
         const receiverName = receiver.profile?.firstName || 'there'
@@ -224,7 +237,15 @@ export async function POST(request: Request) {
           receiverName,
           senderName
         )
+        deliveryModes.push('sms')
       }
+      // Store in-app notification + push
+      storeNotification('new_interest', receiverId, {
+        senderName: sender?.profile?.firstName || 'Someone',
+        recipientName: receiver?.profile?.firstName || 'there',
+      }, {
+        deliveryModes,
+      }).catch(err => console.error('Failed to store match notification:', err))
     } catch (smsError) {
       // Log but don't fail the match creation if SMS fails
       console.error('Failed to send match notification SMS:', smsError)

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Invalid needsResponse filter' }, { status: 400 })
     }
 
-    const validResponseKinds = new Set(['all', 'email', 'sms', 'whatsapp', 'none'])
+    const validResponseKinds = new Set(['all', 'email', 'sms', 'whatsapp', 'in_app', 'none'])
     if (!validResponseKinds.has(responseKind)) {
       return NextResponse.json({ error: 'Invalid responseKind filter' }, { status: 400 })
     }

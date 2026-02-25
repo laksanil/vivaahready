@@ -4,6 +4,8 @@ import GoogleProvider from 'next-auth/providers/google'
 import { compare } from 'bcryptjs'
 import { prisma } from './prisma'
 import { sendWelcomeEmail } from './email'
+import { storeNotification } from './notifications'
+import { awardDailyLoginPoints } from './engagementPoints'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -110,6 +112,11 @@ export const authOptions: NextAuthOptions = {
           data: { lastLogin: new Date() },
         })
 
+        // Award daily login engagement points (fire and forget)
+        awardDailyLoginPoints(user.id).catch(err =>
+          console.error('Failed to award daily login points:', err)
+        )
+
         return {
           id: user.id,
           email: user.email,
@@ -156,6 +163,13 @@ export const authOptions: NextAuthOptions = {
             sendWelcomeEmail(email, user.name || 'there').catch((err) => {
               console.error('Failed to send welcome email:', err)
             })
+            storeNotification('welcome', existingUser.id, {
+              name: user.name || 'there',
+            }, {
+              deliveryModes: ['email'],
+            }).catch((err) => {
+              console.error('Failed to store welcome notification:', err)
+            })
           } else {
             // Update lastLogin and email verification status
             await prisma.user.update({
@@ -165,6 +179,11 @@ export const authOptions: NextAuthOptions = {
                 ...(!existingUser.emailVerified && { emailVerified: new Date() }),
               },
             })
+
+            // Award daily login engagement points (fire and forget)
+            awardDailyLoginPoints(existingUser.id).catch(err =>
+              console.error('Failed to award daily login points:', err)
+            )
           }
 
           return true

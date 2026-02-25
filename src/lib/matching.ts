@@ -31,6 +31,9 @@ interface ProfileForMatching {
   subCommunity: string | null
   dietaryPreference: string | null
   qualification: string | null
+  educationLevel?: string | null
+  fieldOfStudy?: string | null
+  major?: string | null
   height: string | null
   gotra: string | null
   aboutMe?: string | null  // Used to check for ongoing education
@@ -67,6 +70,7 @@ interface ProfileForMatching {
   prefGrewUpIn?: string | null
   prefRelocation?: string | null
   prefQualification?: string | null
+  prefFieldOfStudy?: string | null
   prefWorkArea?: string | null
   prefIncome?: string | null
   prefOccupationList?: string | null
@@ -102,6 +106,7 @@ interface ProfileForMatching {
   prefGrewUpInIsDealbreaker?: boolean | string
   prefRelocationIsDealbreaker?: boolean | string
   prefEducationIsDealbreaker?: boolean | string
+  prefFieldOfStudyIsDealbreaker?: boolean | string
   prefWorkAreaIsDealbreaker?: boolean | string
   prefIncomeIsDealbreaker?: boolean | string
   prefOccupationIsDealbreaker?: boolean | string
@@ -462,6 +467,8 @@ const PREF_EDUCATION_CONFIG: Record<string, { type: string; minLevel?: number; c
   'cpa': { type: 'category', categories: ['cpa'] },
   'law': { type: 'category', categories: ['llb', 'llm', 'jd'] },
   'doctorate': { type: 'category', categories: ['phd', 'edd', 'psyd', 'dm_mch'] },
+  // New: combined professional degree filters
+  'doctor_or_lawyer': { type: 'category', categories: ['md', 'do', 'dds', 'pharmd', 'jd', 'mbbs', 'bds'] },
   // Legacy values support
   'graduate': { type: 'level', minLevel: 2 },  // Legacy
   'post_graduate': { type: 'level', minLevel: 3 },  // Legacy
@@ -990,34 +997,67 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
 }
 
 /**
+ * Education level hierarchy for the new simplified system
+ */
+const NEW_EDUCATION_LEVEL_HIERARCHY: Record<string, number> = {
+  'high_school': 1,
+  'associates': 1,
+  'bachelors': 2,
+  'masters': 3,
+  'mba': 3,
+  'medical': 4,
+  'law': 4,
+  'doctorate': 4,
+}
+
+/**
  * Check if education requirement is met
  * Supports both level-based (e.g., "Bachelor's or higher") and category-based (e.g., "Medical Professional") matching
+ * Uses new educationLevel field first, falls back to old qualification for legacy profiles
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
-function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false): boolean {
+function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false, candidateEducationLevel?: string | null): boolean {
   if (isNoPreferenceValue(seekerPref) || !seekerPref) {
     return true
   }
 
-  // Get preference configuration
   const prefNormalized = seekerPref.toLowerCase().trim()
+
+  // === New system: use educationLevel if available ===
+  if (candidateEducationLevel) {
+    const candidateEdLevel = candidateEducationLevel.toLowerCase().trim()
+    const candidateLevelNum = NEW_EDUCATION_LEVEL_HIERARCHY[candidateEdLevel] || 0
+
+    // doctor_or_lawyer: special combined filter
+    if (prefNormalized === 'doctor_or_lawyer') {
+      return candidateEdLevel === 'medical' || candidateEdLevel === 'law'
+    }
+    // Exact category matches (medical, law, mba, doctorate)
+    if (prefNormalized === 'medical') return candidateEdLevel === 'medical'
+    if (prefNormalized === 'law') return candidateEdLevel === 'law'
+    if (prefNormalized === 'mba') return candidateEdLevel === 'mba'
+    if (prefNormalized === 'doctorate') return candidateEdLevel === 'doctorate'
+    // Level-based (bachelors, masters)
+    if (prefNormalized === 'bachelors') return candidateLevelNum >= 2
+    if (prefNormalized === 'masters') return candidateLevelNum >= 3
+    if (prefNormalized === 'doesnt_matter' || prefNormalized === 'any') return true
+  }
+
+  // === Legacy system: fall back to old qualification field ===
   const prefConfig = PREF_EDUCATION_CONFIG[prefNormalized]
 
   if (prefConfig) {
-    // Use configured matching rules
     if (prefConfig.type === 'any') {
       return true
     }
 
     if (prefConfig.type === 'level' && prefConfig.minLevel !== undefined) {
-      // Level-based matching: candidate level must be >= minimum
       const candidateLevel = getEducationLevel(candidateQual)
-      if (candidateLevel === 0) return true // Missing data never blocks a match
+      if (candidateLevel === 0) return true
       return candidateLevel >= prefConfig.minLevel
     }
 
     if (prefConfig.type === 'category' && prefConfig.categories) {
-      // Category-based matching: candidate must be in specific categories
       if (!candidateQual) return true
       return matchesEducationCategory(candidateQual, prefConfig.categories)
     }
@@ -1027,12 +1067,20 @@ function isEducationMatch(seekerPref: string | null | undefined, candidateQual: 
   const seekerMinLevel = getEducationLevel(seekerPref)
   const candidateLevel = getEducationLevel(candidateQual)
 
-  // If we can't determine levels, allow the match
   if (seekerMinLevel === 0 || candidateLevel === 0) {
     return true
   }
 
   return candidateLevel >= seekerMinLevel
+}
+
+/**
+ * Check if candidate's field of study matches seeker's preference
+ */
+function isFieldOfStudyMatch(seekerPref: string | null | undefined, candidateField: string | null | undefined): boolean {
+  if (!seekerPref || seekerPref === 'any' || seekerPref === '') return true
+  if (!candidateField) return true // Missing data never blocks
+  return seekerPref.toLowerCase().trim() === candidateField.toLowerCase().trim()
 }
 
 /**
@@ -1918,10 +1966,18 @@ export function matchesSeekerPreferences(
     }
   }
 
-  // 11. Education check
+  // 11. Education check (uses new educationLevel field first, falls back to qualification)
   if (isPrefSet(seeker.prefQualification)) {
-    const matches = isEducationMatch(seeker.prefQualification, candidate.qualification, false)
+    const matches = isEducationMatch(seeker.prefQualification, candidate.qualification, false, candidate.educationLevel)
     if (!matches && isDealbreaker(seeker.prefEducationIsDealbreaker)) {
+      return false
+    }
+  }
+
+  // 11b. Field of Study check
+  if (isPrefSet(seeker.prefFieldOfStudy) && seeker.prefFieldOfStudy !== 'any') {
+    const matches = isFieldOfStudyMatch(seeker.prefFieldOfStudy, candidate.fieldOfStudy)
+    if (!matches && isDealbreaker(seeker.prefFieldOfStudyIsDealbreaker)) {
       return false
     }
   }
@@ -2264,11 +2320,11 @@ export function calculateMatchScore(
     isDealbreaker: isDealbreaker(seeker.prefDietIsDealbreaker)
   })
 
-  // 7. Qualification/Education match
+  // 7. Qualification/Education match (uses new educationLevel first, falls back to qualification)
   let qualMatched = true
   if (isPrefSet(seeker.prefQualification)) {
     totalCriteria++
-    qualMatched = isEducationMatch(seeker.prefQualification, candidate.qualification, true)
+    qualMatched = isEducationMatch(seeker.prefQualification, candidate.qualification, true, candidate.educationLevel)
     if (qualMatched) matchedCount++
   }
 
@@ -2276,8 +2332,24 @@ export function calculateMatchScore(
     name: 'Education',
     matched: qualMatched,
     seekerPref: seeker.prefQualification || "Doesn't matter",
-    candidateValue: candidate.qualification || 'Not specified',
+    candidateValue: candidate.educationLevel || candidate.qualification || 'Not specified',
     isDealbreaker: isDealbreaker(seeker.prefEducationIsDealbreaker)
+  })
+
+  // 7b. Field of Study match
+  let fieldMatched = true
+  if (isPrefSet(seeker.prefFieldOfStudy) && seeker.prefFieldOfStudy !== 'any') {
+    totalCriteria++
+    fieldMatched = isFieldOfStudyMatch(seeker.prefFieldOfStudy, candidate.fieldOfStudy)
+    if (fieldMatched) matchedCount++
+  }
+
+  criteria.push({
+    name: 'Field of Study',
+    matched: fieldMatched,
+    seekerPref: seeker.prefFieldOfStudy || 'Any field',
+    candidateValue: candidate.fieldOfStudy || 'Not specified',
+    isDealbreaker: isDealbreaker(seeker.prefFieldOfStudyIsDealbreaker)
   })
 
   // 8. Marital Status match

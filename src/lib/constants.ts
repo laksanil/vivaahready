@@ -272,6 +272,112 @@ export const PREF_EDUCATION_OPTIONS = [
   { value: "doctorate", label: "Doctorate (PhD, EdD, PsyD)", type: "category", categories: ["phd", "edd", "psyd"] },
 ]
 
+// ===== NEW: Simplified Education System =====
+
+// Education Level — the degree tier (replaces the old 28-option QUALIFICATION_OPTIONS for new profiles)
+export const EDUCATION_LEVEL_OPTIONS = [
+  { value: 'high_school', label: 'High School Diploma', level: 1 },
+  { value: 'associates', label: "Associate's Degree", level: 1 },
+  { value: 'bachelors', label: "Bachelor's Degree", level: 2 },
+  { value: 'masters', label: "Master's Degree", level: 3 },
+  { value: 'mba', label: 'MBA', level: 3 },
+  { value: 'medical', label: 'Medical Degree (MD, DO, DDS, PharmD)', level: 4 },
+  { value: 'law', label: 'Law Degree (JD)', level: 4 },
+  { value: 'doctorate', label: 'Doctorate (PhD, EdD, PsyD)', level: 4 },
+]
+
+// Field of Study — broad academic/professional area
+export const FIELD_OF_STUDY_OPTIONS = [
+  { value: 'engineering', label: 'Engineering & Technology' },
+  { value: 'cs_it', label: 'Computer Science & IT' },
+  { value: 'business', label: 'Business & Finance' },
+  { value: 'medical_health', label: 'Medical & Healthcare' },
+  { value: 'law_legal', label: 'Law & Legal Studies' },
+  { value: 'arts', label: 'Arts & Humanities' },
+  { value: 'science', label: 'Science (Physics, Chemistry, Biology)' },
+  { value: 'social_sciences', label: 'Social Sciences & Psychology' },
+  { value: 'education_field', label: 'Education' },
+  { value: 'other', label: 'Other' },
+]
+
+// Partner preference: Minimum Education Level (enhanced with professional degree filters)
+export const PREF_EDUCATION_LEVEL_OPTIONS = [
+  { value: 'doesnt_matter', label: "Doesn't matter" },
+  { value: 'bachelors', label: "Bachelor's or higher" },
+  { value: 'masters', label: "Master's or higher" },
+  { value: 'mba', label: 'MBA' },
+  { value: 'medical', label: 'Medical Degree (MD, DO, DDS, PharmD)' },
+  { value: 'law', label: 'Law Degree (JD)' },
+  { value: 'doctorate', label: 'Doctorate (PhD, EdD, PsyD)' },
+  { value: 'doctor_or_lawyer', label: 'Doctor or Lawyer' },
+]
+
+// Partner preference: Preferred Field of Study
+export const PREF_FIELD_OPTIONS = [
+  { value: 'any', label: 'Any field' },
+  { value: 'engineering', label: 'Engineering & Technology' },
+  { value: 'cs_it', label: 'Computer Science & IT' },
+  { value: 'business', label: 'Business & Finance' },
+  { value: 'medical_health', label: 'Medical & Healthcare' },
+  { value: 'law_legal', label: 'Law & Legal Studies' },
+  { value: 'arts', label: 'Arts & Humanities' },
+  { value: 'science', label: 'Science' },
+  { value: 'social_sciences', label: 'Social Sciences & Psychology' },
+  { value: 'education_field', label: 'Education' },
+]
+
+// Maps old qualification values → new educationLevel + fieldOfStudy (used by migration + fallback)
+export const QUALIFICATION_TO_NEW_FIELDS: Record<string, { educationLevel: string; fieldOfStudy?: string }> = {
+  'high_school': { educationLevel: 'high_school' },
+  'associates': { educationLevel: 'associates' },
+  'bachelors_arts': { educationLevel: 'bachelors', fieldOfStudy: 'arts' },
+  'bachelors_science': { educationLevel: 'bachelors', fieldOfStudy: 'science' },
+  'bachelors_eng': { educationLevel: 'bachelors', fieldOfStudy: 'engineering' },
+  'bachelors_cs': { educationLevel: 'bachelors', fieldOfStudy: 'cs_it' },
+  'bba': { educationLevel: 'bachelors', fieldOfStudy: 'business' },
+  'bfa': { educationLevel: 'bachelors', fieldOfStudy: 'arts' },
+  'bsn': { educationLevel: 'bachelors', fieldOfStudy: 'medical_health' },
+  'masters_arts': { educationLevel: 'masters', fieldOfStudy: 'arts' },
+  'masters_science': { educationLevel: 'masters', fieldOfStudy: 'science' },
+  'masters_eng': { educationLevel: 'masters', fieldOfStudy: 'engineering' },
+  'masters_cs': { educationLevel: 'masters', fieldOfStudy: 'cs_it' },
+  'mba': { educationLevel: 'mba', fieldOfStudy: 'business' },
+  'mfa': { educationLevel: 'masters', fieldOfStudy: 'arts' },
+  'mph': { educationLevel: 'masters', fieldOfStudy: 'medical_health' },
+  'msw': { educationLevel: 'masters', fieldOfStudy: 'social_sciences' },
+  'md': { educationLevel: 'medical', fieldOfStudy: 'medical_health' },
+  'do': { educationLevel: 'medical', fieldOfStudy: 'medical_health' },
+  'dds': { educationLevel: 'medical', fieldOfStudy: 'medical_health' },
+  'pharmd': { educationLevel: 'medical', fieldOfStudy: 'medical_health' },
+  'jd': { educationLevel: 'law', fieldOfStudy: 'law_legal' },
+  'cpa': { educationLevel: 'masters', fieldOfStudy: 'business' },
+  'phd': { educationLevel: 'doctorate' },
+  'edd': { educationLevel: 'doctorate', fieldOfStudy: 'education_field' },
+  'psyd': { educationLevel: 'doctorate', fieldOfStudy: 'social_sciences' },
+}
+
+// Helper: get human-readable label for an education level value
+export function getEducationLevelLabel(value: string | null | undefined): string {
+  if (!value) return ''
+  const found = EDUCATION_LEVEL_OPTIONS.find(o => o.value === value)
+  return found ? found.label : value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+}
+
+// Helper: get human-readable label for a field of study value
+export function getFieldOfStudyLabel(value: string | null | undefined): string {
+  if (!value) return ''
+  const found = FIELD_OF_STUDY_OPTIONS.find(o => o.value === value)
+  return found ? found.label : value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+}
+
+// Education badges for professional/advanced degrees (displayed on profile cards)
+export const EDUCATION_BADGES: Record<string, { label: string; bg: string; text: string }> = {
+  medical:   { label: 'MD', bg: 'bg-green-100', text: 'text-green-700' },
+  mba:       { label: 'MBA', bg: 'bg-blue-100', text: 'text-blue-700' },
+  law:       { label: 'JD', bg: 'bg-amber-100', text: 'text-amber-700' },
+  doctorate: { label: 'PhD', bg: 'bg-purple-100', text: 'text-purple-700' },
+}
+
 // Hobbies options (Shaadi.com style)
 export const HOBBIES_OPTIONS = [
   'Art & Crafts',

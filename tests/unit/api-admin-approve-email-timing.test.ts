@@ -4,6 +4,7 @@ const isAdminAuthenticatedMock = vi.fn()
 const isMutualMatchMock = vi.fn()
 const sendProfileApprovedEmailMock = vi.fn()
 const sendNewMatchAvailableEmailMock = vi.fn()
+const storeNotificationMock = vi.fn()
 
 const prismaMock = {
   profile: {
@@ -27,6 +28,10 @@ vi.mock('@/lib/matching', () => ({
 vi.mock('@/lib/email', () => ({
   sendProfileApprovedEmail: sendProfileApprovedEmailMock,
   sendNewMatchAvailableEmail: sendNewMatchAvailableEmailMock,
+}))
+
+vi.mock('@/lib/notifications', () => ({
+  storeNotification: storeNotificationMock,
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -55,6 +60,7 @@ describe('POST /api/admin/approve email timing', () => {
     isMutualMatchMock.mockReturnValue(true)
     sendProfileApprovedEmailMock.mockResolvedValue({ success: true })
     sendNewMatchAvailableEmailMock.mockResolvedValue({ success: true })
+    storeNotificationMock.mockResolvedValue(undefined)
     prismaMock.profile.updateMany.mockResolvedValue({ count: 1 })
     prismaMock.user.update.mockResolvedValue({ id: 'candidate-user-id' })
   })
@@ -112,6 +118,14 @@ describe('POST /api/admin/approve email timing', () => {
 
     expect(sendProfileApprovedEmailMock).toHaveBeenCalledTimes(1)
     expect(sendProfileApprovedEmailMock).toHaveBeenCalledWith('approved@example.com', 'Approved User')
+    expect(storeNotificationMock).toHaveBeenCalledWith(
+      'profile_approved',
+      'approved-user-id',
+      {
+        name: 'Approved User',
+      },
+      { deliveryModes: ['email'] }
+    )
 
     // Background notifyMatchingUsers is fire-and-forget; allow microtasks to complete.
     await flushAsync()
@@ -121,6 +135,15 @@ describe('POST /api/admin/approve email timing', () => {
       'candidate@example.com',
       'Candidate User',
       1
+    )
+    expect(storeNotificationMock).toHaveBeenCalledWith(
+      'match_available',
+      'candidate-user-id',
+      {
+        name: 'Candidate User',
+        matchCount: '1',
+      },
+      { deliveryModes: ['email'] }
     )
     expect(prismaMock.user.update).toHaveBeenCalledWith({
       where: { id: 'candidate-user-id' },
@@ -165,5 +188,6 @@ describe('POST /api/admin/approve email timing', () => {
 
     expect(sendProfileApprovedEmailMock).not.toHaveBeenCalled()
     expect(sendNewMatchAvailableEmailMock).not.toHaveBeenCalled()
+    expect(storeNotificationMock).not.toHaveBeenCalled()
   })
 })

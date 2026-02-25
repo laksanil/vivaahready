@@ -7,6 +7,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: '',
     website: '' // Honeypot field - should stay empty
@@ -29,7 +30,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         setIsSubmitted(true)
-        setFormData({ name: '', email: '', subject: '', message: '', website: '' })
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '', website: '' })
       } else {
         const data = await response.json()
         setError(data.error || 'Failed to send message. Please try again.')
@@ -189,6 +190,21 @@ export default function ContactPage() {
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         placeholder="Enter your email"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        placeholder="(xxx) xxx-xxxx"
                       />
                     </div>
 

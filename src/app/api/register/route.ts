@@ -3,6 +3,7 @@ import { hash } from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { sendWelcomeEmail } from '@/lib/email'
+import { storeNotification } from '@/lib/notifications'
 import { Prisma } from '@prisma/client'
 
 const registerSchema = z.object({
@@ -74,6 +75,9 @@ export async function POST(request: Request) {
     // Send welcome email (fire and forget - don't block registration)
     sendWelcomeEmail(normalizedEmail, name).catch((err) => {
       console.error('Failed to send welcome email:', err)
+    })
+    storeNotification('welcome', user.id, { name }, { deliveryModes: ['email'] }).catch((err) => {
+      console.error('Failed to store welcome notification:', err)
     })
 
     return NextResponse.json(

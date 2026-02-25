@@ -106,6 +106,190 @@ test.describe.serial('Profile validation matrix (API)', () => {
       },
     })
     expect(nonWorkingResponse.ok()).toBeTruthy()
+
+    const customUniversity = `Matrix Custom Institute ${Date.now().toString(36)}`
+    const customUniversityResponse = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        ...basePayload,
+        university: customUniversity,
+        occupation: 'software_engineer',
+        employerName: 'Matrix Labs',
+        annualIncome: '100k-150k',
+      },
+    })
+    expect(customUniversityResponse.ok()).toBeTruthy()
+
+    const customUniversityRead = await adminRequest.get(`/api/profile?viewAsUser=${userId}`)
+    expect(customUniversityRead.ok()).toBeTruthy()
+    const customUniversityProfile = await customUniversityRead.json()
+    expect(customUniversityProfile.university).toBe(customUniversity)
+  })
+
+  test('basics/religion/family/lifestyle required-field matrix', async () => {
+    const basicsBasePayload = {
+      _editSection: 'basics',
+      firstName: `Matrix${Date.now().toString(36)}`,
+      lastName: 'User',
+      createdBy: 'self',
+      gender: 'male',
+      dateOfBirth: '01/01/1992',
+      height: `5'10"`,
+      maritalStatus: 'never_married',
+      motherTongue: 'English',
+    }
+
+    const basicsFailingCases: Array<{ name: string; patch: Record<string, unknown>; expected: RegExp }> = [
+      { name: 'missing first name', patch: { firstName: '' }, expected: /first name is required/i },
+      { name: 'missing last name', patch: { lastName: '' }, expected: /last name is required/i },
+      { name: 'missing created by', patch: { createdBy: '' }, expected: /profile created by is required/i },
+      { name: 'missing gender', patch: { gender: '' }, expected: /gender is required/i },
+      { name: 'missing dob and age', patch: { dateOfBirth: '', age: '' }, expected: /date of birth or age is required/i },
+      { name: 'missing height', patch: { height: '' }, expected: /height is required/i },
+      { name: 'missing marital status', patch: { maritalStatus: '' }, expected: /marital status is required/i },
+      { name: 'missing mother tongue', patch: { motherTongue: '' }, expected: /mother tongue is required/i },
+    ]
+
+    for (const testCase of basicsFailingCases) {
+      const response = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+        data: {
+          ...basicsBasePayload,
+          ...testCase.patch,
+        },
+      })
+      expect(response.status(), testCase.name).toBe(400)
+      const payload = await response.json()
+      expect(String(payload.error || ''), testCase.name).toMatch(testCase.expected)
+    }
+
+    const religionMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'religion',
+        religion: '',
+        community: 'Iyer',
+      },
+    })
+    expect(religionMissing.status()).toBe(400)
+    expect(String((await religionMissing.json()).error || '')).toMatch(/religion is required/i)
+
+    const religionValid = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'religion',
+        religion: 'Hindu',
+        community: 'Iyer',
+      },
+    })
+    expect(religionValid.ok()).toBeTruthy()
+
+    const familyMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'family',
+        familyLocation: '',
+        familyValues: 'moderate',
+      },
+    })
+    expect(familyMissing.status()).toBe(400)
+    expect(String((await familyMissing.json()).error || '')).toMatch(/family location is required/i)
+
+    const familyValid = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'family',
+        familyLocation: 'USA',
+        familyValues: 'moderate',
+      },
+    })
+    expect(familyValid.ok()).toBeTruthy()
+
+    const lifestyleMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: '',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+      },
+    })
+    expect(lifestyleMissing.status()).toBe(400)
+    expect(String((await lifestyleMissing.json()).error || '')).toMatch(/diet is required/i)
+
+    const hobbiesOtherMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: 'Vegetarian',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+        hobbies: 'Reading, Other',
+        hobbiesOther: '',
+      },
+    })
+    expect(hobbiesOtherMissing.status()).toBe(400)
+    expect(String((await hobbiesOtherMissing.json()).error || '')).toMatch(/other hobbies/i)
+
+    const fitnessOtherMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: 'Vegetarian',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+        fitness: 'Gym, Other',
+        fitnessOther: '',
+      },
+    })
+    expect(fitnessOtherMissing.status()).toBe(400)
+    expect(String((await fitnessOtherMissing.json()).error || '')).toMatch(/other fitness activities/i)
+
+    const interestsOtherMissing = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: 'Vegetarian',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+        interests: 'Travel, Other',
+        interestsOther: '',
+      },
+    })
+    expect(interestsOtherMissing.status()).toBe(400)
+    expect(String((await interestsOtherMissing.json()).error || '')).toMatch(/other interests/i)
+
+    const lifestyleWithCustomOtherValues = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: 'Vegetarian',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+        hobbies: 'Reading, Other',
+        hobbiesOther: 'Chess, Pottery',
+        fitness: 'Gym, Other',
+        fitnessOther: 'Cycling',
+        interests: 'Music, Other',
+        interestsOther: 'Board Games',
+      },
+    })
+    expect(lifestyleWithCustomOtherValues.ok()).toBeTruthy()
+
+    const lifestyleReadResponse = await adminRequest.get(`/api/profile?viewAsUser=${userId}`)
+    expect(lifestyleReadResponse.ok()).toBeTruthy()
+    const lifestyleProfile = await lifestyleReadResponse.json()
+    expect(String(lifestyleProfile.hobbies || '')).toContain('Chess')
+    expect(String(lifestyleProfile.fitness || '')).toContain('Cycling')
+    expect(String(lifestyleProfile.interests || '')).toContain('Board Games')
+    expect(String(lifestyleProfile.hobbies || '')).not.toMatch(/\bOther\b/i)
+    expect(String(lifestyleProfile.fitness || '')).not.toMatch(/\bOther\b/i)
+    expect(String(lifestyleProfile.interests || '')).not.toMatch(/\bOther\b/i)
+
+    const lifestyleValid = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'lifestyle',
+        dietaryPreference: 'Vegetarian',
+        smoking: 'No',
+        drinking: 'No',
+        pets: 'no_but_love',
+      },
+    })
+    expect(lifestyleValid.ok()).toBeTruthy()
   })
 
   test('preferences_1 required-field and deal-breaker matrix', async () => {
@@ -223,7 +407,7 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const profile = await readResponse.json()
 
     expect(profile.employerName).toBe('Matrix QA Works')
-    expect(profile.linkedinProfile).toBeNull()
+    expect(profile.linkedinProfile).toBe('no_linkedin')
     expect(profile.referralSource).toBe('google')
   })
 
@@ -231,6 +415,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const missingReferralEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
       data: {
         _editSection: 'aboutme',
+        aboutMe: 'I value family and long-term commitment.',
+        linkedinProfile: 'no_linkedin',
         referralSource: '',
       },
     })
@@ -241,10 +427,34 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const validReferralEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
       data: {
         _editSection: 'aboutme',
+        aboutMe: 'I value family and long-term commitment.',
+        linkedinProfile: 'no_linkedin',
         referralSource: 'google',
       },
     })
     expect(validReferralEdit.ok()).toBeTruthy()
+
+    const missingAboutMeEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'aboutme',
+        aboutMe: '',
+        linkedinProfile: 'no_linkedin',
+        referralSource: 'google',
+      },
+    })
+    expect(missingAboutMeEdit.status()).toBe(400)
+    expect(String((await missingAboutMeEdit.json()).error || '')).toMatch(/about me is required/i)
+
+    const missingLinkedInEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
+      data: {
+        _editSection: 'aboutme',
+        aboutMe: 'I value family and long-term commitment.',
+        linkedinProfile: '',
+        referralSource: 'google',
+      },
+    })
+    expect(missingLinkedInEdit.status()).toBe(400)
+    expect(String((await missingLinkedInEdit.json()).error || '')).toMatch(/linkedin profile is required/i)
 
     const missingEducationEdit = await adminRequest.put(`/api/profile?viewAsUser=${userId}`, {
       data: {
@@ -267,6 +477,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const missingReferralSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
       data: {
         signupStep: 7,
+        aboutMe: 'I value family and long-term commitment.',
+        linkedinProfile: 'no_linkedin',
         referralSource: '',
       },
     })
@@ -277,6 +489,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const validReferralSignup = await adminRequest.put(`/api/profile/${profileId}?viewAsUser=${userId}`, {
       data: {
         signupStep: 7,
+        aboutMe: 'I value family and long-term commitment.',
+        linkedinProfile: 'no_linkedin',
         referralSource: 'google',
       },
     })
