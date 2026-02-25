@@ -26,59 +26,6 @@ import {
   validateLifestyleStep,
 } from '@/lib/profileFlowValidation'
 
-// Placeholder phrases that shouldn't be accepted
-const INVALID_ABOUTME_PHRASES = [
-  'will fill in later',
-  'will fill later',
-  'fill in later',
-  'fill later',
-  'tbd',
-  'to be done',
-  'coming soon',
-  'will update',
-  'will add later',
-  'n/a',
-  'na',
-  'none',
-  'nothing',
-  'test',
-  'testing',
-  'asdf',
-  'abc',
-  '...',
-  '---',
-]
-
-const normalizeForComparison = (value: string): string => value.trim().toLowerCase().replace(/\s+/g, ' ')
-
-function hasInvalidAboutMePlaceholder(value: string): boolean {
-  const normalized = normalizeForComparison(value)
-  if (!normalized) return false
-
-  const words = new Set(
-    normalized
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean)
-  )
-
-  return INVALID_ABOUTME_PHRASES.some((phrase) => {
-    const invalidPhrase = normalizeForComparison(phrase)
-
-    if (normalized === invalidPhrase) {
-      return true
-    }
-
-    if (invalidPhrase.includes(' ')) {
-      return normalized.includes(invalidPhrase)
-    }
-
-    const phraseToken = invalidPhrase.replace(/[^a-z0-9]/g, '')
-    if (!phraseToken) return false
-    return words.has(phraseToken)
-  })
-}
-
 interface ProfileEditModalProps {
   isOpen: boolean
   onClose: () => void
@@ -139,17 +86,7 @@ export default function ProfileEditModal({
     }
 
     if (section === 'aboutme') {
-      const aboutMe = (formData.aboutMe as string || '').trim()
       const aboutMeValidation = validateAboutMeStep(formData)
-
-      // Check aboutMe
-      if (!aboutMe) {
-        errors.push('About Me is required')
-      } else if (aboutMe.length < 50) {
-        errors.push('About Me must be at least 50 characters')
-      } else if (hasInvalidAboutMePlaceholder(aboutMe)) {
-        errors.push('Please write a meaningful description about yourself')
-      }
 
       // Check LinkedIn
       const linkedinProfile = (formData.linkedinProfile as string || '').trim()
