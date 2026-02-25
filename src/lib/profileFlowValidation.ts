@@ -306,8 +306,13 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
 
 export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
+  const aboutMe = normalizeString(data.aboutMe)
   const linkedinProfile = normalizeString(data.linkedinProfile)
   const referralSource = normalizeString(data.referralSource)
+
+  if (!aboutMe) {
+    errors.push('About Me is required.')
+  }
 
   if (!linkedinProfile) {
     errors.push('LinkedIn profile is required.')
