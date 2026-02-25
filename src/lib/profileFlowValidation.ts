@@ -16,6 +16,18 @@ const normalizeString = (value: unknown): string => {
   return value.trim()
 }
 
+export function isValidLinkedInProfileUrl(value: unknown): boolean {
+  const linkedinProfile = normalizeString(value)
+  if (!linkedinProfile) return false
+  if (linkedinProfile === 'no_linkedin') return false
+
+  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+  return linkedinRegex.test(linkedinProfile) ||
+    /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(linkedinProfile) ||
+    /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(linkedinProfile) ||
+    /^in\/[a-zA-Z0-9_-]+\/?$/.test(linkedinProfile)
+}
+
 const toSearchable = (value: string): string => {
   return value.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
 }
@@ -138,7 +150,14 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
 
 export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
+  const linkedinProfile = normalizeString(data.linkedinProfile)
   const referralSource = normalizeString(data.referralSource)
+
+  if (!linkedinProfile) {
+    errors.push('LinkedIn profile is required.')
+  } else if (!isValidLinkedInProfileUrl(linkedinProfile)) {
+    errors.push('A valid LinkedIn profile URL is required (linkedin.com/in/username).')
+  }
 
   if (!referralSource) {
     errors.push('Referral source is required.')

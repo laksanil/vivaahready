@@ -18,6 +18,7 @@ import {
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
+  isValidLinkedInProfileUrl,
 } from '@/lib/profileFlowValidation'
 
 // Placeholder phrases that shouldn't be accepted
@@ -99,11 +100,8 @@ export default function ProfileEditModal({
       // Check LinkedIn
       if (!linkedinProfile) {
         errors.push('LinkedIn profile is required')
-      } else if (linkedinProfile !== 'no_linkedin') {
-        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-        if (!linkedinRegex.test(linkedinProfile)) {
-          errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn"')
-        }
+      } else if (!isValidLinkedInProfileUrl(linkedinProfile)) {
+        errors.push('Please enter a valid LinkedIn profile URL (linkedin.com/in/username)')
       }
 
       // Check referral source
