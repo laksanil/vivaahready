@@ -1580,7 +1580,13 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         )}
         <div>
           <label className="form-label">Allergies or Medical Conditions</label>
-          <input type="text" name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., None, Peanut allergy" />
+          <textarea
+            name="allergiesOrMedical"
+            value={formData.allergiesOrMedical as string || ''}
+            onChange={handleChange}
+            className="input-field min-h-[72px]"
+            placeholder="e.g., None, Peanut allergy, lactose intolerance"
+          />
         </div>
       </div>
 

@@ -29,6 +29,7 @@ import MessageModal from '@/components/MessageModal'
 import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
+import { formatDisabilityDisplay } from '@/lib/profileDisplay'
 
 interface ProfileData {
   id: string
@@ -1054,15 +1055,15 @@ function ProfileCard({
           </div>
 
           {/* HEALTH & WELLNESS Section */}
-          {(profile.bloodGroup || profile.anyDisability || profile.allergiesOrMedical || profile.healthInfo) && (
+          {(profile.bloodGroup || profile.anyDisability || profile.disabilityDetails || profile.allergiesOrMedical || profile.healthInfo) && (
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Health & Wellness</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
               {profile.bloodGroup && <><span className="text-gray-500">Blood Group</span><span className="text-gray-800">{profile.bloodGroup}</span></>}
-              {profile.healthInfo && <><span className="text-gray-500">Health Info</span><span className="text-gray-800">{profile.healthInfo}</span></>}
-              {profile.anyDisability && <><span className="text-gray-500">Disability</span><span className="text-gray-800">{profile.anyDisability === 'none' ? 'None' : formatValue(profile.anyDisability)}</span></>}
-              {profile.disabilityDetails && <><span className="text-gray-500">Details</span><span className="text-gray-800">{profile.disabilityDetails}</span></>}
-              {profile.allergiesOrMedical && <><span className="text-gray-500">Allergies / Medical</span><span className="text-gray-800">{profile.allergiesOrMedical}</span></>}
+              {profile.healthInfo && <><span className="text-gray-500">Health Info</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.healthInfo}</span></>}
+              {profile.anyDisability && <><span className="text-gray-500">Disability</span><span className="text-gray-800">{formatDisabilityDisplay(profile.anyDisability) || 'None'}</span></>}
+              {profile.disabilityDetails && profile.anyDisability !== 'none' && <><span className="text-gray-500">Details</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.disabilityDetails}</span></>}
+              {profile.allergiesOrMedical && <><span className="text-gray-500">Allergies / Medical Conditions</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.allergiesOrMedical}</span></>}
             </div>
           </div>
           )}

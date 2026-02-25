@@ -29,6 +29,7 @@ import {
 import ProfileEditModal from '@/components/ProfileEditModal'
 import { validateProfilePhoto } from '@/lib/faceDetection'
 import { useImpersonation } from '@/hooks/useImpersonation'
+import { formatDisabilityDisplay } from '@/lib/profileDisplay'
 
 interface Profile {
   id: string
@@ -1464,13 +1465,27 @@ function ViewProfilePageContent() {
                   <div className="flex">
                     <span className="text-gray-500 w-28">Disability</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.anyDisability === 'none' || !profile.anyDisability ? 'None' : formatValue(profile.anyDisability)}</span>
+                    <span className="text-gray-800">{formatDisabilityDisplay(profile.anyDisability) || 'None'}</span>
                   </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-28">Allergies</span>
+                  <div className="flex md:col-span-3">
+                    <span className="text-gray-500 w-28 flex-shrink-0">Allergies / Medical Conditions</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.allergiesOrMedical || 'None'}</span>
+                    <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.allergiesOrMedical || 'None'}</span>
                   </div>
+                  {!!profile.disabilityDetails && profile.anyDisability !== 'none' && (
+                    <div className="flex md:col-span-3">
+                      <span className="text-gray-500 w-28 flex-shrink-0">Disability Details</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.disabilityDetails}</span>
+                    </div>
+                  )}
+                  {!!profile.healthInfo && (
+                    <div className="flex md:col-span-3">
+                      <span className="text-gray-500 w-28 flex-shrink-0">Health Info</span>
+                      <span className="text-gray-400 mr-2">:</span>
+                      <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.healthInfo}</span>
+                    </div>
+                  )}
                 </div>
                 {/* About Me text */}
                 {profile.aboutMe ? (
