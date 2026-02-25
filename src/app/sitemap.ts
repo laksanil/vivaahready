@@ -89,6 +89,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/blog/indian-matrimonial-matches-usa-paper-perfect-fall-apart`,
+      lastModified: new Date('2026-02-25'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
   ]
 
   // SEO money pages (priority 0.85)
