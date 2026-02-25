@@ -7,7 +7,7 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
-import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
+import { getEffectiveUniversity, isNonWorkingOccupation, validateAboutMeStep } from '@/lib/profileFlowValidation'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -210,6 +210,22 @@ export async function POST(request: Request) {
         { error: 'Company/Organization is required for working occupations.' },
         { status: 400 }
       )
+    }
+
+    // Enforce About Me step requirements when that section data is being submitted
+    const hasAboutMeSubmission =
+      body.linkedinProfile !== undefined ||
+      body.referralSource !== undefined ||
+      body.aboutMe !== undefined
+
+    if (hasAboutMeSubmission) {
+      const aboutMeValidation = validateAboutMeStep(data as unknown as Record<string, unknown>)
+      if (!aboutMeValidation.isValid) {
+        return NextResponse.json(
+          { error: aboutMeValidation.errors[0] || 'LinkedIn profile and referral source are required.' },
+          { status: 400 }
+        )
+      }
     }
 
     // Get the authenticated session first
