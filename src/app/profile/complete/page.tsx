@@ -298,7 +298,10 @@ function ProfileCompleteContent() {
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/login')
+      const callbackUrl = typeof window !== 'undefined'
+        ? `${window.location.pathname}${window.location.search}`
+        : '/profile/complete'
+      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
     }
   }, [status, router])
 
@@ -535,7 +538,7 @@ function ProfileCompleteContent() {
 
   // Update profile with section data
   const handleUpdateProfile = async (nextStep: number) => {
-    if (!profileId) return
+    if (!profileId) return false
 
     setError('')
     setLoading(true)
@@ -577,13 +580,14 @@ function ProfileCompleteContent() {
       if (!response.ok) {
         const data = await response.json()
         setError(data.error || 'Failed to save profile data')
-        setLoading(false)
-        return
+        return false
       }
 
       setStep(nextStep)
+      return true
     } catch {
       setError('Failed to save. Please try again.')
+      return false
     } finally {
       setLoading(false)
     }
@@ -592,7 +596,8 @@ function ProfileCompleteContent() {
   const handleSectionContinue = async () => {
     // If on last step (preferences_2, which is step 8), save and redirect to photos page
     if (step === SECTION_ORDER.length) {
-      await handleUpdateProfile(step)
+      const saved = await handleUpdateProfile(step)
+      if (!saved) return
       const photosUrl = `/profile/photos?profileId=${profileId}&fromSignup=true${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
       router.push(photosUrl)
     } else if (step < SECTION_ORDER.length) {
