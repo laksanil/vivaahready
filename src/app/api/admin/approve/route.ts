@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 import { isMutualMatch } from '@/lib/matching'
 import { sendNewMatchAvailableEmail, sendProfileApprovedEmail } from '@/lib/email'
-import { storeNotification } from '@/lib/notifications'
 
 export const dynamic = 'force-dynamic'
 
@@ -135,18 +134,13 @@ export async function POST(request: Request) {
         }
       })
 
-      // Send approval email + in-app notification to each approved user (in background)
+      // Send approval email to each approved user (in background)
       for (const profile of approvedProfiles) {
         if (profile.user.email) {
           sendProfileApprovedEmail(profile.user.email, profile.user.name || 'there')
             .then(() => console.log(`[APPROVAL EMAIL] Sent to ${profile.user.email}`))
             .catch(err => console.error(`[APPROVAL EMAIL] Failed for ${profile.user.email}:`, err))
         }
-        storeNotification('profile_approved', profile.userId, {
-          name: profile.user.name || 'there',
-        }, {
-          deliveryModes: ['email'],
-        }).catch(err => console.error(`[APPROVAL NOTIFICATION] Failed for ${profile.userId}:`, err))
       }
 
       // Notify matching users in the background (don't block the response)
@@ -253,15 +247,6 @@ async function notifyMatchingUsers(approvedProfiles: any[]) {
             match.user.name || 'there',
             1
           )
-
-          storeNotification('match_available', match.user.id, {
-            name: match.user.name || 'there',
-            matchCount: '1',
-          }, {
-            deliveryModes: ['email'],
-          }).catch((notificationError) => {
-            console.error(`[NEW MATCH NOTIFICATION] Failed to store in-app notification for ${match.user.id}:`, notificationError)
-          })
 
           // Update the user's last notification timestamp
           await prisma.user.update({

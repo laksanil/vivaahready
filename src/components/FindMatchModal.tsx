@@ -18,7 +18,6 @@ import {
   PreferencesPage2Section,
 } from './ProfileFormSections'
 import {
-  getEffectiveOccupation,
   validateAboutMeStep,
   getEffectiveUniversity,
   isNonWorkingOccupation,
@@ -458,12 +457,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       const isLastSection = currentSection === 'preferences_2'
       const isPreferenceSection = currentSection === 'preferences_1' || currentSection === 'preferences_2'
       const employerValue = ((formData.employerName as string | undefined) || '').trim()
-      const effectiveOccupation = getEffectiveOccupation(formData.occupation, formData.occupationOther)
       const payload: Record<string, unknown> = {
         ...formData,
         university: getEffectiveUniversity(formData.university, formData.universityOther),
-        occupation: effectiveOccupation,
-        employerName: isNonWorkingOccupation(effectiveOccupation) ? (employerValue || null) : employerValue,
+        employerName: isNonWorkingOccupation(formData.occupation) ? (employerValue || null) : employerValue,
         signupStep: nextSignupStep, // Track which step to complete next (1-8, 9=complete)
       }
 

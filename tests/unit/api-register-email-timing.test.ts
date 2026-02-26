@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const hashMock = vi.fn()
 const sendWelcomeEmailMock = vi.fn()
-const storeNotificationMock = vi.fn()
 
 const prismaMock = {
   user: {
@@ -20,10 +19,6 @@ vi.mock('bcryptjs', () => ({
 
 vi.mock('@/lib/email', () => ({
   sendWelcomeEmail: sendWelcomeEmailMock,
-}))
-
-vi.mock('@/lib/notifications', () => ({
-  storeNotification: storeNotificationMock,
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -45,7 +40,6 @@ describe('POST /api/register welcome email timing', () => {
     vi.clearAllMocks()
     hashMock.mockResolvedValue('hashed-password')
     sendWelcomeEmailMock.mockResolvedValue({ success: true })
-    storeNotificationMock.mockResolvedValue(undefined)
     prismaMock.user.findUnique.mockResolvedValue(null)
     prismaMock.user.create.mockResolvedValue({
       id: 'user-123',
@@ -85,12 +79,6 @@ describe('POST /api/register welcome email timing', () => {
 
     expect(sendWelcomeEmailMock).toHaveBeenCalledTimes(1)
     expect(sendWelcomeEmailMock).toHaveBeenCalledWith('rachana@example.com', 'Rachana J.')
-    expect(storeNotificationMock).toHaveBeenCalledWith(
-      'welcome',
-      'user-123',
-      { name: 'Rachana J.' },
-      { deliveryModes: ['email'] }
-    )
   })
 
   it('does not send welcome email when registration is rejected as duplicate', async () => {
@@ -110,6 +98,5 @@ describe('POST /api/register welcome email timing', () => {
 
     expect(response.status).toBe(400)
     expect(sendWelcomeEmailMock).not.toHaveBeenCalled()
-    expect(storeNotificationMock).not.toHaveBeenCalled()
   })
 })

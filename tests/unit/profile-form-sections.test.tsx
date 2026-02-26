@@ -66,8 +66,8 @@ describe('Profile form sections', () => {
     cleanup()
 
     renderResult = renderSection(EducationSection, {})
-    // Education is now 3 fields: Level dropdown + Field dropdown + Major text
-    expect(renderResult.container.querySelector('select[name="educationLevel"]')).toBeTruthy()
+    // Qualification is now a searchable type-ahead input (not a select)
+    expect(renderResult.container.querySelector('input[placeholder="Type to search degrees..."]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="occupation"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="annualIncome"]')).toBeTruthy()
     cleanup()

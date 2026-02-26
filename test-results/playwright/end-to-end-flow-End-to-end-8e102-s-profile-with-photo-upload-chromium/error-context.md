@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
+- generic [active] [ref=e1]:
   - navigation [ref=e2]:
     - generic [ref=e4]:
       - link "VivaahReady VivaahReady Meaningful Connections" [ref=e6] [cursor=pointer]:
@@ -32,13 +32,13 @@
                 - generic [ref=e31]:
                   - button [ref=e32] [cursor=pointer]:
                     - img [ref=e33]
-                  - heading "Get Started" [level=2] [ref=e36]
+                  - heading "Basic Info" [level=2] [ref=e36]
                   - button [ref=e37] [cursor=pointer]:
                     - img [ref=e38]
                 - generic [ref=e41]:
                   - generic [ref=e42]:
-                    - generic [ref=e43]: Step 1 of 9
-                    - generic [ref=e44]: 11% Complete
+                    - generic [ref=e43]: Step 2 of 9
+                    - generic [ref=e44]: 22% Complete
                   - generic [ref=e47]:
                     - generic "Get Started" [ref=e48]
                     - generic "Basic Info" [ref=e49]
@@ -49,459 +49,377 @@
                     - generic "About Me" [ref=e54]
                     - generic "Partner Preferences" [ref=e55]
                     - generic "More Preferences" [ref=e56]
-              - generic [ref=e58]:
-                - img [ref=e60]
-                - paragraph [ref=e62]: Let's get started
+              - generic [ref=e57]: Something went wrong. Please try again.
+              - paragraph [ref=e59]:
+                - strong [ref=e60]: "⚠️ Important:"
+                - text: All information provided must be accurate and truthful. Falsification, misrepresentation, or submission of fraudulent details may result in immediate account suspension. By proceeding, you confirm that all details are genuine.
+              - generic [ref=e62]:
                 - generic [ref=e63]:
-                  - paragraph [ref=e64]: Profile Name (person looking for match)
-                  - generic [ref=e65]:
+                  - generic [ref=e64]:
+                    - heading "Personal Identity" [level=4] [ref=e65]
                     - generic [ref=e66]:
-                      - generic [ref=e67]: First Name *
-                      - textbox "First name" [ref=e68]: E2Emm0viyhaA
-                    - generic [ref=e69]:
-                      - generic [ref=e70]: Last Name *
-                      - textbox "Last name" [ref=e71]: Alpha
-                - generic [ref=e72]:
-                  - generic [ref=e73]: Phone Number *
-                  - generic [ref=e74]:
-                    - combobox [ref=e75] [cursor=pointer]:
-                      - option "+1 US/CA" [selected]
-                      - option "+91 India"
-                      - option "+44 UK"
-                      - option "+61 Australia"
-                      - option "+64 New Zealand"
-                      - option "+49 Germany"
-                      - option "+33 France"
-                      - option "+31 Netherlands"
-                      - option "+41 Switzerland"
-                      - option "+43 Austria"
-                      - option "+32 Belgium"
-                      - option "+353 Ireland"
-                      - option "+46 Sweden"
-                      - option "+47 Norway"
-                      - option "+45 Denmark"
-                      - option "+358 Finland"
-                      - option "+39 Italy"
-                      - option "+34 Spain"
-                      - option "+351 Portugal"
-                      - option "+48 Poland"
-                      - option "+65 Singapore"
-                      - option "+60 Malaysia"
-                      - option "+66 Thailand"
-                      - option "+63 Philippines"
-                      - option "+62 Indonesia"
-                      - option "+81 Japan"
-                      - option "+82 South Korea"
-                      - option "+86 China"
-                      - option "+852 Hong Kong"
-                      - option "+971 UAE"
-                      - option "+966 Saudi Arabia"
-                      - option "+974 Qatar"
-                      - option "+968 Oman"
-                      - option "+973 Bahrain"
-                      - option "+965 Kuwait"
-                      - option "+27 South Africa"
-                      - option "+254 Kenya"
-                      - option "+234 Nigeria"
-                      - option "+20 Egypt"
-                      - option "+55 Brazil"
-                      - option "+52 Mexico"
-                      - option "+54 Argentina"
-                      - option "+57 Colombia"
-                      - option "+56 Chile"
-                      - option "+92 Pakistan"
-                      - option "+94 Sri Lanka"
-                      - option "+880 Bangladesh"
-                      - option "+977 Nepal"
-                      - option "+95 Myanmar"
-                      - option "+7 Russia"
-                      - option "+380 Ukraine"
-                      - option "+972 Israel"
-                      - option "+90 Turkey"
-                    - textbox "Phone number" [active] [ref=e76]: "5551234567"
-                  - paragraph [ref=e77]: Your contact information is protected and only visible to mutual matches.
-                - generic [ref=e78]:
-                  - generic [ref=e79] [cursor=pointer]:
-                    - checkbox "By checking this box, I consent to receive automated SMS and WhatsApp messages from VivaahReady at the phone number provided above for account notifications, match alerts, and service updates. Message frequency varies. Message and data rates may apply. Reply STOP to opt out. Reply HELP or email support@vivaahready.com for support. Consent is not a condition of registration. View our Terms & Conditions and Privacy Policy." [ref=e80]
-                    - paragraph [ref=e82]:
-                      - text: By checking this box, I consent to receive automated SMS and WhatsApp messages from
-                      - strong [ref=e83]: VivaahReady
-                      - text: at the phone number provided above for account notifications, match alerts, and service updates. Message frequency varies. Message and data rates may apply. Reply STOP to opt out. Reply HELP or email
-                      - link "support@vivaahready.com" [ref=e84]:
-                        - /url: mailto:support@vivaahready.com
-                      - text: for support. Consent is not a condition of registration. View our
-                      - link "Terms & Conditions" [ref=e85]:
-                        - /url: /terms
-                      - text: and
-                      - link "Privacy Policy" [ref=e86]:
-                        - /url: /privacy
-                      - text: .
-                  - generic [ref=e87] [cursor=pointer]:
-                    - checkbox "I agree to the Terms & Conditions and Privacy Policy." [ref=e88]
+                      - generic [ref=e67]:
+                        - generic [ref=e68]: Created By *
+                        - combobox [ref=e69] [cursor=pointer]:
+                          - option "Select"
+                          - option "Self" [selected]
+                          - option "Parent"
+                          - option "Sibling"
+                          - option "Relative"
+                          - option "Friend"
+                      - generic [ref=e70]:
+                        - generic [ref=e71]: Gender *
+                        - combobox [ref=e72] [cursor=pointer]:
+                          - option "Select"
+                          - option "Male" [selected]
+                          - option "Female"
+                  - generic [ref=e73]:
+                    - heading "Age & Physical Details" [level=4] [ref=e74]
+                    - paragraph [ref=e75]: Enter either Date of Birth OR Age (not both)
+                    - generic [ref=e76]:
+                      - generic [ref=e77]:
+                        - generic [ref=e78]: Date of Birth *
+                        - textbox "MM/DD/YYYY" [ref=e79]: 01/01/1992
+                      - generic [ref=e80]:
+                        - generic [ref=e81]: Age
+                        - spinbutton [disabled] [ref=e82]: "34"
+                      - generic [ref=e83]:
+                        - generic [ref=e84]: Height *
+                        - combobox [ref=e85] [cursor=pointer]:
+                          - option "Select"
+                          - option "4'6\" (137 cm)"
+                          - option "4'7\" (140 cm)"
+                          - option "4'8\" (142 cm)"
+                          - option "4'9\" (145 cm)"
+                          - option "4'10\" (147 cm)"
+                          - option "4'11\" (150 cm)"
+                          - option "5'0\" (152 cm)"
+                          - option "5'1\" (155 cm)"
+                          - option "5'2\" (157 cm)"
+                          - option "5'3\" (160 cm)"
+                          - option "5'4\" (163 cm)"
+                          - option "5'5\" (165 cm)"
+                          - option "5'6\" (168 cm)"
+                          - option "5'7\" (170 cm)"
+                          - option "5'8\" (173 cm)" [selected]
+                          - option "5'9\" (175 cm)"
+                          - option "5'10\" (178 cm)"
+                          - option "5'11\" (180 cm)"
+                          - option "6'0\" (183 cm)"
+                          - option "6'1\" (185 cm)"
+                          - option "6'2\" (188 cm)"
+                          - option "6'3\" (191 cm)"
+                          - option "6'4\" (193 cm)"
+                          - option "6'5\" (196 cm)"
+                          - option "6'6\" (198 cm)"
+                          - option "6'7\" (201 cm)"
+                          - option "6'8\" (203 cm)"
+                          - option "6'9\" (206 cm)"
+                          - option "6'10\" (208 cm)"
+                          - option "6'11\" (211 cm)"
+                          - option "7'0\" (213 cm)"
+                  - generic [ref=e86]:
+                    - heading "Marital Status" [level=4] [ref=e87]
                     - generic [ref=e89]:
-                      - text: I agree to the
-                      - link "Terms & Conditions" [ref=e90]:
-                        - /url: /terms
-                      - text: and
-                      - link "Privacy Policy" [ref=e91]:
-                        - /url: /privacy
-                      - text: .
-            - link "How it Works" [ref=e92] [cursor=pointer]:
+                      - generic [ref=e90]: Marital Status *
+                      - combobox [ref=e91] [cursor=pointer]:
+                        - option "Never Married" [selected]
+                        - option "Divorced"
+                        - option "Separated"
+                        - option "Widowed"
+                        - option "Awaiting Divorce"
+                  - generic [ref=e92]:
+                    - heading "Language" [level=4] [ref=e93]
+                    - generic [ref=e94]:
+                      - generic [ref=e95]:
+                        - generic [ref=e96]: Mother Tongue *
+                        - combobox [ref=e97] [cursor=pointer]:
+                          - option "Select"
+                          - option "English" [selected]
+                          - option "Hindi"
+                          - option "Tamil"
+                          - option "Telugu"
+                          - option "Kannada"
+                          - option "Malayalam"
+                          - option "Marathi"
+                          - option "Gujarati"
+                          - option "Punjabi"
+                          - option "Bengali"
+                          - option "Tulu"
+                          - option "Urdu"
+                          - option "Other"
+                      - generic [ref=e98]:
+                        - generic [ref=e99]: Languages Known
+                        - generic [ref=e101]:
+                          - generic [ref=e102] [cursor=pointer]:
+                            - checkbox "English" [ref=e103]
+                            - generic [ref=e104]: English
+                          - generic [ref=e105] [cursor=pointer]:
+                            - checkbox "Hindi" [ref=e106]
+                            - generic [ref=e107]: Hindi
+                          - generic [ref=e108] [cursor=pointer]:
+                            - checkbox "Tamil" [ref=e109]
+                            - generic [ref=e110]: Tamil
+                          - generic [ref=e111] [cursor=pointer]:
+                            - checkbox "Telugu" [ref=e112]
+                            - generic [ref=e113]: Telugu
+                          - generic [ref=e114] [cursor=pointer]:
+                            - checkbox "Kannada" [ref=e115]
+                            - generic [ref=e116]: Kannada
+                          - generic [ref=e117] [cursor=pointer]:
+                            - checkbox "Malayalam" [ref=e118]
+                            - generic [ref=e119]: Malayalam
+                          - generic [ref=e120] [cursor=pointer]:
+                            - checkbox "Marathi" [ref=e121]
+                            - generic [ref=e122]: Marathi
+                          - generic [ref=e123] [cursor=pointer]:
+                            - checkbox "Gujarati" [ref=e124]
+                            - generic [ref=e125]: Gujarati
+                          - generic [ref=e126] [cursor=pointer]:
+                            - checkbox "Punjabi" [ref=e127]
+                            - generic [ref=e128]: Punjabi
+                          - generic [ref=e129] [cursor=pointer]:
+                            - checkbox "Bengali" [ref=e130]
+                            - generic [ref=e131]: Bengali
+                          - generic [ref=e132] [cursor=pointer]:
+                            - checkbox "Tulu" [ref=e133]
+                            - generic [ref=e134]: Tulu
+                          - generic [ref=e135] [cursor=pointer]:
+                            - checkbox "Urdu" [ref=e136]
+                            - generic [ref=e137]: Urdu
+                          - generic [ref=e138] [cursor=pointer]:
+                            - checkbox "Other" [ref=e139]
+                            - generic [ref=e140]: Other
+                - button "Continue" [ref=e141] [cursor=pointer]:
+                  - text: Continue
+                  - img [ref=e142]
+            - link "How it Works" [ref=e145] [cursor=pointer]:
               - /url: "#how-it-works"
-          - generic [ref=e93]:
-            - generic [ref=e94]:
-              - img [ref=e95]
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - img [ref=e148]
               - text: Free to start
-            - generic [ref=e98]: •
-            - generic [ref=e99]:
-              - img [ref=e100]
+            - generic [ref=e151]: •
+            - generic [ref=e152]:
+              - img [ref=e153]
               - text: Verified to connect
-            - generic [ref=e102]: •
-            - generic [ref=e103]:
-              - img [ref=e104]
+            - generic [ref=e155]: •
+            - generic [ref=e156]:
+              - img [ref=e157]
               - text: Essential cookies only
-        - generic [ref=e108]:
-          - generic [ref=e109]:
-            - img [ref=e111]
-            - generic [ref=e113]:
-              - heading "Smart Matching" [level=3] [ref=e114]
-              - paragraph [ref=e115]: Based on your preferences
-          - generic [ref=e116]:
-            - generic [ref=e117]:
-              - img [ref=e118]
-              - generic [ref=e120]: Mutual matches only (privacy-first)
-            - generic [ref=e121]:
-              - img [ref=e122]
-              - generic [ref=e124]: Compatibility scores with deal-breakers
-            - generic [ref=e125]:
-              - img [ref=e126]
-              - generic [ref=e129]: Phone-verified profiles
-            - generic [ref=e130]:
-              - img [ref=e131]
-              - generic [ref=e136]: Contact shared after mutual acceptance
-      - generic [ref=e138]:
-        - generic [ref=e139]:
-          - heading "How VivaahReady Works" [level=2] [ref=e140]
-          - paragraph [ref=e141]: Privacy-first matchmaking with phone-verified profiles.
-        - generic [ref=e142]:
-          - generic [ref=e143]:
-            - generic [ref=e145]: "1"
-            - heading "Create Profile (Free)" [level=3] [ref=e146]
-            - paragraph [ref=e147]: Create your profile and preferences. Add deal-breakers and match preferences.
-          - generic [ref=e148]:
-            - generic [ref=e150]: "2"
-            - heading "Find Matches (Free)" [level=3] [ref=e151]
-            - paragraph [ref=e152]: See curated matches where both sides' preferences align. Identity stays hidden.
-          - generic [ref=e153]:
-            - generic [ref=e155]: "3"
-            - heading "Express Interest (Free)" [level=3] [ref=e156]
-            - paragraph [ref=e157]: Express interest to signal intent.
-          - generic [ref=e158]:
-            - generic [ref=e160]: "4"
-            - heading "Verify to Proceed" [level=3] [ref=e161]
-            - paragraph [ref=e162]: Verification is required to unlock next steps and keep the community genuine.
-          - generic [ref=e163]:
-            - generic [ref=e165]: "5"
-            - heading "Connect" [level=3] [ref=e166]
-            - paragraph [ref=e167]: Mutual interest unlocks messaging and contact details.
-      - generic [ref=e169]:
-        - generic [ref=e170]:
-          - heading "Real Profiles Waiting for You" [level=2] [ref=e171]
-          - paragraph [ref=e172]: Join to see complete profiles and start connecting with compatible matches.
-        - generic [ref=e173]:
-          - generic [ref=e174]:
-            - generic [ref=e175]:
-              - img "Navjot B." [ref=e180]
-              - generic [ref=e182]:
-                - paragraph [ref=e183]: N****
-                - paragraph [ref=e184]: California
-            - generic [ref=e185]:
-              - img "Jaspal G." [ref=e190]
-              - generic [ref=e192]:
-                - paragraph [ref=e193]: J****
-                - paragraph [ref=e194]: California
-            - generic [ref=e195]:
-              - img "Manpreet R." [ref=e200]
-              - generic [ref=e202]:
-                - paragraph [ref=e203]: M****
-                - paragraph [ref=e204]: California
-            - generic [ref=e205]:
-              - img "Harjit K." [ref=e210]
-              - generic [ref=e212]:
-                - paragraph [ref=e213]: H****
-                - paragraph [ref=e214]: California
-            - generic [ref=e215]:
-              - img "Gurpreet S." [ref=e220]
-              - generic [ref=e222]:
-                - paragraph [ref=e223]: G****
-                - paragraph [ref=e224]: California
-            - generic [ref=e225]:
-              - img "Sanjay N." [ref=e230]
-              - generic [ref=e232]:
-                - paragraph [ref=e233]: S****
-                - paragraph [ref=e234]: Kochi
-          - generic [ref=e236]:
-            - img [ref=e237]
-            - heading "Unlock matches after you create your profile" [level=3] [ref=e240]
-            - list [ref=e241]:
-              - listitem [ref=e242]:
-                - img [ref=e243]
-                - generic [ref=e246]: No public browsing — matches appear only when compatible.
-              - listitem [ref=e247]:
-                - img [ref=e248]
-                - generic [ref=e251]: Photos & contact unlock after verification + mutual interest.
-            - button "Find My Match" [ref=e252] [cursor=pointer]:
-              - text: Find My Match
-              - img [ref=e253]
-      - generic [ref=e257]:
-        - generic [ref=e258]:
-          - heading "Why Choose VivaahReady?" [level=2] [ref=e259]
-          - generic [ref=e260]:
-            - generic [ref=e261]:
-              - img [ref=e263]
-              - generic [ref=e265]:
-                - heading "Verified & Secure" [level=3] [ref=e266]
-                - paragraph [ref=e267]: All profiles are manually reviewed. Your privacy is protected until mutual interest.
-            - generic [ref=e268]:
-              - img [ref=e270]
-              - generic [ref=e275]:
-                - heading "Preference Matching" [level=3] [ref=e276]
-                - paragraph [ref=e277]: See only profiles matching YOUR preferences — age, location, caste, diet, and more.
-            - generic [ref=e278]:
-              - img [ref=e280]
-              - generic [ref=e282]:
-                - heading "Mutual Interest Required" [level=3] [ref=e283]
-                - paragraph [ref=e284]: Contact details shared only when BOTH parties express interest. No spam.
-            - generic [ref=e285]:
-              - img [ref=e287]
-              - generic [ref=e290]:
-                - heading "Essential Cookies Only" [level=3] [ref=e291]
-                - paragraph [ref=e292]: No tracking cookies. We only use essential cookies required for the site to function.
-        - generic [ref=e293]:
-          - generic [ref=e294]:
-            - img [ref=e295]
-            - heading "Free to Start" [level=3] [ref=e297]
-          - paragraph [ref=e298]: Create your profile, set deal-breakers, and view mutual matches. Verification keeps profiles genuine.
-          - list [ref=e299]:
-            - listitem [ref=e300]:
-              - img [ref=e301]
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - img [ref=e164]
+            - generic [ref=e166]:
+              - heading "Smart Matching" [level=3] [ref=e167]
+              - paragraph [ref=e168]: Based on your preferences
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - img [ref=e171]
+              - generic [ref=e173]: Mutual matches only (privacy-first)
+            - generic [ref=e174]:
+              - img [ref=e175]
+              - generic [ref=e177]: Compatibility scores with deal-breakers
+            - generic [ref=e178]:
+              - img [ref=e179]
+              - generic [ref=e182]: Phone-verified profiles
+            - generic [ref=e183]:
+              - img [ref=e184]
+              - generic [ref=e189]: Contact shared after mutual acceptance
+      - generic [ref=e192]:
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - img [ref=e195]
+            - generic [ref=e197]: 123+
+          - paragraph [ref=e198]: Verified Profiles
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - img [ref=e201]
+            - generic [ref=e204]: 14+
+          - paragraph [ref=e205]: Matches Made
+        - generic [ref=e206]:
+          - generic [ref=e207]:
+            - img [ref=e208]
+            - generic [ref=e211]: 27+
+          - paragraph [ref=e212]: US States
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - heading "How VivaahReady Works" [level=2] [ref=e216]
+          - paragraph [ref=e217]: Privacy-first matchmaking with phone-verified profiles.
+        - generic [ref=e218]:
+          - generic [ref=e219]:
+            - generic [ref=e221]: "1"
+            - heading "Create Profile (Free)" [level=3] [ref=e222]
+            - paragraph [ref=e223]: Create your profile and preferences. Add deal-breakers and match preferences.
+          - generic [ref=e224]:
+            - generic [ref=e226]: "2"
+            - heading "Find Matches (Free)" [level=3] [ref=e227]
+            - paragraph [ref=e228]: See curated matches where both sides' preferences align. Identity stays hidden.
+          - generic [ref=e229]:
+            - generic [ref=e231]: "3"
+            - heading "Express Interest (Free)" [level=3] [ref=e232]
+            - paragraph [ref=e233]: Express interest to signal intent.
+          - generic [ref=e234]:
+            - generic [ref=e236]: "4"
+            - heading "Verify to Proceed" [level=3] [ref=e237]
+            - paragraph [ref=e238]: Verification is required to unlock next steps and keep the community genuine.
+          - generic [ref=e239]:
+            - generic [ref=e241]: "5"
+            - heading "Connect" [level=3] [ref=e242]
+            - paragraph [ref=e243]: Mutual interest unlocks messaging and contact details.
+      - generic [ref=e246]:
+        - generic [ref=e247]:
+          - heading "Why Choose VivaahReady?" [level=2] [ref=e248]
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - img [ref=e252]
+              - generic [ref=e254]:
+                - heading "Verified & Secure" [level=3] [ref=e255]
+                - paragraph [ref=e256]: All profiles are manually reviewed. Your privacy is protected until mutual interest.
+            - generic [ref=e257]:
+              - img [ref=e259]
+              - generic [ref=e264]:
+                - heading "Preference Matching" [level=3] [ref=e265]
+                - paragraph [ref=e266]: See only profiles matching YOUR preferences — age, location, caste, diet, and more.
+            - generic [ref=e267]:
+              - img [ref=e269]
+              - generic [ref=e271]:
+                - heading "Mutual Interest Required" [level=3] [ref=e272]
+                - paragraph [ref=e273]: Contact details shared only when BOTH parties express interest. No spam.
+            - generic [ref=e274]:
+              - img [ref=e276]
+              - generic [ref=e279]:
+                - heading "Essential Cookies Only" [level=3] [ref=e280]
+                - paragraph [ref=e281]: No tracking cookies. We only use essential cookies required for the site to function.
+        - generic [ref=e282]:
+          - generic [ref=e283]:
+            - img [ref=e284]
+            - heading "Free to Start" [level=3] [ref=e286]
+          - paragraph [ref=e287]: Create your profile, set deal-breakers, and view mutual matches. Verification keeps profiles genuine.
+          - list [ref=e288]:
+            - listitem [ref=e289]:
+              - img [ref=e290]
               - text: Free profile creation
-            - listitem [ref=e304]:
-              - img [ref=e305]
+            - listitem [ref=e293]:
+              - img [ref=e294]
               - text: Mutual matches only (no public directory)
-            - listitem [ref=e308]:
-              - img [ref=e309]
+            - listitem [ref=e297]:
+              - img [ref=e298]
               - text: Photos & names unlock after verification
-            - listitem [ref=e312]:
-              - img [ref=e313]
+            - listitem [ref=e301]:
+              - img [ref=e302]
               - text: Contact shared after mutual acceptance
-          - button "Find My Match" [ref=e316] [cursor=pointer]:
+          - button "Find My Match" [ref=e305] [cursor=pointer]:
             - text: Find My Match
-            - img [ref=e317]
-      - generic [ref=e320]:
-        - generic [ref=e321]:
-          - heading "What Our Members Say" [level=2] [ref=e322]
-          - paragraph [ref=e323]: Real experiences from people who found meaningful connections.
-        - generic [ref=e324]:
-          - generic [ref=e325]:
-            - img [ref=e326]
-            - paragraph [ref=e329]: "\"I was tired of swiping on apps that didn't understand what I was looking for. VivaahReady felt different — the matches actually aligned with my values and preferences.\""
-            - generic [ref=e330]:
-              - paragraph [ref=e331]: Smitha P.
-              - paragraph [ref=e332]: Joined 2025
-          - generic [ref=e333]:
-            - img [ref=e334]
-            - paragraph [ref=e337]: "\"The privacy-first approach gave me confidence. I didn't have to worry about my profile being publicly visible. Only mutual matches can see each other.\""
-            - generic [ref=e338]:
-              - paragraph [ref=e339]: Suma K.
-              - paragraph [ref=e340]: Joined 2025
-          - generic [ref=e341]:
-            - img [ref=e342]
-            - paragraph [ref=e345]: "\"My parents and I both loved that profiles are verified. It's serious matchmaking, not casual browsing. The one-time fee means no subscription pressure.\""
-            - generic [ref=e346]:
-              - paragraph [ref=e347]: Gayathri A.
-              - paragraph [ref=e348]: Joined 2025
+            - img [ref=e306]
+      - generic [ref=e309]:
+        - generic [ref=e310]:
+          - heading "What Our Members Say" [level=2] [ref=e311]
+          - paragraph [ref=e312]: Real experiences from people who found meaningful connections.
+        - generic [ref=e313]:
+          - generic [ref=e314]:
+            - img [ref=e315]
+            - paragraph [ref=e318]: "\"I was tired of swiping on apps that didn't understand what I was looking for. VivaahReady felt different — the matches actually aligned with my values and preferences.\""
+            - generic [ref=e319]:
+              - paragraph [ref=e320]: Priya S.
+              - paragraph [ref=e321]: Joined 2025
+          - generic [ref=e322]:
+            - img [ref=e323]
+            - paragraph [ref=e326]: "\"The privacy-first approach gave me confidence. I didn't have to worry about my profile being publicly visible. Only mutual matches can see each other.\""
+            - generic [ref=e327]:
+              - paragraph [ref=e328]: Rahul M.
+              - paragraph [ref=e329]: Joined 2025
+          - generic [ref=e330]:
+            - img [ref=e331]
+            - paragraph [ref=e334]: "\"My parents and I both loved that profiles are verified. It's serious matchmaking, not casual browsing. The one-time fee means no subscription pressure.\""
+            - generic [ref=e335]:
+              - paragraph [ref=e336]: Ananya K.
+              - paragraph [ref=e337]: Joined 2025
+      - generic [ref=e339]:
+        - heading "Ready to create your profile?" [level=2] [ref=e340]
+        - paragraph [ref=e341]: Free to start. Verified, privacy-first matchmaking for serious relationships.
+        - button "Find My Match" [ref=e343] [cursor=pointer]:
+          - text: Find My Match
+          - img [ref=e344]
+  - contentinfo [ref=e346]:
+    - generic [ref=e348]:
       - generic [ref=e350]:
         - generic [ref=e351]:
-          - heading "Find Indian Matchmaking Near You" [level=2] [ref=e352]
-          - paragraph [ref=e353]: Connecting Indian singles across the United States
-        - generic [ref=e354]:
-          - link "New York" [ref=e355] [cursor=pointer]:
-            - /url: /indian-matchmaking-new-york
-          - link "Bay Area" [ref=e356] [cursor=pointer]:
-            - /url: /indian-matchmaking-bay-area
-          - link "Chicago" [ref=e357] [cursor=pointer]:
-            - /url: /indian-matchmaking-chicago
-          - link "Houston" [ref=e358] [cursor=pointer]:
-            - /url: /indian-matchmaking-houston
-          - link "Telugu Matrimony" [ref=e359] [cursor=pointer]:
-            - /url: /telugu-matrimony-usa
-          - link "Tamil Matrimony" [ref=e360] [cursor=pointer]:
-            - /url: /tamil-matrimony-usa
-          - link "Hindi Matrimony" [ref=e361] [cursor=pointer]:
-            - /url: /hindi-matrimony-usa
-          - link "Punjabi Matrimony" [ref=e362] [cursor=pointer]:
-            - /url: /punjabi-matrimony-usa
-        - link "View all locations and communities →" [ref=e364] [cursor=pointer]:
-          - /url: /indian-matchmaking
-      - generic [ref=e366]:
-        - heading "Ready to create your profile?" [level=2] [ref=e367]
-        - paragraph [ref=e368]: Free to start. Verified, privacy-first matchmaking for serious relationships.
-        - button "Find My Match" [ref=e370] [cursor=pointer]:
-          - text: Find My Match
-          - img [ref=e371]
-  - contentinfo [ref=e373]:
-    - generic [ref=e375]:
-      - generic [ref=e377]:
-        - generic [ref=e378]:
-          - img "VivaahReady" [ref=e380]
-          - paragraph [ref=e381]: Modern matchmaking with a traditional soul.
-          - paragraph [ref=e382]: Privacy-first matchmaking with verified profiles.
-        - navigation "Quick Links" [ref=e383]:
-          - heading "Quick Links" [level=3] [ref=e384]
-          - list [ref=e385]:
-            - listitem [ref=e386]:
-              - link "How it Works" [ref=e387] [cursor=pointer]:
+          - img "VivaahReady" [ref=e353]
+          - paragraph [ref=e354]: Modern matchmaking with a traditional soul.
+          - paragraph [ref=e355]: Privacy-first matchmaking with verified profiles.
+        - navigation "Quick Links" [ref=e356]:
+          - heading "Quick Links" [level=3] [ref=e357]
+          - list [ref=e358]:
+            - listitem [ref=e359]:
+              - link "How it Works" [ref=e360] [cursor=pointer]:
                 - /url: /#how-it-works
-            - listitem [ref=e388]:
-              - link "View Matches" [ref=e389] [cursor=pointer]:
+            - listitem [ref=e361]:
+              - link "View Matches" [ref=e362] [cursor=pointer]:
                 - /url: /login
-            - listitem [ref=e390]:
-              - link "Sign In" [ref=e391] [cursor=pointer]:
+            - listitem [ref=e363]:
+              - link "Sign In" [ref=e364] [cursor=pointer]:
                 - /url: /login
-            - listitem [ref=e392]:
-              - link "About Us" [ref=e393] [cursor=pointer]:
+            - listitem [ref=e365]:
+              - link "About Us" [ref=e366] [cursor=pointer]:
                 - /url: /about
-            - listitem [ref=e394]:
-              - link "Contact" [ref=e395] [cursor=pointer]:
+            - listitem [ref=e367]:
+              - link "Contact" [ref=e368] [cursor=pointer]:
                 - /url: /contact
-            - listitem [ref=e396]:
-              - link "Feedback" [ref=e397] [cursor=pointer]:
-                - /url: /feedback
-        - generic [ref=e398]:
-          - heading "Trust & Safety" [level=3] [ref=e399]
-          - list [ref=e400]:
-            - listitem [ref=e401]:
-              - img [ref=e402]
-              - generic [ref=e404]: Privacy-first design
+        - generic [ref=e369]:
+          - heading "Trust & Safety" [level=3] [ref=e370]
+          - list [ref=e371]:
+            - listitem [ref=e372]:
+              - img [ref=e373]
+              - generic [ref=e375]: Privacy-first design
+            - listitem [ref=e376]:
+              - img [ref=e377]
+              - generic [ref=e381]: Verified to connect
+            - listitem [ref=e382]:
+              - img [ref=e383]
+              - generic [ref=e388]: Mutual interest only
+        - navigation "Legal" [ref=e389]:
+          - heading "Legal" [level=3] [ref=e390]
+          - list [ref=e391]:
+            - listitem [ref=e392]:
+              - link "Terms of Use" [ref=e393] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e394]:
+              - link "Privacy Policy" [ref=e395] [cursor=pointer]:
+                - /url: /privacy
+        - generic [ref=e396]:
+          - heading "Contact" [level=3] [ref=e397]
+          - list [ref=e398]:
+            - listitem [ref=e399]:
+              - link "support@vivaahready.com" [ref=e400] [cursor=pointer]:
+                - /url: mailto:support@vivaahready.com
+                - img [ref=e401]
+                - generic [ref=e404]: support@vivaahready.com
             - listitem [ref=e405]:
               - img [ref=e406]
-              - generic [ref=e410]: Verified to connect
-            - listitem [ref=e411]:
-              - img [ref=e412]
-              - generic [ref=e417]: Mutual interest only
-        - navigation "Legal" [ref=e418]:
-          - heading "Legal" [level=3] [ref=e419]
-          - list [ref=e420]:
-            - listitem [ref=e421]:
-              - link "Terms of Use" [ref=e422] [cursor=pointer]:
-                - /url: /terms
-            - listitem [ref=e423]:
-              - link "Privacy Policy" [ref=e424] [cursor=pointer]:
-                - /url: /privacy
-        - generic [ref=e425]:
-          - heading "Contact" [level=3] [ref=e426]
-          - list [ref=e427]:
-            - listitem [ref=e428]:
-              - link "support@vivaahready.com" [ref=e429] [cursor=pointer]:
-                - /url: mailto:support@vivaahready.com
-                - img [ref=e430]
-                - generic [ref=e433]: support@vivaahready.com
-            - listitem [ref=e434]:
-              - img [ref=e435]
-              - generic [ref=e438]: United States
-          - generic [ref=e439]:
-            - link "Instagram" [ref=e440] [cursor=pointer]:
+              - generic [ref=e409]: United States
+          - generic [ref=e410]:
+            - link "Instagram" [ref=e411] [cursor=pointer]:
               - /url: https://www.instagram.com/vivaahready
-              - img [ref=e441]
-            - link "LinkedIn" [ref=e443] [cursor=pointer]:
+              - img [ref=e412]
+            - link "LinkedIn" [ref=e414] [cursor=pointer]:
               - /url: https://www.linkedin.com/company/vivaahready/
-              - img [ref=e444]
-            - link "WhatsApp" [ref=e446] [cursor=pointer]:
-              - /url: https://wa.me/19255777559
-              - img [ref=e447]
-      - generic [ref=e451]:
-        - navigation "Explore by City" [ref=e452]:
-          - heading "Explore by City" [level=3] [ref=e453]
-          - list [ref=e454]:
-            - listitem [ref=e455]:
-              - link "New York" [ref=e456] [cursor=pointer]:
-                - /url: /indian-matchmaking-new-york
-            - listitem [ref=e457]:
-              - link "Bay Area" [ref=e458] [cursor=pointer]:
-                - /url: /indian-matchmaking-bay-area
-            - listitem [ref=e459]:
-              - link "Chicago" [ref=e460] [cursor=pointer]:
-                - /url: /indian-matchmaking-chicago
-            - listitem [ref=e461]:
-              - link "Houston" [ref=e462] [cursor=pointer]:
-                - /url: /indian-matchmaking-houston
-            - listitem [ref=e463]:
-              - link "Dallas" [ref=e464] [cursor=pointer]:
-                - /url: /indian-matchmaking-dallas
-            - listitem [ref=e465]:
-              - link "Atlanta" [ref=e466] [cursor=pointer]:
-                - /url: /indian-matchmaking-atlanta
-            - listitem [ref=e467]:
-              - link "Seattle" [ref=e468] [cursor=pointer]:
-                - /url: /indian-matchmaking-seattle
-            - listitem [ref=e469]:
-              - link "View All →" [ref=e470] [cursor=pointer]:
-                - /url: /indian-matchmaking
-        - navigation "Explore by Language" [ref=e471]:
-          - heading "Explore by Language" [level=3] [ref=e472]
-          - list [ref=e473]:
-            - listitem [ref=e474]:
-              - link "Telugu" [ref=e475] [cursor=pointer]:
-                - /url: /telugu-matrimony-usa
-            - listitem [ref=e476]:
-              - link "Tamil" [ref=e477] [cursor=pointer]:
-                - /url: /tamil-matrimony-usa
-            - listitem [ref=e478]:
-              - link "Hindi" [ref=e479] [cursor=pointer]:
-                - /url: /hindi-matrimony-usa
-            - listitem [ref=e480]:
-              - link "Punjabi" [ref=e481] [cursor=pointer]:
-                - /url: /punjabi-matrimony-usa
-            - listitem [ref=e482]:
-              - link "Gujarati" [ref=e483] [cursor=pointer]:
-                - /url: /gujarati-matrimony-usa
-            - listitem [ref=e484]:
-              - link "Bengali" [ref=e485] [cursor=pointer]:
-                - /url: /bengali-matrimony-usa
-            - listitem [ref=e486]:
-              - link "Marathi" [ref=e487] [cursor=pointer]:
-                - /url: /marathi-matrimony-usa
-            - listitem [ref=e488]:
-              - link "Kannada" [ref=e489] [cursor=pointer]:
-                - /url: /kannada-matrimony-usa
-      - generic [ref=e492]:
-        - paragraph [ref=e493]: © 2026 VivaahReady. All rights reserved.
-        - generic [ref=e494]:
-          - link "Terms of Use" [ref=e495] [cursor=pointer]:
+              - img [ref=e415]
+            - link "WhatsApp" [ref=e417] [cursor=pointer]:
+              - /url: https://wa.me/19252022767
+              - img [ref=e418]
+      - generic [ref=e422]:
+        - paragraph [ref=e423]: © 2026 VivaahReady. All rights reserved.
+        - generic [ref=e424]:
+          - link "Terms of Use" [ref=e425] [cursor=pointer]:
             - /url: /terms
-          - link "Privacy Policy" [ref=e496] [cursor=pointer]:
+          - link "Privacy Policy" [ref=e426] [cursor=pointer]:
             - /url: /privacy
-  - link "Give feedback" [ref=e497] [cursor=pointer]:
-    - /url: /login?callbackUrl=%2Ffeedback%3Ffrom%3D%252F
-    - img [ref=e498]
-    - generic [ref=e500]: Give Feedback
-  - alert [ref=e501]
-  - generic [ref=e504]:
-    - paragraph [ref=e506]:
+  - alert [ref=e427]
+  - generic [ref=e430]:
+    - paragraph [ref=e432]:
       - text: We respect your privacy. We only use essential cookies to keep you signed in — no tracking, no ads, no third-party analytics.
-      - link "Privacy Policy" [ref=e507] [cursor=pointer]:
+      - link "Privacy Policy" [ref=e433] [cursor=pointer]:
         - /url: /privacy
-    - button "Got it" [ref=e509] [cursor=pointer]
-  - generic [ref=e510]:
-    - button "Dismiss" [ref=e511] [cursor=pointer]:
-      - img [ref=e512]
-    - generic [ref=e515]:
-      - img [ref=e517]
-      - generic [ref=e520]:
-        - paragraph [ref=e521]: Enable notifications
-        - paragraph [ref=e522]: Get instant alerts for new matches, interests, and messages.
-        - generic [ref=e523]:
-          - button "Enable" [ref=e524] [cursor=pointer]
-          - button "Not now" [ref=e525] [cursor=pointer]
+    - button "Got it" [ref=e435] [cursor=pointer]
 ```

@@ -65,86 +65,89 @@ export default function ReferralCard() {
   if (loading || !referralCode) return null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 h-full">
-      <div className="flex items-center gap-2 mb-2">
-        <Share2 className="h-4 w-4 text-primary-600" />
-        <h2 className="text-sm font-semibold text-gray-900">Invite Friends</h2>
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Share2 className="h-5 w-5 text-primary-600" />
+        <h2 className="text-lg font-semibold text-gray-900">Invite Friends</h2>
       </div>
+      <p className="text-sm text-gray-500 mb-4">
+        Share VivaahReady with friends and family who are looking for meaningful connections.
+      </p>
 
       {/* Referral Link */}
-      <div className="flex items-center gap-1.5 mb-3">
-        <div className="flex-1 bg-gray-50 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 truncate border border-gray-200">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600 truncate border border-gray-200">
           {referralLink}
         </div>
         <button
           onClick={copyLink}
-          className="flex-shrink-0 p-1.5 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors"
+          className="flex-shrink-0 p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors"
           title="Copy link"
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </button>
       </div>
 
       {/* Share Buttons */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-4">
         <button
           onClick={shareWhatsApp}
-          className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors text-xs font-medium"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors text-sm font-medium"
         >
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="h-4 w-4" />
           WhatsApp
         </button>
         <button
           onClick={shareEmail}
-          className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-medium"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-sm font-medium"
         >
-          <Mail className="h-3.5 w-3.5" />
+          <Mail className="h-4 w-4" />
           Email
         </button>
       </div>
 
       {/* Referral Count & Boost Status */}
-      <div className="pt-2 border-t border-gray-100 space-y-2">
+      <div className="pt-3 border-t border-gray-100 space-y-3">
         {referralCount > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Users className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Users className="h-4 w-4" />
             <span>{referralCount} {referralCount === 1 ? 'person' : 'people'} joined via your link</span>
           </div>
         )}
 
         {/* Boost Incentive */}
         {boostActive && boostExpiresAt ? (
-          <div className="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5">
-            <div className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-              <span className="text-xs font-medium text-amber-700">
-                Profile boosted!
+          <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-500 flex-shrink-0" />
+              <span className="text-sm font-medium text-amber-700">
+                Your profile is boosted in match results!
               </span>
             </div>
-            <p className="text-[10px] text-amber-600 mt-0.5 ml-5">
+            <p className="text-xs text-amber-600 mt-1 ml-6">
               Expires in {Math.max(1, Math.ceil((new Date(boostExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days
             </p>
           </div>
         ) : referralCount >= 3 ? (
-          <div className="rounded-lg bg-gray-50 border border-gray-200 px-2.5 py-1.5">
-            <div className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span className="text-xs text-gray-500">
-                Boost expired. Keep referring!
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm text-gray-500">
+                Your profile boost has expired. Keep referring to earn a new boost!
               </span>
             </div>
           </div>
         ) : (
-          <div className="rounded-lg bg-gray-50 border border-gray-200 px-2.5 py-1.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Zap className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span className="text-xs font-medium text-gray-700">
-                Refer {3 - referralCount} more to boost for 30 days
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Zap className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm font-medium text-gray-700">
+                Refer {3 - referralCount} more to boost your profile for 30 days
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
-                className="bg-primary-500 h-1 rounded-full transition-all"
+                className="bg-primary-500 h-1.5 rounded-full transition-all"
                 style={{ width: `${Math.min((referralCount / 3) * 100, 100)}%` }}
               />
             </div>

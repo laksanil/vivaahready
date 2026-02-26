@@ -216,19 +216,14 @@ export async function adminRejectProfile(
 
 export async function loginViaUi(page: Page, email: string, password: string = DEFAULT_PASSWORD): Promise<void> {
   await page.goto('/login')
-  // Expand email form when needed (Google is primary by default).
+  // Click to expand email form (hidden by default, Google is primary)
   const emailToggle = page.getByRole('button', { name: /Don\'t have Gmail|Use another email|Sign in with email/i }).first()
-  const emailInput = page.locator('#email')
-  if (!(await emailInput.isVisible().catch(() => false)) && await emailToggle.isVisible().catch(() => false)) {
+  if (await emailToggle.isVisible().catch(() => false)) {
     await emailToggle.click()
   }
-  await emailInput.waitFor({ state: 'visible', timeout: 10000 })
-
-  const passwordInput = page.locator('#password')
-  await passwordInput.waitFor({ state: 'visible', timeout: 10000 })
-
-  await emailInput.fill(email)
-  await passwordInput.fill(password)
+  await page.waitForTimeout(300)
+  await page.fill('#email', email)
+  await page.fill('#password', password)
   const emailSubmitButton = page.getByRole('button', { name: /^Sign In with Email$/i }).first()
   if (await emailSubmitButton.count()) {
     await emailSubmitButton.click()
@@ -237,81 +232,11 @@ export async function loginViaUi(page: Page, email: string, password: string = D
   }
 
   // Ensure we actually left /login and reached an authenticated area.
-  try {
-    await page.waitForURL(url => {
-      const path = url.pathname.toLowerCase()
-      return !path.startsWith('/login') &&
-        (path.startsWith('/dashboard') || path.startsWith('/matches') || path.startsWith('/profile'))
-    }, { timeout: 60000 })
-  } catch {
-    const loginErrorText = await page.locator('p.text-red-600').first().textContent().catch(() => null)
-    throw new Error(`Credential login did not navigate away from /login. UI error: ${loginErrorText || 'none'}`)
-  }
-
-  // Avoid race conditions where navigation completed but auth cookies/session are not yet fully established.
-  const deadline = Date.now() + 15000
-  let lastSessionStatus = 0
-  let lastSessionBody = ''
-  while (Date.now() < deadline) {
-    try {
-      const sessionRes = await page.request.get('/api/auth/session')
-      lastSessionStatus = sessionRes.status()
-      const sessionData = await sessionRes.json().catch(() => null)
-      if (sessionRes.ok() && sessionData?.user?.email) {
-        return
-      }
-      lastSessionBody = JSON.stringify(sessionData)
-    } catch (error) {
-      lastSessionBody = String(error)
-    }
-    await page.waitForTimeout(300)
-  }
-
-  throw new Error(
-    `Credential login navigated but session was not established. /api/auth/session status=${lastSessionStatus}, body=${lastSessionBody.slice(0, 400)}`
-  )
-}
-
-export async function loginViaApiCredentials(
-  request: APIRequestContext,
-  baseURL: string,
-  email: string,
-  password: string = DEFAULT_PASSWORD
-): Promise<void> {
-  const normalizedEmail = email.trim().toLowerCase()
-
-  const csrfRes = await request.get(`${baseURL}/api/auth/csrf`)
-  if (!csrfRes.ok()) {
-    throw new Error(`Failed to fetch CSRF token (${csrfRes.status()}): ${await csrfRes.text()}`)
-  }
-  const csrfData = await csrfRes.json().catch(() => null)
-  const csrfToken = csrfData?.csrfToken
-  if (!csrfToken || typeof csrfToken !== 'string') {
-    throw new Error(`Invalid CSRF payload: ${JSON.stringify(csrfData)}`)
-  }
-
-  const signInRes = await request.post(`${baseURL}/api/auth/callback/credentials`, {
-    form: {
-      csrfToken,
-      email: normalizedEmail,
-      password,
-      callbackUrl: `${baseURL}/dashboard`,
-      json: 'true',
-    },
-  })
-
-  // NextAuth credentials callback may return 200 with JSON or 302 redirect chain.
-  if (!signInRes.ok() && signInRes.status() !== 302) {
-    throw new Error(`Credentials callback failed (${signInRes.status()}): ${await signInRes.text()}`)
-  }
-
-  const sessionRes = await request.get(`${baseURL}/api/auth/session`)
-  const sessionData = await sessionRes.json().catch(() => null)
-  if (!sessionRes.ok() || !sessionData?.user?.email) {
-    throw new Error(
-      `Session not established after API credentials login. status=${sessionRes.status()} body=${JSON.stringify(sessionData)}`
-    )
-  }
+  await page.waitForURL(url => {
+    const path = url.pathname.toLowerCase()
+    return !path.startsWith('/login') &&
+      (path.startsWith('/dashboard') || path.startsWith('/matches') || path.startsWith('/profile'))
+  }, { timeout: 60000 })
 }
 
 export async function adminLoginViaUi(page: Page): Promise<void> {

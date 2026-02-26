@@ -8,10 +8,9 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const body = await request.json()
-    const { name, email, phone, subject, message, website } = body
+    const { name, email, subject, message, website } = body
     const normalizedName = String(name || '').trim()
     const normalizedEmail = String(email || '').trim().toLowerCase()
-    const normalizedPhone = String(phone || '').trim()
     const normalizedSubject = String(subject || '').trim()
     const normalizedMessage = String(message || '').trim()
 
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    if (!normalizedName || !normalizedEmail || !normalizedPhone || !normalizedSubject || !normalizedMessage) {
+    if (!normalizedName || !normalizedEmail || !normalizedSubject || !normalizedMessage) {
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
@@ -45,7 +44,6 @@ export async function POST(request: NextRequest) {
         userId: session?.user?.id || null,
         name: normalizedName,
         email: normalizedEmail,
-        phone: normalizedPhone,
         subject: normalizedSubject,
         message: normalizedMessage,
         context: 'contact_form',

@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { sendMatchAcceptedSms, formatPhoneNumber } from '@/lib/sns'
-import { storeNotification } from '@/lib/notifications'
 
 // PATCH - Update match status (accept/reject)
 export async function PATCH(
@@ -94,9 +93,7 @@ export async function PATCH(
           userId: currentUserId,
           declinedUserId: match.senderId,
         },
-        update: {
-          hiddenFromReconsider: false,
-        },
+        update: {} // Already exists, no update needed
       })
     }
 
@@ -148,14 +145,6 @@ export async function PATCH(
               receiverName
             )
           }
-
-          // Store in-app notification for mutual match
-          storeNotification('interest_accepted', match.senderId, {
-            matchName: receiverProfile?.firstName || 'Someone',
-            recipientName: senderProfile?.firstName || 'there',
-          }, {
-            deliveryModes: match.sender.phone ? ['sms'] : [],
-          }).catch(err => console.error('Failed to store mutual match notification:', err))
         } catch (smsError) {
           console.error('Failed to send mutual match SMS:', smsError)
         }
@@ -194,14 +183,6 @@ export async function PATCH(
             receiverName
           )
         }
-
-        // Store in-app notification for accepted interest
-        storeNotification('interest_accepted', match.senderId, {
-          matchName: receiverProfile?.firstName || 'Someone',
-          recipientName: senderProfile?.firstName || 'there',
-        }, {
-          deliveryModes: match.sender.phone ? ['sms'] : [],
-        }).catch(err => console.error('Failed to store accepted notification:', err))
       } catch (smsError) {
         console.error('Failed to send match accepted SMS:', smsError)
       }

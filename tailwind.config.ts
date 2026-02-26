@@ -9,19 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // VivaahReady brand red palette (darker, richer red)
+        // VivaahReady brand red palette (from logo #E31C25)
         primary: {
-          50: '#fdf2f2',
-          100: '#fce8e8',
-          200: '#f9c8c8',
-          300: '#f29b9b',
-          400: '#e05a5a',
-          500: '#c42020',
-          600: '#991b1b',  // Main brand red (darker)
-          700: '#7f1d1d',
-          800: '#651515',
-          900: '#4d1010',
-          950: '#350b0b',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#E31C25',  // Main brand red from logo
+          700: '#c81e1e',
+          800: '#991b1b',
+          900: '#7f1d1d',
+          950: '#450a0a',
         },
         // Silver/gray palette for backgrounds
         silver: {
@@ -55,8 +55,8 @@ const config: Config = {
         display: ['Playfair Display', 'Georgia', 'serif'],
       },
       boxShadow: {
-        'glow': '0 0 20px rgba(153, 27, 27, 0.3)',
-        'glow-lg': '0 0 40px rgba(153, 27, 27, 0.4)',
+        'glow': '0 0 20px rgba(227, 28, 37, 0.3)',
+        'glow-lg': '0 0 40px rgba(227, 28, 37, 0.4)',
       },
     },
   },

@@ -101,7 +101,7 @@ export default function GetVerifiedPage() {
     <div className="bg-white min-h-screen">
         {/* Sticky Top Bar */}
         <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-stone-200">
-          <div className="w-full px-4 md:px-8 xl:px-10 py-2.5 flex items-center justify-between">
+          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
             <span className="font-semibold text-stone-900 text-sm">Get Verified</span>
             {showRegisterLink && (
               <Link
@@ -135,7 +135,7 @@ export default function GetVerifiedPage() {
 
         {/* Hero Section - Compact */}
         <section className="bg-gradient-to-b from-stone-50 to-white">
-          <div className="w-full px-4 md:px-8 xl:px-10 py-6 md:py-8">
+          <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
             <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
               {/* Left: Main Content */}
               <div>
@@ -266,7 +266,7 @@ export default function GetVerifiedPage() {
 
         {/* Trust Strip - Single row compact chips */}
         <section className="border-y border-stone-100 bg-white">
-          <div className="w-full px-4 md:px-8 xl:px-10 py-3">
+          <div className="max-w-5xl mx-auto px-4 py-3">
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4">
               <TrustChip icon={Shield} label="Phone verified" />
               <TrustChip icon={Users} label="Mutual interest only" />
@@ -277,7 +277,7 @@ export default function GetVerifiedPage() {
 
         {/* How It Works - Compact 4-step row */}
         <section id="how-it-works" className="py-5 md:py-6 bg-stone-50">
-          <div className="w-full px-4 md:px-8 xl:px-10">
+          <div className="max-w-5xl mx-auto px-4">
             <h2 className="text-base font-semibold text-stone-900 text-center mb-4">How it works</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
               {[
@@ -304,7 +304,7 @@ export default function GetVerifiedPage() {
 
         {/* Privacy Section - 2 lines only */}
         <section className="py-4 md:py-5 bg-white border-b border-stone-100">
-          <div className="w-full px-4 md:px-8 xl:px-10 text-center">
+          <div className="max-w-3xl mx-auto px-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Lock className="h-4 w-4 text-primary-600" />
               <span className="text-sm font-medium text-stone-900">Your privacy is protected</span>
