@@ -221,26 +221,12 @@ export async function POST(request: Request) {
       ...lifestyleOtherNormalization.normalizedValues,
     }
 
-    // Bootstrap flows (login/Google callback/profile-setup recovery) create a partial shell
-    // before the user fills all basics. Only run full basics validation when a real basics
-    // submission is being posted and the caller did not mark it as a partial save.
-    const hasBasicsSubmission =
-      body.createdBy !== undefined ||
-      body.gender !== undefined ||
-      body.dateOfBirth !== undefined ||
-      body.age !== undefined ||
-      body.height !== undefined ||
-      body.maritalStatus !== undefined ||
-      body.motherTongue !== undefined
-
-    if (!data._isPartialSave && hasBasicsSubmission) {
-      const basicsValidation = validateBasicsStep(data)
-      if (!basicsValidation.isValid) {
-        return NextResponse.json(
-          { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
-          { status: 400 }
-        )
-      }
+    const basicsValidation = validateBasicsStep(data)
+    if (!basicsValidation.isValid) {
+      return NextResponse.json(
+        { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
+        { status: 400 }
+      )
     }
 
     const normalizeText = (value: string | undefined) => value?.trim() || ''
@@ -578,16 +564,10 @@ export async function POST(request: Request) {
       userUpdateData.phone = data.phone.trim()
     }
     if (Object.keys(userUpdateData).length > 0) {
-      try {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: userUpdateData,
-        })
-      } catch (userUpdateError) {
-        // Profile creation already succeeded. Do not fail the whole request if syncing
-        // display name / phone back to the User row fails transiently.
-        console.error('Profile created but failed to sync user fields:', userUpdateError)
-      }
+      await prisma.user.update({
+        where: { id: user.id },
+        data: userUpdateData,
+      })
     }
 
     // Send thank-you email to referrer (fire and forget)

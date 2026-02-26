@@ -75,10 +75,7 @@ function PhotosUploadContent() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      const callbackUrl = typeof window !== 'undefined'
-        ? `${window.location.pathname}${window.location.search}`
-        : '/profile/photos'
-      router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+      router.push('/login')
     }
   }, [status, router])
 
@@ -177,15 +174,11 @@ function PhotosUploadContent() {
       // Mark signup as complete by setting signupStep to 9
       // signupStep 9 = complete (photos done)
       if (fromSignup) {
-        const completionResponse = await fetch(`/api/profile/${profileId}`, {
+        await fetch(`/api/profile/${profileId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ signupStep: 9 }),
         })
-        if (!completionResponse.ok) {
-          const errorData = await completionResponse.json().catch(() => ({}))
-          throw new Error(errorData.error || 'Failed to finalize signup. Please try again.')
-        }
       }
 
       // Redirect to returnTo URL if provided (e.g., event payment), otherwise dashboard
