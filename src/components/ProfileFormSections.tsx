@@ -1690,8 +1690,8 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
                 placeholder="https://linkedin.com/in/username"
               />
             </div>
-            {formData.linkedinError && (
-              <p className="text-red-500 text-xs mt-1">{formData.linkedinError as string}</p>
+            {typeof formData.linkedinError === 'string' && formData.linkedinError && (
+              <p className="text-red-500 text-xs mt-1">{formData.linkedinError}</p>
             )}
             <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
           </div>
