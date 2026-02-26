@@ -128,6 +128,7 @@ function LoginForm() {
             gender: profileData?.gender,
             dateOfBirth: profileData?.dateOfBirth,
             profileFor: profileData?.profileFor,
+            _isPartialSave: true,
           }),
         })
 

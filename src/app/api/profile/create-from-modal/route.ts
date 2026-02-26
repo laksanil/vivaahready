@@ -221,12 +221,26 @@ export async function POST(request: Request) {
       ...lifestyleOtherNormalization.normalizedValues,
     }
 
-    const basicsValidation = validateBasicsStep(data)
-    if (!basicsValidation.isValid) {
-      return NextResponse.json(
-        { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
-        { status: 400 }
-      )
+    // Bootstrap flows (login/Google callback/profile-setup recovery) create a partial shell
+    // before the user fills all basics. Only run full basics validation when a real basics
+    // submission is being posted and the caller did not mark it as a partial save.
+    const hasBasicsSubmission =
+      body.createdBy !== undefined ||
+      body.gender !== undefined ||
+      body.dateOfBirth !== undefined ||
+      body.age !== undefined ||
+      body.height !== undefined ||
+      body.maritalStatus !== undefined ||
+      body.motherTongue !== undefined
+
+    if (!data._isPartialSave && hasBasicsSubmission) {
+      const basicsValidation = validateBasicsStep(data)
+      if (!basicsValidation.isValid) {
+        return NextResponse.json(
+          { error: basicsValidation.errors[0] || 'Please complete all required Basic Info fields.' },
+          { status: 400 }
+        )
+      }
     }
 
     const normalizeText = (value: string | undefined) => value?.trim() || ''

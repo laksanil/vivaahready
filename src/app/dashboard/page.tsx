@@ -125,9 +125,11 @@ function DashboardContent() {
     ? (impersonatedUser?.profile?.approvalStatus || null)
     : ((session?.user as any)?.approvalStatus || null)
   const pendingFromUrl = showPendingMessage && !sessionApprovalStatus
-  // Use database check if available (overrides potentially stale JWT value)
-  // This prevents the loop where user creates profile but JWT still says hasProfile=false
-  const hasProfile = dbHasProfile === true || sessionHasProfile || pendingFromUrl
+  // Use database check if available (overrides potentially stale JWT value in either direction).
+  // This prevents false positives/negatives when JWT profile flags are stale.
+  const hasProfile = dbProfileChecked
+    ? (dbHasProfile === true || pendingFromUrl)
+    : (sessionHasProfile || pendingFromUrl)
   const approvalStatus = sessionApprovalStatus || (pendingFromUrl ? 'pending' : null)
   const isApproved = hasProfile && approvalStatus === 'approved'
   const isPending = hasProfile && approvalStatus === 'pending'
@@ -323,6 +325,7 @@ function DashboardContent() {
             email: session.user.email,
             ...formData,
             referredBy,
+            _isPartialSave: true,
           }),
         })
 
@@ -353,6 +356,7 @@ function DashboardContent() {
                   ...formData,
                   referredBy,
                   skipDuplicateCheck: true,
+                  _isPartialSave: true,
                 }),
               })
               if (retryResponse.ok) {

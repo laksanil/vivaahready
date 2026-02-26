@@ -106,6 +106,7 @@ function ProfileCompleteContent() {
             document.cookie = 'signupFormData=; path=/; max-age=0'
           } catch (e) {
             console.error('Failed to parse signup cookie:', e)
+            document.cookie = 'signupFormData=; path=/; max-age=0'
           }
         }
       }
@@ -146,16 +147,15 @@ function ProfileCompleteContent() {
           console.error('Error checking profile status:', err)
         }
 
-        // No stored data and no profile
-        // If user has returnTo (coming from event registration), create profile using Google session data
-        if (returnTo && session?.user?.name) {
-          // Creating profile from session data for event registration flow
+        // No stored data and no profile - create a partial profile shell from session/email.
+        // This avoids redirect loops for authenticated users with no profile row.
+        const fallbackNameSource = (session?.user?.name || session?.user?.email?.split('@')[0] || '').trim()
+        if (fallbackNameSource) {
           setCreatingProfile(true)
           try {
-            // Parse name from Google session
-            const nameParts = session.user.name.split(' ')
-            const firstName = nameParts[0] || ''
-            const lastName = nameParts.slice(1).join(' ') || ''
+            const nameParts = fallbackNameSource.split(' ').filter(Boolean)
+            const firstName = nameParts[0] || 'User'
+            const lastName = nameParts.slice(1).join(' ') || 'User'
 
             const response = await fetch('/api/profile/create-from-modal', {
               method: 'POST',
@@ -165,6 +165,7 @@ function ProfileCompleteContent() {
                 firstName,
                 lastName,
                 phone: '', // Will be collected during profile completion
+                _isPartialSave: true,
               }),
             })
 
@@ -178,15 +179,22 @@ function ProfileCompleteContent() {
               setPageLoading(false)
               return
             } else if (response.status === 409 || response.status === 400) {
-              // Profile already exists - try to fetch it again
-              const retryCheck = await fetch('/api/user/profile-status')
-              if (retryCheck.ok) {
-                const retryData = await retryCheck.json()
-                if (retryData.hasProfile && retryData.profileId) {
-                  setProfileId(retryData.profileId)
-                  setCreatingProfile(false)
-                  return
+              const responseData = await response.json().catch(() => ({} as { error?: string }))
+              const isExistingProfileError =
+                response.status === 409 || responseData.error === 'Profile already exists for this user.'
+
+              if (isExistingProfileError) {
+                const retryCheck = await fetch('/api/user/profile-status')
+                if (retryCheck.ok) {
+                  const retryData = await retryCheck.json()
+                  if (retryData.hasProfile && retryData.profileId) {
+                    setProfileId(retryData.profileId)
+                    setCreatingProfile(false)
+                    return
+                  }
                 }
+              } else {
+                setError(responseData.error || 'Failed to create profile')
               }
             }
           } catch (err) {
@@ -221,6 +229,7 @@ function ProfileCompleteContent() {
             email: session.user.email,
             ...formDataToUse,
             referredBy,
+            _isPartialSave: true,
           }),
         })
 
@@ -243,22 +252,30 @@ function ProfileCompleteContent() {
           router.push('/dashboard')
           return
         } else if (response.status === 400) {
-          // Profile already exists - clear sessionStorage and get existing profile
-          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
-          try {
-            const checkResponse = await fetch('/api/user/profile-status')
-            if (checkResponse.ok) {
-              const data = await checkResponse.json()
-              if (data.hasProfile && data.profileId) {
-                setProfileId(data.profileId)
-                return
+          const errorData = await response.json().catch(() => ({} as { error?: string }))
+          const isExistingProfileError = errorData.error === 'Profile already exists for this user.'
+
+          if (isExistingProfileError) {
+            // Profile already exists - clear sessionStorage and get existing profile
+            sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
+            try {
+              const checkResponse = await fetch('/api/user/profile-status')
+              if (checkResponse.ok) {
+                const data = await checkResponse.json()
+                if (data.hasProfile && data.profileId) {
+                  setProfileId(data.profileId)
+                  return
+                }
               }
+            } catch {
+              // Fallback to dashboard
             }
-          } catch {
-            // Fallback to dashboard
+            router.push('/dashboard')
+            return
           }
-          router.push('/dashboard')
-          return
+
+          sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
+          setError(errorData.error || 'Failed to create profile')
         } else {
           // Any other error - clear sessionStorage to prevent infinite loading
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
@@ -316,9 +333,8 @@ function ProfileCompleteContent() {
     const fetchProfile = async () => {
       if (status !== 'authenticated') return
 
-      // If no profileId, stop loading - either profile creation will set it or we show error
+      // If no profileId, keep waiting; profile creation may still be in-flight in the setup effect.
       if (!profileId) {
-        setPageLoading(false)
         return
       }
 
@@ -682,19 +698,15 @@ function ProfileCompleteContent() {
     </button>
   )
 
-  // Check if we have pending signup data (for Google auth flow)
-  // Check cookie, URL params, and storage
-  const hasCookie = typeof document !== 'undefined' && document.cookie.includes('signupFormData=')
-  const hasPendingSignupData = (fromGoogleAuth && (hasCookie || (urlFirstName && urlLastName && urlPhone))) ||
-    (typeof window !== 'undefined' && (sessionStorage.getItem('signupFormData') !== null || localStorage.getItem('signupFormData') !== null))
+  const shouldShowSetupLoader = status === 'loading' || pageLoading || creatingProfile
 
-  if (status === 'loading' || pageLoading || creatingProfile || (hasPendingSignupData && !profileId)) {
+  if (shouldShowSetupLoader) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
           <p className="mt-4 text-gray-600">
-            {creatingProfile || hasPendingSignupData ? 'Setting up your profile...' : 'Loading your profile...'}
+            {creatingProfile ? 'Setting up your profile...' : 'Loading your profile...'}
           </p>
         </div>
       </div>
