@@ -578,10 +578,16 @@ export async function POST(request: Request) {
       userUpdateData.phone = data.phone.trim()
     }
     if (Object.keys(userUpdateData).length > 0) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: userUpdateData,
-      })
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: userUpdateData,
+        })
+      } catch (userUpdateError) {
+        // Profile creation already succeeded. Do not fail the whole request if syncing
+        // display name / phone back to the User row fails transiently.
+        console.error('Profile created but failed to sync user fields:', userUpdateError)
+      }
     }
 
     // Send thank-you email to referrer (fire and forget)

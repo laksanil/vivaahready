@@ -153,4 +153,26 @@ describe('POST /api/profile/create-from-modal', () => {
     expect(validateBasicsStepMock).toHaveBeenCalledTimes(1)
     expect(prismaMock.profile.create).not.toHaveBeenCalled()
   })
+
+  it('returns success if profile is created but user sync update fails', async () => {
+    const { POST } = await import('@/app/api/profile/create-from-modal/route')
+    prismaMock.user.update.mockRejectedValueOnce(new Error('transient user update failure'))
+
+    const response = await POST(
+      buildRequest({
+        email: 'test@example.com',
+        firstName: 'Lakshmi',
+        lastName: 'N',
+        _isPartialSave: true,
+      }) as any
+    )
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      message: 'Profile created successfully',
+      profileId: 'profile-1',
+    })
+    expect(prismaMock.profile.create).toHaveBeenCalledTimes(1)
+    expect(prismaMock.user.update).toHaveBeenCalled()
+  })
 })
