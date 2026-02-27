@@ -41,6 +41,7 @@ const profileSchema = z.object({
   bloodGroup: z.string().optional(),
   healthInfo: z.string().optional(),
   anyDisability: z.string().optional(),
+  disabilityDetails: z.string().optional(),
 
   // Location & Background
   country: z.string().optional(),
@@ -354,6 +355,7 @@ export async function POST(request: Request) {
         bloodGroup: data.bloodGroup,
         healthInfo: data.healthInfo,
         anyDisability: data.anyDisability,
+        disabilityDetails: data.disabilityDetails,
 
         // Location & Background
         country: data.country,
