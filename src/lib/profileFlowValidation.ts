@@ -155,7 +155,7 @@ export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; er
 
   if (!linkedinProfile) {
     errors.push('LinkedIn profile is required.')
-  } else if (!isValidLinkedInProfileUrl(linkedinProfile)) {
+  } else if (linkedinProfile !== 'no_linkedin' && !isValidLinkedInProfileUrl(linkedinProfile)) {
     errors.push('A valid LinkedIn profile URL is required (linkedin.com/in/username).')
   }
 
