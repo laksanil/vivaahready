@@ -6,10 +6,7 @@ import { getTargetUserId } from '@/lib/admin'
 import { Prisma } from '@prisma/client'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
-  validateAboutMeStep,
   getEffectiveUniversity,
-  validateLocationEducationStep,
-  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -394,41 +391,10 @@ export async function PUT(
       }
     }
 
-    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
-
-    if (requestedSignupStep !== undefined && requestedSignupStep >= 3) {
-      const locationEducationValidation = validateLocationEducationStep({
-        ...mergedState,
-        universityOther: body.universityOther,
-      })
-
-      if (!locationEducationValidation.isValid) {
-        return NextResponse.json(
-          { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
-          { status: 400 }
-        )
-      }
-    }
-
-    if (requestedSignupStep !== undefined && requestedSignupStep >= 7) {
-      const aboutMeValidation = validateAboutMeStep(mergedState)
-      if (!aboutMeValidation.isValid) {
-        return NextResponse.json(
-          { error: aboutMeValidation.errors[0] || 'Please complete all required About Me fields.' },
-          { status: 400 }
-        )
-      }
-    }
-
-    if (requestedSignupStep !== undefined && requestedSignupStep >= 8) {
+    // Normalize dealbreaker flags when preference data is being submitted
+    if (body.prefAgeMin !== undefined || body.prefHeightMin !== undefined || body.prefMaritalStatus !== undefined) {
+      const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
       const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
-
-      if (!preferencesValidation.isValid) {
-        return NextResponse.json(
-          { error: preferencesValidation.errors[0] || 'Please complete required partner preferences.' },
-          { status: 400 }
-        )
-      }
 
       updateData.prefAgeIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefAgeIsDealbreaker
       updateData.prefHeightIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefHeightIsDealbreaker
@@ -444,17 +410,6 @@ export async function PUT(
         updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
           ? preferencesValidation.selectedReligions[0]
           : ''
-      }
-    }
-
-    if (requestedSignupStep !== undefined && requestedSignupStep >= 9) {
-      const preferencesAdditionalValidation = validatePartnerPreferencesAdditional(mergedState)
-
-      if (!preferencesAdditionalValidation.isValid) {
-        return NextResponse.json(
-          { error: preferencesAdditionalValidation.errors[0] || 'Please complete required partner preferences.' },
-          { status: 400 }
-        )
       }
     }
 
