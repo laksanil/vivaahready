@@ -276,7 +276,7 @@ export async function PUT(request: Request) {
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship
-    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile
     if (body.facebookInstagram !== undefined) updateData.facebookInstagram = body.facebookInstagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.instagram !== undefined) updateData.instagram = body.instagram
@@ -532,9 +532,14 @@ export async function PUT(request: Request) {
       })
     }
 
+    const profileUpdateData: Record<string, unknown> = { ...updateData }
+    if (profileUpdateData.linkedinProfile === 'no_linkedin') {
+      profileUpdateData.linkedinProfile = null
+    }
+
     const profile = await prisma.profile.update({
       where: { userId: targetUser.userId },
-      data: updateData,
+      data: profileUpdateData,
     })
 
     return NextResponse.json({ message: 'Profile updated successfully', profile })
