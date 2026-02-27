@@ -63,7 +63,7 @@ export async function getMatchResultsForUser(
   const hasPaid = userSubscription?.profilePaid === true
   const isApproved = myProfile.approvalStatus === 'approved'
 
-  const candidates = await prisma.profile.findMany({
+  const rawCandidates = await prisma.profile.findMany({
     where: {
       gender: myProfile.gender === 'male' ? 'female' : 'male',
       isActive: true,
@@ -81,6 +81,14 @@ export async function getMatchResultsForUser(
         },
       },
     },
+  })
+
+  // Filter for COMPLETE profiles only: must have phone AND at least one photo
+  const candidates = rawCandidates.filter(candidate => {
+    const hasPhone = !!candidate.user?.phone && candidate.user.phone.trim() !== ''
+    const hasPhoto = !!(candidate.photoUrls && candidate.photoUrls.trim() !== '') ||
+      !!(candidate.profileImageUrl && candidate.profileImageUrl.trim() !== '')
+    return hasPhone && hasPhoto
   })
 
   if (debug) {
