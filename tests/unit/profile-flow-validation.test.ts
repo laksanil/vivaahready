@@ -145,13 +145,12 @@ describe('profileFlowValidation', () => {
       expect(result.errors).toContain('Referral source is required.')
     })
 
-    it('fails when LinkedIn uses the no_linkedin bypass value', () => {
+    it('passes when LinkedIn uses the no_linkedin bypass value (user chose "I don\'t have LinkedIn")', () => {
       const result = validateAboutMeStep({
         linkedinProfile: 'no_linkedin',
         referralSource: 'google',
       })
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('A valid LinkedIn profile URL is required (linkedin.com/in/username).')
+      expect(result.isValid).toBe(true)
     })
 
     it('fails when LinkedIn URL is invalid', () => {
