@@ -518,8 +518,8 @@ function ProfileCompleteContent() {
   }
 
   // Update profile with section data
-  const handleUpdateProfile = async (nextStep: number) => {
-    if (!profileId) return
+  const handleUpdateProfile = async (nextStep: number): Promise<boolean> => {
+    if (!profileId) return false
 
     setError('')
     setLoading(true)
@@ -562,12 +562,14 @@ function ProfileCompleteContent() {
         const data = await response.json()
         setError(data.error || 'Failed to save profile data')
         setLoading(false)
-        return
+        return false
       }
 
       setStep(nextStep)
+      return true
     } catch {
       setError('Failed to save. Please try again.')
+      return false
     } finally {
       setLoading(false)
     }
@@ -576,7 +578,8 @@ function ProfileCompleteContent() {
   const handleSectionContinue = async () => {
     // If on last step (preferences_2, which is step 8), save and redirect to photos page
     if (step === SECTION_ORDER.length) {
-      await handleUpdateProfile(step)
+      const didSave = await handleUpdateProfile(step)
+      if (!didSave) return
       const photosUrl = `/profile/photos?profileId=${profileId}&fromSignup=true${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
       router.push(photosUrl)
     } else if (step < SECTION_ORDER.length) {
