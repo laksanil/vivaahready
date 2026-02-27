@@ -1638,7 +1638,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
           <div>
             <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
             <select
-              value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+              value={!formData.linkedinProfile || formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
               onChange={(e) => {
                 if (e.target.value === 'no_linkedin') {
                   setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
@@ -1651,7 +1651,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
               <option value="has_linkedin">I have LinkedIn</option>
               <option value="no_linkedin">I don&apos;t have LinkedIn</option>
             </select>
-            {(formData.linkedinProfile !== 'no_linkedin') && (
+            {(typeof formData.linkedinProfile === 'string' && formData.linkedinProfile && formData.linkedinProfile !== 'no_linkedin') && (
               <>
                 <div className="relative">
                   <input

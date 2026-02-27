@@ -46,7 +46,13 @@ export default function ProfileEditModal({
 
   useEffect(() => {
     if (isOpen && profile) {
-      setFormData({ ...profile })
+      const data = { ...profile }
+      // Normalize null/empty linkedinProfile to 'no_linkedin' so the dropdown
+      // and validation stay in sync (old profiles stored null instead of 'no_linkedin')
+      if (!data.linkedinProfile) {
+        data.linkedinProfile = 'no_linkedin'
+      }
+      setFormData(data)
       setError('')
     }
   }, [isOpen, profile])
