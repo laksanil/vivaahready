@@ -169,6 +169,18 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     prefMaritalStatusIsDealbreaker: true,
   })
 
+  // Seed firstName/lastName from session when modal opens
+  useEffect(() => {
+    if (!isOpen || !session?.user?.name) return
+    setFormData(prev => {
+      if (prev.firstName) return prev // already set, don't overwrite
+      const parts = session.user!.name!.split(' ')
+      const firstName = parts[0] || ''
+      const lastName = parts.slice(1).join(' ') || ''
+      return { ...prev, firstName, lastName }
+    })
+  }, [isOpen, session])
+
   useEffect(() => {
     const activeOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
     if (activeOrder[step - 1] !== 'preferences_1') return
