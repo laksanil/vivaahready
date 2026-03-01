@@ -144,10 +144,8 @@ describe('profileFlowValidation', () => {
       expect(result.errors).toContain('Referral source is required.')
     })
 
-    it('passes when referral source is provided (LinkedIn is optional)', () => {
-      const result = validateAboutMeStep({
-        referralSource: 'google',
-      })
+    it('passes when referral source is provided', () => {
+      const result = validateAboutMeStep({ referralSource: 'google' })
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })

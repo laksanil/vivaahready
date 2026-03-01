@@ -345,15 +345,12 @@ function ProfileCompleteContent() {
             country: data.country || 'USA',
             grewUpIn: data.grewUpIn || 'USA',
             citizenship: data.citizenship || 'USA',
-            residencyStatus: data.residencyStatus,
             currentLocation: data.currentLocation,
             zipCode: data.zipCode,
             qualification: data.qualification,
             university: data.university,
             occupation: data.occupation,
-            employerName: data.employerName,
             annualIncome: data.annualIncome,
-            educationCareerDetails: data.educationCareerDetails,
             openToRelocation: data.openToRelocation,
             // Religion & Astro
             religion: data.religion,
@@ -361,25 +358,14 @@ function ProfileCompleteContent() {
             subCommunity: data.subCommunity,
             gotra: data.gotra,
             nakshatra: data.nakshatra,
-            raasi: data.raasi,
-            doshas: data.doshas,
+            rashi: data.rashi,
             timeOfBirth: data.timeOfBirth,
             placeOfBirth: data.placeOfBirth,
-            placeOfBirthState: data.placeOfBirthState,
-            placeOfBirthCity: data.placeOfBirthCity,
             manglik: data.manglik,
-            maslak: data.maslak,
-            namazPractice: data.namazPractice,
-            amritdhari: data.amritdhari,
-            turban: data.turban,
-            churchAttendance: data.churchAttendance,
-            baptized: data.baptized,
             // Family
             familyLocation: data.familyLocation,
             familyValues: data.familyValues,
             familyType: data.familyType,
-            livesWithFamily: data.livesWithFamily,
-            familyDetails: data.familyDetails,
             fatherName: data.fatherName,
             fatherOccupation: data.fatherOccupation,
             motherName: data.motherName,
@@ -400,11 +386,9 @@ function ProfileCompleteContent() {
             linkedinProfile: data.linkedinProfile,
             instagram: data.instagram,
             facebook: data.facebook,
-            referralSource: data.referralSource,
             bloodGroup: data.bloodGroup,
             anyDisability: data.anyDisability || 'none',
             disabilityDetails: data.disabilityDetails,
-            allergiesOrMedical: data.allergiesOrMedical,
             // Partner Preferences
             prefAgeMin: data.prefAgeMin,
             prefAgeMax: data.prefAgeMax,
@@ -518,8 +502,8 @@ function ProfileCompleteContent() {
   }
 
   // Update profile with section data
-  const handleUpdateProfile = async (nextStep: number): Promise<boolean> => {
-    if (!profileId) return false
+  const handleUpdateProfile = async (nextStep: number) => {
+    if (!profileId) return
 
     setError('')
     setLoading(true)
@@ -562,14 +546,12 @@ function ProfileCompleteContent() {
         const data = await response.json()
         setError(data.error || 'Failed to save profile data')
         setLoading(false)
-        return false
+        return
       }
 
       setStep(nextStep)
-      return true
     } catch {
       setError('Failed to save. Please try again.')
-      return false
     } finally {
       setLoading(false)
     }
@@ -578,8 +560,7 @@ function ProfileCompleteContent() {
   const handleSectionContinue = async () => {
     // If on last step (preferences_2, which is step 8), save and redirect to photos page
     if (step === SECTION_ORDER.length) {
-      const didSave = await handleUpdateProfile(step)
-      if (!didSave) return
+      await handleUpdateProfile(step)
       const photosUrl = `/profile/photos?profileId=${profileId}&fromSignup=true${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`
       router.push(photosUrl)
     } else if (step < SECTION_ORDER.length) {

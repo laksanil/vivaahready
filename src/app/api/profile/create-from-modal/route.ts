@@ -7,7 +7,7 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
-import { getEffectiveUniversity, isNonWorkingOccupation, validateAboutMeStep } from '@/lib/profileFlowValidation'
+import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -41,7 +41,6 @@ const profileSchema = z.object({
   bloodGroup: z.string().optional(),
   healthInfo: z.string().optional(),
   anyDisability: z.string().optional(),
-  disabilityDetails: z.string().optional(),
 
   // Location & Background
   country: z.string().optional(),
@@ -213,21 +212,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Enforce About Me step requirements when that section data is being submitted
-    const hasAboutMeSubmission =
-      body.referralSource !== undefined ||
-      body.aboutMe !== undefined
-
-    if (hasAboutMeSubmission) {
-      const aboutMeValidation = validateAboutMeStep(data as unknown as Record<string, unknown>)
-      if (!aboutMeValidation.isValid) {
-        return NextResponse.json(
-          { error: aboutMeValidation.errors[0] || 'LinkedIn profile and referral source are required.' },
-          { status: 400 }
-        )
-      }
-    }
-
     // Get the authenticated session first
     const session = await getServerSession(authOptions)
     const sessionEmail = session?.user?.email
@@ -354,7 +338,6 @@ export async function POST(request: Request) {
         bloodGroup: data.bloodGroup,
         healthInfo: data.healthInfo,
         anyDisability: data.anyDisability,
-        disabilityDetails: data.disabilityDetails,
 
         // Location & Background
         country: data.country,
@@ -370,7 +353,7 @@ export async function POST(request: Request) {
           : data.familyLocationCountry || data.familyLocation,
         motherTongue: data.motherTongue,
         languagesKnown: data.languagesKnown,
-        linkedinProfile: data.linkedinProfile,
+        linkedinProfile: data.linkedinProfile === 'no_linkedin' ? null : data.linkedinProfile,
         instagram: data.instagram,
         facebook: data.facebook,
 

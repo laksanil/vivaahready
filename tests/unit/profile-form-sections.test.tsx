@@ -66,14 +66,13 @@ describe('Profile form sections', () => {
     cleanup()
 
     renderResult = renderSection(EducationSection, {})
-    // Qualification is now a searchable type-ahead input (not a select)
-    expect(renderResult.container.querySelector('input[placeholder="Type to search degrees..."]')).toBeTruthy()
+    expect(renderResult.container.querySelector('select[name="qualification"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="occupation"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="annualIncome"]')).toBeTruthy()
     cleanup()
   })
 
-  it('renders lifestyle fields and optional LinkedIn input', () => {
+  it('renders lifestyle fields and validates LinkedIn URL', () => {
     let renderResult = renderSection(LifestyleSection, {})
     expect(renderResult.container.querySelector('select[name="dietaryPreference"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="smoking"]')).toBeTruthy()
@@ -86,6 +85,9 @@ describe('Profile form sections', () => {
     })
     const linkedinInput = renderResult.container.querySelector('input[name="linkedinProfile"]') as HTMLInputElement
     expect(linkedinInput).toBeTruthy()
+    fireEvent.change(linkedinInput, { target: { name: 'linkedinProfile', value: 'linkedin.com/company/foo' } })
+    fireEvent.blur(linkedinInput)
+    expect(screen.getByText(/profile url/i)).toBeInTheDocument()
     cleanup()
   })
 

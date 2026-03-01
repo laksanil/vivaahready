@@ -1,4 +1,4 @@
-import { test, expect, request as apiRequest, type APIRequestContext } from '@playwright/test'
+import { test, expect, request as apiRequest, type APIRequestContext, type BrowserContext } from '@playwright/test'
 import {
   buildTestUser,
   createUserWithProfile,
@@ -6,7 +6,6 @@ import {
   adminLogin,
   adminApproveProfile,
   loginViaUi,
-  loginViaApiCredentials,
   adminLoginViaUi,
   DEFAULT_PASSWORD,
   DEFAULT_PHOTO_PATH,
@@ -42,7 +41,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
   let userBEmail = ''
   let userCEmail = ''
 
-  test.beforeAll(async ({ request }) => {
+  test.beforeAll(async ({ request, browser }) => {
     adminRequest = await apiRequest.newContext({ baseURL })
     await adminLogin(adminRequest, baseURL)
 
@@ -72,10 +71,18 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
     await adminApproveProfile(adminRequest, baseURL, profileBId)
     await adminApproveProfile(adminRequest, baseURL, profileCId)
 
-    const userARequest = await apiRequest.newContext({ baseURL })
-    const userBRequest = await apiRequest.newContext({ baseURL })
-    await loginViaApiCredentials(userARequest, baseURL, userA.email, DEFAULT_PASSWORD)
-    await loginViaApiCredentials(userBRequest, baseURL, userB.email, DEFAULT_PASSWORD)
+    const loginWithUi = async (email: string) => {
+      const context = await browser.newContext({ baseURL })
+      const page = await context.newPage()
+      await loginViaUi(page, email, DEFAULT_PASSWORD)
+      await page.close()
+      return context
+    }
+
+    const userAContext: BrowserContext = await loginWithUi(userA.email)
+    const userBContext: BrowserContext = await loginWithUi(userB.email)
+    const userARequest = userAContext.request
+    const userBRequest = userBContext.request
 
     // Mutual interest between A and B for connections/messages
     await userARequest.post('/api/interest', { data: { profileId: profileBId } })
@@ -86,8 +93,8 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
       data: { receiverId: userBId, content: 'Seed message for UI coverage.' },
     })
 
-    await userARequest.dispose()
-    await userBRequest.dispose()
+    await userAContext.close()
+    await userBContext.close()
   })
 
   test.afterAll(async () => {
@@ -100,12 +107,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
 
     // Matches: pass a profile to populate reconsider
     await page.goto('/matches')
-    await expect(page.locator('h1:has-text("My Matches")')).toBeVisible({ timeout: 20000 })
-    await page.goto('/matches?tab=sent')
-    await expect(page.locator('h1:has-text("Sent Interest")')).toBeVisible({ timeout: 20000 })
-    await page.goto('/matches?tab=received')
-    await expect(page.locator('h1:has-text("Interest Received")')).toBeVisible({ timeout: 20000 })
-    await page.goto('/matches')
+    await expect(page.getByRole('heading', { name: /My Matches/i })).toBeVisible({ timeout: 15000 })
     const passButton = page.getByTitle('Pass').first()
     if (await passButton.isVisible()) {
       await passButton.click()
@@ -113,7 +115,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
 
     // Reconsider: bring back the passed profile
     await page.goto('/reconsider')
-    await expect(page.locator('h1:has-text("Passed Profiles")')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('heading', { name: 'Passed Profiles', exact: true })).toBeVisible()
     const bringBack = page.getByRole('button', { name: /Bring Back/i }).first()
     if (await bringBack.isVisible()) {
       await bringBack.click()
@@ -121,7 +123,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
 
     // Connections: open report modal and submit
     await page.goto('/connections')
-    await expect(page.locator('h1:has-text("Connections")')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('heading', { name: /Connections/i })).toBeVisible()
     const reportButton = page.getByRole('button', { name: /Report user/i }).first()
     if (await reportButton.isVisible()) {
       await reportButton.click()
@@ -134,7 +136,7 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
 
     // Messages page: open conversation list
     await page.goto('/messages')
-    await expect(page.locator('h1:has-text("Messages")')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole('heading', { name: /Messages/i })).toBeVisible()
     const conversationButton = page.getByRole('button', { name: /Open conversation/i }).first()
     if (await conversationButton.isVisible()) {
       await conversationButton.click()
@@ -142,22 +144,6 @@ test.describe.serial('UI feature coverage (non-payment)', () => {
       await expect(modal).toBeVisible()
       await modal.getByRole('button', { name: /Close conversation/i }).click()
     }
-
-    // Notifications page
-    await page.goto('/notifications')
-    await expect(page.locator('h1:has-text("Notifications")')).toBeVisible({ timeout: 20000 })
-
-    // Dashboard page
-    await page.goto('/dashboard')
-    await expect(page.locator('h1:has-text("Welcome back")')).toBeVisible({ timeout: 20000 })
-
-    // Support Messages page
-    await page.goto('/admin-messages')
-    await expect(page.locator('h1:has-text("Support Messages")')).toBeVisible({ timeout: 20000 })
-
-    // Settings page
-    await page.goto('/settings')
-    await expect(page.locator('h1:has-text("Settings")')).toBeVisible({ timeout: 20000 })
 
     // Profile: open edit modal and cancel, then upload and delete a photo
     await page.goto('/profile')

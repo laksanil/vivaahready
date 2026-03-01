@@ -29,7 +29,6 @@ import MessageModal from '@/components/MessageModal'
 import { calculateAge, getInitials, extractPhotoUrls, maskPhone } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
-import { formatDisabilityDisplay } from '@/lib/profileDisplay'
 
 interface ProfileData {
   id: string
@@ -927,17 +926,6 @@ function ProfileCard({
                 <span className="text-gray-800">{showClear ? (profile.instagram || profile.facebookInstagram) : 'XXXXXXXXXX'}</span>
               </div>
             )}
-            {profile.facebook && (
-              <div className="flex">
-                <span className="text-gray-500 w-24">Facebook</span>
-                <span className="text-gray-400 mr-2">:</span>
-                {showClear ? (
-                  <a href={profile.facebook} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">View Profile</a>
-                ) : (
-                  <span className="text-gray-400">XXXXXXXXXX</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
@@ -964,7 +952,6 @@ function ProfileCard({
               {profile.currentLocation && <><span className="text-gray-500">Current</span><span className="text-gray-800">{profile.currentLocation}</span></>}
               {profile.grewUpIn && <><span className="text-gray-500">Grew Up In</span><span className="text-gray-800">{profile.grewUpIn}</span></>}
               {profile.citizenship && <><span className="text-gray-500">Citizenship</span><span className="text-gray-800">{profile.citizenship}</span></>}
-              {profile.country && <><span className="text-gray-500">Country</span><span className="text-gray-800">{profile.country}</span></>}
               {profile.residencyStatus && <><span className="text-gray-500">Residency</span><span className="text-gray-800">{profile.residencyStatus}</span></>}
               {profile.openToRelocation && <><span className="text-gray-500">Relocate</span><span className="text-gray-800">{formatValue(profile.openToRelocation)}</span></>}
             </div>
@@ -1037,7 +1024,6 @@ function ProfileCard({
               {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{formatEducation(profile.qualification)}</span></>}
               {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
               {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
-              {profile.workingAs && <><span className="text-gray-500">Working As</span><span className="text-gray-800">{profile.workingAs}</span></>}
               {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}
               {profile.annualIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.annualIncome}</span></>}
             </div>
@@ -1053,42 +1039,10 @@ function ProfileCard({
               {profile.pets && <><span className="text-gray-500">Pets</span><span className="text-gray-800">{formatValue(profile.pets)}</span></>}
             </div>
           </div>
-
-          {/* HEALTH & WELLNESS Section */}
-          {(profile.bloodGroup || profile.anyDisability || profile.disabilityDetails || profile.allergiesOrMedical || profile.healthInfo) && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Health & Wellness</h3>
-            <div className="space-y-2 text-sm">
-              {profile.bloodGroup && (
-                <div className="grid grid-cols-[auto_1fr] gap-x-3">
-                  <span className="text-gray-500">Blood Group</span><span className="text-gray-800">{profile.bloodGroup}</span>
-                </div>
-              )}
-              {profile.anyDisability && (
-                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-                  <span className="text-gray-500">Disability</span><span className="text-gray-800">{formatDisabilityDisplay(profile.anyDisability) || 'None'}</span>
-                  {profile.disabilityDetails && profile.anyDisability !== 'none' && (
-                    <><span className="text-gray-500">Disability Details</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.disabilityDetails}</span></>
-                  )}
-                </div>
-              )}
-              {profile.allergiesOrMedical && (
-                <div className="grid grid-cols-[auto_1fr] gap-x-3">
-                  <span className="text-gray-500">Allergies / Medical Conditions</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.allergiesOrMedical}</span>
-                </div>
-              )}
-              {profile.healthInfo && (
-                <div className="grid grid-cols-[auto_1fr] gap-x-3">
-                  <span className="text-gray-500">Health Info</span><span className="text-gray-800 break-words whitespace-pre-wrap">{profile.healthInfo}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          )}
         </div>
 
         {/* Family Details */}
-        {(profile.fatherName || profile.motherName || profile.numberOfBrothers || profile.numberOfSisters || profile.familyType || profile.familyValues || profile.livesWithFamily || profile.familyDetails || profile.siblingDetails) && (
+        {(profile.fatherName || profile.motherName || profile.numberOfBrothers || profile.numberOfSisters || profile.familyType || profile.familyValues) && (
           <div className="border-t border-gray-100 pt-4">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-3">Family</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
@@ -1101,10 +1055,7 @@ function ProfileCard({
               )}
               {profile.familyType && <><span className="text-gray-500">Family Type</span><span className="text-gray-800">{formatValue(profile.familyType)}</span></>}
               {profile.familyValues && <><span className="text-gray-500">Values</span><span className="text-gray-800">{formatValue(profile.familyValues)}</span></>}
-              {profile.livesWithFamily && <><span className="text-gray-500">Lives with Family</span><span className="text-gray-800">{formatValue(profile.livesWithFamily)}</span></>}
-              {profile.familyLocation && <><span className="text-gray-500">Family Location</span><span className="text-gray-800">{profile.familyLocation}{profile.familyLocationCountry ? `, ${profile.familyLocationCountry}` : ''}</span></>}
-              {profile.siblingDetails && <><span className="text-gray-500">Sibling Details</span><span className="text-gray-800">{profile.siblingDetails}</span></>}
-              {profile.familyDetails && <><span className="text-gray-500">Family Details</span><span className="text-gray-800">{profile.familyDetails}</span></>}
+              {profile.familyLocation && <><span className="text-gray-500">Family Location</span><span className="text-gray-800">{profile.familyLocation}</span></>}
             </div>
           </div>
         )}

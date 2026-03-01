@@ -29,7 +29,6 @@ import {
 import ProfileEditModal from '@/components/ProfileEditModal'
 import { validateProfilePhoto } from '@/lib/faceDetection'
 import { useImpersonation } from '@/hooks/useImpersonation'
-import { formatDisabilityDisplay } from '@/lib/profileDisplay'
 
 interface Profile {
   id: string
@@ -1456,42 +1455,22 @@ function ViewProfilePageContent() {
                   </button>
                 </div>
                 {/* Health & Wellness */}
-                <div className="space-y-2 text-sm mb-4 pb-4 border-b border-gray-100">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                    <div className="flex">
-                      <span className="text-gray-500 w-28 flex-shrink-0">Blood Group</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{profile.bloodGroup || 'Not specified'}</span>
-                    </div>
-                  </div>
-                  {/* Disability group */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                    <div className="flex">
-                      <span className="text-gray-500 w-28 flex-shrink-0">Disability</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800">{formatDisabilityDisplay(profile.anyDisability) || 'None'}</span>
-                    </div>
-                    {!!profile.disabilityDetails && profile.anyDisability !== 'none' && (
-                      <div className="flex sm:col-span-2">
-                        <span className="text-gray-500 w-28 flex-shrink-0">Disability Details</span>
-                        <span className="text-gray-400 mr-2">:</span>
-                        <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.disabilityDetails}</span>
-                      </div>
-                    )}
-                  </div>
-                  {/* Allergies / Medical Conditions - separate */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm mb-4 pb-4 border-b border-gray-100">
                   <div className="flex">
-                    <span className="text-gray-500 w-28 flex-shrink-0">Allergies / Medical Conditions</span>
+                    <span className="text-gray-500 w-28">Blood Group</span>
                     <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.allergiesOrMedical || 'None'}</span>
+                    <span className="text-gray-800">{profile.bloodGroup || 'Not specified'}</span>
                   </div>
-                  {!!profile.healthInfo && (
-                    <div className="flex">
-                      <span className="text-gray-500 w-28 flex-shrink-0">Health Info</span>
-                      <span className="text-gray-400 mr-2">:</span>
-                      <span className="text-gray-800 whitespace-pre-wrap break-words">{profile.healthInfo}</span>
-                    </div>
-                  )}
+                  <div className="flex">
+                    <span className="text-gray-500 w-28">Disability</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.anyDisability === 'none' || !profile.anyDisability ? 'None' : formatValue(profile.anyDisability)}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-28">Allergies</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    <span className="text-gray-800">{profile.allergiesOrMedical || 'None'}</span>
+                  </div>
                 </div>
                 {/* About Me text */}
                 {profile.aboutMe ? (

@@ -19,19 +19,6 @@ export const metadata: Metadata = {
 
 const posts = [
   {
-    slug: 'indian-matrimonial-matches-usa-paper-perfect-fall-apart',
-    title: 'When Parents Align but Children Don\'t: Why Indian Matrimonial Matches in the USA Look Perfect on Paper but Fall Apart in Real Life',
-    description:
-      'Why do Indian matrimonial matches in the USA look perfect on paper but fall apart in real life? VivaahReady founder Lakshmi explains the real gap in Indian American matchmaking and what a better process looks like.',
-    excerpt:
-      'A mother called me a few weeks ago. She was exhausted. \"Everything matched,\" she said. \"Same city. Same profession. Good family. Even the horoscopes aligned.\"',
-    date: '2026-02-25',
-    dateFormatted: 'February 2026',
-    readTime: '9 min read',
-    category: 'Perspectives',
-    author: 'Lakshmi',
-  },
-  {
     slug: 'indian-american-marriage-arranged-dating-apps-middle-path-usa',
     title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
     description:

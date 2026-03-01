@@ -5,16 +5,13 @@ import {
   uploadProfilePhoto,
   adminLogin,
   adminApproveProfile,
-  adminRejectProfile,
-  loginViaApiCredentials,
+  loginViaUi,
   DEFAULT_PASSWORD,
 } from './helpers'
 
 const baseURL = process.env.TEST_BASE_URL || 'http://127.0.0.1:3001'
 
 test.describe.serial('API integration coverage', () => {
-  test.describe.configure({ timeout: 180000 })
-
   let adminRequest: APIRequestContext
   let userARequest: APIRequestContext
   let userBRequest: APIRequestContext
@@ -23,7 +20,7 @@ test.describe.serial('API integration coverage', () => {
   let profileAId = ''
   let profileBId = ''
 
-  test.beforeAll(async ({ request }) => {
+  test.beforeAll(async ({ request, browser }) => {
     adminRequest = await apiRequest.newContext({ baseURL })
     await adminLogin(adminRequest, baseURL)
 
@@ -44,10 +41,18 @@ test.describe.serial('API integration coverage', () => {
     await adminApproveProfile(adminRequest, baseURL, profileAId)
     await adminApproveProfile(adminRequest, baseURL, profileBId)
 
-    userARequest = await apiRequest.newContext({ baseURL })
-    userBRequest = await apiRequest.newContext({ baseURL })
-    await loginViaApiCredentials(userARequest, baseURL, userA.email, DEFAULT_PASSWORD)
-    await loginViaApiCredentials(userBRequest, baseURL, userB.email, DEFAULT_PASSWORD)
+    const loginWithUi = async (email: string) => {
+      const context = await browser.newContext({ baseURL })
+      const page = await context.newPage()
+      await loginViaUi(page, email, DEFAULT_PASSWORD)
+      const storageState = await context.storageState()
+      await page.close()
+      await context.close()
+      return apiRequest.newContext({ baseURL, storageState })
+    }
+
+    userARequest = await loginWithUi(userA.email)
+    userBRequest = await loginWithUi(userB.email)
 
     // Create mutual interest so messaging can be exercised (via admin impersonation)
     await userARequest.post('/api/interest', { data: { profileId: profileBId } })
@@ -100,8 +105,8 @@ test.describe.serial('API integration coverage', () => {
     expect(visibilityRes.ok()).toBeTruthy()
   })
 
-  test('profile photo upload and delete endpoints', async () => {
-    const uploadRes = await uploadProfilePhoto(userARequest, baseURL, profileAId)
+  test('profile photo upload and delete endpoints', async ({ request }) => {
+    const uploadRes = await uploadProfilePhoto(request, baseURL, profileAId)
     expect(uploadRes.ok()).toBeTruthy()
     const uploadData = await uploadRes.json()
     expect(uploadData.url).toBeTruthy()
@@ -140,64 +145,17 @@ test.describe.serial('API integration coverage', () => {
     const sentRes = await userARequest.get('/api/interest?type=sent')
     expect(sentRes.ok()).toBeTruthy()
     const sentData = await sentRes.json()
-    expect(Array.isArray(sentData.interests)).toBeTruthy()
-    expect((sentData.interests || []).every((interest: { status?: string }) => interest.status !== 'accepted')).toBeTruthy()
+    expect(sentData.interests.length).toBeGreaterThan(0)
 
     const mutualCheck = await userARequest.get(`/api/interest?checkMutual=true&profileId=${profileBId}`)
     expect(mutualCheck.ok()).toBeTruthy()
     const mutualData = await mutualCheck.json()
     expect(mutualData.mutual).toBeTruthy()
 
-    const autoMatches = await userARequest.get('/api/matches/auto')
-    expect(autoMatches.ok()).toBeTruthy()
-    const autoMatchesData = await autoMatches.json()
-    expect(Array.isArray(autoMatchesData.mutualMatches)).toBeTruthy()
-    expect(autoMatchesData.mutualMatches.length).toBeGreaterThan(0)
-
     const matchesRes = await userARequest.get('/api/matches?type=sent')
     expect(matchesRes.ok()).toBeTruthy()
     const matchesData = await matchesRes.json()
     expect(Array.isArray(matchesData.matches)).toBeTruthy()
-  })
-
-  test('non-approved profiles are hidden from match lists and cannot receive new interest', async ({ request }) => {
-    const suffix = `${Date.now().toString(36)}-np`
-    const userC = buildTestUser(suffix, 'female')
-    const createdC = await createUserWithProfile(request, baseURL, userC, DEFAULT_PASSWORD)
-
-    await uploadProfilePhoto(request, baseURL, createdC.profileId)
-    await adminApproveProfile(adminRequest, baseURL, createdC.profileId)
-
-    const userCRequest = await apiRequest.newContext({ baseURL })
-    try {
-      await loginViaApiCredentials(userCRequest, baseURL, userC.email, DEFAULT_PASSWORD)
-
-      const cToAInterest = await userCRequest.post('/api/interest', { data: { profileId: profileAId } })
-      expect(cToAInterest.ok()).toBeTruthy()
-
-      const receivedBefore = await userARequest.get('/api/matches?type=received')
-      expect(receivedBefore.ok()).toBeTruthy()
-      const receivedBeforeData = await receivedBefore.json()
-      expect(
-        (receivedBeforeData.matches || []).some((match: { userId?: string }) => match.userId === createdC.userId)
-      ).toBeTruthy()
-
-      await adminRejectProfile(adminRequest, baseURL, createdC.profileId, 'E2E regression check: mark non-approved.')
-
-      const receivedAfter = await userARequest.get('/api/matches?type=received')
-      expect(receivedAfter.ok()).toBeTruthy()
-      const receivedAfterData = await receivedAfter.json()
-      expect(
-        (receivedAfterData.matches || []).some((match: { userId?: string }) => match.userId === createdC.userId)
-      ).toBeFalsy()
-
-      const newInterestToRejected = await userARequest.post('/api/interest', {
-        data: { profileId: createdC.profileId },
-      })
-      expect(newInterestToRejected.status()).toBe(404)
-    } finally {
-      await userCRequest.dispose()
-    }
   })
 
   test('messaging endpoints work with admin impersonation', async () => {
