@@ -21,28 +21,6 @@ import {
 } from '@/lib/profileFlowValidation'
 
 // Placeholder phrases that shouldn't be accepted
-const INVALID_ABOUTME_PHRASES = [
-  'will fill in later',
-  'will fill later',
-  'fill in later',
-  'fill later',
-  'tbd',
-  'to be done',
-  'coming soon',
-  'will update',
-  'will add later',
-  'n/a',
-  'na',
-  'none',
-  'nothing',
-  'test',
-  'testing',
-  'asdf',
-  'abc',
-  '...',
-  '---',
-]
-
 interface ProfileEditModalProps {
   isOpen: boolean
   onClose: () => void
@@ -92,13 +70,9 @@ export default function ProfileEditModal({
       const linkedinProfile = formData.linkedinProfile as string || ''
       const referralSource = formData.referralSource as string || ''
 
-      // Check aboutMe
+      // aboutMe - just check it's not empty
       if (!aboutMe) {
         errors.push('About Me is required')
-      } else if (aboutMe.length < 50) {
-        errors.push('About Me must be at least 50 characters')
-      } else if (INVALID_ABOUTME_PHRASES.some(phrase => aboutMe === phrase || aboutMe.includes(phrase))) {
-        errors.push('Please write a meaningful description about yourself')
       }
 
       // LinkedIn is optional - only validate format if a URL is entered
