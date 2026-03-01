@@ -1526,6 +1526,13 @@ function generateAboutMe(formData: Record<string, unknown>): string {
 
 export function AboutMeSection({ formData, handleChange, setFormData }: SectionProps) {
   const [showGenerated, setShowGenerated] = useState(false)
+  // Track LinkedIn choice independently to avoid circular state bug:
+  // selecting "I have LinkedIn" sets linkedinProfile='', which makes !'' truthy,
+  // which would flip the dropdown back to "no_linkedin" immediately.
+  const [linkedinChoice, setLinkedinChoice] = useState<'has_linkedin' | 'no_linkedin'>(() => {
+    const val = formData.linkedinProfile as string
+    return val && val !== 'no_linkedin' ? 'has_linkedin' : 'no_linkedin'
+  })
   const generatedContent = generateAboutMe(formData)
   const hasInfoToGenerate = (formData.religion as string || '').trim() ||
     (formData.familyType as string || '').trim() ||
@@ -1638,9 +1645,11 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
           <div>
             <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
             <select
-              value={!formData.linkedinProfile || formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+              value={linkedinChoice}
               onChange={(e) => {
-                if (e.target.value === 'no_linkedin') {
+                const choice = e.target.value as 'has_linkedin' | 'no_linkedin'
+                setLinkedinChoice(choice)
+                if (choice === 'no_linkedin') {
                   setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
                 } else {
                   setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
@@ -1651,7 +1660,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
               <option value="has_linkedin">I have LinkedIn</option>
               <option value="no_linkedin">I don&apos;t have LinkedIn</option>
             </select>
-            {(typeof formData.linkedinProfile === 'string' && formData.linkedinProfile && formData.linkedinProfile !== 'no_linkedin') && (
+            {linkedinChoice === 'has_linkedin' && (
               <>
                 <div className="relative">
                   <input
