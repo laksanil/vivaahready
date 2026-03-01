@@ -311,20 +311,28 @@ export default function RegisterPage() {
       if (!response.ok) {
         setError(data.error)
       } else {
-        // Store profile data for profile creation flow
+        // Store profile data for profile creation flow (non-sensitive)
         if (data.profileData) {
           sessionStorage.setItem('profileCreationData', JSON.stringify(data.profileData))
         }
         // Clear the registration data from sessionStorage
         sessionStorage.removeItem('registrationData')
-        
-        // Store credentials temporarily for auto-signin on login page
-        sessionStorage.setItem('autoSignInEmail', formData.email)
-        sessionStorage.setItem('autoSignInPassword', formData.password)
-        sessionStorage.setItem('autoSignInName', formData.name)
-        
-        // Redirect to login which will auto-signin and route based on profile status
-        router.push('/login?registered=true&autoSignIn=true')
+
+        // Auto-signin directly instead of passing password through sessionStorage
+        const signInResult = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        })
+
+        if (signInResult?.ok) {
+          // Store name for profile creation (non-sensitive)
+          sessionStorage.setItem('autoSignInName', formData.name)
+          router.push('/login?registered=true&autoSignIn=true')
+        } else {
+          // Fallback: redirect to login for manual sign-in
+          router.push('/login?registered=true')
+        }
       }
     } catch (err) {
       setError('Something went wrong. Please try again.')

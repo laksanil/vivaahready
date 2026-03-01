@@ -210,17 +210,14 @@ export async function PUT(
     const session = await getServerSession(authOptions)
     const targetUser = await getTargetUserId(request, session)
 
-    // For security, verify the request is from:
-    // 1. The profile owner (via session user ID)
+    // Verify the request is from the profile owner:
+    // 1. Via session user ID match
     // 2. Or via session email matching profile owner's email
-    // 3. Or via newUserId header (set during signup flow before session exists)
-    const newUserIdHeader = request.headers.get('x-new-user-id')
     const isOwnerViaSession = targetUser?.userId === existingProfile.userId
     const isOwnerViaEmail = session?.user?.email && existingProfile.user?.email &&
       session.user.email.toLowerCase() === existingProfile.user.email.toLowerCase()
-    const isOwnerViaHeader = newUserIdHeader === existingProfile.userId
 
-    if (!isOwnerViaSession && !isOwnerViaEmail && !isOwnerViaHeader) {
+    if (!isOwnerViaSession && !isOwnerViaEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

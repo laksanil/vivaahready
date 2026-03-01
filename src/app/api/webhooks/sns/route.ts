@@ -2,10 +2,22 @@ import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+/** Validate that a URL is a legitimate AWS SNS endpoint */
+function isValidSnsUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString)
+    if (url.protocol !== 'https:') return false
+    // AWS SNS SubscribeURLs are always on sns.<region>.amazonaws.com
+    return /^sns\.[a-z0-9-]+\.amazonaws\.com$/.test(url.hostname)
+  } catch {
+    return false
+  }
+}
+
 /**
  * SNS Webhook endpoint
  * Handles:
- * - SubscriptionConfirmation: Auto-confirms SNS topic subscriptions
+ * - SubscriptionConfirmation: Auto-confirms SNS topic subscriptions (with URL validation)
  * - Notification: Processes incoming SNS messages
  */
 export async function POST(request: Request) {
@@ -18,10 +30,12 @@ export async function POST(request: Request) {
     // Handle subscription confirmation
     if (messageType === 'SubscriptionConfirmation') {
       const subscribeUrl = message.SubscribeURL
-      if (subscribeUrl) {
-        // Confirm the subscription by visiting the URL
+      if (subscribeUrl && isValidSnsUrl(subscribeUrl)) {
         await fetch(subscribeUrl)
         console.log('SNS subscription confirmed for topic:', message.TopicArn)
+      } else {
+        console.error('Rejected SNS SubscribeURL - invalid or non-AWS domain:', subscribeUrl)
+        return NextResponse.json({ error: 'Invalid SubscribeURL' }, { status: 400 })
       }
       return NextResponse.json({ confirmed: true })
     }
@@ -47,9 +61,6 @@ export async function POST(request: Request) {
         event: payload.event,
         timestamp: payload.timestamp,
       })
-
-      // Process the notification based on event type
-      // Future: Route to specific handlers, trigger Lambda-like processing, etc.
 
       return NextResponse.json({ received: true })
     }

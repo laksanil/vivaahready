@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { isTestMode } from '@/lib/testMode'
+import { escapeHtml } from '@/lib/sanitize'
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -248,7 +249,7 @@ support@vivaahready.com
 
 // Profile approved email
 export async function sendProfileApprovedEmail(email: string, name: string) {
-  const firstName = name.split(' ')[0]
+  const firstName = escapeHtml(name.split(' ')[0])
 
   const html = `
 <!DOCTYPE html>
@@ -330,7 +331,7 @@ export async function sendPaymentConfirmationEmail(
   amount: number,
   receiptUrl?: string
 ) {
-  const firstName = name ? name.split(' ')[0] : 'there'
+  const firstName = escapeHtml(name ? name.split(' ')[0] : 'there')
 
   const html = `
 <!DOCTYPE html>
@@ -442,7 +443,7 @@ export async function sendNewMatchAvailableEmail(
   recipientName: string,
   matchCount: number = 1
 ) {
-  const recipientFirstName = recipientName.split(' ')[0]
+  const recipientFirstName = escapeHtml(recipientName.split(' ')[0])
   const matchText = matchCount === 1 ? 'a new potential match' : `${matchCount} new potential matches`
   const matchTextCapitalized = matchCount === 1 ? 'A New Match' : `${matchCount} New Matches`
 
@@ -568,7 +569,8 @@ export async function sendNewInterestEmail(
   senderFirstName: string,
   senderProfileId: string
 ) {
-  const recipientFirstName = recipientName.split(' ')[0]
+  const recipientFirstName = escapeHtml(recipientName.split(' ')[0])
+  const safeSenderFirstName = escapeHtml(senderFirstName)
 
   const html = `
 <!DOCTYPE html>
@@ -610,7 +612,7 @@ export async function sendNewInterestEmail(
               </h2>
 
               <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.7; text-align: center;">
-                Great news! <strong style="color: #dc2626;">${senderFirstName}</strong> has expressed interest in your profile. This could be the beginning of something wonderful!
+                Great news! <strong style="color: #dc2626;">${safeSenderFirstName}</strong> has expressed interest in your profile. This could be the beginning of something wonderful!
               </p>
 
               <!-- Highlight box -->
@@ -618,7 +620,7 @@ export async function sendNewInterestEmail(
                 <tr>
                   <td style="padding: 24px; text-align: center;">
                     <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">Someone special is interested in you</p>
-                    <p style="margin: 0; color: #1f2937; font-size: 22px; font-weight: 700;">${senderFirstName}</p>
+                    <p style="margin: 0; color: #1f2937; font-size: 22px; font-weight: 700;">${safeSenderFirstName}</p>
                     <p style="margin: 8px 0 0 0; color: #dc2626; font-size: 14px;">wants to connect with you 💫</p>
                   </td>
                 </tr>
@@ -633,7 +635,7 @@ export async function sendNewInterestEmail(
                 <tr>
                   <td style="text-align: center;">
                     <a href="https://vivaahready.com/profile/${senderProfileId}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);">
-                      View ${senderFirstName}'s Profile
+                      View ${safeSenderFirstName}'s Profile
                     </a>
                   </td>
                 </tr>
@@ -686,11 +688,11 @@ export async function sendNewInterestEmail(
 
 Exciting news! You've received a new interest on VivaahReady!
 
-${senderFirstName} has expressed interest in your profile. This could be the beginning of something wonderful!
+${safeSenderFirstName} has expressed interest in your profile. This could be the beginning of something wonderful!
 
 Take a moment to view their profile and see if you feel a connection too. If both of you express mutual interest, we'll help facilitate the next steps!
 
-View ${senderFirstName}'s Profile: https://vivaahready.com/profile/${senderProfileId}
+View ${safeSenderFirstName}'s Profile: https://vivaahready.com/profile/${senderProfileId}
 
 Privacy First: Contact details are only shared after both parties express mutual interest.
 
@@ -703,7 +705,7 @@ support@vivaahready.com
 
   return sendEmail({
     to: email,
-    subject: `💝 ${senderFirstName} is interested in you on VivaahReady!`,
+    subject: `💝 ${safeSenderFirstName} is interested in you on VivaahReady!`,
     html,
     text,
   })
@@ -716,7 +718,8 @@ export async function sendInterestAcceptedEmail(
   matchFirstName: string,
   matchProfileId: string
 ) {
-  const recipientFirstName = recipientName.split(' ')[0]
+  const recipientFirstName = escapeHtml(recipientName.split(' ')[0])
+  const safeMatchFirstName = escapeHtml(matchFirstName)
 
   const html = `
 <!DOCTYPE html>
@@ -745,11 +748,11 @@ export async function sendInterestAcceptedEmail(
           <tr>
             <td style="padding: 40px;">
               <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 22px; text-align: center; line-height: 1.4;">
-                ${matchFirstName} accepted your interest!
+                ${safeMatchFirstName} accepted your interest!
               </h2>
 
               <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.7; text-align: center;">
-                Great news! <strong style="color: #dc2626;">${matchFirstName}</strong> has accepted your interest. You now have a mutual connection and can take the next steps to get to know each other better!
+                Great news! <strong style="color: #dc2626;">${safeMatchFirstName}</strong> has accepted your interest. You now have a mutual connection and can take the next steps to get to know each other better!
               </p>
 
               <!-- Celebration box -->
@@ -757,7 +760,7 @@ export async function sendInterestAcceptedEmail(
                 <tr>
                   <td style="padding: 28px; text-align: center;">
                     <p style="margin: 0 0 8px 0; color: #dc2626; font-size: 16px; font-weight: 600;">🌟 You're now connected with</p>
-                    <p style="margin: 0; color: #1f2937; font-size: 28px; font-weight: 700;">${matchFirstName}</p>
+                    <p style="margin: 0; color: #1f2937; font-size: 28px; font-weight: 700;">${safeMatchFirstName}</p>
                     <p style="margin: 12px 0 0 0; color: #6b7280; font-size: 14px;">Your journey together begins now! 💫</p>
                   </td>
                 </tr>
@@ -776,7 +779,7 @@ export async function sendInterestAcceptedEmail(
                         </td>
                         <td style="padding-left: 12px;">
                           <p style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">View your connections</p>
-                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Head to your Connections page to see ${matchFirstName}'s full profile and contact details.</p>
+                          <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">Head to your Connections page to see ${safeMatchFirstName}'s full profile and contact details.</p>
                         </td>
                       </tr>
                     </table>
@@ -826,7 +829,7 @@ export async function sendInterestAcceptedEmail(
                 <tr>
                   <td style="text-align: center; padding-top: 12px;">
                     <a href="https://vivaahready.com/profile/${matchProfileId}" style="display: inline-block; color: #dc2626; text-decoration: none; font-weight: 600; font-size: 14px;">
-                      View ${matchFirstName}'s Profile →
+                      View ${safeMatchFirstName}'s Profile →
                     </a>
                   </td>
                 </tr>
@@ -879,12 +882,12 @@ export async function sendInterestAcceptedEmail(
 
 🎉 It's a Match! Congratulations!
 
-${matchFirstName} has accepted your interest. You now have a mutual connection and can take the next steps to get to know each other better!
+${safeMatchFirstName} has accepted your interest. You now have a mutual connection and can take the next steps to get to know each other better!
 
 What's next?
 
 1. View your connections
-   Head to your Connections page to see ${matchFirstName}'s full profile and contact details.
+   Head to your Connections page to see ${safeMatchFirstName}'s full profile and contact details.
 
 2. Reach out and connect
    You can now see their phone number, email, and social profiles. Don't be shy—send a warm message to start the conversation!
@@ -893,7 +896,7 @@ What's next?
    Whether it's a phone call, video chat, or meeting in person, take the time to truly get to know each other.
 
 View Connections: https://vivaahready.com/connections
-View ${matchFirstName}'s Profile: https://vivaahready.com/profile/${matchProfileId}
+View ${safeMatchFirstName}'s Profile: https://vivaahready.com/profile/${matchProfileId}
 
 💡 Tip: First impressions matter! A thoughtful, personalized message that references something from their profile shows genuine interest and helps break the ice.
 
@@ -906,7 +909,7 @@ support@vivaahready.com
 
   return sendEmail({
     to: email,
-    subject: `🎉 It's a Match! ${matchFirstName} accepted your interest on VivaahReady`,
+    subject: `🎉 It's a Match! ${safeMatchFirstName} accepted your interest on VivaahReady`,
     html,
     text,
   })
@@ -914,7 +917,7 @@ support@vivaahready.com
 
 // New match notification email
 export async function sendNewMatchEmail(email: string, name: string, matchCount: number) {
-  const firstName = name.split(' ')[0]
+  const firstName = escapeHtml(name.split(' ')[0])
 
   const html = `
 <!DOCTYPE html>
@@ -980,7 +983,7 @@ export async function sendProfileDeletedEmail(
   reason: string,
   otherReason?: string | null
 ) {
-  const firstName = name.split(' ')[0]
+  const firstName = escapeHtml(name.split(' ')[0])
   const isMarriageReason = reason === 'marriage_vivaahready' || reason === 'marriage_other'
 
   // Get human-readable reason label
@@ -991,10 +994,10 @@ export async function sendProfileDeletedEmail(
     'not_satisfied': 'Not Satisfied with Matches',
     'privacy_concerns': 'Privacy Concerns',
     'taking_break': 'Taking a Break',
-    'other': otherReason || 'Other',
+    'other': escapeHtml(otherReason || 'Other'),
   }
 
-  const reasonLabel = reasonLabels[reason] || reason
+  const reasonLabel = escapeHtml(reasonLabels[reason] || reason)
 
   // Different content for marriage vs other reasons
   const marriageContent = `
@@ -1267,7 +1270,8 @@ export async function sendAccountSuspendedEmail(
   name: string,
   reason: string
 ) {
-  const firstName = name.split(' ')[0]
+  const firstName = escapeHtml(name.split(' ')[0])
+  const safeReason = escapeHtml(reason)
 
   const html = `
 <!DOCTYPE html>
@@ -1310,7 +1314,7 @@ export async function sendAccountSuspendedEmail(
                 <tr>
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0; color: #991b1b; font-size: 14px;">
-                      <strong>Reason:</strong> ${reason}
+                      <strong>Reason:</strong> ${safeReason}
                     </p>
                   </td>
                 </tr>
@@ -1389,7 +1393,7 @@ export async function sendAccountSuspendedEmail(
 
 Your VivaahReady account has been temporarily suspended.
 
-Reason: ${reason}
+Reason: ${safeReason}
 
 If you believe this was done in error or would like to discuss this matter, please contact our support team.
 
@@ -1744,7 +1748,7 @@ export async function sendReferralThankYouEmail(
   name: string,
   referralCount: number
 ) {
-  const firstName = name.split(' ')[0]
+  const firstName = escapeHtml(name.split(' ')[0])
   const boostUnlocked = referralCount >= 3
 
   const html = `
@@ -1824,3 +1828,4 @@ export async function sendReferralThankYouEmail(
     html,
   })
 }
+

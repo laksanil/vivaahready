@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-
-// Check if user is admin
-async function isAdmin(session: { user?: { email?: string | null } } | null): Promise<boolean> {
-  if (!session?.user?.email) return false
-  // Add your admin emails here or check against a database field
-  const adminEmails = ['lakshmi@vivaahready.com', 'admin@vivaahready.com']
-  return adminEmails.includes(session.user.email)
-}
+import { isAdminAuthenticated } from '@/lib/admin'
 
 // GET - Fetch current settings
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!await isAdmin(session)) {
+    if (!await isAdminAuthenticated()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -43,8 +33,7 @@ export async function GET() {
 // POST - Update settings
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!await isAdmin(session)) {
+    if (!await isAdminAuthenticated()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

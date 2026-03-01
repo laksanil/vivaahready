@@ -19,13 +19,16 @@ export async function POST(request: Request) {
       'paypal-transmission-time': headersList.get('paypal-transmission-time') || '',
     }
 
-    // Verify webhook signature if webhook ID is configured
-    if (PAYPAL_WEBHOOK_ID) {
-      const isValid = await verifyPayPalWebhook(paypalHeaders, body, PAYPAL_WEBHOOK_ID)
-      if (!isValid) {
-        console.error('PayPal webhook verification failed')
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
-      }
+    // Verify webhook signature (mandatory)
+    if (!PAYPAL_WEBHOOK_ID) {
+      console.error('PAYPAL_WEBHOOK_ID not configured — rejecting webhook')
+      return NextResponse.json({ error: 'Webhook verification not configured' }, { status: 500 })
+    }
+
+    const isValid = await verifyPayPalWebhook(paypalHeaders, body, PAYPAL_WEBHOOK_ID)
+    if (!isValid) {
+      console.error('PayPal webhook verification failed')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
     const event = JSON.parse(body)

@@ -1,6 +1,8 @@
 // In-memory OTP store
 // In production, use Redis or database for persistence across serverless functions
 
+import { randomInt } from 'crypto'
+
 interface OtpEntry {
   otp: string
   expiresAt: Date
@@ -18,12 +20,11 @@ if (!globalStore.otpStore) {
 
 export const otpStore = globalStore.otpStore
 
-export function generateOtp(digits: number = 4): string {
+export function generateOtp(digits: number = 6): string {
   if (digits === 4) {
-    return Math.floor(1000 + Math.random() * 9000).toString()
+    return randomInt(1000, 10000).toString()
   }
-  // 6 digits for backward compatibility
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  return randomInt(100000, 1000000).toString()
 }
 
 export function setOtp(type: 'email' | 'phone', userId: string, otp: string, expiresInMinutes: number = 10) {

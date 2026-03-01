@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import Anthropic from '@anthropic-ai/sdk'
 
 // Event-specific knowledge base for the AI
@@ -98,6 +100,11 @@ Always be positive and encouraging. When in doubt, encourage registration!
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { message, history = [] } = await request.json()
 
     if (!message || typeof message !== 'string') {

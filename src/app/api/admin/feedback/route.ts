@@ -2,14 +2,12 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
 import { buildFeedbackWhere } from '@/lib/feedbackAdmin'
-import { isTestAdminRequest } from '@/lib/testAuth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    const isAdmin = (await isAdminAuthenticated()) || isTestAdminRequest(request)
-    if (!isAdmin) {
+    if (!await isAdminAuthenticated()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
