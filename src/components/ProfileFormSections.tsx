@@ -1636,81 +1636,15 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Social Profiles</h4>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
-            <select
-              value={!formData.linkedinProfile || formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
-              onChange={(e) => {
-                if (e.target.value === 'no_linkedin') {
-                  setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
-                } else {
-                  setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
-                }
-              }}
-              className="input-field mb-2"
-            >
-              <option value="has_linkedin">I have LinkedIn</option>
-              <option value="no_linkedin">I don&apos;t have LinkedIn</option>
-            </select>
-            {(typeof formData.linkedinProfile === 'string' && formData.linkedinProfile && formData.linkedinProfile !== 'no_linkedin') && (
-              <>
-                <div className="relative">
-                  <input
-                    type="url"
-                    name="linkedinProfile"
-                    value={formData.linkedinProfile as string || ''}
-                    onChange={(e) => {
-                      handleChange(e)
-                      if (formData.linkedinError) {
-                        setFormData(prev => ({ ...prev, linkedinError: '' }))
-                      }
-                    }}
-                    onBlur={(e) => {
-                      const url = e.target.value.trim()
-                      if (!url) {
-                        setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
-                        return
-                      }
-
-                      const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-                      const isValidFormat = linkedinRegex.test(url) ||
-                        /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
-                        /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
-                        /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
-
-                      if (!isValidFormat) {
-                        if (url.includes('linkedin.com') && !url.includes('/in/')) {
-                          setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
-                        } else if (!url.includes('linkedin')) {
-                          setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
-                        } else {
-                          setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe' }))
-                        }
-                        return
-                      }
-
-                      let normalizedUrl = url
-                      if (!url.startsWith('http')) {
-                        if (url.startsWith('linkedin.com')) {
-                          normalizedUrl = 'https://www.' + url
-                        } else if (url.startsWith('www.')) {
-                          normalizedUrl = 'https://' + url
-                        } else if (url.startsWith('/in/') || url.startsWith('in/')) {
-                          normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
-                        }
-                      }
-
-                      setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
-                    }}
-                    className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
-                    placeholder="https://linkedin.com/in/username"
-                  />
-                </div>
-                {typeof formData.linkedinError === 'string' && formData.linkedinError && (
-                  <p className="text-red-500 text-xs mt-1">{formData.linkedinError}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
-              </>
-            )}
+            <label className="form-label">LinkedIn</label>
+            <input
+              type="url"
+              name="linkedinProfile"
+              value={(formData.linkedinProfile as string || '') === 'no_linkedin' ? '' : (formData.linkedinProfile as string || '')}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="https://linkedin.com/in/username"
+            />
           </div>
           <div>
             <label className="form-label">Instagram</label>

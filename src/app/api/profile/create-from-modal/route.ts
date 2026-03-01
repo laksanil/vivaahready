@@ -215,7 +215,6 @@ export async function POST(request: Request) {
 
     // Enforce About Me step requirements when that section data is being submitted
     const hasAboutMeSubmission =
-      body.linkedinProfile !== undefined ||
       body.referralSource !== undefined ||
       body.aboutMe !== undefined
 

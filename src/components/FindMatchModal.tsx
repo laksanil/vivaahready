@@ -258,15 +258,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const petsValue = formData.pets as string || ''
   const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' && petsValue !== ''
 
-  // About Me section validation (LinkedIn is required)
-  const linkedinUrl = formData.linkedinProfile as string || ''
-  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
-  const hasValidLinkedIn = linkedinUrl === 'no_linkedin' || linkedinRegex.test(linkedinUrl)
+  // About Me section validation
   const aboutMeValidation = validateAboutMeStep(formData)
   const isAboutMeComplete = !!(
     formData.aboutMe &&
-    hasValidLinkedIn &&
-    !formData.linkedinError &&
     aboutMeValidation.isValid
   )
 
