@@ -54,6 +54,7 @@ interface ProfileData {
   photoUrls: string | null
   profileImageUrl: string | null
   annualIncome: string | null
+  educationCareerDetails: string | null
   familyLocation: string | null
   fatherName: string | null
   motherName: string | null
@@ -1027,6 +1028,9 @@ function ProfileCard({
               {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}
               {profile.annualIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.annualIncome}</span></>}
             </div>
+            {profile.educationCareerDetails && (
+              <p className="text-sm text-gray-700 mt-2">{profile.educationCareerDetails}</p>
+            )}
           </div>
 
           {/* LIFESTYLE Section - Diet, Smoking, Drinking, Pets */}

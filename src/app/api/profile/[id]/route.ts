@@ -259,6 +259,7 @@ export async function PUT(
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
+    if (body.educationCareerDetails !== undefined) updateData.educationCareerDetails = body.educationCareerDetails
 
     // Religion & Astro
     if (body.religion !== undefined) updateData.religion = body.religion
