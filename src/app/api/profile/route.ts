@@ -397,6 +397,7 @@ export async function PUT(request: Request) {
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
     if (body.drivePhotosLink !== undefined) updateData.drivePhotosLink = body.drivePhotosLink
     if (body.photoVisibility !== undefined) updateData.photoVisibility = body.photoVisibility
+    if (body.educationCareerDetails !== undefined) updateData.educationCareerDetails = body.educationCareerDetails
 
     // Additional preference fields
     if (body.prefReligion !== undefined) updateData.prefReligion = body.prefReligion
