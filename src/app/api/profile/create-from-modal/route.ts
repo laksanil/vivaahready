@@ -213,9 +213,10 @@ export async function POST(request: Request) {
       )
     }
 
-    // Enforce About Me step requirements when that section data is being submitted
+    // Enforce About Me step requirements when that section data is being submitted.
+    // Note: linkedinProfile is excluded from this check because it has a default value
+    // ('no_linkedin') that is always present in the payload, even on earlier steps.
     const hasAboutMeSubmission =
-      body.linkedinProfile !== undefined ||
       body.referralSource !== undefined ||
       body.aboutMe !== undefined
 
