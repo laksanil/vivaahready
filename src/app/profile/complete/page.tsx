@@ -81,7 +81,6 @@ function ProfileCompleteContent() {
     country: 'USA',
     grewUpIn: 'USA',
     citizenship: 'USA',
-    linkedinProfile: 'no_linkedin',
     prefAgeIsDealbreaker: true,
     prefHeightIsDealbreaker: true,
     prefReligionIsDealbreaker: true,
@@ -398,7 +397,7 @@ function ProfileCompleteContent() {
             fitness: data.fitness,
             // About Me
             aboutMe: data.aboutMe,
-            linkedinProfile: data.linkedinProfile || 'no_linkedin',
+            linkedinProfile: data.linkedinProfile,
             instagram: data.instagram,
             facebook: data.facebook,
             referralSource: data.referralSource,

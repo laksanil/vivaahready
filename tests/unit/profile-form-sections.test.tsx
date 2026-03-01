@@ -82,7 +82,7 @@ describe('Profile form sections', () => {
     cleanup()
 
     renderResult = renderSection(AboutMeSection, {
-      linkedinProfile: 'https://linkedin.com/in/test',
+      linkedinProfile: '',
     })
     const linkedinInput = renderResult.container.querySelector('input[name="linkedinProfile"]') as HTMLInputElement
     expect(linkedinInput).toBeTruthy()
