@@ -20,7 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/pricing`,
+      url: `${baseUrl}/register`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/get-verified`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -32,16 +38,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/get-verified`,
+      url: `${baseUrl}/login`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/marchevent`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/privacy`,
@@ -74,18 +74,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${baseUrl}/blog/indian-families-america-marriage-gap`,
       lastModified: new Date('2026-02-14'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa`,
-      lastModified: new Date('2026-02-19'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/blog/indian-matrimonial-matches-usa-paper-perfect-fall-apart`,
-      lastModified: new Date('2026-02-25'),
       changeFrequency: 'yearly',
       priority: 0.8,
     },

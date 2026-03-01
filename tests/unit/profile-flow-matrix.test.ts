@@ -167,19 +167,13 @@ describe('profile flow validation matrix', () => {
 
   describe('aboutme + preferences_2 required fields', () => {
     it('fails aboutme validation when referral source is missing', () => {
-      const result = validateAboutMeStep({
-        aboutMe: 'Test about me',
-        linkedinProfile: 'https://www.linkedin.com/in/test-user',
-      })
+      const result = validateAboutMeStep({ aboutMe: 'Test about me' })
       expect(result.isValid).toBe(false)
       expect(result.errors).toContain('Referral source is required.')
     })
 
-    it('passes aboutme validation when referral source is present (LinkedIn is optional)', () => {
-      const result = validateAboutMeStep({
-        aboutMe: 'Test about me',
-        referralSource: 'google',
-      })
+    it('passes aboutme validation when referral source is present', () => {
+      const result = validateAboutMeStep({ aboutMe: 'Test about me', referralSource: 'google' })
       expect(result.isValid).toBe(true)
       expect(result.errors).toHaveLength(0)
     })

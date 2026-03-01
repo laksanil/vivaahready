@@ -6,7 +6,10 @@ import { getTargetUserId } from '@/lib/admin'
 import { Prisma } from '@prisma/client'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
+  validateAboutMeStep,
   getEffectiveUniversity,
+  validateLocationEducationStep,
+  validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
@@ -245,7 +248,6 @@ export async function PUT(
     if (body.country !== undefined) updateData.country = body.country
     if (body.grewUpIn !== undefined) updateData.grewUpIn = body.grewUpIn
     if (body.citizenship !== undefined) updateData.citizenship = body.citizenship
-    if (body.residencyStatus !== undefined) updateData.residencyStatus = body.residencyStatus
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
@@ -256,9 +258,7 @@ export async function PUT(
     if (body.occupation !== undefined) updateData.occupation = body.occupation
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
-    if (body.educationCareerDetails !== undefined) updateData.educationCareerDetails = body.educationCareerDetails
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
-    if (body.languagesKnown !== undefined) updateData.languagesKnown = body.languagesKnown
 
     // Religion & Astro
     if (body.religion !== undefined) updateData.religion = body.religion
@@ -266,26 +266,15 @@ export async function PUT(
     if (body.subCommunity !== undefined) updateData.subCommunity = body.subCommunity
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.nakshatra !== undefined) updateData.nakshatra = body.nakshatra
-    if (body.raasi !== undefined) updateData.raasi = body.raasi
-    if (body.doshas !== undefined) updateData.doshas = body.doshas
+    if (body.rashi !== undefined) updateData.rashi = body.rashi
     if (body.timeOfBirth !== undefined) updateData.timeOfBirth = body.timeOfBirth
     if (body.placeOfBirth !== undefined) updateData.placeOfBirth = body.placeOfBirth
-    if (body.placeOfBirthState !== undefined) updateData.placeOfBirthState = body.placeOfBirthState
-    if (body.placeOfBirthCity !== undefined) updateData.placeOfBirthCity = body.placeOfBirthCity
     if (body.manglik !== undefined) updateData.manglik = body.manglik
-    if (body.maslak !== undefined) updateData.maslak = body.maslak
-    if (body.namazPractice !== undefined) updateData.namazPractice = body.namazPractice
-    if (body.amritdhari !== undefined) updateData.amritdhari = body.amritdhari
-    if (body.turban !== undefined) updateData.turban = body.turban
-    if (body.churchAttendance !== undefined) updateData.churchAttendance = body.churchAttendance
-    if (body.baptized !== undefined) updateData.baptized = body.baptized
 
     // Family
     if (body.familyLocation !== undefined) updateData.familyLocation = body.familyLocation
     if (body.familyValues !== undefined) updateData.familyValues = body.familyValues
     if (body.familyType !== undefined) updateData.familyType = body.familyType
-    if (body.livesWithFamily !== undefined) updateData.livesWithFamily = body.livesWithFamily
-    if (body.familyDetails !== undefined) updateData.familyDetails = body.familyDetails
     if (body.fatherName !== undefined) updateData.fatherName = body.fatherName
     if (body.fatherOccupation !== undefined) updateData.fatherOccupation = body.fatherOccupation
     if (body.motherName !== undefined) updateData.motherName = body.motherName
@@ -305,18 +294,14 @@ export async function PUT(
 
     // About Me
     if (body.aboutMe !== undefined) updateData.aboutMe = body.aboutMe
-    if (body.linkedinProfile !== undefined) {
-      updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
-    }
+    if (body.linkedinProfile !== undefined) updateData.linkedinProfile = body.linkedinProfile === 'no_linkedin' ? null : body.linkedinProfile
     if (body.instagram !== undefined) updateData.instagram = body.instagram
     if (body.facebook !== undefined) updateData.facebook = body.facebook
     if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
     if (body.referredBy !== undefined) updateData.referredBy = body.referredBy
     if (body.bloodGroup !== undefined) updateData.bloodGroup = body.bloodGroup
-    if (body.healthInfo !== undefined) updateData.healthInfo = body.healthInfo
     if (body.anyDisability !== undefined) updateData.anyDisability = body.anyDisability
     if (body.disabilityDetails !== undefined) updateData.disabilityDetails = body.disabilityDetails
-    if (body.allergiesOrMedical !== undefined) updateData.allergiesOrMedical = body.allergiesOrMedical
 
     // Partner Preferences - Page 1
     if (body.prefAgeMin !== undefined) updateData.prefAgeMin = body.prefAgeMin
@@ -393,10 +378,41 @@ export async function PUT(
       }
     }
 
-    // Normalize dealbreaker flags when preference data is being submitted
-    if (body.prefAgeMin !== undefined || body.prefHeightMin !== undefined || body.prefMaritalStatus !== undefined) {
-      const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 3) {
+      const locationEducationValidation = validateLocationEducationStep({
+        ...mergedState,
+        universityOther: body.universityOther,
+      })
+
+      if (!locationEducationValidation.isValid) {
+        return NextResponse.json(
+          { error: locationEducationValidation.errors[0] || 'Please complete all required Education & Career fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 7) {
+      const aboutMeValidation = validateAboutMeStep(mergedState)
+      if (!aboutMeValidation.isValid) {
+        return NextResponse.json(
+          { error: aboutMeValidation.errors[0] || 'Please complete all required About Me fields.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 8) {
       const preferencesValidation = validatePartnerPreferencesMustHaves(mergedState)
+
+      if (!preferencesValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
+      }
 
       updateData.prefAgeIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefAgeIsDealbreaker
       updateData.prefHeightIsDealbreaker = preferencesValidation.normalizedDealbreakers.prefHeightIsDealbreaker
@@ -412,6 +428,17 @@ export async function PUT(
         updateData.prefReligion = preferencesValidation.selectedReligions.length === 1
           ? preferencesValidation.selectedReligions[0]
           : ''
+      }
+    }
+
+    if (requestedSignupStep !== undefined && requestedSignupStep >= 9) {
+      const preferencesAdditionalValidation = validatePartnerPreferencesAdditional(mergedState)
+
+      if (!preferencesAdditionalValidation.isValid) {
+        return NextResponse.json(
+          { error: preferencesAdditionalValidation.errors[0] || 'Please complete required partner preferences.' },
+          { status: 400 }
+        )
       }
     }
 

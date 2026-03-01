@@ -851,52 +851,8 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
 }
 
 export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
-  const [qualificationSearch, setQualificationSearch] = useState('')
-  const [showQualificationDropdown, setShowQualificationDropdown] = useState(false)
   const [universitySearch, setUniversitySearch] = useState('')
   const [showUniversityDropdown, setShowUniversityDropdown] = useState(false)
-
-  // Filter qualifications based on search
-  const filteredQualifications = QUALIFICATION_OPTIONS.filter(opt =>
-    opt.label.toLowerCase().includes(qualificationSearch.toLowerCase()) ||
-    opt.value.toLowerCase().includes(qualificationSearch.toLowerCase())
-  )
-
-  const handleQualificationSelect = (opt: { value: string; label: string }) => {
-    if (opt.value === 'other') {
-      setFormData(prev => ({ ...prev, qualification: 'other' }))
-    } else {
-      setFormData(prev => ({ ...prev, qualification: opt.value, qualificationOther: '' }))
-    }
-    setQualificationSearch('')
-    setShowQualificationDropdown(false)
-  }
-
-  // When user types a degree and clicks away without selecting from dropdown,
-  // accept the typed text as a custom entry
-  const handleQualificationBlur = () => {
-    if (qualificationSearch.trim() && (formData.qualification as string) !== qualificationSearch.trim()) {
-      const typed = qualificationSearch.trim()
-      const exactMatch = QUALIFICATION_OPTIONS.find(o => o.label.toLowerCase() === typed.toLowerCase())
-      if (exactMatch) {
-        setFormData(prev => ({ ...prev, qualification: exactMatch.value, qualificationOther: '' }))
-      } else {
-        // Save as 'other' with the typed text as qualificationOther
-        setFormData(prev => ({ ...prev, qualification: 'other', qualificationOther: typed }))
-      }
-      setQualificationSearch('')
-    }
-    setShowQualificationDropdown(false)
-  }
-
-  // Display label for the current qualification value
-  const qualificationDisplayValue = (() => {
-    const val = formData.qualification as string
-    if (!val) return ''
-    if (val === 'other') return formData.qualificationOther as string || ''
-    const match = QUALIFICATION_OPTIONS.find(o => o.value === val)
-    return match ? match.label : val
-  })()
 
   // Filter universities based on search
   const filteredUniversities = US_UNIVERSITIES.filter(uni =>
@@ -913,77 +869,28 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
     setShowUniversityDropdown(false)
   }
 
-  // When user types a college name and clicks away without selecting from dropdown,
-  // accept the typed text as a custom entry so validation doesn't fail
-  const handleUniversityBlur = () => {
-    if (universitySearch.trim() && (formData.university as string) !== universitySearch.trim()) {
-      const typed = universitySearch.trim()
-      // Check if it matches a known university
-      const exactMatch = US_UNIVERSITIES.find(u => u.toLowerCase() === typed.toLowerCase())
-      if (exactMatch) {
-        setFormData(prev => ({ ...prev, university: exactMatch }))
-      } else {
-        // Accept as custom entry directly (no need for "Other" flow)
-        setFormData(prev => ({ ...prev, university: typed }))
-      }
-      setUniversitySearch('')
-    }
-    setShowUniversityDropdown(false)
-  }
-
   const isOtherUniversity = (formData.university as string) === 'other' ||
     ((formData.university as string) && !US_UNIVERSITIES.includes(formData.university as string) && (formData.university as string) !== '')
 
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <div className="relative">
+        <div>
           <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
-          <input
-            type="text"
-            value={qualificationSearch || qualificationDisplayValue}
-            onChange={(e) => {
-              setQualificationSearch(e.target.value)
-              setShowQualificationDropdown(true)
-            }}
-            onFocus={() => setShowQualificationDropdown(true)}
-            onBlur={() => {
-              setTimeout(handleQualificationBlur, 200)
-            }}
-            className="input-field"
-            placeholder="Type to search degrees..."
-            required
-          />
-          {showQualificationDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
-              {filteredQualifications.length > 0 ? (
-                filteredQualifications.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleQualificationSelect(opt)}
-                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
-                      opt.value === 'other' ? 'font-medium text-primary-600 border-t border-gray-200' : ''
-                    } ${(formData.qualification as string) === opt.value ? 'bg-primary-50 font-medium' : ''}`}
-                  >
-                    {opt.label}
-                  </button>
-                ))
-              ) : (
-                <div className="px-3 py-2 text-sm text-gray-500">
-                  No matches found. Click outside to use &quot;{qualificationSearch}&quot; as entered.
-                </div>
-              )}
-            </div>
-          )}
-          {showQualificationDropdown && (
-            <div
-              className="fixed inset-0 z-40"
-              onClick={handleQualificationBlur}
-            />
-          )}
-          {(formData.qualification as string) === 'other' && (formData.qualificationOther as string) && (
-            <p className="text-xs text-gray-500 mt-1">Custom entry: {formData.qualificationOther as string}</p>
+          <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field" required>
+            <option value="">Select</option>
+            {/* Show legacy value as first option if it doesn't match standard options */}
+            {(formData.qualification as string) && !isValueInOptions(formData.qualification as string, QUALIFICATION_OPTIONS) && (
+              <option value={formData.qualification as string}>
+                {formData.qualification as string} (Current)
+              </option>
+            )}
+            {QUALIFICATION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {(formData.qualification as string) === 'other' && (
+            <input type="text" name="qualificationOther" value={formData.qualificationOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify qualification" />
           )}
         </div>
         <div className="relative">
@@ -996,13 +903,9 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
               setShowUniversityDropdown(true)
             }}
             onFocus={() => setShowUniversityDropdown(true)}
-            onBlur={() => {
-              // Small delay so dropdown click can fire first
-              setTimeout(handleUniversityBlur, 200)
-            }}
             className="input-field"
             placeholder="Type to search universities..."
-            required={(formData.university as string) !== 'other'}
+            required
           />
           {showUniversityDropdown && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
@@ -1021,16 +924,16 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
                 ))
               ) : (
                 <div className="px-3 py-2 text-sm text-gray-500">
-                  No matches found. Click outside to use &quot;{universitySearch}&quot; as entered.
+                  No matches found. Select &quot;Other&quot; to enter manually.
                 </div>
               )}
             </div>
           )}
-          {/* Click outside to close — also accepts typed text */}
+          {/* Click outside to close */}
           {showUniversityDropdown && (
             <div
               className="fixed inset-0 z-40"
-              onClick={handleUniversityBlur}
+              onClick={() => setShowUniversityDropdown(false)}
             />
           )}
           {isOtherUniversity && (formData.university as string) !== 'other' && (
@@ -1041,7 +944,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
       {/* Other university text input */}
       {(formData.university as string) === 'other' && (
         <div>
-          <label className="form-label">Specify University/College <span className="text-red-500">*</span></label>
+          <label className="form-label">Specify University/College</label>
           <input
             type="text"
             name="universityOther"
@@ -1049,7 +952,6 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
             onChange={handleChange}
             className="input-field"
             placeholder="Enter your university or college name"
-            required
           />
         </div>
       )}
@@ -1580,13 +1482,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         )}
         <div>
           <label className="form-label">Allergies or Medical Conditions</label>
-          <textarea
-            name="allergiesOrMedical"
-            value={formData.allergiesOrMedical as string || ''}
-            onChange={handleChange}
-            className="input-field min-h-[72px]"
-            placeholder="e.g., None, Peanut allergy, lactose intolerance"
-          />
+          <input type="text" name="allergiesOrMedical" value={formData.allergiesOrMedical as string || ''} onChange={handleChange} className="input-field" placeholder="e.g., None, Peanut allergy" />
         </div>
       </div>
 
@@ -1636,15 +1532,81 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
         <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">Social Profiles</h4>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="form-label">LinkedIn</label>
-            <input
-              type="url"
-              name="linkedinProfile"
-              value={(formData.linkedinProfile as string || '') === 'no_linkedin' ? '' : (formData.linkedinProfile as string || '')}
-              onChange={handleChange}
-              className="input-field"
-              placeholder="https://linkedin.com/in/username"
-            />
+            <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
+            <select
+              value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+              onChange={(e) => {
+                if (e.target.value === 'no_linkedin') {
+                  setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
+                } else {
+                  setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
+                }
+              }}
+              className="input-field mb-2"
+            >
+              <option value="has_linkedin">I have LinkedIn</option>
+              <option value="no_linkedin">I don&apos;t have LinkedIn</option>
+            </select>
+            {(formData.linkedinProfile !== 'no_linkedin') && (
+              <>
+                <div className="relative">
+                  <input
+                    type="url"
+                    name="linkedinProfile"
+                    value={formData.linkedinProfile as string || ''}
+                    onChange={(e) => {
+                      handleChange(e)
+                      if (formData.linkedinError) {
+                        setFormData(prev => ({ ...prev, linkedinError: '' }))
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const url = e.target.value.trim()
+                      if (!url) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
+                        return
+                      }
+
+                      const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+                      const isValidFormat = linkedinRegex.test(url) ||
+                        /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                        /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                        /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
+
+                      if (!isValidFormat) {
+                        if (url.includes('linkedin.com') && !url.includes('/in/')) {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
+                        } else if (!url.includes('linkedin')) {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
+                        } else {
+                          setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe' }))
+                        }
+                        return
+                      }
+
+                      let normalizedUrl = url
+                      if (!url.startsWith('http')) {
+                        if (url.startsWith('linkedin.com')) {
+                          normalizedUrl = 'https://www.' + url
+                        } else if (url.startsWith('www.')) {
+                          normalizedUrl = 'https://' + url
+                        } else if (url.startsWith('/in/') || url.startsWith('in/')) {
+                          normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
+                        }
+                      }
+
+                      setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
+                    }}
+                    className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
+                    placeholder="https://linkedin.com/in/username"
+                  />
+                </div>
+                {formData.linkedinError && (
+                  <p className="text-red-500 text-xs mt-1">{formData.linkedinError as string}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
+              </>
+            )}
           </div>
           <div>
             <label className="form-label">Instagram</label>

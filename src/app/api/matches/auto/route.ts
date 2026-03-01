@@ -63,12 +63,10 @@ export async function GET(request: Request) {
     })
 
     // Filter for COMPLETE profiles only:
-    // Complete = user has phone number AND at least one photo
+    // Complete = user has phone number (photos not required for legacy profiles)
     const candidates = rawCandidates.filter(candidate => {
       const hasPhone = !!candidate.user?.phone && candidate.user.phone.trim() !== ''
-      const hasPhoto = !!(candidate.photoUrls && candidate.photoUrls.trim() !== '') ||
-        !!(candidate.profileImageUrl && candidate.profileImageUrl.trim() !== '')
-      return hasPhone && hasPhoto
+      return hasPhone
     })
 
     // Filter to profiles where BOTH parties' preferences match (mutual matching)

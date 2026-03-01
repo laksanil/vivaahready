@@ -20,6 +20,29 @@ import {
   validatePartnerPreferencesMustHaves,
 } from '@/lib/profileFlowValidation'
 
+// Placeholder phrases that shouldn't be accepted
+const INVALID_ABOUTME_PHRASES = [
+  'will fill in later',
+  'will fill later',
+  'fill in later',
+  'fill later',
+  'tbd',
+  'to be done',
+  'coming soon',
+  'will update',
+  'will add later',
+  'n/a',
+  'na',
+  'none',
+  'nothing',
+  'test',
+  'testing',
+  'asdf',
+  'abc',
+  '...',
+  '---',
+]
+
 interface ProfileEditModalProps {
   isOpen: boolean
   onClose: () => void
@@ -45,13 +68,7 @@ export default function ProfileEditModal({
 
   useEffect(() => {
     if (isOpen && profile) {
-      const data = { ...profile }
-      // Normalize null/empty linkedinProfile to 'no_linkedin' so the dropdown
-      // and validation stay in sync (old profiles stored null instead of 'no_linkedin')
-      if (!data.linkedinProfile) {
-        data.linkedinProfile = 'no_linkedin'
-      }
-      setFormData(data)
+      setFormData({ ...profile })
       setError('')
     }
   }, [isOpen, profile])
@@ -67,11 +84,26 @@ export default function ProfileEditModal({
 
     if (section === 'aboutme') {
       const aboutMe = (formData.aboutMe as string || '').trim().toLowerCase()
+      const linkedinProfile = formData.linkedinProfile as string || ''
       const referralSource = formData.referralSource as string || ''
 
-      // Check aboutMe - mandatory but accept any content
+      // Check aboutMe
       if (!aboutMe) {
         errors.push('About Me is required')
+      } else if (aboutMe.length < 50) {
+        errors.push('About Me must be at least 50 characters')
+      } else if (INVALID_ABOUTME_PHRASES.some(phrase => aboutMe === phrase || aboutMe.includes(phrase))) {
+        errors.push('Please write a meaningful description about yourself')
+      }
+
+      // Check LinkedIn
+      if (!linkedinProfile) {
+        errors.push('LinkedIn profile is required')
+      } else if (linkedinProfile !== 'no_linkedin') {
+        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+        if (!linkedinRegex.test(linkedinProfile)) {
+          errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn"')
+        }
       }
 
       // Check referral source

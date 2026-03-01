@@ -73,12 +73,8 @@ export async function PATCH(
 
     const normalizedBody = normalizeSameAsMinePreferences(body, existingProfile)
 
-    // Extract user-related fields and non-profile fields that should not be passed to Prisma
-    const {
-      firstName, lastName, user, userId, id, createdAt, updatedAt,
-      _editSection, email, phone, emailVerified, phoneVerified,
-      ...profileData
-    } = normalizedBody
+    // Extract user-related fields that need to be updated separately
+    const { firstName, lastName, user, userId, id, createdAt, updatedAt, ...profileData } = normalizedBody
 
     if (profileData.prefCommunityList !== undefined) {
       profileData.prefCommunity = profileData.prefCommunityList
