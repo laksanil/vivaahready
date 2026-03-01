@@ -68,7 +68,12 @@ export default function ProfileEditModal({
 
   useEffect(() => {
     if (isOpen && profile) {
-      setFormData({ ...profile })
+      const data = { ...profile }
+      // Normalize null/empty linkedinProfile to 'no_linkedin' so the dropdown stays in sync
+      if (!data.linkedinProfile) {
+        data.linkedinProfile = 'no_linkedin'
+      }
+      setFormData(data)
       setError('')
     }
   }, [isOpen, profile])
@@ -96,13 +101,11 @@ export default function ProfileEditModal({
         errors.push('Please write a meaningful description about yourself')
       }
 
-      // Check LinkedIn
-      if (!linkedinProfile) {
-        errors.push('LinkedIn profile is required')
-      } else if (linkedinProfile !== 'no_linkedin') {
+      // LinkedIn is optional - only validate format if a URL is entered
+      if (linkedinProfile && linkedinProfile !== 'no_linkedin') {
         const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
         if (!linkedinRegex.test(linkedinProfile)) {
-          errors.push('Please enter a valid LinkedIn profile URL or select "I don\'t have LinkedIn"')
+          errors.push('Please enter a valid LinkedIn profile URL')
         }
       }
 
