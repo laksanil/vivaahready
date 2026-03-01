@@ -150,14 +150,7 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
 
 export function validateAboutMeStep(data: UnknownRecord): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
-  const linkedinProfile = normalizeString(data.linkedinProfile)
   const referralSource = normalizeString(data.referralSource)
-
-  if (!linkedinProfile) {
-    errors.push('LinkedIn profile is required.')
-  } else if (linkedinProfile !== 'no_linkedin' && !isValidLinkedInProfileUrl(linkedinProfile)) {
-    errors.push('A valid LinkedIn profile URL is required (linkedin.com/in/username).')
-  }
 
   if (!referralSource) {
     errors.push('Referral source is required.')

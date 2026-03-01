@@ -138,33 +138,14 @@ describe('profileFlowValidation', () => {
   })
 
   describe('validateAboutMeStep', () => {
-    it('fails when LinkedIn profile and referral source are missing', () => {
+    it('fails when referral source is missing', () => {
       const result = validateAboutMeStep({})
       expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('LinkedIn profile is required.')
       expect(result.errors).toContain('Referral source is required.')
     })
 
-    it('passes when LinkedIn uses the no_linkedin bypass value (user chose "I don\'t have LinkedIn")', () => {
+    it('passes when referral source is provided (LinkedIn is optional)', () => {
       const result = validateAboutMeStep({
-        linkedinProfile: 'no_linkedin',
-        referralSource: 'google',
-      })
-      expect(result.isValid).toBe(true)
-    })
-
-    it('fails when LinkedIn URL is invalid', () => {
-      const result = validateAboutMeStep({
-        linkedinProfile: 'linkedin.com/company/openai',
-        referralSource: 'google',
-      })
-      expect(result.isValid).toBe(false)
-      expect(result.errors).toContain('A valid LinkedIn profile URL is required (linkedin.com/in/username).')
-    })
-
-    it('passes when LinkedIn profile and referral source are provided', () => {
-      const result = validateAboutMeStep({
-        linkedinProfile: 'https://www.linkedin.com/in/johndoe',
         referralSource: 'google',
       })
       expect(result.isValid).toBe(true)

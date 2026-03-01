@@ -18,7 +18,6 @@ import {
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
-  isValidLinkedInProfileUrl,
 } from '@/lib/profileFlowValidation'
 
 interface ProfileEditModalProps {
@@ -68,19 +67,11 @@ export default function ProfileEditModal({
 
     if (section === 'aboutme') {
       const aboutMe = (formData.aboutMe as string || '').trim().toLowerCase()
-      const linkedinProfile = formData.linkedinProfile as string || ''
       const referralSource = formData.referralSource as string || ''
 
       // Check aboutMe - mandatory but accept any content
       if (!aboutMe) {
         errors.push('About Me is required')
-      }
-
-      // Check LinkedIn - allow "no_linkedin" as valid (user chose "I don't have LinkedIn")
-      if (!linkedinProfile) {
-        errors.push('LinkedIn profile is required')
-      } else if (linkedinProfile !== 'no_linkedin' && !isValidLinkedInProfileUrl(linkedinProfile)) {
-        errors.push('Please enter a valid LinkedIn profile URL (linkedin.com/in/username)')
       }
 
       // Check referral source

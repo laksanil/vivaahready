@@ -73,7 +73,7 @@ describe('Profile form sections', () => {
     cleanup()
   })
 
-  it('renders lifestyle fields and validates LinkedIn URL', () => {
+  it('renders lifestyle fields and optional LinkedIn input', () => {
     let renderResult = renderSection(LifestyleSection, {})
     expect(renderResult.container.querySelector('select[name="dietaryPreference"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="smoking"]')).toBeTruthy()
@@ -86,9 +86,6 @@ describe('Profile form sections', () => {
     })
     const linkedinInput = renderResult.container.querySelector('input[name="linkedinProfile"]') as HTMLInputElement
     expect(linkedinInput).toBeTruthy()
-    fireEvent.change(linkedinInput, { target: { name: 'linkedinProfile', value: 'linkedin.com/company/foo' } })
-    fireEvent.blur(linkedinInput)
-    expect(screen.getByText(/profile url/i)).toBeInTheDocument()
     cleanup()
   })
 
