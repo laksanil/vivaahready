@@ -74,10 +74,11 @@ function PhotosUploadContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    // Skip auth redirect during signup flow — session is still propagating
+    if (status === 'unauthenticated' && !fromSignup) {
       router.push('/login')
     }
-  }, [status, router])
+  }, [status, fromSignup, router])
 
   useEffect(() => {
     if (!profileId && status === 'authenticated') {
