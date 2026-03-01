@@ -3167,7 +3167,12 @@ export function ReferralSection({ formData, handleChange }: SectionProps) {
 }
 
 // Contact Details Section - for editing email, phone, and social profiles
-export function ContactSection({ formData, handleChange }: SectionProps) {
+export function ContactSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [linkedinChoice, setLinkedinChoice] = useState<'has_linkedin' | 'no_linkedin'>(() => {
+    const val = formData.linkedinProfile as string
+    return val && val !== 'no_linkedin' ? 'has_linkedin' : 'no_linkedin'
+  })
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -3200,21 +3205,83 @@ export function ContactSection({ formData, handleChange }: SectionProps) {
       </div>
 
       <div className="border-t pt-4 mt-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">Social Profiles (Optional)</h4>
-        <div className="grid grid-cols-2 gap-4">
+        <h4 className="text-sm font-semibold text-gray-700 mb-3">Social Profiles</h4>
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="form-label">LinkedIn Profile</label>
-            <input
-              type="url"
-              name="linkedinProfile"
-              value={formData.linkedinProfile as string || ''}
-              onChange={handleChange}
-              className="input-field"
-              placeholder="https://linkedin.com/in/yourprofile"
-            />
+            <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
+            <select
+              value={linkedinChoice}
+              onChange={(e) => {
+                const choice = e.target.value as 'has_linkedin' | 'no_linkedin'
+                setLinkedinChoice(choice)
+                if (choice === 'no_linkedin') {
+                  setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
+                } else {
+                  setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
+                }
+              }}
+              className="input-field mb-2"
+            >
+              <option value="has_linkedin">I have LinkedIn</option>
+              <option value="no_linkedin">I don&apos;t have LinkedIn</option>
+            </select>
+            {linkedinChoice === 'has_linkedin' && (
+              <>
+                <input
+                  type="url"
+                  name="linkedinProfile"
+                  value={formData.linkedinProfile as string === 'no_linkedin' ? '' : (formData.linkedinProfile as string || '')}
+                  onChange={(e) => {
+                    handleChange(e)
+                    if (formData.linkedinError) {
+                      setFormData(prev => ({ ...prev, linkedinError: '' }))
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const url = e.target.value.trim()
+                    if (!url) {
+                      setFormData(prev => ({ ...prev, linkedinError: 'LinkedIn profile URL is required' }))
+                      return
+                    }
+                    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+                    const isValidFormat = linkedinRegex.test(url) ||
+                      /^linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                      /^\/in\/[a-zA-Z0-9_-]+\/?$/.test(url) ||
+                      /^in\/[a-zA-Z0-9_-]+\/?$/.test(url)
+                    if (!isValidFormat) {
+                      if (url.includes('linkedin.com') && !url.includes('/in/')) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Please use your profile URL (linkedin.com/in/username), not the company or other page' }))
+                      } else if (!url.includes('linkedin')) {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Please enter a LinkedIn URL' }))
+                      } else {
+                        setFormData(prev => ({ ...prev, linkedinError: 'Invalid format. Example: linkedin.com/in/johndoe' }))
+                      }
+                      return
+                    }
+                    let normalizedUrl = url
+                    if (!url.startsWith('http')) {
+                      if (url.startsWith('linkedin.com')) {
+                        normalizedUrl = 'https://www.' + url
+                      } else if (url.startsWith('www.')) {
+                        normalizedUrl = 'https://' + url
+                      } else if (url.startsWith('/in/') || url.startsWith('in/')) {
+                        normalizedUrl = 'https://www.linkedin.com' + (url.startsWith('/') ? url : '/' + url)
+                      }
+                    }
+                    setFormData(prev => ({ ...prev, linkedinProfile: normalizedUrl, linkedinError: '' }))
+                  }}
+                  className={`input-field ${formData.linkedinError ? 'border-red-500' : ''}`}
+                  placeholder="https://linkedin.com/in/username"
+                />
+                {typeof formData.linkedinError === 'string' && formData.linkedinError && (
+                  <p className="text-red-500 text-xs mt-1">{formData.linkedinError}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Example: linkedin.com/in/johndoe</p>
+              </>
+            )}
           </div>
           <div>
-            <label className="form-label">Instagram Handle</label>
+            <label className="form-label">Instagram</label>
             <input
               type="text"
               name="instagram"
@@ -3225,7 +3292,7 @@ export function ContactSection({ formData, handleChange }: SectionProps) {
             />
           </div>
           <div>
-            <label className="form-label">Facebook Profile</label>
+            <label className="form-label">Facebook</label>
             <input
               type="url"
               name="facebook"
