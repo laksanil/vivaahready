@@ -498,8 +498,21 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         return
       }
 
-      // If last section, redirect to photos page
+      // If last section, sign in (if not already) and redirect to photos page
       if (isLastSection && !isAdminMode) {
+        // For email signups, user doesn't have a NextAuth session yet.
+        // Sign in before redirecting so /profile/photos doesn't bounce to /login.
+        if (status !== 'authenticated') {
+          const storedEmail = getSessionValue('newUserEmail') || createdAccount?.email
+          const storedPassword = getSessionValue('newUserPassword') || createdAccount?.password
+          if (storedEmail && storedPassword) {
+            await signIn('credentials', {
+              email: storedEmail,
+              password: storedPassword,
+              redirect: false,
+            })
+          }
+        }
         router.push(`/profile/photos?profileId=${createdProfileId}&fromSignup=true`)
         onClose()
         return
