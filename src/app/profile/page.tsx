@@ -54,6 +54,7 @@ interface Profile {
   university: string
   occupation: string
   annualIncome: string
+  educationCareerDetails: string
   fatherName: string
   motherName: string
   fatherOccupation: string
@@ -1204,6 +1205,12 @@ function ViewProfilePageContent() {
                     <span className="text-gray-800">{profile.annualIncome || 'Not specified'}</span>
                   </div>
                 </div>
+                {profile.educationCareerDetails && (
+                  <div className="mt-3 pt-3 border-t text-sm">
+                    <span className="text-gray-500 font-medium">Education & Career Details</span>
+                    <p className="text-gray-800 mt-1">{profile.educationCareerDetails}</p>
+                  </div>
+                )}
               </div>
 
               {/* 4. Religion & Astro - matches ReligionSection fields */}
