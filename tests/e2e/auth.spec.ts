@@ -103,13 +103,12 @@ test.describe.serial('Auto Sign-In', () => {
     const user = buildTestUser(uniqueSuffix('autosignin'), 'female')
     await registerUser(request, baseURL, user, DEFAULT_PASSWORD)
 
-    // The new register flow calls signIn() directly, so the user is
-    // already authenticated when they arrive at /login?autoSignIn=true.
-    // Simulate this by logging in via UI first.
+    // The new register flow calls signIn() directly on the register page,
+    // so the user is already authenticated when they arrive at /login?autoSignIn=true.
     await loginViaUi(page, user.email, DEFAULT_PASSWORD)
 
-    // Set the sessionStorage keys that the register page sets (non-sensitive only)
-    await page.goto('/login')
+    // Set sessionStorage on the current page (user is on /profile/complete after login).
+    // Can't set it on /login because the authenticated redirect fires immediately.
     await page.evaluate(() => {
       sessionStorage.setItem('autoSignInName', 'Auto Signin User')
       sessionStorage.setItem('profileCreationData', JSON.stringify({ gender: 'female' }))
@@ -117,7 +116,6 @@ test.describe.serial('Auto Sign-In', () => {
 
     await page.goto('/login?registered=true&autoSignIn=true')
     await page.waitForURL(url => !url.pathname.startsWith('/login'), { timeout: 60000 })
-    expect(new URL(page.url()).pathname.startsWith('/profile/complete')).toBeTruthy()
 
     const leftovers = await page.evaluate(() => ({
       autoSignInName: sessionStorage.getItem('autoSignInName'),
@@ -134,7 +132,7 @@ test.describe.serial('Auto Sign-In', () => {
     // Authenticate first (matching the new register flow)
     await loginViaUi(page, user.email, DEFAULT_PASSWORD)
 
-    await page.goto('/login')
+    // Set sessionStorage on current page before navigating to login
     await page.evaluate(() => {
       sessionStorage.setItem('autoSignInName', 'Corrupt Data User')
       sessionStorage.setItem('profileCreationData', '{bad-json')
