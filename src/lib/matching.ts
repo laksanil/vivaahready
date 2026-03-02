@@ -417,7 +417,7 @@ const EDUCATION_CATEGORIES: Record<string, string[]> = {
   // Medical
   'medical_undergrad': ['mbbs', 'bds'],
   'medical_masters': ['md', 'ms_medical'],
-  'medical': ['mbbs', 'bds', 'md', 'ms_medical', 'dm_mch'],  // All medical
+  'medical': ['mbbs', 'bds', 'md', 'ms_medical', 'dm_mch', 'do', 'doctor'],  // All medical
   // Engineering (includes CS since CS is a branch of engineering)
   'eng_undergrad': ['undergrad_eng', 'bachelors_eng', 'be', 'btech', 'undergrad_cs', 'bachelors_cs', 'bca'],
   'eng_masters': ['masters_eng', 'me', 'mtech', 'masters_cs', 'mca'],
@@ -454,7 +454,7 @@ const PREF_EDUCATION_CONFIG: Record<string, { type: string; minLevel?: number; c
   // Medical
   'medical_undergrad': { type: 'category', categories: ['mbbs', 'bds'] },
   'medical_masters': { type: 'category', categories: ['md', 'ms_medical'] },
-  'medical': { type: 'category', categories: ['md', 'do'] },
+  'medical': { type: 'category', categories: ['md', 'do', 'doctor', 'mbbs', 'bds', 'ms_medical', 'dm_mch'] },
   'healthcare': { type: 'category', categories: ['bsn', 'pharmd', 'dds'] },
   // Other Professional
   'mba': { type: 'category', categories: ['mba'] },
