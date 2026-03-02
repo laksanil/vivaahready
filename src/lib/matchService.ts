@@ -83,12 +83,19 @@ export async function getMatchResultsForUser(
     },
   })
 
+  // Filter for COMPLETE profiles only: must have phone number AND at least one photo
+  const completeCandidates = candidates.filter(candidate => {
+    const hasPhone = !!candidate.user?.phone && candidate.user.phone.trim() !== ''
+    const hasPhoto = !!candidate.profileImageUrl || (!!candidate.photoUrls && candidate.photoUrls.trim() !== '')
+    return hasPhone && hasPhoto
+  })
+
   if (debug) {
-    console.log(`[MATCH DEBUG] User ${userId} (${myProfile.gender}) checking ${candidates.length} candidates`)
+    console.log(`[MATCH DEBUG] User ${userId} (${myProfile.gender}) checking ${completeCandidates.length} complete candidates (${candidates.length} total)`)
     console.log(`[MATCH DEBUG] My profile prefs: location=${myProfile.prefLocation}, qual=${myProfile.prefQualification}, caste=${myProfile.prefCaste}, diet=${myProfile.prefDiet}`)
   }
 
-  const matchingProfiles = candidates.filter(candidate => {
+  const matchingProfiles = completeCandidates.filter(candidate => {
     const isMatch = isMutualMatch(myProfile, candidate)
     if (!isMatch && debug) {
       const myMatchesTheirPrefs = matchesSeekerPreferences(candidate, myProfile)
