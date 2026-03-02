@@ -306,7 +306,7 @@ export async function GET(request: Request) {
 
     if (showNearMatches) {
       // Get near matches from candidates that aren't already matches
-      const nearMatches = findNearMatches(myProfile as any, candidates as any[], 2)
+      const nearMatches = findNearMatches(myProfile as any, candidates as any[], 3)
       console.log(`[NEAR MATCH DEBUG] findNearMatches returned ${nearMatches.length} profiles`)
 
       // Filter out declined profiles and existing matches
