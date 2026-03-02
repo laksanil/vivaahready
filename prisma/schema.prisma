@@ -243,6 +243,15 @@ model Profile {
 
   isImported        Boolean  @default(false)
 
+  // Engagement System (legacy - kept for data preservation)
+  engagementPoints    Int      @default(0)
+  engagementCoins     Int      @default(0)
+  engagementBoosts    Int      @default(0)
+  lastPointAwardDate  DateTime?
+
+  // Legacy dealbreaker (kept for data preservation)
+  prefFieldOfStudyIsDealbreaker Boolean @default(false)
+
   // Lifetime Stats (never decrease, used to showcase platform value)
   lifetimeInterestsReceived  Int  @default(0)  // Total interests ever received
   lifetimeInterestsSent      Int  @default(0)  // Total interests ever sent
@@ -350,11 +359,45 @@ model DeclinedProfile {
   userId          String   // User who declined
   declinedUserId  String   // User whose profile was declined
 
+  hiddenFromReconsider Boolean @default(false)
+  source               String?
+
   createdAt       DateTime @default(now())
 
   @@unique([userId, declinedUserId])
   @@index([userId])
   @@index([declinedUserId])
+}
+
+// Event Interest Survey (legacy - kept for data preservation)
+model EventInterest {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  profileId     String?
+  interestLevel String
+  eventFormat   String?
+  preferredCity String?
+  eventType     String?
+  budgetRange   String?
+  suggestions   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([interestLevel])
+}
+
+// Engagement Point Log (legacy - kept for data preservation)
+model EngagementPointLog {
+  id             String   @id @default(cuid())
+  userId         String
+  action         String
+  points         Int
+  description    String?
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
+
+  @@index([userId, action])
+  @@index([userId, createdAt])
 }
 
 // Tracks profile deletion requests from users
