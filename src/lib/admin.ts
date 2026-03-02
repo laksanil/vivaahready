@@ -22,11 +22,11 @@ const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 // Cleanup expired sessions periodically
 function cleanupExpiredSessions() {
   const now = new Date()
-  for (const [token, entry] of adminSessionStore) {
+  adminSessionStore.forEach((entry, token) => {
     if (now > entry.expiresAt) {
       adminSessionStore.delete(token)
     }
-  }
+  })
 }
 
 /** Create a new admin session and return the token */
