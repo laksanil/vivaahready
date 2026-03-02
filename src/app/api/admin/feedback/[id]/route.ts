@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin'
-import { isTestAdminRequest } from '@/lib/testAuth'
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const isAdmin = (await isAdminAuthenticated()) || isTestAdminRequest(request)
-    if (!isAdmin) {
+    if (!await isAdminAuthenticated()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

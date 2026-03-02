@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { createAdminSession } from '@/lib/admin'
 
-// Hardcoded admin credentials - change these!
 const ADMIN_USERNAME = 'admin'
 const ADMIN_PASSWORD = 'vivaah2024'
-const ADMIN_TOKEN = 'vivaah_admin_session_token_2024'
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // Set admin session cookie
-      cookies().set('admin_session', ADMIN_TOKEN, {
+      const sessionToken = createAdminSession()
+
+      cookies().set('admin_session', sessionToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

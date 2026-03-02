@@ -1,13 +1,64 @@
 import { cookies } from 'next/headers'
+import { randomUUID } from 'crypto'
 import type { Session } from 'next-auth'
 
-const ADMIN_TOKEN = 'vivaah_admin_session_token_2024'
+// Server-side admin session store (cryptographic tokens)
+interface AdminSessionEntry {
+  expiresAt: Date
+}
+
+const globalStore = global as typeof globalThis & {
+  adminSessionStore?: Map<string, AdminSessionEntry>
+}
+
+if (!globalStore.adminSessionStore) {
+  globalStore.adminSessionStore = new Map<string, AdminSessionEntry>()
+}
+
+const adminSessionStore = globalStore.adminSessionStore
+
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+
+// Cleanup expired sessions periodically
+function cleanupExpiredSessions() {
+  const now = new Date()
+  adminSessionStore.forEach((entry, token) => {
+    if (now > entry.expiresAt) {
+      adminSessionStore.delete(token)
+    }
+  })
+}
+
+/** Create a new admin session and return the token */
+export function createAdminSession(): string {
+  cleanupExpiredSessions()
+  const token = randomUUID()
+  adminSessionStore.set(token, {
+    expiresAt: new Date(Date.now() + SESSION_MAX_AGE_MS),
+  })
+  return token
+}
+
+/** Destroy an admin session by token */
+export function destroyAdminSession(token: string): void {
+  adminSessionStore.delete(token)
+}
 
 // Check if admin is authenticated via cookie
 export async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = cookies()
   const adminSession = cookieStore.get('admin_session')
-  return adminSession?.value === ADMIN_TOKEN
+  if (!adminSession?.value) return false
+
+  const entry = adminSessionStore.get(adminSession.value)
+  if (!entry) return false
+
+  if (new Date() > entry.expiresAt) {
+    adminSessionStore.delete(adminSession.value)
+    return false
+  }
+
+  return true
 }
 
 // Check if request has viewAsUser param (admin impersonation)

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { escapeHtml } from '@/lib/sanitize'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET
 
 // Email to forward incoming support emails to
 const FORWARD_TO_EMAIL = 'usdesivivah@gmail.com'
@@ -9,6 +11,14 @@ const FORWARD_TO_EMAIL = 'usdesivivah@gmail.com'
 // Resend webhook for incoming emails
 export async function POST(request: NextRequest) {
   try {
+    // Verify webhook secret if configured
+    if (WEBHOOK_SECRET) {
+      const authHeader = request.headers.get('authorization')
+      if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
     const body = await request.json()
 
     console.log('Resend webhook received:', JSON.stringify(body, null, 2))
@@ -18,13 +28,16 @@ export async function POST(request: NextRequest) {
 
     // Handle incoming email event
     if (type === 'email.received') {
-      // Resend inbound webhook includes the email content directly
       const from = data.from
       const to = data.to
       const subject = data.subject
-      // Content is included directly in the webhook payload for inbound emails
       const emailHtml = data.html || ''
       const emailText = data.text || ''
+
+      // Escape user-supplied fields to prevent HTML injection
+      const safeFrom = escapeHtml(typeof from === 'string' ? from : String(from || 'Unknown'))
+      const safeTo = escapeHtml(Array.isArray(to) ? to.join(', ') : String(to || 'Unknown'))
+      const safeSubject = escapeHtml(String(subject || 'No Subject'))
 
       console.log('Incoming email:', { from, to, subject, hasHtml: !!emailHtml, hasText: !!emailText })
 
@@ -33,17 +46,17 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'VivaahReady Support <noreply@vivaahready.com>',
           to: [FORWARD_TO_EMAIL],
-          subject: `[Support] ${subject || 'No Subject'}`,
+          subject: `[Support] ${safeSubject}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${from || 'Unknown'}</p>
-                <p style="margin: 0 0 8px 0;"><strong>To:</strong> ${Array.isArray(to) ? to.join(', ') : to || 'Unknown'}</p>
-                <p style="margin: 0;"><strong>Subject:</strong> ${subject || 'No Subject'}</p>
+                <p style="margin: 0 0 8px 0;"><strong>From:</strong> ${safeFrom}</p>
+                <p style="margin: 0 0 8px 0;"><strong>To:</strong> ${safeTo}</p>
+                <p style="margin: 0;"><strong>Subject:</strong> ${safeSubject}</p>
               </div>
               <div style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
                 <h3 style="margin: 0 0 16px 0; color: #1f2937;">Message:</h3>
-                ${emailHtml || `<pre style="white-space: pre-wrap;">${emailText || 'No content in email'}</pre>`}
+                ${emailHtml || `<pre style="white-space: pre-wrap;">${escapeHtml(emailText || 'No content in email')}</pre>`}
               </div>
               <p style="margin-top: 20px; color: #6b7280; font-size: 12px;">
                 This email was forwarded from support@vivaahready.com
@@ -51,12 +64,12 @@ export async function POST(request: NextRequest) {
             </div>
           `,
           text: `
-From: ${from || 'Unknown'}
-To: ${Array.isArray(to) ? to.join(', ') : to || 'Unknown'}
-Subject: ${subject || 'No Subject'}
+From: ${safeFrom}
+To: ${safeTo}
+Subject: ${safeSubject}
 
 Message:
-${emailText || emailHtml || 'No content in email'}
+${emailText || 'No content in email'}
 
 ---
 This email was forwarded from support@vivaahready.com

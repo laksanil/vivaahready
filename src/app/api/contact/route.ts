@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { sendEmail } from '@/lib/email'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { escapeHtml } from '@/lib/sanitize'
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
             </div>
 
             <div style="padding: 32px;">
-              <h2 style="color: #1f2937; margin: 0 0 16px 0;">Thank you for reaching out, ${normalizedName.split(' ')[0]}!</h2>
+              <h2 style="color: #1f2937; margin: 0 0 16px 0;">Thank you for reaching out, ${escapeHtml(normalizedName.split(' ')[0])}!</h2>
 
               <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
                 We've received your message and appreciate you taking the time to contact us.
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
               <div style="background-color: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
                 <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;"><strong>Your message:</strong></p>
-                <p style="color: #1f2937; margin: 0; font-style: italic;">"${normalizedMessage.substring(0, 200)}${normalizedMessage.length > 200 ? '...' : ''}"</p>
+                <p style="color: #1f2937; margin: 0; font-style: italic;">"${escapeHtml(normalizedMessage.substring(0, 200))}${normalizedMessage.length > 200 ? '...' : ''}"</p>
               </div>
 
               <p style="color: #4b5563; line-height: 1.6;">

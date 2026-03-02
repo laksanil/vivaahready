@@ -16,7 +16,7 @@ type StoredProfileData = {
 const normalizeEmail = (value: string) => value.trim().toLowerCase()
 
 const sanitizeCallbackPath = (value: string | null) => {
-  if (!value || !value.startsWith('/')) return '/dashboard'
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/dashboard'
   return value
 }
 
@@ -160,37 +160,30 @@ function LoginForm() {
     let isCancelled = false
 
     const runAutoSignIn = async () => {
-      const storedEmail = getSessionValue('autoSignInEmail')
-      const storedPassword = getSessionValue('autoSignInPassword')
+      // User already authenticated from register page's direct signIn call
       const storedName = getSessionValue('autoSignInName')
       const parsedProfileData = parseProfileCreationData(getSessionValue('profileCreationData'))
 
-      if (!storedEmail || !storedPassword) return
-
-      const normalizedEmail = normalizeEmail(storedEmail)
-      const nameFallback = fallbackNameFromStoredData(storedName, normalizedEmail)
-
       setAutoSignInLoading(true)
-      setEmail(normalizedEmail)
-      setPassword(storedPassword)
 
       try {
-        const result = await signIn('credentials', {
-          email: normalizedEmail,
-          password: storedPassword,
-          redirect: false,
-        })
+        // Check profile status to determine where to redirect
+        const profileRes = await fetch('/api/user/profile-status')
+        const profileData = await profileRes.json()
 
         if (isCancelled) return
-        if (result?.ok) {
-          await routeAfterCredentialLogin(normalizedEmail, nameFallback, parsedProfileData)
-          return
-        }
 
-        setError(result?.error || 'Signin failed')
+        if (profileData.hasProfile) {
+          router.push(callbackUrl)
+        } else {
+          const loginEmail = profileData.email || ''
+          const nameFallback = fallbackNameFromStoredData(storedName, loginEmail)
+          await routeAfterCredentialLogin(loginEmail, nameFallback, parsedProfileData)
+        }
+      } catch {
+        // Session may not be ready yet — fall back to showing login form
+        setError('Please sign in manually.')
       } finally {
-        removeSessionValue('autoSignInEmail')
-        removeSessionValue('autoSignInPassword')
         removeSessionValue('autoSignInName')
         removeSessionValue('profileCreationData')
         setAutoSignInLoading(false)

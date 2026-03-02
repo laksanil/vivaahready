@@ -120,6 +120,34 @@ export async function uploadProfilePhoto(
   })
 }
 
+/** Authenticate an API request context via NextAuth credentials provider */
+export async function loginViaApi(
+  request: APIRequestContext,
+  baseURL: string,
+  email: string,
+  password: string = DEFAULT_PASSWORD
+): Promise<void> {
+  // 1. Get CSRF token (also sets the next-auth.csrf-token cookie)
+  const csrfResponse = await request.get(`${baseURL}/api/auth/csrf`)
+  const { csrfToken } = await csrfResponse.json()
+
+  // 2. Sign in via credentials provider (mirrors next-auth/react signIn())
+  const res = await request.post(`${baseURL}/api/auth/callback/credentials`, {
+    form: {
+      email,
+      password,
+      csrfToken,
+      callbackUrl: baseURL,
+      json: 'true',
+    },
+  })
+
+  const data = await res.json().catch(() => ({}))
+  if (data.error) {
+    throw new Error(`loginViaApi failed: ${data.error}`)
+  }
+}
+
 export async function createUserWithProfile(
   request: APIRequestContext,
   baseURL: string,
@@ -128,7 +156,13 @@ export async function createUserWithProfile(
   overrides: Record<string, unknown> = {}
 ): Promise<{ userId: string; profileId: string }> {
   const { userId } = await registerUser(request, baseURL, user, password)
+
+  // Authenticate immediately after registration so all subsequent API calls
+  // (createProfile and profile PUT) use the correct session cookie
+  await loginViaApi(request, baseURL, user.email, password)
+
   const { profileId } = await createProfile(request, baseURL, user, overrides)
+
   const resolvedPrefQualification =
     typeof overrides.prefQualification === 'string' && overrides.prefQualification.trim()
       ? overrides.prefQualification
@@ -151,7 +185,6 @@ export async function createUserWithProfile(
       prefMaritalStatusIsDealbreaker: true,
       prefReligionIsDealbreaker: true,
     },
-    headers: { 'x-new-user-id': userId },
   })
 
   if (!completionResponse.ok()) {
