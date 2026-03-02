@@ -2652,21 +2652,18 @@ export function findNearMatches(
       NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
     )
 
-    // NEW: Skip profile if candidate has ANY non-critical preferences that seeker can't fix
-    // Only Location/Relocation is fixable (if seeker is open to relocate)
-    // All other preferences (Height, Age, etc.) are NOT fixable - seeker can't change their own attributes
+    // Count candidate's non-critical preference failures
+    // These are preferences the seeker can't change (their own attributes)
+    // but we still allow a few mismatches for near matches
     const seekerOpenToRelocateEarly = seeker.openToRelocation?.toLowerCase() !== 'no'
-    const candidateHasUnfixableNonCritical = candidateFailedNonCritical.some(c => {
-      // Location/Relocation is fixable only if seeker is open to relocate
-      if (c.name === 'Location' || c.name === 'Relocation') {
-        return !seekerOpenToRelocateEarly
-      }
-      // All other candidate preferences (Height, Age, Education, etc.) are NOT fixable by seeker
+    const candidateUnfixableCount = candidateFailedNonCritical.filter(c => {
+      // Location/Relocation is fixable if seeker is open to relocate
+      if (c.name === 'Location' || c.name === 'Relocation') return !seekerOpenToRelocateEarly
       return true
-    })
+    }).length
 
-    // Skip this profile - seeker can't fix candidate's preferences (one-way mismatch only)
-    if (candidateHasUnfixableNonCritical) continue
+    // Skip if candidate has too many non-critical failures on seeker's attributes
+    if (candidateUnfixableCount > maxFailedCriteria) continue
 
     // Check deal-breakers, but allow location to be relaxed if seeker is open to relocation
     const seekerOpenToRelocation = seeker.openToRelocation?.toLowerCase() !== 'no'
@@ -2730,6 +2727,7 @@ export function findNearMatches(
     // - Location: relaxed if either party is open to relocation
     // - Age: relaxed if within 1 year of the range
     // - Height: relaxed if within 2 inches of the range
+    // - Education, Diet, Marital Status: always relaxable (seeker can adjust preference)
     const isRelaxableDealbreaker = (
       c: typeof seekerFailedDealbreakers[0],
       targetAge: string | null,
@@ -2738,6 +2736,11 @@ export function findNearMatches(
       if (c.name === 'Location' && (seekerOpenToRelocation || candidateOpenToRelocation)) return true
       if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, targetAge)) return true
       if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, targetHeight)) return true
+      // Education, Diet, Marital Status are always relaxable for near matches
+      // (seeker can adjust their preference if they see a good match otherwise)
+      if (c.name === 'Qualification' || c.name === 'Education') return true
+      if (c.name === 'Diet') return true
+      if (c.name === 'Marital Status') return true
       return false
     }
 
@@ -2750,33 +2753,37 @@ export function findNearMatches(
     const seekerAllRelaxable = seekerFailedDealbreakers.length === 0 ||
       seekerFailedDealbreakers.every(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
 
-    // NEW LOGIC: Only show near matches when SEEKER can fix the issue
-    // - Seeker's preferences failing = seeker can adjust their preferences (fixable)
-    // - Candidate's Location preference failing = seeker can relocate IF they're open to it (fixable)
-    // - Candidate's other preferences (Age, Height, etc.) failing = seeker CANNOT change their own attributes (NOT fixable)
-
-    // Check if candidate's deal-breakers can be fixed by seeker
-    // Location: fixable if seeker is open to relocate
-    // Everything else: NOT fixable (seeker can't change their age, height, religion, etc.)
+    // Check if candidate's deal-breakers can be relaxed for near matches
     const seekerOpenToRelocate = seeker.openToRelocation?.toLowerCase() !== 'no'
 
-    const candidateDealbreakersFixableBySeeker = candidateFailedDealbreakers.every(c => {
-      // Location is fixable if seeker is open to relocate
+    // Check candidate's deal-breakers - allow some to be relaxed for near matches
+    const candidateDealbreakersRelaxable = candidateFailedDealbreakers.every(c => {
       if (c.name === 'Location') return seekerOpenToRelocate
-      // All other deal-breakers are NOT fixable by seeker
+      // Age/Height within tolerance from candidate's perspective
+      if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, seekerAgeStr)) return true
+      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, seekerHeightStr)) return true
+      // Education/Diet/Marital Status - candidate might also adjust
+      if (c.name === 'Qualification' || c.name === 'Education') return true
+      if (c.name === 'Diet') return true
+      if (c.name === 'Marital Status') return true
       return false
     })
 
-    // Skip if seeker can't fix candidate's deal-breakers
-    if (!seekerAllRelaxable || !candidateDealbreakersFixableBySeeker) continue
+    // Skip if deal-breakers can't be relaxed on either side
+    if (!seekerAllRelaxable || !candidateDealbreakersRelaxable) continue
 
     // Track which deal-breakers were relaxed (for adding to failed criteria)
     // Only include seeker's relaxed deal-breakers (what seeker can change)
     const seekerRelaxedDealbreakers = seekerFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
-    // For candidate's deal-breakers, only include Location if seeker can relocate
+    // Track candidate's relaxed deal-breakers
     const candidateRelaxedDealbreakers = candidateFailedDealbreakers.filter(c => {
       if (c.name === 'Location') return seekerOpenToRelocate
-      return false // Don't include other candidate deal-breakers
+      if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, seekerAgeStr)) return true
+      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, seekerHeightStr)) return true
+      if (c.name === 'Qualification' || c.name === 'Education') return true
+      if (c.name === 'Diet') return true
+      if (c.name === 'Marital Status') return true
+      return false
     })
     const locationRelaxedForSeeker = seekerRelaxedDealbreakers.some(c => c.name === 'Location')
     const locationRelaxedForCandidate = candidateRelaxedDealbreakers.some(c => c.name === 'Location')
@@ -2858,11 +2865,11 @@ export function findNearMatches(
       return true
     })
 
-    // At this point, candidateFailedNonCritical only contains Location/Relocation
-    // (all other unfixable criteria caused early skip above)
-    // Filter to only include Location/Relocation if seeker is open to relocate
+    // Include candidate's failed non-critical preferences that are within tolerance
     const filteredCandidateFailedNonCritical = candidateFailedNonCritical.filter(c => {
-      return (c.name === 'Location' || c.name === 'Relocation') && seekerOpenToRelocate
+      if ((c.name === 'Location' || c.name === 'Relocation') && seekerOpenToRelocate) return true
+      // Include other candidate non-critical failures (capped by maxFailedCriteria overall)
+      return true
     })
 
     // Count UNIQUE failed criteria names (don't double-count Location if it fails both directions)
