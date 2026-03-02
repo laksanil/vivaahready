@@ -323,6 +323,13 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Store password for auto-login after profile completion
       setSessionValue('newUserPassword', password)
 
+      // Sign in immediately so subsequent PUT calls are authenticated via session
+      await signIn('credentials', {
+        email: normalizedEmail,
+        password,
+        redirect: false,
+      })
+
       // Move to basics step - profile will be created after basics are filled
       setStep((prev) => prev + 1)
     } catch {
@@ -439,9 +446,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     setLoading(true)
 
     try {
-      // Get the newUserId from sessionStorage for authorization
-      const newUserId = getSessionValue('newUserId') || createdAccount?.userId
-
       // Calculate next internal step
       const nextInternalStep = step + 1
       const sectionOrder = isAdminMode ? ADMIN_SECTION_ORDER : SECTION_ORDER
@@ -486,7 +490,6 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(newUserId && { 'x-new-user-id': newUserId }),
         },
         body: JSON.stringify(payload),
       })
@@ -710,12 +713,10 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
       // Mark signup as complete by setting signupStep to 9
       // signupStep 9 = complete (photos done)
       // This prevents ProfileCompletionGuard from redirecting back to /profile/complete
-      const newUserId = getSessionValue('newUserId') || createdAccount?.userId
       const stepResponse = await fetch(`/api/profile/${createdProfileId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(newUserId && { 'x-new-user-id': newUserId }),
         },
         body: JSON.stringify({ signupStep: 9 }),
       })
