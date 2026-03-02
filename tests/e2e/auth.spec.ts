@@ -103,26 +103,26 @@ test.describe.serial('Auto Sign-In', () => {
     const user = buildTestUser(uniqueSuffix('autosignin'), 'female')
     await registerUser(request, baseURL, user, DEFAULT_PASSWORD)
 
+    // The new register flow calls signIn() directly, so the user is
+    // already authenticated when they arrive at /login?autoSignIn=true.
+    // Simulate this by logging in via UI first.
+    await loginViaUi(page, user.email, DEFAULT_PASSWORD)
+
+    // Set the sessionStorage keys that the register page sets (non-sensitive only)
     await page.goto('/login')
-    await page.evaluate(({ email, password }) => {
-      sessionStorage.setItem('autoSignInEmail', email)
-      sessionStorage.setItem('autoSignInPassword', password)
+    await page.evaluate(() => {
       sessionStorage.setItem('autoSignInName', 'Auto Signin User')
       sessionStorage.setItem('profileCreationData', JSON.stringify({ gender: 'female' }))
-    }, { email: user.email, password: DEFAULT_PASSWORD })
+    })
 
     await page.goto('/login?registered=true&autoSignIn=true')
     await page.waitForURL(url => !url.pathname.startsWith('/login'), { timeout: 60000 })
     expect(new URL(page.url()).pathname.startsWith('/profile/complete')).toBeTruthy()
 
     const leftovers = await page.evaluate(() => ({
-      autoSignInEmail: sessionStorage.getItem('autoSignInEmail'),
-      autoSignInPassword: sessionStorage.getItem('autoSignInPassword'),
       autoSignInName: sessionStorage.getItem('autoSignInName'),
       profileCreationData: sessionStorage.getItem('profileCreationData'),
     }))
-    expect(leftovers.autoSignInEmail).toBeNull()
-    expect(leftovers.autoSignInPassword).toBeNull()
     expect(leftovers.autoSignInName).toBeNull()
     expect(leftovers.profileCreationData).toBeNull()
   })
@@ -131,13 +131,14 @@ test.describe.serial('Auto Sign-In', () => {
     const user = buildTestUser(uniqueSuffix('autosignin-corrupt'), 'male')
     await registerUser(request, baseURL, user, DEFAULT_PASSWORD)
 
+    // Authenticate first (matching the new register flow)
+    await loginViaUi(page, user.email, DEFAULT_PASSWORD)
+
     await page.goto('/login')
-    await page.evaluate(({ email, password }) => {
-      sessionStorage.setItem('autoSignInEmail', email)
-      sessionStorage.setItem('autoSignInPassword', password)
+    await page.evaluate(() => {
       sessionStorage.setItem('autoSignInName', 'Corrupt Data User')
       sessionStorage.setItem('profileCreationData', '{bad-json')
-    }, { email: user.email, password: DEFAULT_PASSWORD })
+    })
 
     await page.goto('/login?registered=true&autoSignIn=true')
     await page.waitForURL(url => !url.pathname.startsWith('/login'), { timeout: 60000 })
