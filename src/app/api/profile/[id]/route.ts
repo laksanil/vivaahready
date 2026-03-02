@@ -234,6 +234,7 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
 
     // Basic fields
+    if (body.createdBy !== undefined) updateData.createdBy = body.createdBy
     if (body.firstName !== undefined) updateData.firstName = body.firstName
     if (body.lastName !== undefined) updateData.lastName = body.lastName
     if (body.gender !== undefined) updateData.gender = body.gender
