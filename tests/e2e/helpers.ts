@@ -156,10 +156,12 @@ export async function createUserWithProfile(
   overrides: Record<string, unknown> = {}
 ): Promise<{ userId: string; profileId: string }> {
   const { userId } = await registerUser(request, baseURL, user, password)
-  const { profileId } = await createProfile(request, baseURL, user, overrides)
 
-  // Authenticate so the PUT call has a valid session cookie
+  // Authenticate immediately after registration so all subsequent API calls
+  // (createProfile and profile PUT) use the correct session cookie
   await loginViaApi(request, baseURL, user.email, password)
+
+  const { profileId } = await createProfile(request, baseURL, user, overrides)
 
   const resolvedPrefQualification =
     typeof overrides.prefQualification === 'string' && overrides.prefQualification.trim()
