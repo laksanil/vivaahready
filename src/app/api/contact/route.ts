@@ -51,6 +51,32 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Record user's own contact submission in notifications timeline (read by default).
+    if (session?.user?.id) {
+      try {
+        const sentAt = new Date()
+        await prisma.notification.create({
+          data: {
+            userId: session.user.id,
+            type: 'support_user_message',
+            title: 'Your message to Admin',
+            body: normalizedMessage.slice(0, 220) || 'Your contact message was sent.',
+            url: '/admin-messages',
+            read: true,
+            readAt: sentAt,
+            data: JSON.stringify({
+              messageId: supportMessage.id,
+              context: 'contact_form',
+              __deliveryModes: ['in_app'],
+              __sentAt: sentAt.toISOString(),
+            }),
+          },
+        })
+      } catch (notificationError) {
+        console.error('Failed to create contact notification:', notificationError)
+      }
+    }
+
     // Send confirmation email to the user
     const confirmationResult = await sendEmail({
       to: normalizedEmail,

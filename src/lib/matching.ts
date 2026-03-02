@@ -990,17 +990,57 @@ function isGotraMatch(seekerGotra: string | null | undefined, seekerPref: string
 }
 
 /**
- * Check if education requirement is met
- * Supports both level-based (e.g., "Bachelor's or higher") and category-based (e.g., "Medical Professional") matching
+ * Education level hierarchy for the new simplified system
+ */
+// Weight-based education hierarchy (matches EDUCATION_LEVEL_OPTIONS weights in constants.ts)
+const NEW_EDUCATION_LEVEL_HIERARCHY: Record<string, number> = {
+  'below_high_school': 1,
+  'high_school': 2,
+  'vocational': 3,
+  'post_secondary_cert': 3,
+  'associates': 4,
+  'bachelors': 5,
+  'professional': 7,  // JD, MD mapped to same weight as masters
+  'masters': 7,
+  'mba': 7,           // Legacy: maps to masters weight
+  'medical': 7,       // Legacy: maps to professional weight
+  'law': 7,           // Legacy: maps to professional weight
+  'post_masters': 7.5,
+  'doctorate': 8,
+  'postdoc': 9,
+}
+
+/**
+ * Check if education requirement is met using weight-based comparison.
+ * Preference values map to minimum weights: e.g. "bachelors" means weight >= 5.
+ * Uses new educationLevel field first, falls back to old qualification for legacy profiles.
  * @param strict - if true, enforce preference when data is present (missing data never blocks)
  */
-function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false): boolean {
+function isEducationMatch(seekerPref: string | null | undefined, candidateQual: string | null | undefined, strict: boolean = false, candidateEducationLevel?: string | null): boolean {
   if (isNoPreferenceValue(seekerPref) || !seekerPref) {
     return true
   }
 
   // Get preference configuration
   const prefNormalized = seekerPref.toLowerCase().trim()
+  if (prefNormalized === 'doesnt_matter' || prefNormalized === 'any') return true
+
+  // === New system: use educationLevel if available ===
+  if (candidateEducationLevel) {
+    const candidateEdLevel = candidateEducationLevel.toLowerCase().trim()
+    const candidateWeight = NEW_EDUCATION_LEVEL_HIERARCHY[candidateEdLevel] || 0
+    const prefWeight = NEW_EDUCATION_LEVEL_HIERARCHY[prefNormalized] || 0
+
+    // Legacy special case
+    if (prefNormalized === 'doctor_or_lawyer') {
+      return candidateEdLevel === 'medical' || candidateEdLevel === 'law' || candidateEdLevel === 'professional'
+    }
+
+    // Weight-based: candidate must meet or exceed the preference weight
+    if (prefWeight > 0) return candidateWeight >= prefWeight
+  }
+
+  // === Legacy system: fall back to old qualification field ===
   const prefConfig = PREF_EDUCATION_CONFIG[prefNormalized]
 
   if (prefConfig) {

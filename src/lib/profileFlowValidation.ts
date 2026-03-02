@@ -88,6 +88,17 @@ export function isNonWorkingOccupation(occupation: unknown): boolean {
   return NON_WORKING_OCCUPATION_KEYWORDS.some(keyword => normalized.includes(keyword))
 }
 
+export function getEffectiveOccupation(occupation: unknown, occupationOther?: unknown): string {
+  const primary = normalizeString(occupation)
+  const manual = normalizeString(occupationOther)
+
+  if (toSearchable(primary) === 'other') {
+    return manual
+  }
+
+  return primary || manual
+}
+
 export function getEffectiveUniversity(university: unknown, universityOther?: unknown): string {
   const primary = normalizeString(university)
   const manual = normalizeString(universityOther)
@@ -106,6 +117,8 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
   const citizenship = normalizeString(data.citizenship)
   const zipCode = normalizeString(data.zipCode)
   const qualification = normalizeString(data.qualification)
+  const educationLevel = normalizeString(data.educationLevel)
+  const fieldOfStudy = normalizeString(data.fieldOfStudy)
   const university = getEffectiveUniversity(data.university, data.universityOther)
   const occupation = normalizeString(data.occupation)
   const employerName = normalizeString(data.employerName)
@@ -120,8 +133,35 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
     errors.push('ZIP code is required for USA profiles.')
   }
 
-  if (!qualification) errors.push('Highest qualification is required.')
+  // New 3-field education: require educationLevel + fieldOfStudy (fallback to old qualification for existing profiles)
+  if (!educationLevel && !qualification) errors.push('Education level is required.')
+  if (!fieldOfStudy && !qualification) errors.push('Degree received is required.')
   if (!university) errors.push('College/University is required.')
+
+  // Validate additional education entries: if level is set, degree + college are required
+  const educationEntries = Array.isArray(data.educationEntries) ? data.educationEntries : []
+  for (let i = 1; i < educationEntries.length; i++) {
+    const entry = educationEntries[i] as { educationLevel?: string; fieldOfStudy?: string; fieldOfStudyOther?: string; university?: string }
+    const entryLevel = normalizeString(entry?.educationLevel)
+    if (entryLevel) {
+      const entryDegree = normalizeString(entry?.fieldOfStudy)
+      const entryUni = normalizeString(entry?.university)
+      if (!entryDegree) errors.push(`Education ${i + 1}: Degree received is required.`)
+      if (entryDegree === 'other' && !normalizeString(entry?.fieldOfStudyOther)) {
+        errors.push(`Education ${i + 1}: Please specify your degree.`)
+      }
+      if (!entryUni) errors.push(`Education ${i + 1}: College/University is required.`)
+    }
+  }
+
+  // Validate "other" degree text for primary entry
+  if (fieldOfStudy === 'other') {
+    const primaryEntry = educationEntries.length > 0
+      ? (educationEntries[0] as { fieldOfStudyOther?: string })
+      : null
+    const otherText = normalizeString(primaryEntry?.fieldOfStudyOther || data.fieldOfStudyOther)
+    if (!otherText) errors.push('Please specify your degree.')
+  }
   if (!occupation) errors.push('Occupation is required.')
   if (!annualIncome) errors.push('Annual income is required.')
   if (!openToRelocation) errors.push('Open to relocation is required.')

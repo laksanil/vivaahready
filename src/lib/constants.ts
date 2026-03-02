@@ -272,6 +272,133 @@ export const PREF_EDUCATION_OPTIONS = [
   { value: "doctorate", label: "Doctorate (PhD, EdD, PsyD)", type: "category", categories: ["phd", "edd", "psyd"] },
 ]
 
+// ===== NEW: Simplified Education System =====
+
+// Education Level — universal taxonomy with weights for matching (higher = more advanced)
+export const EDUCATION_LEVEL_OPTIONS = [
+  { value: 'below_high_school', label: 'Primary / None', level: 1, weight: 1 },
+  { value: 'high_school', label: 'High School / GED / IB Diploma', level: 2, weight: 2 },
+  { value: 'vocational', label: 'Vocational / Technical (Trade Certs, Bootcamps)', level: 3, weight: 3 },
+  { value: 'associates', label: "Associate's / Foundation Degree (AA, AS)", level: 4, weight: 4 },
+  { value: 'bachelors', label: "Bachelor's Degree (BA, BSc, B.Tech, B.Eng)", level: 5, weight: 5 },
+  { value: 'masters', label: "Master's / Professional (MA, MSc, MBA, MD, JD)", level: 7, weight: 7 },
+  { value: 'post_masters', label: 'Post-Master\'s (Ed.S, Advanced Certificates)', level: 7.5, weight: 7.5 },
+  { value: 'doctorate', label: 'Doctorate (PhD, EdD, DPhil, DBA)', level: 8, weight: 8 },
+  { value: 'postdoc', label: 'Post-Doctoral (Fellowships, Postdoc Research)', level: 9, weight: 9 },
+]
+
+// Degree Received — specific degree type earned
+export const FIELD_OF_STUDY_OPTIONS = [
+  { value: 'ba', label: 'BA (Bachelor of Arts)' },
+  { value: 'bs', label: 'BS (Bachelor of Science)' },
+  { value: 'be', label: 'BE / B.Tech (Bachelor of Engineering)' },
+  { value: 'bba', label: 'BBA (Bachelor of Business Admin)' },
+  { value: 'bfa', label: 'BFA (Bachelor of Fine Arts)' },
+  { value: 'bsn', label: 'BSN (Bachelor of Nursing)' },
+  { value: 'llb', label: 'LLB (Bachelor of Laws)' },
+  { value: 'ma', label: 'MA (Master of Arts)' },
+  { value: 'ms', label: 'MS (Master of Science)' },
+  { value: 'me', label: 'ME / M.Tech (Master of Engineering)' },
+  { value: 'mba', label: 'MBA (Master of Business Admin)' },
+  { value: 'mfa', label: 'MFA (Master of Fine Arts)' },
+  { value: 'mph', label: 'MPH (Master of Public Health)' },
+  { value: 'msw', label: 'MSW (Master of Social Work)' },
+  { value: 'md', label: 'MD (Doctor of Medicine)' },
+  { value: 'do', label: 'DO (Doctor of Osteopathic Medicine)' },
+  { value: 'dds', label: 'DDS (Doctor of Dental Surgery)' },
+  { value: 'pharmd', label: 'PharmD (Doctor of Pharmacy)' },
+  { value: 'jd', label: 'JD (Juris Doctor)' },
+  { value: 'phd', label: 'PhD (Doctor of Philosophy)' },
+  { value: 'edd', label: 'EdD (Doctor of Education)' },
+  { value: 'psyd', label: 'PsyD (Doctor of Psychology)' },
+  { value: 'dnp', label: 'DNP (Doctor of Nursing Practice)' },
+  { value: 'cpa', label: 'CPA (Certified Public Accountant)' },
+  { value: 'other', label: 'Other' },
+]
+
+// Partner preference: Minimum Education Level
+export const PREF_EDUCATION_LEVEL_OPTIONS = [
+  { value: 'doesnt_matter', label: "Doesn't matter" },
+  { value: 'high_school', label: 'High School or higher' },
+  { value: 'associates', label: "Associate's or higher" },
+  { value: 'bachelors', label: "Bachelor's or higher" },
+  { value: 'masters', label: "Master's / Professional or higher" },
+  { value: 'doctorate', label: 'Doctorate or higher' },
+  { value: 'postdoc', label: 'Post-Doctoral' },
+]
+
+// Partner preference: Preferred Degree Type
+export const PREF_FIELD_OPTIONS = [
+  { value: 'any', label: 'Any degree' },
+  { value: 'engineering', label: 'Engineering (BE, ME, B.Tech, M.Tech)' },
+  { value: 'science', label: 'Science (BS, MS)' },
+  { value: 'arts', label: 'Arts & Humanities (BA, MA, BFA, MFA)' },
+  { value: 'business', label: 'Business (BBA, MBA, CPA)' },
+  { value: 'medical', label: 'Medical (MD, DO, DDS, PharmD, DNP)' },
+  { value: 'law', label: 'Law (JD, LLB)' },
+  { value: 'social_sciences', label: 'Social Sciences (MSW, PsyD)' },
+  { value: 'education', label: 'Education (EdD)' },
+]
+
+// Maps old qualification values → new educationLevel + fieldOfStudy (used by migration + fallback)
+export const QUALIFICATION_TO_NEW_FIELDS: Record<string, { educationLevel: string; fieldOfStudy?: string }> = {
+  'high_school': { educationLevel: 'high_school' },
+  'associates': { educationLevel: 'associates' },
+  'bachelors_arts': { educationLevel: 'bachelors', fieldOfStudy: 'arts' },
+  'bachelors_science': { educationLevel: 'bachelors', fieldOfStudy: 'science' },
+  'bachelors_eng': { educationLevel: 'bachelors', fieldOfStudy: 'engineering' },
+  'bachelors_cs': { educationLevel: 'bachelors', fieldOfStudy: 'cs_it' },
+  'bba': { educationLevel: 'bachelors', fieldOfStudy: 'business' },
+  'bfa': { educationLevel: 'bachelors', fieldOfStudy: 'arts' },
+  'bsn': { educationLevel: 'bachelors', fieldOfStudy: 'medical_health' },
+  'masters_arts': { educationLevel: 'masters', fieldOfStudy: 'arts' },
+  'masters_science': { educationLevel: 'masters', fieldOfStudy: 'science' },
+  'masters_eng': { educationLevel: 'masters', fieldOfStudy: 'engineering' },
+  'masters_cs': { educationLevel: 'masters', fieldOfStudy: 'cs_it' },
+  'mba': { educationLevel: 'masters', fieldOfStudy: 'business' },
+  'mfa': { educationLevel: 'masters', fieldOfStudy: 'arts' },
+  'mph': { educationLevel: 'masters', fieldOfStudy: 'medical_health' },
+  'msw': { educationLevel: 'masters', fieldOfStudy: 'social_sciences' },
+  'md': { educationLevel: 'professional', fieldOfStudy: 'medical_health' },
+  'do': { educationLevel: 'professional', fieldOfStudy: 'medical_health' },
+  'dds': { educationLevel: 'professional', fieldOfStudy: 'medical_health' },
+  'pharmd': { educationLevel: 'professional', fieldOfStudy: 'medical_health' },
+  'jd': { educationLevel: 'professional', fieldOfStudy: 'law_legal' },
+  'cpa': { educationLevel: 'masters', fieldOfStudy: 'business' },
+  'phd': { educationLevel: 'doctorate' },
+  'edd': { educationLevel: 'doctorate', fieldOfStudy: 'education_field' },
+  'psyd': { educationLevel: 'doctorate', fieldOfStudy: 'social_sciences' },
+}
+
+// Helper: get human-readable label for an education level value
+export function getEducationLevelLabel(value: string | null | undefined): string {
+  if (!value) return ''
+  const found = EDUCATION_LEVEL_OPTIONS.find(o => o.value === value)
+  return found ? found.label : value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+}
+
+// Helper: get human-readable label for a field of study value
+export function getFieldOfStudyLabel(value: string | null | undefined): string {
+  if (!value) return ''
+  const found = FIELD_OF_STUDY_OPTIONS.find(o => o.value === value)
+  return found ? found.label : value.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+}
+
+// Education badges for professional/advanced degrees (displayed on profile cards)
+export const EDUCATION_BADGES: Record<string, { label: string; bg: string; text: string }> = {
+  masters:      { label: 'Master\'s', bg: 'bg-blue-100', text: 'text-blue-700' },
+  post_masters: { label: 'Post-Master\'s', bg: 'bg-indigo-100', text: 'text-indigo-700' },
+  doctorate:    { label: 'PhD', bg: 'bg-purple-100', text: 'text-purple-700' },
+  postdoc:      { label: 'PostDoc', bg: 'bg-violet-100', text: 'text-violet-700' },
+}
+
+// Helper: get education weight for matching comparisons
+export function getEducationWeight(value: string | null | undefined): number {
+  if (!value) return 0
+  const found = EDUCATION_LEVEL_OPTIONS.find(o => o.value === value)
+  return found ? found.weight : 0
+}
+
 // Hobbies options (Shaadi.com style)
 export const HOBBIES_OPTIONS = [
   'Art & Crafts',

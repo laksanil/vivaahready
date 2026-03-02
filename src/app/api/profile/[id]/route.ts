@@ -8,6 +8,7 @@ import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
   validateAboutMeStep,
   getEffectiveUniversity,
+  getEffectiveOccupation,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
@@ -252,11 +253,15 @@ export async function PUT(
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
-    if (body.university !== undefined || body.universityOther !== undefined) {
-      const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
-      updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
+    if (body.educationEntries !== undefined) {
+      updateData.educationEntries = Array.isArray(body.educationEntries)
+        ? JSON.parse(JSON.stringify(body.educationEntries))
+        : undefined
     }
-    if (body.occupation !== undefined) updateData.occupation = body.occupation
+    if (body.occupation !== undefined || body.occupationOther !== undefined) {
+      const baseOccupation = body.occupation !== undefined ? body.occupation : existingProfile.occupation
+      updateData.occupation = getEffectiveOccupation(baseOccupation, body.occupationOther)
+    }
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation

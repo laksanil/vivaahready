@@ -7,7 +7,7 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
-import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
+import { getEffectiveUniversity, getEffectiveOccupation, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -62,9 +62,18 @@ const profileSchema = z.object({
 
   // Education & Career
   qualification: z.string().optional(),
+  educationLevel: z.string().optional(),
+  fieldOfStudy: z.string().optional(),
   university: z.string().optional(),
   universityOther: z.string().optional(),
+  educationEntries: z.array(z.object({
+    educationLevel: z.string(),
+    fieldOfStudy: z.string(),
+    fieldOfStudyOther: z.string().optional(),
+    university: z.string(),
+  })).optional(),
   occupation: z.string().optional(),
+  occupationOther: z.string().optional(),
   employerName: z.string().optional(),
   annualIncome: z.string().optional(),
   educationCareerDetails: z.string().optional(),
@@ -196,6 +205,7 @@ export async function POST(request: Request) {
     const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
     const normalizeText = (value: string | undefined) => value?.trim() || ''
     const effectiveUniversity = getEffectiveUniversity(data.university, data.universityOther)
+    const effectiveOccupation = getEffectiveOccupation(data.occupation, data.occupationOther)
     const employerName = normalizeText(data.employerName)
 
     if (data.qualification && !effectiveUniversity) {
@@ -358,9 +368,12 @@ export async function POST(request: Request) {
         facebook: data.facebook,
 
         // Education & Career
-        qualification: data.qualification,
+        qualification: data.qualification || data.educationLevel,
+        educationLevel: data.educationLevel,
+        fieldOfStudy: data.fieldOfStudy,
         university: effectiveUniversity || null,
-        occupation: data.occupation,
+        educationEntries: data.educationEntries ? JSON.parse(JSON.stringify(data.educationEntries)) : undefined,
+        occupation: effectiveOccupation || null,
         employerName: employerName || null,
         annualIncome: data.annualIncome,
         educationCareerDetails: data.educationCareerDetails,

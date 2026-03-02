@@ -7,6 +7,9 @@ const prismaMock = {
   supportMessage: {
     create: vi.fn(),
   },
+  notification: {
+    create: vi.fn(),
+  },
 }
 
 vi.mock('next-auth', () => ({
@@ -41,6 +44,7 @@ describe('POST /api/contact', () => {
     getServerSessionMock.mockResolvedValue(null)
     sendEmailMock.mockResolvedValue({ success: true })
     prismaMock.supportMessage.create.mockResolvedValue({ id: 'contactmsg1234' })
+    prismaMock.notification.create.mockResolvedValue({ id: 'notif_1' })
   })
 
   it('silently accepts honeypot bot submissions without creating records', async () => {
@@ -132,6 +136,7 @@ describe('POST /api/contact', () => {
       to: 'jane@example.com',
       subject: 'We received your message - VivaahReady',
     })
+    expect(prismaMock.notification.create).toHaveBeenCalledTimes(1)
   })
 
   it('still returns success when confirmation email fails', async () => {

@@ -34,6 +34,7 @@ model User {
   deletionRequest DeletionRequest?
   feedback        Feedback[]
   pushSubscriptions      PushSubscription[]
+  notifications          Notification[]
   notificationPreference NotificationPreference?
 }
 
@@ -88,8 +89,12 @@ model Profile {
   familyLocation    String?
 
   // Education & Career
-  qualification     String?  // Bachelors, Masters, Doctor, Ph.D
-  university        String?
+  qualification     String?  // Legacy: specific degree value (bachelors_eng, masters_cs, etc.)
+  educationLevel    String?  // Primary (highest) degree level
+  fieldOfStudy      String?  // Primary degree field of study
+  major             String?  // Deprecated: no longer collected
+  university        String?  // Primary degree university
+  educationEntries  Json?    // Array of {educationLevel, fieldOfStudy, university} for multiple degrees
   occupation        String?
   annualIncome      String?  // Range like "100-150K", ">100k"
   currentLocation   String?  // City, State
@@ -585,6 +590,25 @@ model PushSubscription {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// In-app notifications
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // e.g., new_interest, interest_accepted, support_admin_reply, etc.
+  title     String
+  body      String
+  url       String?  // Link to navigate to when clicked
+  data      String?  // JSON string of extra metadata
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
 }
 
 // User notification preferences (per-channel and per-event toggles)

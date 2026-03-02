@@ -42,7 +42,10 @@ interface ProfileData {
   currentLocation: string | null
   occupation: string | null
   qualification: string | null
+  educationLevel: string | null
+  fieldOfStudy: string | null
   university: string | null
+  educationEntries: Array<{ educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }> | null
   caste: string | null
   community: string | null
   subCommunity: string | null
@@ -578,12 +581,27 @@ function ProfileCard({
     return val.replace(/_/g, ' ')
   }
 
-  // Helper to format education/qualification with proper labels
+  // Helper to format education level value to readable label
   const formatEducation = (val: string | null | undefined) => {
     if (!val) return null
-    const educationMap: Record<string, string> = {
-      'high_school': 'High School Diploma',
-      'associates': "Associate's Degree (AA, AS)",
+    const levelMap: Record<string, string> = {
+      'below_high_school': 'Primary / None',
+      'high_school': 'High School / GED',
+      'vocational': 'Vocational / Technical',
+      'post_secondary_cert': 'Post-Secondary Certificate',
+      'associates': "Associate's Degree",
+      'bachelors': "Bachelor's Degree",
+      'professional': 'Professional Degree',
+      'masters': "Master's / Professional",
+      'post_masters': "Post-Master's",
+      'mba': 'MBA',
+      'medical': 'Medical Degree',
+      'law': 'Law Degree (JD)',
+      'doctorate': 'Doctorate',
+      'postdoc': 'Post-Doctoral',
+    }
+    // Legacy qualification labels (for old profiles)
+    const legacyMap: Record<string, string> = {
       'bachelors_arts': 'Bachelor of Arts (BA)',
       'bachelors_science': 'Bachelor of Science (BS)',
       'bachelors_eng': 'Bachelor of Engineering (BE, BSE)',
@@ -610,7 +628,63 @@ function ProfileCard({
       'psyd': 'Doctor of Psychology (PsyD)',
       'other': 'Other',
     }
-    return educationMap[val] || formatValue(val)
+    return levelMap[val] || legacyMap[val] || formatValue(val)
+  }
+
+  // Helper to format field of study
+  const formatFieldOfStudy = (val: string | null | undefined) => {
+    if (!val) return null
+    const fieldMap: Record<string, string> = {
+      'engineering': 'Engineering & Technology',
+      'cs_it': 'Computer Science & IT',
+      'business': 'Business & Finance',
+      'medical_health': 'Medical & Healthcare',
+      'law_legal': 'Law & Legal Studies',
+      'arts': 'Arts & Humanities',
+      'science': 'Science',
+      'social_sciences': 'Social Sciences & Psychology',
+      'education_field': 'Education',
+      'other': 'Other',
+    }
+    return fieldMap[val] || formatValue(val)
+  }
+
+  // Format a single education entry as "Level · Field · University"
+  const formatEducationEntry = (entry: { educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }) => {
+    const parts: string[] = []
+    const level = formatEducation(entry.educationLevel)
+    if (level) parts.push(level)
+    // If degree is "other", show the custom text; otherwise use normal lookup
+    if (entry.fieldOfStudy === 'other' && entry.fieldOfStudyOther) {
+      parts.push(entry.fieldOfStudyOther)
+    } else {
+      const field = formatFieldOfStudy(entry.fieldOfStudy)
+      if (field) parts.push(field)
+    }
+    if (entry.university) parts.push(entry.university)
+    return parts.join(' · ')
+  }
+
+  // Get all education entries for display
+  const getEducationEntries = (): Array<{ educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }> => {
+    const entries = profile.educationEntries as Array<{ educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }> | null
+    if (Array.isArray(entries) && entries.length > 0) return entries
+    // Fall back to single fields
+    if (profile.educationLevel || profile.university || profile.qualification) {
+      return [{
+        educationLevel: (profile.educationLevel || profile.qualification || '') as string,
+        fieldOfStudy: (profile.fieldOfStudy || '') as string,
+        university: (profile.university || '') as string,
+      }]
+    }
+    return []
+  }
+
+  // Build primary education display (highest degree)
+  const getFullEducationDisplay = () => {
+    const entries = getEducationEntries()
+    if (entries.length > 0) return formatEducationEntry(entries[0])
+    return formatEducation(profile.qualification as string)
   }
 
   return (
@@ -1021,9 +1095,18 @@ function ProfileCard({
           {/* EDUCATION & CAREER Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
+            {/* Show all education entries */}
+            {getEducationEntries().length > 0 && (
+              <div className="space-y-1.5 text-sm mb-2">
+                {getEducationEntries().map((entry, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="text-gray-500 shrink-0">{idx === 0 ? 'Education' : ''}</span>
+                    <span className="text-gray-800">{formatEducationEntry(entry)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
-              {profile.qualification && <><span className="text-gray-500">Education</span><span className="text-gray-800">{formatEducation(profile.qualification)}</span></>}
-              {profile.university && <><span className="text-gray-500">University</span><span className="text-gray-800">{profile.university}</span></>}
               {profile.occupation && <><span className="text-gray-500">Occupation</span><span className="text-gray-800">{formatValue(profile.occupation)}</span></>}
               {profile.employerName && <><span className="text-gray-500">Employer</span><span className="text-gray-800">{profile.employerName}</span></>}
               {profile.annualIncome && <><span className="text-gray-500">Income</span><span className="text-gray-800">{profile.annualIncome}</span></>}

@@ -29,6 +29,33 @@ export async function POST(request: Request) {
       },
     })
 
+    // Record user's own support message in notifications timeline (read by default).
+    if (session?.user?.id) {
+      try {
+        const sentAt = new Date()
+        const contentPreview = String(message).trim().slice(0, 220)
+        await prisma.notification.create({
+          data: {
+            userId: session.user.id,
+            type: 'support_user_message',
+            title: 'Your message to Admin',
+            body: contentPreview || 'Your support message was sent.',
+            url: '/admin-messages',
+            read: true,
+            readAt: sentAt,
+            data: JSON.stringify({
+              messageId: supportMessage.id,
+              context: context || 'general',
+              __deliveryModes: ['in_app'],
+              __sentAt: sentAt.toISOString(),
+            }),
+          },
+        })
+      } catch (notificationError) {
+        console.error('Failed to create support user message notification:', notificationError)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       ticketId: supportMessage.id.substring(0, 8).toUpperCase(),

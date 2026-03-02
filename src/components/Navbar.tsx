@@ -79,7 +79,10 @@ export function Navbar() {
     return null
   }
 
-  // Don't show navbar on photo upload page during signup flow
+  // Don't show navbar during profile creation flow
+  if (pathname === '/profile/complete') {
+    return null
+  }
   const fromSignup = searchParams.get('fromSignup') === 'true'
   if (pathname === '/profile/photos' && fromSignup) {
     return null

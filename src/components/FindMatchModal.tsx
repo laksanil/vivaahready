@@ -162,6 +162,8 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
     country: 'USA',
     grewUpIn: 'USA',
     citizenship: 'USA',
+    // Keep validation state aligned with AboutMeSection default dropdown display.
+    linkedinProfile: 'no_linkedin',
     // Default deal-breakers for partner preferences
     prefAgeIsDealbreaker: true,
     prefHeightIsDealbreaker: true,
