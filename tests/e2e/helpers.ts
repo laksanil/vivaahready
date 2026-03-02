@@ -127,18 +127,25 @@ export async function loginViaApi(
   email: string,
   password: string = DEFAULT_PASSWORD
 ): Promise<void> {
-  // 1. Get CSRF token
+  // 1. Get CSRF token (also sets the next-auth.csrf-token cookie)
   const csrfResponse = await request.get(`${baseURL}/api/auth/csrf`)
   const { csrfToken } = await csrfResponse.json()
 
-  // 2. Sign in via credentials provider (sets session cookie on the request context)
-  await request.post(`${baseURL}/api/auth/callback/credentials`, {
+  // 2. Sign in via credentials provider (mirrors next-auth/react signIn())
+  const res = await request.post(`${baseURL}/api/auth/callback/credentials`, {
     form: {
       email,
       password,
       csrfToken,
+      callbackUrl: baseURL,
+      json: 'true',
     },
   })
+
+  const data = await res.json().catch(() => ({}))
+  if (data.error) {
+    throw new Error(`loginViaApi failed: ${data.error}`)
+  }
 }
 
 export async function createUserWithProfile(
