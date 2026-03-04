@@ -525,7 +525,9 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
           }
         }
         router.push(`/profile/photos?profileId=${createdProfileId}&fromSignup=true`)
-        onClose()
+        // Don't call onClose() here — the router.push navigates away, which will
+        // unmount the modal naturally. Calling onClose() immediately reveals the
+        // dashboard underneath before navigation completes, causing an awkward flash.
         return
       }
 
