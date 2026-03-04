@@ -415,6 +415,7 @@ describe.skipIf(!isLocalDb())('QA: 5 full profiles + edit modal prefill + matchi
   let interestPOST: (request: Request) => Promise<Response>
 
   beforeAll(async () => {
+    if (!isLocalDb()) return
 
     getServerSessionMock.mockResolvedValue({ user: { id: 'qa-admin-session' } })
     getTargetUserIdMock.mockImplementation(async () => {
