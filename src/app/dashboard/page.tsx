@@ -374,19 +374,17 @@ function DashboardContent() {
     }
   }, [isApproved])
 
-  // Show profile feedback popup for new users (within 7 days)
+  // Show profile feedback popup for users who haven't given feedback yet.
+  // Small delay so the dashboard has time to render first.
   useEffect(() => {
     if (!hasProfile || typeof window === 'undefined') return
     if (localStorage.getItem('vivaah_profile_feedback_given')) return
 
-    if (profileStrength?.memberSince) {
-      const createdAt = new Date(profileStrength.memberSince)
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      if (createdAt > sevenDaysAgo) {
-        setShowProfileFeedback(true)
-      }
-    }
-  }, [hasProfile, profileStrength])
+    const timer = setTimeout(() => {
+      setShowProfileFeedback(true)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [hasProfile])
 
   // Check event survey status
   useEffect(() => {
