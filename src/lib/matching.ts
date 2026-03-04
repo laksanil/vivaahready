@@ -2561,12 +2561,17 @@ export function calculateMatchScore(
     isDealbreaker: isDealbreaker(seeker.prefGrewUpInIsDealbreaker)
   })
 
-  // 19. Relocation match
+  // 19. Relocation match — only counts toward scoring when explicitly set as a deal-breaker.
+  // Relocation is a soft preference; mismatches should not affect matching/near-matches
+  // unless the user has specifically flagged it as a must-have.
   let relocationMatched = true
+  const relocationIsDealbreaker = isDealbreaker(seeker.prefRelocationIsDealbreaker)
   if (isPrefSet(seeker.prefRelocation)) {
-    totalCriteria++
     relocationMatched = isRelocationMatch(seeker.prefRelocation, candidate.openToRelocation, true)
-    if (relocationMatched) matchedCount++
+    if (relocationIsDealbreaker) {
+      totalCriteria++
+      if (relocationMatched) matchedCount++
+    }
   }
 
   criteria.push({
@@ -2574,7 +2579,7 @@ export function calculateMatchScore(
     matched: relocationMatched,
     seekerPref: seeker.prefRelocation || "Doesn't matter",
     candidateValue: candidate.openToRelocation || 'Not specified',
-    isDealbreaker: isDealbreaker(seeker.prefRelocationIsDealbreaker)
+    isDealbreaker: relocationIsDealbreaker
   })
 
   // 20. Pets match
