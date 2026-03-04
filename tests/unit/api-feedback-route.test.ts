@@ -12,6 +12,12 @@ const prismaMock = {
   feedback: {
     create: vi.fn(),
   },
+  supportMessage: {
+    create: vi.fn(),
+  },
+  notification: {
+    create: vi.fn(),
+  },
 }
 
 vi.mock('next-auth', () => ({
@@ -55,6 +61,8 @@ describe('POST /api/feedback', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.TEST_AUTH_MODE = ''
+    prismaMock.supportMessage.create.mockResolvedValue({ id: 'support_msg_1' })
+    prismaMock.notification.create.mockResolvedValue({ id: 'notif_1' })
   })
 
   it('returns 401 AUTH_REQUIRED when unauthenticated', async () => {
@@ -117,6 +125,8 @@ describe('POST /api/feedback', () => {
     expect(createArgs.data.overallStars).toBe(4)
     expect(createArgs.data.primaryIssue).toBe('technical')
     expect(createArgs.data.stepBData).toBe(JSON.stringify(payload.stepBData))
+    expect(prismaMock.supportMessage.create).toHaveBeenCalledTimes(1)
+    expect(prismaMock.notification.create).toHaveBeenCalledTimes(1)
   })
 
   it('supports test-only auth override users when TEST_AUTH_MODE=1', async () => {

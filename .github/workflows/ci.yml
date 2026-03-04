@@ -76,6 +76,9 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Generate Prisma client
+        run: npx prisma generate
+
       - name: Run unit tests
         run: npm run test
 
@@ -131,6 +134,11 @@ jobs:
       - name: Install Playwright system deps (from cache)
         if: steps.cache-playwright.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+
+      - name: Generate Prisma client and push schema
+        run: npx prisma generate && npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test?schema=playwright
 
       - name: Run E2E tests
         run: npm run test:e2e

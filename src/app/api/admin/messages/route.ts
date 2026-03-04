@@ -63,6 +63,7 @@ export async function GET(request: Request) {
           { name: { contains: search, mode: 'insensitive' } },
           { email: { contains: search, mode: 'insensitive' } },
           { phone: { contains: search, mode: 'insensitive' } },
+          { vrId: { contains: search, mode: 'insensitive' } },
           { subject: { contains: search, mode: 'insensitive' } },
           { message: { contains: search, mode: 'insensitive' } },
         ],

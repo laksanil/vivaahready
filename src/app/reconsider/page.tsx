@@ -5,14 +5,13 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Heart,
-  User,
   Loader2,
   RotateCcw,
   ArrowLeft,
-  X,
+  Search,
 } from 'lucide-react'
-import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
+import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
+import { ProfileData } from '@/components/ProfileCard'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -23,23 +22,69 @@ interface DeclinedProfile {
   dateOfBirth: string | null
   height: string | null
   currentLocation: string | null
+  country: string | null
   occupation: string | null
   qualification: string | null
   caste: string | null
   community: string | null
   subCommunity: string | null
+  gotra: string | null
   dietaryPreference: string | null
   maritalStatus: string | null
+  hasChildren: string | null
   aboutMe: string | null
   photoUrls: string | null
   profileImageUrl: string | null
+  annualIncome: string | null
+  familyLocation: string | null
+  languagesKnown: string | null
+  religion: string | null
+  hobbies: string | null
+  fitness: string | null
+  interests: string | null
   grewUpIn: string | null
   citizenship: string | null
+  odNumber: string | null
   declinedAt?: string
   user: {
     id: string
     name: string
     email?: string
+  }
+}
+
+function toProfileData(profile: DeclinedProfile): ProfileData {
+  return {
+    id: profile.id,
+    userId: profile.userId,
+    odNumber: profile.odNumber || null,
+    gender: profile.gender,
+    dateOfBirth: profile.dateOfBirth,
+    height: profile.height,
+    currentLocation: profile.currentLocation,
+    country: profile.country || null,
+    occupation: profile.occupation,
+    qualification: profile.qualification,
+    caste: profile.caste,
+    community: profile.community,
+    subCommunity: profile.subCommunity,
+    gotra: profile.gotra || null,
+    dietaryPreference: profile.dietaryPreference,
+    maritalStatus: profile.maritalStatus,
+    hasChildren: profile.hasChildren || null,
+    aboutMe: profile.aboutMe,
+    photoUrls: profile.photoUrls,
+    profileImageUrl: profile.profileImageUrl,
+    annualIncome: profile.annualIncome || null,
+    familyLocation: profile.familyLocation || null,
+    languagesKnown: profile.languagesKnown || null,
+    religion: profile.religion || null,
+    hobbies: profile.hobbies || null,
+    fitness: profile.fitness || null,
+    interests: profile.interests || null,
+    grewUpIn: profile.grewUpIn,
+    citizenship: profile.citizenship,
+    user: { id: profile.user.id, name: profile.user.name },
   }
 }
 
@@ -52,6 +97,7 @@ function ReconsiderPageContent() {
   const [profiles, setProfiles] = useState<DeclinedProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [reconsidering, setReconsidering] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -91,7 +137,6 @@ function ReconsiderPageContent() {
       await fetch(buildApiUrl(`/api/matches/decline?declinedUserId=${declinedUserId}`), {
         method: 'DELETE',
       })
-      // Remove from local state
       setProfiles(prev => prev.filter(p => p.userId !== declinedUserId))
     } catch (error) {
       console.error('Error reconsidering profile:', error)
@@ -100,10 +145,30 @@ function ReconsiderPageContent() {
     }
   }
 
+  // Filter by search query (name, VR ID, or qualification)
+  const filteredProfiles = profiles.filter(p => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    const name = p.user?.name?.toLowerCase() || ''
+    const vrId = p.odNumber?.toLowerCase() || ''
+    const qualification = p.qualification?.toLowerCase() || ''
+    return name.includes(query) || vrId.includes(query) || qualification.includes(query)
+  })
+
   if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="mb-6">
+            <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+            <div className="h-5 w-64 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <DirectoryCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -113,55 +178,92 @@ function ReconsiderPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         {/* Back Link */}
         <Link
           href={buildUrl('/matches')}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-6"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-4 text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Matches
         </Link>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Passed Profiles</h1>
-          <p className="text-gray-600 mt-1">
-            Changed your mind? Bring these profiles back to your matches.
-          </p>
+        <div className="mb-6">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900">Passed Profiles</h1>
+            <p className="text-gray-600 text-sm">
+              {profiles.length} passed {profiles.length === 1 ? 'profile' : 'profiles'} - bring them back to your matches
+            </p>
+          </div>
+
+          {/* Search Bar */}
+          {profiles.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name, VR ID, qualification..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+              />
+            </div>
+          )}
         </div>
 
-        {/* No Profiles Message */}
         {profiles.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <RotateCcw className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Passed Profiles</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+            <RotateCcw className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Passed Profiles</h3>
+            <p className="text-gray-600 mb-6 text-sm">
               You haven&apos;t passed on any profiles yet.
               When you do, they&apos;ll appear here for reconsideration.
             </p>
-            <Link href={buildUrl('/matches')} className="btn-primary inline-block">
+            <Link href={buildUrl('/matches')} className="btn-primary inline-block text-sm py-2 px-4">
               Browse Matches
             </Link>
           </div>
+        ) : filteredProfiles.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+            <Search className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Matching Results</h3>
+            <p className="text-gray-600 mb-6 text-sm">
+              Try adjusting your search terms.
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="btn-secondary text-sm py-2"
+            >
+              Clear Search
+            </button>
+          </div>
         ) : (
-          <>
-            <div className="mb-4 text-sm text-gray-500">
-              {profiles.length} passed profile{profiles.length !== 1 ? 's' : ''}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {profiles.map((profile) => (
-                <ReconsiderCard
-                  key={profile.id}
-                  profile={profile}
-                  onReconsider={() => handleReconsider(profile.userId)}
-                  isReconsidering={reconsidering === profile.userId}
+          <div className="space-y-2">
+            {filteredProfiles.map((profile) => (
+              <div key={profile.id} className="relative">
+                <DirectoryCard
+                  profile={toProfileData(profile)}
+                  showActions={false}
                 />
-              ))}
-            </div>
-          </>
+                {/* Bring Back button */}
+                <div className="absolute bottom-2 right-2">
+                  <button
+                    onClick={() => handleReconsider(profile.userId)}
+                    disabled={reconsidering === profile.userId}
+                    className="inline-flex items-center gap-1.5 text-xs bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
+                  >
+                    {reconsidering === profile.userId ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    )}
+                    Bring Back
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -177,123 +279,5 @@ export default function ReconsiderPage() {
     }>
       <ReconsiderPageContent />
     </Suspense>
-  )
-}
-
-// Reconsider Card Component
-interface ReconsiderCardProps {
-  profile: DeclinedProfile
-  onReconsider: () => void
-  isReconsidering: boolean
-}
-
-function ReconsiderCard({ profile, onReconsider, isReconsidering }: ReconsiderCardProps) {
-  const { buildUrl } = useImpersonation()
-  const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
-  const [imageError, setImageError] = useState(false)
-
-  // Get photo
-  const extractedPhotos = extractPhotoUrls(profile.photoUrls)
-  const validProfileImageUrl = isValidImageUrl(profile.profileImageUrl) ? profile.profileImageUrl : null
-  const photo = extractedPhotos[0] || validProfileImageUrl
-
-  // Format declined date
-  const declinedDate = profile.declinedAt
-    ? new Date(profile.declinedAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
-    : null
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-      {/* Photo */}
-      <div className="relative h-48 bg-gray-200">
-        {photo && !imageError ? (
-          <img
-            src={photo}
-            alt={profile.user.name}
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-primary-100">
-            <span className="text-4xl font-semibold text-primary-600">
-              {getInitials(profile.user.name)}
-            </span>
-          </div>
-        )}
-
-        {/* Passed overlay */}
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute top-2 right-2 bg-gray-800/80 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-          <X className="h-3 w-3" />
-          Passed
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900">{profile.user.name}</h3>
-        <p className="text-sm text-gray-600 mt-1">
-          {age ? `${age} yrs` : ''}{profile.height ? `, ${formatHeight(profile.height)}` : ''}
-        </p>
-        <p className="text-sm text-gray-500">{profile.currentLocation}</p>
-        {(profile.grewUpIn || profile.citizenship) && (
-          <p className="text-xs text-gray-400 mt-1">
-            {profile.grewUpIn && `Grew up in ${profile.grewUpIn}`}
-            {profile.grewUpIn && profile.citizenship && ' • '}
-            {profile.citizenship && `${profile.citizenship}`}
-          </p>
-        )}
-
-        {declinedDate && (
-          <p className="text-xs text-gray-400 mt-2">
-            Passed on {declinedDate}
-          </p>
-        )}
-
-        {/* Actions */}
-        <div className="mt-4 flex gap-2">
-          {/* Bring Back Button */}
-          <div className="group relative flex-1">
-            <button
-              onClick={onReconsider}
-              disabled={isReconsidering}
-              className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50"
-            >
-              {isReconsidering ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <RotateCcw className="h-5 w-5" />
-              )}
-              Bring Back
-            </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-              <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                <div className="font-semibold">Reconsider Profile</div>
-                <div className="text-gray-300">Add back to your matches</div>
-              </div>
-            </div>
-          </div>
-          {/* View Profile Button */}
-          <div className="group relative">
-            <Link
-              href={buildUrl(`/profile/${profile.id}`)}
-              className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 p-2.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              <User className="h-5 w-5" />
-            </Link>
-            <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
-              <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                <div className="font-semibold">View Profile</div>
-                <div className="text-gray-300">See full details</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }

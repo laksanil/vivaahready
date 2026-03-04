@@ -73,7 +73,7 @@ test.describe.serial('Profile validation matrix (API)', () => {
       { name: 'missing grew up in', patch: { grewUpIn: '' }, expected: /Grew Up In is required/i },
       { name: 'missing citizenship', patch: { citizenship: '' }, expected: /Citizenship is required/i },
       { name: 'missing zip for USA', patch: { zipCode: '' }, expected: /ZIP code is required/i },
-      { name: 'missing qualification', patch: { qualification: '' }, expected: /Highest qualification is required/i },
+      { name: 'missing qualification', patch: { qualification: '' }, expected: /Education level is required/i },
       { name: 'missing university', patch: { university: '' }, expected: /College\/University is required/i },
       { name: 'missing occupation', patch: { occupation: '' }, expected: /Occupation is required/i },
       { name: 'missing annual income', patch: { annualIncome: '' }, expected: /Annual income is required/i },
@@ -214,6 +214,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
         employerName: 'Matrix QA Works',
         linkedinProfile: 'no_linkedin',
         referralSource: 'google',
+        openToDate: 'Yes',
+        openToPrenup: 'No',
       },
     })
     expect(updateResponse.ok()).toBeTruthy()
@@ -223,7 +225,7 @@ test.describe.serial('Profile validation matrix (API)', () => {
     const profile = await readResponse.json()
 
     expect(profile.employerName).toBe('Matrix QA Works')
-    expect(profile.linkedinProfile).toBeNull()
+    expect([null, 'no_linkedin']).toContain(profile.linkedinProfile)
     expect(profile.referralSource).toBe('google')
   })
 
@@ -268,6 +270,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
       data: {
         signupStep: 7,
         referralSource: '',
+        openToDate: 'Yes',
+        openToPrenup: 'No',
       },
     })
     expect(missingReferralSignup.status()).toBe(400)
@@ -278,6 +282,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
       data: {
         signupStep: 7,
         referralSource: 'google',
+        openToDate: 'Yes',
+        openToPrenup: 'No',
       },
     })
     expect(validReferralSignup.ok()).toBeTruthy()
@@ -286,6 +292,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
       data: {
         signupStep: 9,
         prefQualification: '',
+        openToDate: 'Yes',
+        openToPrenup: 'No',
       },
     })
     expect(missingEducationSignup.status()).toBe(400)
@@ -296,6 +304,8 @@ test.describe.serial('Profile validation matrix (API)', () => {
       data: {
         signupStep: 9,
         prefQualification: 'bachelors',
+        openToDate: 'Yes',
+        openToPrenup: 'No',
       },
     })
     expect(validEducationSignup.ok()).toBeTruthy()

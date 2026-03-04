@@ -7,6 +7,9 @@ const prismaMock = {
   supportMessage: {
     create: vi.fn(),
   },
+  notification: {
+    create: vi.fn(),
+  },
 }
 
 vi.mock('next-auth', () => ({
@@ -41,6 +44,7 @@ describe('POST /api/contact', () => {
     getServerSessionMock.mockResolvedValue(null)
     sendEmailMock.mockResolvedValue({ success: true })
     prismaMock.supportMessage.create.mockResolvedValue({ id: 'contactmsg1234' })
+    prismaMock.notification.create.mockResolvedValue({ id: 'notif_1' })
   })
 
   it('silently accepts honeypot bot submissions without creating records', async () => {
@@ -84,6 +88,7 @@ describe('POST /api/contact', () => {
       buildRequest({
         name: 'Test User',
         email: 'invalid-email',
+        phone: '555-1234',
         subject: 'Question',
         message: 'hello',
       }) as any
@@ -104,6 +109,7 @@ describe('POST /api/contact', () => {
       buildRequest({
         name: '  Jane Doe  ',
         email: '  Jane@Example.com ',
+        phone: '555-9876',
         subject: ' Technical Support ',
         message: '  I need help with profile verification.  ',
       }) as any
@@ -118,8 +124,10 @@ describe('POST /api/contact', () => {
     expect(prismaMock.supportMessage.create).toHaveBeenCalledWith({
       data: {
         userId: 'user-123',
+        vrId: null,
         name: 'Jane Doe',
         email: 'jane@example.com',
+        phone: '555-9876',
         subject: 'Technical Support',
         message: 'I need help with profile verification.',
         context: 'contact_form',
@@ -132,6 +140,7 @@ describe('POST /api/contact', () => {
       to: 'jane@example.com',
       subject: 'We received your message - VivaahReady',
     })
+    expect(prismaMock.notification.create).toHaveBeenCalledTimes(1)
   })
 
   it('still returns success when confirmation email fails', async () => {
@@ -143,6 +152,7 @@ describe('POST /api/contact', () => {
       buildRequest({
         name: 'John Doe',
         email: 'john@example.com',
+        phone: '555-4321',
         subject: 'General Inquiry',
         message: 'Hi there',
       }) as any

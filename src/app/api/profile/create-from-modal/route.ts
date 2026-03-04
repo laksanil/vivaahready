@@ -7,7 +7,8 @@ import { generateVrId } from '@/lib/vrId'
 import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
-import { getEffectiveUniversity, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
+import { getEffectiveUniversity, getEffectiveOccupation, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
+import { awardReferralPoints } from '@/lib/engagementPoints'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -62,9 +63,18 @@ const profileSchema = z.object({
 
   // Education & Career
   qualification: z.string().optional(),
+  educationLevel: z.string().optional(),
+  fieldOfStudy: z.string().optional(),
   university: z.string().optional(),
   universityOther: z.string().optional(),
+  educationEntries: z.array(z.object({
+    educationLevel: z.string(),
+    fieldOfStudy: z.string(),
+    fieldOfStudyOther: z.string().optional(),
+    university: z.string(),
+  })).optional(),
   occupation: z.string().optional(),
+  occupationOther: z.string().optional(),
   employerName: z.string().optional(),
   annualIncome: z.string().optional(),
   educationCareerDetails: z.string().optional(),
@@ -119,6 +129,8 @@ const profileSchema = z.object({
   fitness: z.string().optional(),
   interests: z.string().optional(),
   pets: z.string().optional(),
+  openToDate: z.string().optional(),
+  openToPrenup: z.string().optional(),
   allergiesOrMedical: z.string().optional(),
   aboutMe: z.string().optional(),
   referralSource: z.string().optional(),
@@ -196,6 +208,7 @@ export async function POST(request: Request) {
     const data = normalizeSameAsMinePreferences(profileSchema.parse(body))
     const normalizeText = (value: string | undefined) => value?.trim() || ''
     const effectiveUniversity = getEffectiveUniversity(data.university, data.universityOther)
+    const effectiveOccupation = getEffectiveOccupation(data.occupation, data.occupationOther)
     const employerName = normalizeText(data.employerName)
 
     if (data.qualification && !effectiveUniversity) {
@@ -358,9 +371,12 @@ export async function POST(request: Request) {
         facebook: data.facebook,
 
         // Education & Career
-        qualification: data.qualification,
+        qualification: data.qualification || data.educationLevel,
+        educationLevel: data.educationLevel,
+        fieldOfStudy: data.fieldOfStudy,
         university: effectiveUniversity || null,
-        occupation: data.occupation,
+        educationEntries: data.educationEntries ? JSON.parse(JSON.stringify(data.educationEntries)) : undefined,
+        occupation: effectiveOccupation || null,
         employerName: employerName || null,
         annualIncome: data.annualIncome,
         educationCareerDetails: data.educationCareerDetails,
@@ -415,6 +431,8 @@ export async function POST(request: Request) {
         fitness: data.fitness,
         interests: data.interests,
         pets: data.pets,
+        openToDate: data.openToDate,
+        openToPrenup: data.openToPrenup,
         allergiesOrMedical: data.allergiesOrMedical,
         aboutMe: data.aboutMe,
         referralSource: data.referralSource,
@@ -523,6 +541,7 @@ export async function POST(request: Request) {
             where: { referralCode: data.referredBy },
             select: {
               id: true,
+              userId: true,
               user: { select: { email: true, name: true } },
             },
           })
@@ -533,6 +552,11 @@ export async function POST(request: Request) {
               referrerProfile.user.name || 'User',
               count
             )
+
+            // Award referrer points for successful referral signup.
+            if (user?.id) {
+              await awardReferralPoints(referrerProfile.userId, user.id)
+            }
           }
         } catch (err) {
           console.error('Failed to send referral thank-you email:', err)

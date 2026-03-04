@@ -3,18 +3,29 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Mail, MapPin, Shield, UserCheck, Users } from 'lucide-react'
+import { isSidebarPage } from './UserSidebar'
 
 export function Footer() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
 
   // Don't show footer on admin pages
   if (pathname?.startsWith('/admin')) {
     return null
   }
 
-  // Don't show footer on photo upload page during signup flow
+  // Don't show footer on authenticated sidebar pages
+  if (isSidebarPage(pathname) && (session || searchParams.get('viewAsUser'))) {
+    return null
+  }
+
+  // Don't show footer during profile creation flow
+  if (pathname === '/profile/complete') {
+    return null
+  }
   const fromSignup = searchParams.get('fromSignup') === 'true'
   if (pathname === '/profile/photos' && fromSignup) {
     return null

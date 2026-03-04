@@ -197,6 +197,53 @@ export async function POST(request: Request) {
       },
     })
 
+    // Mirror feedback into support messages so Admin > Messages can respond in-thread.
+    try {
+      const summaryLine = cleanSummary || 'No summary provided.'
+      const feedbackMessage =
+        `Feedback ID: ${feedback.id}\n` +
+        `Rating: ${stars}/5\n` +
+        `Issue: ${primaryIssue}\n` +
+        `Summary: ${summaryLine}` +
+        (cleanNps !== null ? `\nNPS: ${cleanNps}/10` : '') +
+        (typeof severity === 'string' && severity.trim() ? `\nSeverity: ${severity.trim()}` : '')
+
+      const supportMessage = await prisma.supportMessage.create({
+        data: {
+          userId: dbUser.id,
+          name: dbUser.name || null,
+          email: session?.user?.email || null,
+          phone: normalizedPhone,
+          subject: `Feedback: ${primaryIssue}`,
+          message: feedbackMessage,
+          context: 'feedback',
+          status: 'new',
+        },
+      })
+
+      const sentAt = new Date()
+      await prisma.notification.create({
+        data: {
+          userId: dbUser.id,
+          type: 'feedback_submitted',
+          title: 'Your feedback to Admin',
+          body: summaryLine.slice(0, 220),
+          url: '/admin-messages',
+          read: true,
+          readAt: sentAt,
+          data: JSON.stringify({
+            feedbackId: feedback.id,
+            messageId: supportMessage.id,
+            context: 'feedback',
+            __deliveryModes: ['in_app'],
+            __sentAt: sentAt.toISOString(),
+          }),
+        },
+      })
+    } catch (supportSyncError) {
+      console.error('Failed to mirror feedback into support messages:', supportSyncError)
+    }
+
     return NextResponse.json({ ok: true, id: feedback.id })
   } catch (error) {
     console.error('Feedback submission error:', error)

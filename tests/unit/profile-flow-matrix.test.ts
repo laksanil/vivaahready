@@ -26,7 +26,7 @@ describe('profile flow validation matrix', () => {
       { name: 'missing grew up in', payload: { ...validBase, grewUpIn: '' }, expected: 'Grew Up In is required.' },
       { name: 'missing citizenship', payload: { ...validBase, citizenship: '' }, expected: 'Citizenship is required.' },
       { name: 'missing USA zip code', payload: { ...validBase, zipCode: '' }, expected: 'ZIP code is required for USA profiles.' },
-      { name: 'missing qualification', payload: { ...validBase, qualification: '' }, expected: 'Highest qualification is required.' },
+      { name: 'missing qualification', payload: { ...validBase, qualification: '', educationLevel: '' }, expected: 'Education level is required.' },
       { name: 'missing university', payload: { ...validBase, university: '' }, expected: 'College/University is required.' },
       { name: 'missing occupation', payload: { ...validBase, occupation: '' }, expected: 'Occupation is required.' },
       { name: 'missing annual income', payload: { ...validBase, annualIncome: '' }, expected: 'Annual income is required.' },

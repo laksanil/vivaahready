@@ -49,6 +49,54 @@ const getLocalStepFromSignupStep = (signupStep: number): number => {
   return Math.max(1, Math.min(signupStep, SECTION_ORDER.length))
 }
 
+const normalizeYesNoChoice = (value: unknown): string => {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  if (normalized === 'yes' || normalized.startsWith('y')) return 'Yes'
+  if (normalized === 'no' || normalized.startsWith('n')) return 'No'
+  return ''
+}
+
+// Find the first incomplete step based on actual profile data.
+// Returns a 1-based step number, or null if all steps are complete.
+function findFirstIncompleteStep(data: Record<string, unknown>): number | null {
+  // Step 1: Basics
+  const hasBasics = !!(
+    data.createdBy && data.firstName && data.lastName && data.gender &&
+    (data.dateOfBirth || data.age) && data.height && data.maritalStatus && data.motherTongue
+  )
+  if (!hasBasics) return 1
+
+  // Step 2: Location & Education
+  if (!validateLocationEducationStep(data).isValid) return 2
+
+  // Step 3: Religion
+  if (!(data.religion as string || '').trim() || !(data.community as string || '').trim()) return 3
+
+  // Step 4: Family
+  if (!(data.familyLocation as string || '').trim() || !(data.familyValues as string || '').trim()) return 4
+
+  // Step 5: Lifestyle
+  const openToDateValue = normalizeYesNoChoice(data.openToDate)
+  const openToPrenupValue = normalizeYesNoChoice(data.openToPrenup)
+  if (!(data.dietaryPreference as string || '').trim() || !(data.smoking as string || '').trim() ||
+      !(data.drinking as string || '').trim() || !(data.pets as string || '').trim() ||
+      !openToDateValue || !openToPrenupValue) return 5
+
+  // Step 6: About Me
+  const linkedinProfile = (data.linkedinProfile as string || '').trim()
+  const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+  const hasValidLinkedIn = linkedinProfile === 'no_linkedin' || linkedinProfile === '' || linkedinRegex.test(linkedinProfile)
+  if (!(data.aboutMe as string || '').trim() || !hasValidLinkedIn || !validateAboutMeStep(data).isValid) return 6
+
+  // Step 7: Partner Preferences (must-haves)
+  if (!validatePartnerPreferencesMustHaves(data).isValid) return 7
+
+  // Step 8: Partner Preferences (additional)
+  if (!validatePartnerPreferencesAdditional(data).isValid) return 8
+
+  return null
+}
+
 // Map local step to signupStep (database value) - now 1:1
 const getSignupStepFromLocalStep = (localStep: number): number => {
   return localStep
@@ -81,6 +129,8 @@ function ProfileCompleteContent() {
     country: 'USA',
     grewUpIn: 'USA',
     citizenship: 'USA',
+    // Keep validation state aligned with AboutMeSection default dropdown display.
+    linkedinProfile: 'no_linkedin',
     prefAgeIsDealbreaker: true,
     prefHeightIsDealbreaker: true,
     prefReligionIsDealbreaker: true,
@@ -327,7 +377,7 @@ function ProfileCompleteContent() {
         if (response.ok) {
           const data = await response.json()
           // Populate form with existing data
-          setFormData({
+          const mappedData: Record<string, unknown> = {
             // Basic fields (already filled)
             createdBy: data.createdBy,
             firstName: data.firstName,
@@ -352,6 +402,11 @@ function ProfileCompleteContent() {
             occupation: data.occupation,
             annualIncome: data.annualIncome,
             openToRelocation: data.openToRelocation,
+            // Education entries
+            educationLevel: data.educationLevel,
+            fieldOfStudy: data.fieldOfStudy,
+            employerName: data.employerName,
+            educationEntries: data.educationEntries,
             // Religion & Astro
             religion: data.religion,
             community: data.community,
@@ -383,12 +438,13 @@ function ProfileCompleteContent() {
             fitness: data.fitness,
             // About Me
             aboutMe: data.aboutMe,
-            linkedinProfile: data.linkedinProfile,
+            linkedinProfile: data.linkedinProfile || 'no_linkedin',
             instagram: data.instagram,
             facebook: data.facebook,
             bloodGroup: data.bloodGroup,
             anyDisability: data.anyDisability || 'none',
             disabilityDetails: data.disabilityDetails,
+            referralSource: data.referralSource,
             // Partner Preferences
             prefAgeMin: data.prefAgeMin,
             prefAgeMax: data.prefAgeMax,
@@ -436,7 +492,16 @@ function ProfileCompleteContent() {
             prefMotherTongue: data.prefMotherTongue,
             prefMotherTongueIsDealbreaker: data.prefMotherTongueIsDealbreaker,
             idealPartnerDesc: data.idealPartnerDesc,
-          })
+          }
+          setFormData(mappedData)
+
+          // Navigate to the first incomplete step instead of trusting DB signupStep.
+          // This handles cases where the DB signupStep is ahead of actually-completed data
+          // (e.g., validation tightened, data migration, or user skipped fields).
+          const firstIncomplete = findFirstIncompleteStep(mappedData)
+          if (firstIncomplete !== null) {
+            setStep(firstIncomplete)
+          }
         }
       } catch (err) {
         console.error('Failed to fetch profile:', err)
@@ -615,7 +680,10 @@ function ProfileCompleteContent() {
   const smokingValue = formData.smoking as string || ''
   const drinkingValue = formData.drinking as string || ''
   const petsValue = formData.pets as string || ''
-  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' && petsValue !== ''
+  const openToDateValue = normalizeYesNoChoice(formData.openToDate)
+  const openToPrenupValue = normalizeYesNoChoice(formData.openToPrenup)
+  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' &&
+    petsValue !== '' && openToDateValue !== '' && openToPrenupValue !== ''
 
   // About Me validation
   const linkedinUrl = formData.linkedinProfile as string || ''
@@ -683,7 +751,7 @@ function ProfileCompleteContent() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
           <p className="mt-4 text-gray-600">
-            {creatingProfile || hasPendingSignupData ? 'Setting up your profile...' : 'Loading your profile...'}
+            Loading your profile...
           </p>
         </div>
       </div>

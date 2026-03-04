@@ -8,6 +8,7 @@ import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import {
   validateAboutMeStep,
   getEffectiveUniversity,
+  getEffectiveOccupation,
   validateLocationEducationStep,
   validatePartnerPreferencesAdditional,
   validatePartnerPreferencesMustHaves,
@@ -78,6 +79,11 @@ export async function GET(
             motherTongue: true,
             signupStep: true,
             approvalStatus: true,
+            educationLevel: true,
+            fieldOfStudy: true,
+            university: true,
+            qualification: true,
+            educationEntries: true,
             user: {
               select: {
                 id: true,
@@ -252,11 +258,18 @@ export async function PUT(
     if (body.currentLocation !== undefined) updateData.currentLocation = body.currentLocation
     if (body.zipCode !== undefined) updateData.zipCode = body.zipCode
     if (body.qualification !== undefined) updateData.qualification = body.qualification
-    if (body.university !== undefined || body.universityOther !== undefined) {
-      const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
-      updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
+    if (body.educationLevel !== undefined) updateData.educationLevel = body.educationLevel
+    if (body.fieldOfStudy !== undefined) updateData.fieldOfStudy = body.fieldOfStudy
+    if (body.university !== undefined) updateData.university = body.university
+    if (body.educationEntries !== undefined) {
+      updateData.educationEntries = Array.isArray(body.educationEntries)
+        ? JSON.parse(JSON.stringify(body.educationEntries))
+        : undefined
     }
-    if (body.occupation !== undefined) updateData.occupation = body.occupation
+    if (body.occupation !== undefined || body.occupationOther !== undefined) {
+      const baseOccupation = body.occupation !== undefined ? body.occupation : existingProfile.occupation
+      updateData.occupation = getEffectiveOccupation(baseOccupation, body.occupationOther)
+    }
     if (body.employerName !== undefined) updateData.employerName = normalizeText(body.employerName) || null
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
     if (body.openToRelocation !== undefined) updateData.openToRelocation = body.openToRelocation
@@ -290,6 +303,8 @@ export async function PUT(
     if (body.smoking !== undefined) updateData.smoking = body.smoking
     if (body.drinking !== undefined) updateData.drinking = body.drinking
     if (body.pets !== undefined) updateData.pets = body.pets
+    if (body.openToDate !== undefined) updateData.openToDate = body.openToDate
+    if (body.openToPrenup !== undefined) updateData.openToPrenup = body.openToPrenup
     if (body.hobbies !== undefined) updateData.hobbies = body.hobbies
     if (body.interests !== undefined) updateData.interests = body.interests
     if (body.fitness !== undefined) updateData.fitness = body.fitness
@@ -381,7 +396,18 @@ export async function PUT(
       }
     }
 
-    const mergedState: Record<string, unknown> = { ...existingProfile, ...updateData }
+    const payloadEducationEntries = Array.isArray(body.educationEntries)
+      ? body.educationEntries as Array<Record<string, unknown>>
+      : []
+    const primaryEducationEntry = payloadEducationEntries[0] || {}
+
+    const mergedState: Record<string, unknown> = {
+      ...existingProfile,
+      ...updateData,
+      educationLevel: body.educationLevel ?? primaryEducationEntry.educationLevel,
+      fieldOfStudy: body.fieldOfStudy ?? primaryEducationEntry.fieldOfStudy,
+      university: body.university ?? primaryEducationEntry.university ?? existingProfile.university,
+    }
 
     if (requestedSignupStep !== undefined && requestedSignupStep >= 3) {
       const locationEducationValidation = validateLocationEducationStep({
@@ -461,6 +487,22 @@ export async function PUT(
         if (!hasPhone) {
           return NextResponse.json(
             { error: 'Phone number is required to continue. Please add your phone number in the Basic Info section.' },
+            { status: 400 }
+          )
+        }
+      }
+
+      // Open to Date and Open to Prenup are REQUIRED to proceed past lifestyle step (signupStep >= 6)
+      if ((requestedSignupStep || 0) >= 6) {
+        const existingOpenToDate = ((existingProfile as Record<string, unknown>).openToDate as string || '').trim()
+        const existingOpenToPrenup = ((existingProfile as Record<string, unknown>).openToPrenup as string || '').trim()
+        const providedOpenToDate = (body.openToDate || '').trim()
+        const providedOpenToPrenup = (body.openToPrenup || '').trim()
+        const hasOpenToDate = existingOpenToDate !== '' || providedOpenToDate !== ''
+        const hasOpenToPrenup = existingOpenToPrenup !== '' || providedOpenToPrenup !== ''
+        if (!hasOpenToDate || !hasOpenToPrenup) {
+          return NextResponse.json(
+            { error: 'Open to Date and Open to Prenup are required fields. Please select a value for both.' },
             { status: 400 }
           )
         }

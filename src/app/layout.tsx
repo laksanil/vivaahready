@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer'
 import CookieConsent from '@/components/CookieConsent'
 import FeedbackWidget from '@/components/FeedbackWidget'
 import PushNotificationPrompt from '@/components/PushNotificationPrompt'
+import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -141,7 +142,9 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-16 bg-white/80 backdrop-blur-sm shadow-sm" />}>
             <Navbar />
           </Suspense>
-          <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">{children}</main>
+          <main className="flex-grow bg-gradient-to-b from-white via-silver-50 to-silver-100">
+            <LayoutWithSidebar>{children}</LayoutWithSidebar>
+          </main>
           <Suspense fallback={null}>
             <Footer />
           </Suspense>

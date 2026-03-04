@@ -7,65 +7,26 @@ import Link from 'next/link'
 import {
   Heart,
   MessageCircle,
-  User,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  Mail,
-  Phone,
-  ZoomIn,
-  X,
-  Check,
   Sparkles,
-  Flag,
-  AlertTriangle,
-  Lock,
   Clock,
+  Eye,
+  Search,
+  AlertTriangle,
+  Flag,
+  XCircle,
 } from 'lucide-react'
-import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl, maskPhone } from '@/lib/utils'
+import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
+import { ProfileData } from '@/components/ProfileCard'
 import MessageModal from '@/components/MessageModal'
+import ReportModal from '@/components/ReportModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 import AdminViewBanner from '@/components/AdminViewBanner'
 
-interface ConnectionProfile {
-  id: string
-  userId: string
-  gender: string
-  dateOfBirth: string | null
-  height: string | null
-  currentLocation: string | null
-  occupation: string | null
-  qualification: string | null
-  caste: string | null
-  community: string | null
-  subCommunity: string | null
-  dietaryPreference: string | null
-  maritalStatus: string | null
-  aboutMe: string | null
-  photoUrls: string | null
-  profileImageUrl: string | null
-  languagesKnown: string | null
-  citizenship: string | null
-  grewUpIn: string | null
-  religion: string | null
+interface ConnectionProfile extends ProfileData {
   approvalStatus?: string
   createdAt?: string
-  user: {
-    id: string
-    name: string
-    email?: string
-    phone?: string
-    emailVerified?: string | null
-    phoneVerified?: string | null
-  }
-  matchScore?: {
-    percentage: number
-  }
-  interestStatus?: {
-    mutual: boolean
-  }
 }
 
 function ConnectionsPageContent() {
@@ -76,8 +37,16 @@ function ConnectionsPageContent() {
 
   const [connections, setConnections] = useState<ConnectionProfile[]>([])
   const [loading, setLoading] = useState(true)
-  const [isApproved, setIsApproved] = useState(true) // Default to true, will be updated from API
+  const [isApproved, setIsApproved] = useState(true)
   const [hasPaid, setHasPaid] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+  const [withdrawConfirm, setWithdrawConfirm] = useState<ConnectionProfile | null>(null)
+  const [reportModal, setReportModal] = useState<{
+    isOpen: boolean
+    userId: string
+    userName: string
+  }>({ isOpen: false, userId: '', userName: '' })
   const [messageModal, setMessageModal] = useState<{
     isOpen: boolean
     recipientId: string
@@ -90,23 +59,6 @@ function ConnectionsPageContent() {
     recipientName: '',
     recipientPhoto: null,
     recipientPhotoUrls: null,
-  })
-  const [reportModal, setReportModal] = useState<{
-    isOpen: boolean
-    userId: string
-    userName: string
-    reason: string
-    submitting: boolean
-    error: string | null
-    success: boolean
-  }>({
-    isOpen: false,
-    userId: '',
-    userName: '',
-    reason: '',
-    submitting: false,
-    error: null,
-    success: false,
   })
 
   const canAccess = !!session || (isAdminView && isAdmin)
@@ -137,7 +89,6 @@ function ConnectionsPageContent() {
 
       const data = await matchesRes.json()
       setConnections(data.mutualMatches || [])
-      // Track user's approval status
       setIsApproved(data.userStatus?.isApproved ?? true)
 
       if (paymentRes.ok) {
@@ -151,332 +102,300 @@ function ConnectionsPageContent() {
     }
   }
 
-  const openMessageModal = (profile: ConnectionProfile) => {
-    setMessageModal({
-      isOpen: true,
-      recipientId: profile.user.id,
-      recipientName: profile.user.name,
-      recipientPhoto: profile.profileImageUrl,
-      recipientPhotoUrls: profile.photoUrls,
-    })
-  }
-
-  const closeMessageModal = () => {
-    setMessageModal({
-      isOpen: false,
-      recipientId: '',
-      recipientName: '',
-      recipientPhoto: null,
-      recipientPhotoUrls: null,
-    })
-  }
-
-  const openReportModal = (profile: ConnectionProfile) => {
-    setReportModal({
-      isOpen: true,
-      userId: profile.user.id,
-      userName: profile.user.name,
-      reason: '',
-      submitting: false,
-      error: null,
-      success: false,
-    })
-  }
-
-  const closeReportModal = () => {
-    setReportModal({
-      isOpen: false,
-      userId: '',
-      userName: '',
-      reason: '',
-      submitting: false,
-      error: null,
-      success: false,
-    })
-  }
-
-  const handleSubmitReport = async () => {
-    if (!reportModal.reason.trim()) {
-      setReportModal(prev => ({ ...prev, error: 'Please provide a reason for reporting' }))
-      return
-    }
-
-    setReportModal(prev => ({ ...prev, submitting: true, error: null }))
-
+  const handleWithdraw = async (profile: ConnectionProfile) => {
+    setWithdrawConfirm(null)
+    setWithdrawingId(profile.user.id)
     try {
-      const response = await fetch(buildApiUrl('/api/report'), {
-        method: 'POST',
+      await fetch(buildApiUrl('/api/interest'), {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reportedUserId: reportModal.userId,
-          reason: reportModal.reason,
-        }),
+        body: JSON.stringify({ targetUserId: profile.user.id, action: 'withdraw' }),
       })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to submit report')
-      }
-
-      setReportModal(prev => ({ ...prev, submitting: false, success: true }))
-
-      // Auto-close after success
-      setTimeout(() => {
-        closeReportModal()
-      }, 2000)
+      setConnections(prev => prev.filter(c => c.user.id !== profile.user.id))
     } catch (error) {
-      setReportModal(prev => ({
-        ...prev,
-        submitting: false,
-        error: error instanceof Error ? error.message : 'Failed to submit report',
-      }))
+      console.error('Error withdrawing connection:', error)
+    } finally {
+      setWithdrawingId(null)
     }
   }
 
-  // Separate new matches (last 7 days) from existing
+  // Filter by search query (name, VR ID, or qualification)
+  const filteredConnections = connections.filter(c => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    const name = c.user?.name?.toLowerCase() || ''
+    const odNumber = c.odNumber?.toLowerCase() || ''
+    const qualification = c.qualification?.toLowerCase() || ''
+    return name.includes(query) || odNumber.includes(query) || qualification.includes(query)
+  })
+
+  // Separate new matches (last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const newMatches = connections.filter(c => {
+  const newMatches = filteredConnections.filter(c => {
     const createdAt = c.createdAt ? new Date(c.createdAt) : null
     return createdAt && createdAt > sevenDaysAgo
   })
 
-  const existingMatches = connections.filter(c => {
+  const existingMatches = filteredConnections.filter(c => {
     const createdAt = c.createdAt ? new Date(c.createdAt) : null
     return !createdAt || createdAt <= sevenDaysAgo
   })
 
+  const renderConnectionCard = (profile: ConnectionProfile) => (
+    <div key={profile.id}>
+      <DirectoryCard
+        profile={profile}
+        showActions={false}
+        isRestricted={!isApproved}
+        hasPaid={hasPaid}
+      />
+      {/* Action bar below card */}
+      <div className="flex items-center justify-between bg-gray-50 border border-t-0 border-gray-200 rounded-b-lg px-3 py-2 -mt-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); setReportModal({ isOpen: true, userId: profile.user.id, userName: profile.user.name }) }}
+          className="inline-flex items-center gap-1.5 text-xs text-orange-500 hover:text-orange-700 hover:bg-orange-50 px-2 py-1 rounded transition-colors font-medium"
+        >
+          <Flag className="h-3.5 w-3.5" />
+          Report a Problem
+        </button>
+        <div className="flex items-center gap-1.5">
+          {isApproved && (
+            <button
+              onClick={() => setMessageModal({
+                isOpen: true,
+                recipientId: profile.user.id,
+                recipientName: profile.user.name,
+                recipientPhoto: profile.profileImageUrl,
+                recipientPhotoUrls: profile.photoUrls,
+              })}
+              className="inline-flex items-center gap-1.5 text-xs bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-sm"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              Message
+            </button>
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setWithdrawConfirm(profile) }}
+            disabled={withdrawingId === profile.user.id}
+            className="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 bg-white hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 font-medium shadow-sm"
+          >
+            {withdrawingId === profile.user.id ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <XCircle className="h-3.5 w-3.5" />
+            )}
+            Withdraw
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   if (status === 'loading' || loading || (isAdminView && !adminChecked)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="mb-6">
+            <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+            <div className="h-5 w-64 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <DirectoryCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
 
-  if (!canAccess) {
-    return null
-  }
+  if (!canAccess) return null
 
   return (
-      <>
+    <>
       {isAdminView && <AdminViewBanner />}
-      <div className={`min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8 ${isAdminView ? 'pt-20' : ''}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Connections</h1>
-          <p className="text-gray-600 mt-1">People who liked you back - you can now message them!</p>
+      <div className={`min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-6 ${isAdminView ? 'pt-20' : ''}`}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="mb-6">
+            <div className="mb-4">
+              <h1 className="text-2xl font-bold text-gray-900">Connections</h1>
+              <p className="text-gray-600 text-sm">
+                {connections.length} {connections.length === 1 ? 'connection' : 'connections'} - people who liked you back
+              </p>
+            </div>
+
+            {/* Search Bar */}
+            {connections.length > 0 && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name, VR ID, qualification..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Verification Banner */}
+          {!isApproved && connections.length > 0 && (
+            <div className="bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary-100 rounded-lg">
+                    {hasPaid ? <Clock className="h-5 w-5 text-primary-600" /> : <Eye className="h-5 w-5 text-primary-600" />}
+                  </div>
+                  <div>
+                    {hasPaid ? (
+                      <>
+                        <h3 className="font-semibold text-primary-900">Awaiting Admin Approval</h3>
+                        <p className="text-sm text-primary-700 mt-0.5">
+                          Your payment was received. Approval typically takes 24-48 hours.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-semibold text-primary-900">Get Verified to See Full Profiles</h3>
+                        <p className="text-sm text-primary-700 mt-0.5">
+                          Unlock photos, names, and contact information of your connections.
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {!hasPaid && (
+                  <Link
+                    href={buildUrl('/get-verified')}
+                    className="flex-shrink-0 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Get Verified
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
+          {connections.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+              <Heart className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Connections Yet</h3>
+              <p className="text-gray-600 mb-6 text-sm">
+                When you and another member both like each other, they&apos;ll appear here.
+              </p>
+              <Link href={buildUrl('/matches')} className="btn-primary inline-block text-sm py-2 px-4">
+                Browse Matches
+              </Link>
+            </div>
+          ) : filteredConnections.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-10 text-center">
+              <Search className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Matching Results</h3>
+              <p className="text-gray-600 mb-6 text-sm">
+                Try adjusting your search terms.
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn-secondary text-sm py-2"
+              >
+                Clear Search
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* New Matches */}
+              {newMatches.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="p-1.5 bg-gradient-to-r from-primary-600 to-primary-700 rounded-lg">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <h2 className="text-lg font-bold text-gray-900">
+                      New Connections ({newMatches.length})
+                    </h2>
+                  </div>
+                  <div className="space-y-2">
+                    {newMatches.map(renderConnectionCard)}
+                  </div>
+                </section>
+              )}
+
+              {/* All Connections */}
+              {existingMatches.length > 0 && (
+                <section>
+                  {newMatches.length > 0 && (
+                    <h2 className="text-lg font-bold text-gray-900 mb-3">
+                      All Connections ({existingMatches.length})
+                    </h2>
+                  )}
+                  <div className="space-y-2">
+                    {existingMatches.map(renderConnectionCard)}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Pending Verification Banner */}
-        {!isApproved && connections.length > 0 && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                {hasPaid ? <Clock className="h-5 w-5 text-amber-600" /> : <Lock className="h-5 w-5 text-amber-600" />}
+        {/* Withdraw Confirmation Modal */}
+        {withdrawConfirm && (
+          <div
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+            onClick={() => setWithdrawConfirm(null)}
+          >
+            <div
+              className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <div className="flex-1">
-                {hasPaid ? (
-                  <>
-                    <h3 className="font-semibold text-amber-800">Payment Received - Awaiting Admin Approval</h3>
-                    <p className="text-sm text-amber-700 mt-1">
-                      Thank you for your payment! Your profile is currently under review by our admin team.
-                      This typically takes 24-48 hours. Once approved, you&apos;ll have full access to view photos, names, and contact information of your matches.
-                    </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>Approval typically takes 24-48 hours</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="font-semibold text-amber-800">Profile Pending Verification</h3>
-                    <p className="text-sm text-amber-700 mt-1">
-                      Complete your profile verification to unlock full access to your connections.
-                      Once verified, you&apos;ll be able to see photos, names, and contact information of your matches.
-                    </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
-                      <Lock className="h-3.5 w-3.5" />
-                      <span>Photos, names, and contact details are blurred until verification</span>
-                    </div>
-                    <Link
-                      href={buildUrl('/get-verified')}
-                      className="mt-3 inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-                    >
-                      Get Verified
-                    </Link>
-                  </>
-                )}
+              <h3 className="text-lg font-bold text-center text-gray-900 mb-2">
+                Withdraw Connection?
+              </h3>
+              <p className="text-center text-gray-600 text-sm mb-6">
+                Are you sure you want to withdraw your connection with <span className="font-semibold">{withdrawConfirm.user?.name}</span>? This will remove the mutual match.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setWithdrawConfirm(null)}
+                  className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleWithdraw(withdrawConfirm)}
+                  className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
+                  Withdraw
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* No Connections Message */}
-        {connections.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <Heart className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Connections Yet</h3>
-            <p className="text-gray-600 mb-6">
-              When you and another member both like each other,
-              you&apos;ll see them here with their contact information.
-            </p>
-            <Link href={buildUrl('/matches')} className="btn-primary inline-block">
-              Browse Matches
-            </Link>
-          </div>
-        ) : (
-          <>
-            {/* New Matches Section */}
-            {newMatches.length > 0 && (
-              <div className="mb-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <Sparkles className="h-6 w-6 text-primary-500" />
-                  <h2 className="text-xl font-bold text-gray-900">New Matches</h2>
-                  <span className="bg-primary-600 text-white text-sm px-3 py-1 rounded-full">
-                    {newMatches.length} new
-                  </span>
-                </div>
-                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-                  {newMatches.map((profile) => (
-                    <ConnectionCard
-                      key={profile.id}
-                      profile={profile}
-                      onMessage={() => openMessageModal(profile)}
-                      onReport={() => openReportModal(profile)}
-                      isNew
-                      isApproved={isApproved}
-                      buildUrl={buildUrl}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* All Connections Section */}
-            {existingMatches.length > 0 && (
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  {newMatches.length > 0 ? 'All Connections' : 'Your Connections'}
-                </h2>
-                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-                  {existingMatches.map((profile) => (
-                    <ConnectionCard
-                      key={profile.id}
-                      profile={profile}
-                      onMessage={() => openMessageModal(profile)}
-                      onReport={() => openReportModal(profile)}
-                      isApproved={isApproved}
-                      buildUrl={buildUrl}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Show new matches in All Connections if there are no existing */}
-            {existingMatches.length === 0 && newMatches.length > 0 && (
-              <div className="text-center text-gray-500 mt-4">
-                <p>All your connections are new! Keep connecting to grow your matches.</p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Message Modal */}
+        {/* Message Modal */}
         <MessageModal
           isOpen={messageModal.isOpen}
-          onClose={closeMessageModal}
+          onClose={() => setMessageModal(prev => ({ ...prev, isOpen: false }))}
           recipientId={messageModal.recipientId}
           recipientName={messageModal.recipientName}
           recipientPhoto={messageModal.recipientPhoto}
           recipientPhotoUrls={messageModal.recipientPhotoUrls}
         />
 
-      {/* Report Modal */}
-      {reportModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-                <h3 className="text-lg font-semibold text-gray-900">Report User</h3>
-              </div>
-              <button
-                onClick={closeReportModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {reportModal.success ? (
-              <div className="text-center py-6">
-                <Check className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                <p className="text-gray-900 font-medium">Report Submitted</p>
-                <p className="text-gray-500 text-sm mt-1">Our team will review this report.</p>
-              </div>
-            ) : (
-              <>
-                <p className="text-gray-600 text-sm mb-4">
-                  Report a problem with <span className="font-medium">{reportModal.userName}</span>.
-                  Our team will review your report and take appropriate action.
-                </p>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Reason for reporting
-                  </label>
-                  <textarea
-                    value={reportModal.reason}
-                    onChange={(e) => setReportModal(prev => ({ ...prev, reason: e.target.value, error: null }))}
-                    placeholder="Please describe the issue..."
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-                  />
-                </div>
-
-                {reportModal.error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                    {reportModal.error}
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={closeReportModal}
-                    className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmitReport}
-                    disabled={reportModal.submitting}
-                    className="flex-1 py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {reportModal.submitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Flag className="h-4 w-4" />
-                        Submit Report
-                      </>
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+        {/* Report Modal */}
+        <ReportModal
+          isOpen={reportModal.isOpen}
+          onClose={() => setReportModal(prev => ({ ...prev, isOpen: false }))}
+          reportedUserId={reportModal.userId}
+          reportedUserName={reportModal.userName}
+        />
       </div>
-      </>
+    </>
   )
 }
 
@@ -489,204 +408,5 @@ export default function ConnectionsPage() {
     }>
       <ConnectionsPageContent />
     </Suspense>
-  )
-}
-
-// Connection Card Component
-interface ConnectionCardProps {
-  profile: ConnectionProfile
-  onMessage: () => void
-  onReport: () => void
-  isNew?: boolean
-  isApproved?: boolean
-  buildUrl: (path: string) => string
-}
-
-function ConnectionCard({ profile, onMessage, onReport, isNew, isApproved = true, buildUrl }: ConnectionCardProps) {
-  const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
-  const [photoIndex, setPhotoIndex] = useState(0)
-  const [imageError, setImageError] = useState(false)
-
-  // Get photos
-  const extractedPhotos = extractPhotoUrls(profile.photoUrls)
-  const validProfileImageUrl = isValidImageUrl(profile.profileImageUrl) ? profile.profileImageUrl : null
-  const allPhotos = extractedPhotos.length > 0
-    ? extractedPhotos
-    : (validProfileImageUrl ? [validProfileImageUrl] : [])
-
-  // Helper to blur text for unapproved users
-  const blurText = (text: string | null | undefined) => {
-    if (!text) return null
-    if (isApproved) return text
-    // Return blurred placeholder
-    return '••••••••'
-  }
-
-  // Helper to get blurred name (show first letter only)
-  const getDisplayName = () => {
-    if (isApproved) return profile.user.name
-    const firstName = profile.user.name?.split(' ')[0] || ''
-    return `${firstName.charAt(0)}${'•'.repeat(5)}`
-  }
-
-  return (
-    <div className={`bg-white rounded-xl shadow-sm overflow-hidden ${isNew ? 'ring-2 ring-primary-500' : ''}`}>
-      {/* New Badge */}
-      {isNew && (
-        <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-1 px-4 text-center text-xs font-medium">
-          New Match!
-        </div>
-      )}
-
-      <div className="flex flex-col sm:flex-row">
-        {/* Photo */}
-        <div className="w-full h-48 sm:w-28 sm:h-36 md:w-32 md:h-40 flex-shrink-0 bg-gray-200 relative">
-          {allPhotos.length > 0 && !imageError ? (
-            <img
-              src={allPhotos[photoIndex]}
-              alt={isApproved ? profile.user.name : 'Connection'}
-              className={`w-full h-full object-cover ${!isApproved ? 'blur-lg' : ''}`}
-              referrerPolicy="no-referrer"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className={`w-full h-full flex items-center justify-center bg-primary-100 ${!isApproved ? 'blur-lg' : ''}`}>
-              <span className="text-2xl font-semibold text-primary-600">
-                {getInitials(profile.user.name)}
-              </span>
-            </div>
-          )}
-          {/* Lock overlay for unverified */}
-          {!isApproved && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <div className="bg-white/90 p-2 rounded-full">
-                <Lock className="h-5 w-5 text-gray-600" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 p-3 sm:p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className={`font-semibold text-gray-900 ${!isApproved ? 'blur-sm select-none' : ''}`}>
-                {getDisplayName()}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {age ? `${age} yrs` : ''}{profile.height ? `, ${formatHeight(profile.height)}` : ''}
-              </p>
-              <p className={`text-sm text-gray-500 ${!isApproved ? 'blur-sm select-none' : ''}`}>
-                {isApproved ? profile.currentLocation : '••••••••'}
-              </p>
-              {isApproved && (profile.grewUpIn || profile.citizenship) && (
-                <p className="text-xs text-gray-400 mt-1">
-                  {profile.grewUpIn && `Grew up in ${profile.grewUpIn}`}
-                  {profile.grewUpIn && profile.citizenship && ' • '}
-                  {profile.citizenship && `${profile.citizenship}`}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <Check className="h-4 w-4 text-green-500" />
-              <span className="text-xs text-green-600">Connected</span>
-            </div>
-          </div>
-
-          {/* Contact Info - Hidden for unverified users */}
-          {isApproved ? (
-            <div className="mt-3 space-y-1">
-              {profile.user.email && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <a href={`mailto:${profile.user.email}`} className="text-primary-600 hover:underline">
-                    {profile.user.email}
-                  </a>
-                </div>
-              )}
-              {profile.user.phone && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-gray-400" />
-                  <a href={`tel:${profile.user.phone}`} className="text-primary-600 hover:underline">
-                    {profile.user.phone}
-                  </a>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="mt-3 space-y-1">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Lock className="h-4 w-4" />
-                <span className="select-none">XXXXXX@XXX.XXX</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Lock className="h-4 w-4" />
-                <span className="select-none">{maskPhone(profile.user.phone)}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="mt-3 flex gap-2">
-            {isApproved ? (
-              <>
-                {/* Message Button */}
-                <div className="group relative flex-1">
-                  <button
-                    onClick={onMessage}
-                    className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                    Message
-                  </button>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                      <div className="font-semibold">Send Message</div>
-                      <div className="text-gray-300">Start a conversation</div>
-                    </div>
-                  </div>
-                </div>
-                {/* View Profile Button */}
-                <div className="group relative">
-                  <Link
-                    href={buildUrl(`/profile/${profile.id}`)}
-                    className="flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                  >
-                    <User className="h-5 w-5" />
-                    Profile
-                  </Link>
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                      <div className="font-semibold">View Profile</div>
-                      <div className="text-gray-300">See full details</div>
-                    </div>
-                  </div>
-                </div>
-                {/* Report Button */}
-                <div className="group relative">
-                  <button
-                    onClick={onReport}
-                    className="flex items-center justify-center p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Flag className="h-5 w-5" />
-                  </button>
-                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
-                    <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                      <div className="font-semibold">Report Profile</div>
-                      <div className="text-gray-300">Flag inappropriate behavior</div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 py-2.5 px-3 rounded-lg text-sm">
-                <Lock className="h-5 w-5" />
-                Verify to unlock
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }

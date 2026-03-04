@@ -179,6 +179,11 @@ export async function GET(request: Request) {
             currentLocation: true,
             signupStep: true,
             approvalStatus: true,
+            educationLevel: true,
+            fieldOfStudy: true,
+            university: true,
+            qualification: true,
+            educationEntries: true,
             user: {
               select: {
                 name: true,
@@ -285,9 +290,16 @@ export async function PUT(request: Request) {
     if (body.caste !== undefined) updateData.caste = body.caste
     if (body.gotra !== undefined) updateData.gotra = body.gotra
     if (body.qualification !== undefined) updateData.qualification = body.qualification
+    if (body.educationLevel !== undefined) updateData.educationLevel = body.educationLevel
+    if (body.fieldOfStudy !== undefined) updateData.fieldOfStudy = body.fieldOfStudy
     if (body.university !== undefined || body.universityOther !== undefined) {
       const baseUniversity = body.university !== undefined ? body.university : existingProfile.university
       updateData.university = getEffectiveUniversity(baseUniversity, body.universityOther)
+    }
+    if (body.educationEntries !== undefined) {
+      updateData.educationEntries = Array.isArray(body.educationEntries)
+        ? JSON.parse(JSON.stringify(body.educationEntries))
+        : undefined
     }
     if (body.occupation !== undefined) updateData.occupation = body.occupation
     if (body.annualIncome !== undefined) updateData.annualIncome = body.annualIncome
@@ -384,6 +396,18 @@ export async function PUT(request: Request) {
     if (body.fitness !== undefined) updateData.fitness = body.fitness
     if (body.interests !== undefined) updateData.interests = body.interests
     if (body.pets !== undefined) updateData.pets = body.pets
+    if (body.openToDate !== undefined) {
+      if (!body.openToDate || body.openToDate.trim() === '') {
+        return NextResponse.json({ error: 'Open to Date is a required field.' }, { status: 400 })
+      }
+      updateData.openToDate = body.openToDate
+    }
+    if (body.openToPrenup !== undefined) {
+      if (!body.openToPrenup || body.openToPrenup.trim() === '') {
+        return NextResponse.json({ error: 'Open to Prenup is a required field.' }, { status: 400 })
+      }
+      updateData.openToPrenup = body.openToPrenup
+    }
     if (body.allergiesOrMedical !== undefined) updateData.allergiesOrMedical = body.allergiesOrMedical
     if (body.referralSource !== undefined) updateData.referralSource = body.referralSource
     if (body.referredBy !== undefined) updateData.referredBy = body.referredBy

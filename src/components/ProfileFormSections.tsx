@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Phone, Shield, CheckCircle, ChevronDown } from 'lucide-react'
-import { HEIGHT_OPTIONS, heightToInches, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES } from '@/lib/constants'
+import { HEIGHT_OPTIONS, heightToInches, PREF_AGE_MIN_MAX, PREF_INCOME_OPTIONS, PREF_LOCATION_OPTIONS, QUALIFICATION_OPTIONS, PREF_EDUCATION_OPTIONS, OCCUPATION_OPTIONS, HOBBIES_OPTIONS, FITNESS_OPTIONS, INTERESTS_OPTIONS, US_UNIVERSITIES, US_VISA_STATUS_OPTIONS, COUNTRIES_LIST, RAASI_OPTIONS, NAKSHATRA_OPTIONS, DOSHAS_OPTIONS, PREF_SMOKING_OPTIONS, PREF_DRINKING_OPTIONS, PREF_MARITAL_STATUS_OPTIONS, PREF_RELOCATION_OPTIONS, PREF_MOTHER_TONGUE_OPTIONS, PREF_PETS_OPTIONS, PREF_COMMUNITY_OPTIONS, GOTRA_OPTIONS, RELOCATION_OPTIONS, DISABILITY_OPTIONS, FAMILY_LOCATION_COUNTRIES, EDUCATION_LEVEL_OPTIONS, FIELD_OF_STUDY_OPTIONS, QUALIFICATION_TO_NEW_FIELDS } from '@/lib/constants'
 import { RELIGIONS, getCommunities, getSubCommunities, getAllCommunities } from '@/config/communities'
 
 const US_STATES = [
@@ -850,110 +850,431 @@ export function LocationSection({ formData, handleChange, setFormData }: Section
   )
 }
 
-export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
-  const [universitySearch, setUniversitySearch] = useState('')
-  const [showUniversityDropdown, setShowUniversityDropdown] = useState(false)
+export interface EducationEntry {
+  educationLevel: string
+  educationLevelOther?: string
+  fieldOfStudy: string
+  fieldOfStudyOther?: string
+  university: string
+  universityOther?: string
+}
 
-  // Filter universities based on search
-  const filteredUniversities = US_UNIVERSITIES.filter(uni =>
-    uni.toLowerCase().includes(universitySearch.toLowerCase())
-  )
+const hasEducationLevelValue = (value: string): boolean => (
+  EDUCATION_LEVEL_OPTIONS.some((opt) => opt.value === value)
+)
 
-  const handleUniversitySelect = (university: string) => {
-    if (university === "Other (specify below)") {
-      setFormData(prev => ({ ...prev, university: 'other' }))
-    } else {
-      setFormData(prev => ({ ...prev, university }))
+const hasFieldOfStudyValue = (value: string): boolean => (
+  FIELD_OF_STUDY_OPTIONS.some((opt) => opt.value === value)
+)
+
+const normalizeOptionValue = (value: unknown): string => {
+  if (typeof value !== 'string') return ''
+  return value.trim().toLowerCase().replace(/\s+/g, '_')
+}
+
+const normalizeTextValue = (value: unknown): string => (
+  typeof value === 'string' ? value.trim() : ''
+)
+
+const inferEducationLevelFromDegree = (degreeValue: string): string => {
+  if (!degreeValue) return ''
+  const normalizedDegree = normalizeOptionValue(degreeValue)
+  const match = Object.entries(DEGREES_BY_LEVEL).find(([, degrees]) => degrees.includes(normalizedDegree))
+  return match?.[0] || ''
+}
+
+function parseEducationEntries(formData: Record<string, unknown>): EducationEntry[] {
+  // If we have educationEntries (array or JSON string), use it first.
+  let rawEntries: unknown = formData.educationEntries
+  if (typeof rawEntries === 'string') {
+    try {
+      rawEntries = JSON.parse(rawEntries)
+    } catch {
+      rawEntries = null
     }
-    setUniversitySearch('')
-    setShowUniversityDropdown(false)
   }
 
-  const isOtherUniversity = (formData.university as string) === 'other' ||
-    ((formData.university as string) && !US_UNIVERSITIES.includes(formData.university as string) && (formData.university as string) !== '')
+  if (Array.isArray(rawEntries) && rawEntries.length > 0) {
+    const parsed = rawEntries.map((entry) => {
+      const e = (entry || {}) as Record<string, unknown>
+
+      const rawLevel = normalizeOptionValue(e.educationLevel || e.level)
+      const rawDegree = normalizeOptionValue(e.fieldOfStudy || e.degreeReceived)
+      const rawUniversity = normalizeTextValue(e.university || e.college || e.collegeUniversity)
+      const rawDegreeOther = normalizeTextValue(e.fieldOfStudyOther)
+      const rawLevelOther = normalizeTextValue(e.educationLevelOther)
+      const rawUniversityOther = normalizeTextValue(e.universityOther)
+
+      const educationLevel = hasEducationLevelValue(rawLevel) ? rawLevel : ''
+      let fieldOfStudy = ''
+      let fieldOfStudyOther = ''
+
+      if (rawDegree) {
+        if (hasFieldOfStudyValue(rawDegree)) {
+          fieldOfStudy = rawDegree
+          fieldOfStudyOther = rawDegree === 'other' ? rawDegreeOther : ''
+        } else {
+          fieldOfStudy = 'other'
+          fieldOfStudyOther = rawDegreeOther || rawDegree.replace(/_/g, ' ')
+        }
+      }
+
+      return {
+        educationLevel,
+        educationLevelOther: educationLevel === 'other' ? rawLevelOther : '',
+        fieldOfStudy,
+        fieldOfStudyOther,
+        university: rawUniversity,
+        universityOther: rawUniversity === 'other' ? rawUniversityOther : '',
+      }
+    }).filter((entry) => (
+      !!entry.educationLevel || !!entry.fieldOfStudy || !!entry.fieldOfStudyOther || !!entry.university
+    ))
+
+    if (parsed.length > 0) {
+      return parsed
+    }
+  }
+
+  // Fall back to single fields for existing profiles
+  const normalizedLevel = normalizeOptionValue(formData.educationLevel)
+  const rawSingleDegree = normalizeOptionValue(formData.fieldOfStudy) || normalizeOptionValue(formData.qualification)
+  const university = normalizeTextValue(formData.university)
+
+  let educationLevel = hasEducationLevelValue(normalizedLevel) ? normalizedLevel : ''
+  let fieldOfStudy = ''
+  let fieldOfStudyOther = ''
+
+  if (rawSingleDegree) {
+    if (hasFieldOfStudyValue(rawSingleDegree)) {
+      fieldOfStudy = rawSingleDegree
+    } else {
+      fieldOfStudy = 'other'
+      fieldOfStudyOther = rawSingleDegree.replace(/_/g, ' ')
+    }
+    if (!educationLevel) {
+      educationLevel = inferEducationLevelFromDegree(rawSingleDegree)
+    }
+  }
+
+  if (educationLevel || fieldOfStudy || fieldOfStudyOther || university) {
+    return [{
+      educationLevel,
+      fieldOfStudy,
+      fieldOfStudyOther,
+      university,
+    }]
+  }
+
+  // Empty — start with one blank row
+  return [{ educationLevel: '', educationLevelOther: '', fieldOfStudy: '', fieldOfStudyOther: '', university: '', universityOther: '' }]
+}
+
+function UniversitySearchInput({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (university: string) => void
+}) {
+  const [search, setSearch] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const selectedRef = useRef(false)
+
+  const filtered = US_UNIVERSITIES.filter(uni =>
+    uni.toLowerCase().includes((search || '').toLowerCase())
+  )
+
+  const handleSelect = (university: string) => {
+    selectedRef.current = true
+    const val = university === "Other (specify below)" ? 'other' : university
+    onChange(val)
+    setSearch('')
+    setShowDropdown(false)
+  }
+
+  const handleBlur = () => {
+    // Skip blur if a dropdown item was just selected
+    if (selectedRef.current) {
+      selectedRef.current = false
+      return
+    }
+    if (search.trim()) {
+      const typed = search.trim()
+      const exactMatch = US_UNIVERSITIES.find(u => u.toLowerCase() === typed.toLowerCase())
+      onChange(exactMatch || typed)
+      setSearch('')
+    }
+    setShowDropdown(false)
+  }
+
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={search !== '' ? search : (value === 'other' ? 'Other' : (value || ''))}
+        onChange={(e) => { setSearch(e.target.value); setShowDropdown(true) }}
+        onFocus={() => { setSearch(''); setShowDropdown(true) }}
+        onBlur={() => setTimeout(handleBlur, 200)}
+        className="input-field"
+        placeholder="Type to search universities..."
+      />
+      {showDropdown && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-48 overflow-y-auto">
+          {filtered.length > 0 ? (
+            filtered.map((uni) => (
+              <button
+                key={uni}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handleSelect(uni)}
+                className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
+                  uni === "Other (specify below)" ? 'font-medium text-primary-600 border-b border-gray-200' : ''
+                }`}
+              >
+                {uni}
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-sm text-gray-500">
+              No matches. Click outside to use &quot;{search}&quot;.
+            </div>
+          )}
+        </div>
+      )}
+      {showDropdown && <div className="fixed inset-0 z-40" onClick={handleBlur} />}
+    </div>
+  )
+}
+
+// Map education level to relevant degree options
+const DEGREES_BY_LEVEL: Record<string, string[]> = {
+  below_high_school: [],
+  high_school: [],
+  vocational: ['other'],
+  associates: ['other'],
+  bachelors: ['ba', 'bs', 'be', 'bba', 'bfa', 'bsn', 'llb', 'other'],
+  masters: ['ma', 'ms', 'me', 'mba', 'mfa', 'mph', 'msw', 'other'],
+  post_masters: ['other'],
+  professional: ['md', 'do', 'dds', 'pharmd', 'jd', 'dnp', 'cpa', 'other'],
+  doctorate: ['phd', 'edd', 'psyd', 'other'],
+  postdoc: ['phd', 'other'],
+  other: ['other'],
+}
+
+function getDegreesForLevel(level: string): typeof FIELD_OF_STUDY_OPTIONS {
+  const allowed = DEGREES_BY_LEVEL[level]
+  if (!allowed || allowed.length === 0) return []
+  return FIELD_OF_STUDY_OPTIONS.filter(opt => allowed.includes(opt.value))
+}
+
+export function EducationSection({ formData, handleChange, setFormData }: SectionProps) {
+  const [entries, setEntries] = useState<EducationEntry[]>(() => parseEducationEntries(formData))
+  const internalSyncRef = useRef(false)
+
+  // Sync entries back to formData whenever they change
+  useEffect(() => {
+    // Find highest-weight entry as the primary
+    const sorted = [...entries].filter(e => e.educationLevel).sort((a, b) => {
+      const aOpt = EDUCATION_LEVEL_OPTIONS.find(o => o.value === a.educationLevel)
+      const bOpt = EDUCATION_LEVEL_OPTIONS.find(o => o.value === b.educationLevel)
+      return (bOpt?.weight || 0) - (aOpt?.weight || 0)
+    })
+    const primary = sorted[0] || entries[0]
+
+    internalSyncRef.current = true
+    setFormData(prev => ({
+      ...prev,
+      educationLevel: primary?.educationLevel || '',
+      fieldOfStudy: primary?.fieldOfStudy || '',
+      fieldOfStudyOther: primary?.fieldOfStudyOther || '',
+      university: primary?.university || '',
+      educationEntries: entries,
+    }))
+  }, [entries, setFormData])
+
+  // Re-sync from formData if it changes externally (e.g., modal opens with profile data)
+  useEffect(() => {
+    // Skip re-sync when the change was triggered by our own entries -> formData sync
+    if (internalSyncRef.current) {
+      internalSyncRef.current = false
+      return
+    }
+    const parsed = parseEducationEntries(formData)
+    // Only update if the entries are materially different (avoid infinite loop)
+    const current = JSON.stringify(entries)
+    const incoming = JSON.stringify(parsed)
+    if (current !== incoming) {
+      setEntries(parsed)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formData.educationEntries,
+    formData.educationLevel,
+    formData.fieldOfStudy,
+    formData.qualification,
+    formData.university,
+  ])
+
+  const updateEntry = (index: number, field: keyof EducationEntry, value: string) => {
+    setEntries(prev => prev.map((entry, i) => {
+      if (i !== index) return entry
+      const updated = { ...entry, [field]: value }
+      // When education level changes, clear degree if it's no longer valid for the new level
+      if (field === 'educationLevel') {
+        const allowed = DEGREES_BY_LEVEL[value] || []
+        if (allowed.length === 0 || !allowed.includes(entry.fieldOfStudy)) {
+          updated.fieldOfStudy = ''
+          updated.fieldOfStudyOther = ''
+        }
+        // Clear educationLevelOther when switching away from 'other'
+        if (value !== 'other') {
+          updated.educationLevelOther = ''
+        }
+      }
+      // When degree changes away from 'other', clear the custom text
+      if (field === 'fieldOfStudy' && value !== 'other') {
+        updated.fieldOfStudyOther = ''
+      }
+      // When university changes away from 'other', clear universityOther
+      if (field === 'university' && value !== 'other') {
+        updated.universityOther = ''
+      }
+      return updated
+    }))
+  }
+
+  const addEntry = () => {
+    if (entries.length < 3) {
+      setEntries(prev => [...prev, { educationLevel: '', educationLevelOther: '', fieldOfStudy: '', fieldOfStudyOther: '', university: '', universityOther: '' }])
+    }
+  }
+
+  const removeEntry = (index: number) => {
+    if (entries.length > 1) {
+      setEntries(prev => prev.filter((_, i) => i !== index))
+    }
+  }
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="form-label">Highest Qualification <span className="text-red-500">*</span></label>
-          <select name="qualification" value={formData.qualification as string || ''} onChange={handleChange} className="input-field" required>
-            <option value="">Select</option>
-            {/* Show legacy value as first option if it doesn't match standard options */}
-            {(formData.qualification as string) && !isValueInOptions(formData.qualification as string, QUALIFICATION_OPTIONS) && (
-              <option value={formData.qualification as string}>
-                {formData.qualification as string} (Current)
-              </option>
+      {entries.map((entry, index) => {
+        const hasLevel = !!entry.educationLevel
+        const filteredDegrees = hasLevel ? getDegreesForLevel(entry.educationLevel) : FIELD_OF_STUDY_OPTIONS
+        const showDegreeDropdown = filteredDegrees.length > 0
+        const isRequired = index === 0 || hasLevel
+
+        return (
+        <div key={index} className={`${index > 0 ? 'border-t border-gray-200 pt-4 mt-4' : ''} rounded-lg bg-gray-50 p-4`}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold text-gray-700">
+              {index === 0 ? 'Highest Education' : `Education ${index + 1}`}
+              {index === 0 && <span className="text-red-500"> *</span>}
+            </p>
+            {index > 0 && (
+              <button
+                type="button"
+                onClick={() => removeEntry(index)}
+                className="text-xs text-red-500 hover:text-red-700 font-medium"
+              >
+                Remove
+              </button>
             )}
-            {QUALIFICATION_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          {(formData.qualification as string) === 'other' && (
-            <input type="text" name="qualificationOther" value={formData.qualificationOther as string || ''} onChange={handleChange} className="input-field mt-2" placeholder="Specify qualification" />
-          )}
-        </div>
-        <div className="relative">
-          <label className="form-label">College/University <span className="text-red-500">*</span></label>
-          <input
-            type="text"
-            value={universitySearch || (formData.university as string === 'other' ? '' : formData.university as string) || ''}
-            onChange={(e) => {
-              setUniversitySearch(e.target.value)
-              setShowUniversityDropdown(true)
-            }}
-            onFocus={() => setShowUniversityDropdown(true)}
-            className="input-field"
-            placeholder="Type to search universities..."
-            required
-          />
-          {showUniversityDropdown && (
-            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
-              {filteredUniversities.length > 0 ? (
-                filteredUniversities.map((uni) => (
-                  <button
-                    key={uni}
-                    type="button"
-                    onClick={() => handleUniversitySelect(uni)}
-                    className={`w-full text-left px-3 py-2 hover:bg-gray-100 text-sm ${
-                      uni === "Other (specify below)" ? 'font-medium text-primary-600 border-b border-gray-200' : ''
-                    }`}
-                  >
-                    {uni}
-                  </button>
-                ))
-              ) : (
-                <div className="px-3 py-2 text-sm text-gray-500">
-                  No matches found. Select &quot;Other&quot; to enter manually.
-                </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="form-label text-xs">Level {index === 0 && <span className="text-red-500">*</span>}</label>
+              <select
+                name={index === 0 ? 'educationLevel' : `educationLevel_${index}`}
+                value={entry.educationLevel}
+                onChange={(e) => updateEntry(index, 'educationLevel', e.target.value)}
+                className="input-field text-sm"
+                required={index === 0}
+              >
+                <option value="">Select</option>
+                {EDUCATION_LEVEL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {entry.educationLevel === 'other' && (
+                <input
+                  type="text"
+                  value={entry.educationLevelOther || ''}
+                  onChange={(e) => updateEntry(index, 'educationLevelOther', e.target.value)}
+                  className="input-field text-sm mt-2"
+                  placeholder="Specify your education level"
+                  required={index === 0}
+                />
               )}
             </div>
-          )}
-          {/* Click outside to close */}
-          {showUniversityDropdown && (
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShowUniversityDropdown(false)}
-            />
-          )}
-          {isOtherUniversity && (formData.university as string) !== 'other' && (
-            <p className="text-xs text-gray-500 mt-1">Custom entry: {formData.university as string}</p>
-          )}
+            <div>
+              <label className="form-label text-xs">
+                Degree Received {isRequired && showDegreeDropdown && <span className="text-red-500">*</span>}
+              </label>
+              {showDegreeDropdown ? (
+                <>
+                  <select
+                    name={index === 0 ? 'fieldOfStudy' : `fieldOfStudy_${index}`}
+                    value={entry.fieldOfStudy}
+                    onChange={(e) => updateEntry(index, 'fieldOfStudy', e.target.value)}
+                    className="input-field text-sm"
+                    required={isRequired}
+                  >
+                    <option value="">Select</option>
+                    {filteredDegrees.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                  {entry.fieldOfStudy === 'other' && (
+                    <input
+                      type="text"
+                      value={entry.fieldOfStudyOther || ''}
+                      onChange={(e) => updateEntry(index, 'fieldOfStudyOther', e.target.value)}
+                      className="input-field text-sm mt-2"
+                      placeholder="Specify your degree"
+                      required={isRequired}
+                    />
+                  )}
+                </>
+              ) : (
+                <input
+                  type="text"
+                  value="N/A"
+                  disabled
+                  className="input-field bg-gray-100 text-gray-400 text-sm"
+                />
+              )}
+            </div>
+            <div>
+              <label className="form-label text-xs">College/University {isRequired && <span className="text-red-500">*</span>}</label>
+              <UniversitySearchInput
+                value={entry.university}
+                onChange={(uni) => updateEntry(index, 'university', uni)}
+              />
+              {entry.university === 'other' && (
+                <input
+                  type="text"
+                  value={entry.universityOther || ''}
+                  onChange={(e) => updateEntry(index, 'universityOther', e.target.value)}
+                  className="input-field text-sm mt-2"
+                  placeholder="Enter your college/university name"
+                  required={isRequired}
+                />
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-      {/* Other university text input */}
-      {(formData.university as string) === 'other' && (
-        <div>
-          <label className="form-label">Specify University/College</label>
-          <input
-            type="text"
-            name="universityOther"
-            value={formData.universityOther as string || ''}
-            onChange={handleChange}
-            className="input-field"
-            placeholder="Enter your university or college name"
-          />
-        </div>
+        )
+      })}
+
+      {entries.length < 3 && (
+        <button
+          type="button"
+          onClick={addEntry}
+          className="text-sm text-primary-600 hover:text-primary-700 font-medium mt-3 py-2 px-3 border border-dashed border-primary-300 rounded-lg hover:bg-primary-50 transition-colors w-full text-center"
+        >
+          + Add Another Education
+        </button>
       )}
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -1124,6 +1445,8 @@ export function FamilySection({ formData, handleChange }: SectionProps) {
 }
 
 export function LifestyleSection({ formData, handleChange, setFormData }: SectionProps) {
+  const PET_VALUES = ['have_love', 'no_but_love', 'no_but_open', 'prefer_not', 'allergic'] as const
+
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
     const current = (formData[field] as string || '').split(', ').filter(v => v)
     if (checked) {
@@ -1160,9 +1483,76 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     return val
   }
 
+  // Normalize legacy pets values so required dropdowns don't get stuck as invalid
+  const normalizePets = (val: string | null | undefined): string => {
+    if (!val) return ''
+    const normalized = val.toLowerCase().trim().replace(/\s+/g, '_')
+    if (PET_VALUES.includes(normalized as typeof PET_VALUES[number])) return normalized
+
+    const lower = val.toLowerCase().trim()
+    if (lower.includes('allerg')) return 'allergic'
+    if (lower.includes('prefer') && lower.includes('not')) return 'prefer_not'
+    if ((lower.includes("don't") || lower.includes('dont') || lower.includes('do not')) && lower.includes('open')) return 'no_but_open'
+    if ((lower.includes("don't") || lower.includes('dont') || lower.includes('do not')) && lower.includes('love')) return 'no_but_love'
+    if (lower.includes('have') && lower.includes('open')) return 'no_but_open'
+    if (lower.includes('have') && lower.includes('love')) return 'have_love'
+    if (lower.includes('no pets')) return 'prefer_not'
+    return val
+  }
+
+  const normalizeYesNoChoice = (val: string | null | undefined): string => {
+    if (!val) return ''
+    const lower = val.toLowerCase().trim()
+    if (lower.startsWith('y')) return 'Yes'
+    if (lower.startsWith('n')) return 'No'
+    return val
+  }
+
   const dietValue = normalizeDiet(formData.dietaryPreference as string)
   const smokingValue = normalizeYesNo(formData.smoking as string)
   const drinkingValue = normalizeYesNo(formData.drinking as string)
+  const petsValue = normalizePets(formData.pets as string)
+  const openToDateValue = normalizeYesNoChoice(formData.openToDate as string)
+  const openToPrenupValue = normalizeYesNoChoice(formData.openToPrenup as string)
+
+  const isKnownPetsValue = PET_VALUES.includes(petsValue as typeof PET_VALUES[number])
+  const isKnownOpenToDateValue = openToDateValue === 'Yes' || openToDateValue === 'No'
+  const isKnownOpenToPrenupValue = openToPrenupValue === 'Yes' || openToPrenupValue === 'No'
+
+  useEffect(() => {
+    const updates: Record<string, string> = {}
+    const rawDietValue = formData.dietaryPreference as string || ''
+    const rawSmokingValue = formData.smoking as string || ''
+    const rawDrinkingValue = formData.drinking as string || ''
+    const rawPetsValue = formData.pets as string || ''
+    const rawOpenToDateValue = formData.openToDate as string || ''
+    const rawOpenToPrenupValue = formData.openToPrenup as string || ''
+
+    if (rawDietValue && rawDietValue !== dietValue) updates.dietaryPreference = dietValue
+    if (rawSmokingValue && rawSmokingValue !== smokingValue) updates.smoking = smokingValue
+    if (rawDrinkingValue && rawDrinkingValue !== drinkingValue) updates.drinking = drinkingValue
+    if (rawPetsValue && rawPetsValue !== petsValue) updates.pets = petsValue
+    if (rawOpenToDateValue && rawOpenToDateValue !== openToDateValue) updates.openToDate = openToDateValue
+    if (rawOpenToPrenupValue && rawOpenToPrenupValue !== openToPrenupValue) updates.openToPrenup = openToPrenupValue
+
+    if (Object.keys(updates).length > 0) {
+      setFormData(prev => ({ ...prev, ...updates }))
+    }
+  }, [
+    dietValue,
+    drinkingValue,
+    formData.dietaryPreference,
+    formData.drinking,
+    formData.openToDate,
+    formData.openToPrenup,
+    formData.pets,
+    formData.smoking,
+    openToDateValue,
+    openToPrenupValue,
+    petsValue,
+    setFormData,
+    smokingValue,
+  ])
 
   return (
     <>
@@ -1336,14 +1726,42 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
 
       <div>
         <label className="form-label">Pets <span className="text-red-500">*</span></label>
-        <select name="pets" value={formData.pets as string || ''} onChange={handleChange} className="input-field" required>
+        <select name="pets" value={petsValue} onChange={handleChange} className="input-field" required>
           <option value="">Select</option>
+          {petsValue && !isKnownPetsValue && (
+            <option value={petsValue}>{petsValue} (Current)</option>
+          )}
           <option value="have_love">Have pets and love them</option>
           <option value="no_but_love">Don't have, but love pets</option>
           <option value="no_but_open">Don't have, but open to having</option>
           <option value="prefer_not">Prefer not to have pets</option>
           <option value="allergic">Allergic to pets</option>
         </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label">Open to Date? <span className="text-red-500">*</span></label>
+          <select name="openToDate" value={openToDateValue} onChange={handleChange} className="input-field" required>
+            <option value="">Select</option>
+            {openToDateValue && !isKnownOpenToDateValue && (
+              <option value={openToDateValue}>{openToDateValue} (Current)</option>
+            )}
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div>
+          <label className="form-label">Open to Prenup? <span className="text-red-500">*</span></label>
+          <select name="openToPrenup" value={openToPrenupValue} onChange={handleChange} className="input-field" required>
+            <option value="">Select</option>
+            {openToPrenupValue && !isKnownOpenToPrenupValue && (
+              <option value={openToPrenupValue}>{openToPrenupValue} (Current)</option>
+            )}
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
       </div>
     </>
   )
@@ -1428,6 +1846,11 @@ function generateAboutMe(formData: Record<string, unknown>): string {
 
 export function AboutMeSection({ formData, handleChange, setFormData }: SectionProps) {
   const [showGenerated, setShowGenerated] = useState(false)
+  // Track LinkedIn choice independently from the URL value to avoid circular state bug
+  const [linkedinChoice, setLinkedinChoice] = useState<'has_linkedin' | 'no_linkedin'>(() => {
+    const val = formData.linkedinProfile as string
+    return val && val !== 'no_linkedin' ? 'has_linkedin' : 'no_linkedin'
+  })
   const generatedContent = generateAboutMe(formData)
   const hasInfoToGenerate = (formData.religion as string || '').trim() ||
     (formData.familyType as string || '').trim() ||
@@ -1534,9 +1957,11 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
           <div>
             <label className="form-label">LinkedIn <span className="text-red-500">*</span></label>
             <select
-              value={formData.linkedinProfile === 'no_linkedin' ? 'no_linkedin' : 'has_linkedin'}
+              value={linkedinChoice}
               onChange={(e) => {
-                if (e.target.value === 'no_linkedin') {
+                const choice = e.target.value as 'has_linkedin' | 'no_linkedin'
+                setLinkedinChoice(choice)
+                if (choice === 'no_linkedin') {
                   setFormData(prev => ({ ...prev, linkedinProfile: 'no_linkedin', linkedinError: '' }))
                 } else {
                   setFormData(prev => ({ ...prev, linkedinProfile: '', linkedinError: '' }))
@@ -1547,7 +1972,7 @@ export function AboutMeSection({ formData, handleChange, setFormData }: SectionP
               <option value="has_linkedin">I have LinkedIn</option>
               <option value="no_linkedin">I don&apos;t have LinkedIn</option>
             </select>
-            {(formData.linkedinProfile !== 'no_linkedin') && (
+            {linkedinChoice === 'has_linkedin' && (
               <>
                 <div className="relative">
                   <input

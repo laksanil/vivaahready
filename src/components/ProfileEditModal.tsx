@@ -41,6 +41,7 @@ export default function ProfileEditModal({
   httpMethod = 'PUT'
 }: ProfileEditModalProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
+  const [isHydrated, setIsHydrated] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -52,6 +53,14 @@ export default function ProfileEditModal({
         data.linkedinProfile = 'no_linkedin'
       }
       setFormData(data)
+      setIsHydrated(true)
+      setError('')
+      return
+    }
+
+    if (!isOpen) {
+      setFormData({})
+      setIsHydrated(false)
       setError('')
     }
   }, [isOpen, profile])
@@ -111,6 +120,8 @@ export default function ProfileEditModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isHydrated) return
 
     if (!isValid) {
       setError(validationErrors.join('. '))
@@ -177,22 +188,30 @@ export default function ProfileEditModal({
           )}
 
           {/* Sections matching the create profile flow */}
-          {section === 'basics' && <BasicsSection {...sectionProps} />}
-          {section === 'contact' && <ContactSection {...sectionProps} />}
-          {section === 'location_education' && (
+          {!isHydrated ? (
+            <div className="py-12 flex justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            </div>
+          ) : (
             <>
-              <LocationSection {...sectionProps} />
-              <div className="border-t pt-4 mt-4">
-                <EducationSection {...sectionProps} />
-              </div>
+              {section === 'basics' && <BasicsSection {...sectionProps} />}
+              {section === 'contact' && <ContactSection {...sectionProps} />}
+              {section === 'location_education' && (
+                <>
+                  <LocationSection {...sectionProps} />
+                  <div className="border-t pt-4 mt-4">
+                    <EducationSection {...sectionProps} />
+                  </div>
+                </>
+              )}
+              {section === 'religion' && <ReligionSection {...sectionProps} />}
+              {section === 'family' && <FamilySection {...sectionProps} />}
+              {section === 'lifestyle' && <LifestyleSection {...sectionProps} />}
+              {section === 'aboutme' && <AboutMeSection {...sectionProps} />}
+              {section === 'preferences_1' && <PreferencesPage1Section {...sectionProps} />}
+              {section === 'preferences_2' && <PreferencesPage2Section {...sectionProps} />}
             </>
           )}
-          {section === 'religion' && <ReligionSection {...sectionProps} />}
-          {section === 'family' && <FamilySection {...sectionProps} />}
-          {section === 'lifestyle' && <LifestyleSection {...sectionProps} />}
-          {section === 'aboutme' && <AboutMeSection {...sectionProps} />}
-          {section === 'preferences_1' && <PreferencesPage1Section {...sectionProps} />}
-          {section === 'preferences_2' && <PreferencesPage2Section {...sectionProps} />}
 
           {/* Validation errors */}
           {!isValid && validationErrors.length > 0 && (
@@ -212,9 +231,9 @@ export default function ProfileEditModal({
             </button>
             <button
               type="submit"
-              disabled={loading || !isValid}
+              disabled={loading || !isValid || !isHydrated}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                isValid && !loading
+                isValid && !loading && isHydrated
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}

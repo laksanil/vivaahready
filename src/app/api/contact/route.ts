@@ -8,9 +8,10 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     const body = await request.json()
-    const { name, email, subject, message, website } = body
+    const { name, email, phone, subject, message, website, vrId } = body
     const normalizedName = String(name || '').trim()
     const normalizedEmail = String(email || '').trim().toLowerCase()
+    const normalizedPhone = String(phone || '').trim()
     const normalizedSubject = String(subject || '').trim()
     const normalizedMessage = String(message || '').trim()
 
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    if (!normalizedName || !normalizedEmail || !normalizedSubject || !normalizedMessage) {
+    if (!normalizedName || !normalizedEmail || !normalizedPhone || !normalizedSubject || !normalizedMessage) {
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
@@ -39,17 +40,47 @@ export async function POST(request: NextRequest) {
     }
 
     // Store in support messages so it appears directly in Admin > Messages tab
+    const normalizedVrId = vrId ? String(vrId).trim() : null
+
     const supportMessage = await prisma.supportMessage.create({
       data: {
         userId: session?.user?.id || null,
+        vrId: normalizedVrId,
         name: normalizedName,
         email: normalizedEmail,
+        phone: normalizedPhone,
         subject: normalizedSubject,
         message: normalizedMessage,
         context: 'contact_form',
         status: 'new',
       },
     })
+
+    // Record user's own contact submission in notifications timeline (read by default).
+    if (session?.user?.id) {
+      try {
+        const sentAt = new Date()
+        await prisma.notification.create({
+          data: {
+            userId: session.user.id,
+            type: 'support_user_message',
+            title: 'Your message to Admin',
+            body: normalizedMessage.slice(0, 220) || 'Your contact message was sent.',
+            url: '/admin-messages',
+            read: true,
+            readAt: sentAt,
+            data: JSON.stringify({
+              messageId: supportMessage.id,
+              context: 'contact_form',
+              __deliveryModes: ['in_app'],
+              __sentAt: sentAt.toISOString(),
+            }),
+          },
+        })
+      } catch (notificationError) {
+        console.error('Failed to create contact notification:', notificationError)
+      }
+    }
 
     // Send confirmation email to the user
     const confirmationResult = await sendEmail({

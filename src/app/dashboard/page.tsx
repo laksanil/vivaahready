@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import {
-  User,
   Heart,
   Users,
-  Bell,
   Eye,
+  Bell,
   CheckCircle,
   AlertCircle,
   ArrowRight,
@@ -18,10 +17,15 @@ import {
   XCircle,
   Sparkles,
   Shield,
+  Target,
+  Lightbulb,
+  Calendar,
 } from 'lucide-react'
 import FindMatchModal from '@/components/FindMatchModal'
 import VerificationPaymentModal from '@/components/VerificationPaymentModal'
 import ReferralCard from '@/components/ReferralCard'
+import EngagementRewardsCard from '@/components/EngagementRewardsCard'
+import ProfileFeedbackPopup from '@/components/ProfileFeedbackPopup'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -38,6 +42,14 @@ interface DashboardStats {
     profileViews: number
     matches: number
   }
+}
+
+interface ProfileStrength {
+  score: number
+  sections: { name: string; score: number; weight: number }[]
+  tips: string[]
+  memberSince: string | null
+  approvedDate: string | null
 }
 
 function DashboardContent() {
@@ -71,14 +83,33 @@ function DashboardContent() {
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false)
   const [dbProfileChecked, setDbProfileChecked] = useState(false)
   const [dbHasProfile, setDbHasProfile] = useState<boolean | null>(null)
+  const [profileStrength, setProfileStrength] = useState<ProfileStrength | null>(null)
+  const [showProfileFeedback, setShowProfileFeedback] = useState(false)
+  const [notifications, setNotifications] = useState<{ id: string; type: string; title: string; body: string; url: string | null; read: boolean; createdAt: string }[]>([])
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0)
+
+  // Event survey state
+  const [surveyStep, setSurveyStep] = useState(0) // 0=not shown, 1=interest question, 2=details
+  const [surveyLoading, setSurveyLoading] = useState(false)
+  const [surveyForm, setSurveyForm] = useState({
+    interestLevel: '',
+    availability: '',
+    duration: '',
+    goal: '',
+    nameSharing: '',
+    frequency: '',
+    groupSize: '',
+    ageRange: '',
+    timeZone: '',
+    videoComfort: '',
+    suggestions: '',
+  })
+
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
   const shouldCreateProfile = searchParams.get('createProfile') === 'true'
 
   // Check if session data is fully loaded (hasProfile will be undefined until JWT callback populates it)
-  // This prevents the flash where "Create Profile" modal appears briefly before session data loads
-  // Consider data loaded if: admin view, OR database check is complete, OR hasProfile is defined in JWT
-  // IMPORTANT: Wait for database check to complete to prevent showing modal when profile actually exists
   const sessionDataLoaded = isAdminView || dbProfileChecked || (session?.user && (session.user as any).hasProfile === true)
   const sessionHasProfile = isAdminView
     ? !!impersonatedUser?.profile
@@ -87,8 +118,6 @@ function DashboardContent() {
     ? (impersonatedUser?.profile?.approvalStatus || null)
     : ((session?.user as any)?.approvalStatus || null)
   const pendingFromUrl = showPendingMessage && !sessionApprovalStatus
-  // Use database check if available (overrides potentially stale JWT value)
-  // This prevents the loop where user creates profile but JWT still says hasProfile=false
   const hasProfile = dbHasProfile === true || sessionHasProfile || pendingFromUrl
   const approvalStatus = sessionApprovalStatus || (pendingFromUrl ? 'pending' : null)
   const isApproved = hasProfile && approvalStatus === 'approved'
@@ -99,7 +128,7 @@ function DashboardContent() {
   const userContextReady = !isAdminView || impersonatedLoaded
   const displayName = (isAdminView ? impersonatedUser?.name : session?.user?.name) || 'User'
 
-  // Admin link is shown based on a simple check - can be enhanced later
+  // Admin link
   const [isAdmin, setIsAdmin] = useState(false)
   useEffect(() => {
     fetch('/api/admin/check')
@@ -107,11 +136,10 @@ function DashboardContent() {
       .catch(() => setIsAdmin(false))
   }, [])
 
-  // Check actual profile status from database (not just JWT which can be stale)
-  // This prevents the loop where user creates profile but JWT still says hasProfile=false
+  // Check actual profile status from database
   useEffect(() => {
     if (status !== 'authenticated' || isAdminView) return
-    if (dbProfileChecked) return // Only check once
+    if (dbProfileChecked) return
 
     fetch('/api/user/profile-status')
       .then(res => res.json())
@@ -158,7 +186,7 @@ function DashboardContent() {
   const [createdProfileId, setCreatedProfileId] = useState<string | null>(null)
   const [loadingTimeout, setLoadingTimeout] = useState(false)
 
-  // Safety timeout to prevent infinite loading - if loading takes more than 10 seconds, stop waiting
+  // Safety timeout to prevent infinite loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoadingTimeout(true)
@@ -166,8 +194,6 @@ function DashboardContent() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Check if we have pending signup data to process (before creatingProfile is set)
-  // Only check this if shouldCreateProfile is true (from URL param) to prevent false positives
   const hasPendingSignupData = typeof window !== 'undefined' && shouldCreateProfile && sessionStorage.getItem('signupFormData') !== null
 
   // Fetch payment status when user has a pending profile
@@ -193,7 +219,6 @@ function DashboardContent() {
   }, [status, router, isAdminView, adminChecked, isAdminAccess])
 
   // Check if profile is incomplete and redirect to the correct step
-  // This handles users who started signup but didn't finish - resume where they left off
   useEffect(() => {
     if (status !== 'authenticated' || isAdminView || !hasProfile) return
 
@@ -202,16 +227,11 @@ function DashboardContent() {
       .then(data => {
         if (!data.hasProfile) return
 
-        // signupStep mapping: 1=basics, 2=location, 3=religion, 4=family, 5=lifestyle, 6=aboutme, 7=prefs1, 8=prefs2, 9+=photos
-        // If signup flow is not complete (signupStep < 8), redirect to profile completion at the step where user left off
         if (data.signupStep < 8) {
-          // Redirect to profile/complete at the next step (signupStep + 1)
-          // Profile data will be fetched and pre-populated on that page
           router.push(`/profile/complete?profileId=${data.profileId}&step=${data.signupStep + 1}`)
           return
         }
 
-        // If profile sections done (signupStep 8) but photos not uploaded, redirect to photos page
         if (!data.hasPhotos && data.signupStep < 10) {
           router.push(`/profile/photos?profileId=${data.profileId}&fromSignup=true`)
         }
@@ -219,15 +239,8 @@ function DashboardContent() {
       .catch(() => {})
   }, [status, isAdminView, hasProfile, router])
 
-  // Clean up orphaned signupFormData ONLY if user has a completed profile
-  // This prevents cleaning up data that's still needed for the Google OAuth flow
-  // IMPORTANT: Must wait for database check to complete before cleaning up
+  // Clean up orphaned signupFormData
   useEffect(() => {
-    // Only clean up if:
-    // 1. User is authenticated
-    // 2. Database check is complete
-    // 3. User HAS a profile in the database (signup is complete)
-    // 4. Not in the process of creating a profile
     if (
       status === 'authenticated' &&
       dbProfileChecked &&
@@ -235,7 +248,6 @@ function DashboardContent() {
       !shouldCreateProfile &&
       typeof window !== 'undefined'
     ) {
-      // Check both storages
       const hasSessionData = sessionStorage.getItem('signupFormData')
       const hasLocalData = localStorage.getItem('signupFormData')
       if (hasSessionData || hasLocalData) {
@@ -246,16 +258,14 @@ function DashboardContent() {
     }
   }, [status, shouldCreateProfile, dbProfileChecked, dbHasProfile])
 
-  // Handle Google auth callback - create profile from stored form data and go to photos
+  // Handle Google auth callback
   useEffect(() => {
     const handleGoogleAuthCallback = async () => {
       if (status !== 'authenticated' || !shouldCreateProfile || !session?.user?.email) return
 
-      // Check if there's stored form data from before Google auth
       const storedFormData = sessionStorage.getItem('signupFormData')
       if (!storedFormData) return
 
-      // Prevent duplicate profile creation
       if (creatingProfile || createdProfileId) return
 
       setCreatingProfile(true)
@@ -263,7 +273,6 @@ function DashboardContent() {
       try {
         const formData = JSON.parse(storedFormData)
 
-        // Create profile with stored form data
         const referredBy = sessionStorage.getItem('referredBy') || document.cookie.match(/referredBy=([^;]+)/)?.[1] || undefined
         const profileResponse = await fetch('/api/profile/create-from-modal', {
           method: 'POST',
@@ -278,16 +287,9 @@ function DashboardContent() {
         if (profileResponse.ok) {
           const profileData = await profileResponse.json()
           setCreatedProfileId(profileData.profileId)
-
-          // Clear the stored form data
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
-
-          // Redirect to profile complete page to continue signup from step 2 (location_education)
-          // User has completed step 1 (basics) before Google auth, account creation is not numbered
-          // signupStep 2 = location_education is the next step to complete
           router.push(`/profile/complete?profileId=${profileData.profileId}&step=2`)
         } else if (profileResponse.status === 409) {
-          // Duplicate profile detected — allow user to confirm
           const data = await profileResponse.json()
           if (data.error === 'duplicate_profile') {
             const confirmed = window.confirm(
@@ -321,7 +323,6 @@ function DashboardContent() {
             setShowCreateProfileModal(true)
           }
         } else {
-          // If profile creation fails, show the modal to let user complete manually
           sessionStorage.removeItem('signupFormData'); localStorage.removeItem('signupFormData')
           setShowCreateProfileModal(true)
         }
@@ -337,24 +338,13 @@ function DashboardContent() {
     handleGoogleAuthCallback()
   }, [status, shouldCreateProfile, session?.user?.email, creatingProfile, createdProfileId, router])
 
-  // Auto-show create profile modal if user needs to create profile
+  // Auto-show create profile modal
   useEffect(() => {
-    // ProfileCompletionGuard and login page handle redirecting users to /profile/complete if they have no profile
-    // Don't check for stored form data here as it can cause redirect loops
-
-    // Don't show modal if user just completed registration (redirected with status=pending)
-    // The session might not have updated hasProfile yet, so we trust the URL param
     if (showPendingMessage) return
-
-    // Wait until session data is fully loaded AND database check is complete
-    // This prevents showing the modal when profile actually exists but JWT is stale
     if (!sessionDataLoaded || !dbProfileChecked) return
-
-    // Don't show modal if database confirms profile exists
     if (dbHasProfile === true) return
 
     if (status === 'authenticated' && needsProfile && (shouldCreateProfile || !showCreateProfileModal)) {
-      // Small delay to ensure page is ready
       const timer = setTimeout(() => {
         setShowCreateProfileModal(true)
       }, 500)
@@ -362,15 +352,16 @@ function DashboardContent() {
     }
   }, [status, needsProfile, shouldCreateProfile, showCreateProfileModal, sessionDataLoaded, showPendingMessage, dbProfileChecked, dbHasProfile, router])
 
+  // Fetch stats for any user with a profile
   useEffect(() => {
     if (!userContextReady) return
-    if (isApproved) {
+    if (hasProfile) {
       fetchStats()
     } else {
       setLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isApproved, buildApiUrl, userContextReady])
+  }, [hasProfile, isApproved, buildApiUrl, userContextReady])
 
   // Show welcome banner only once after approval
   useEffect(() => {
@@ -383,37 +374,109 @@ function DashboardContent() {
     }
   }, [isApproved])
 
+  // Show profile feedback popup for new users (within 7 days)
+  useEffect(() => {
+    if (!hasProfile || typeof window === 'undefined') return
+    if (localStorage.getItem('vivaah_profile_feedback_given')) return
+
+    if (profileStrength?.memberSince) {
+      const createdAt = new Date(profileStrength.memberSince)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      if (createdAt > sevenDaysAgo) {
+        setShowProfileFeedback(true)
+      }
+    }
+  }, [hasProfile, profileStrength])
+
+  // Check event survey status
+  useEffect(() => {
+    if (!hasProfile || typeof window === 'undefined') return
+
+    fetch('/api/event-interest')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.submitted) {
+          setSurveyStep(1)
+        }
+      })
+      .catch(() => {})
+  }, [hasProfile])
+
+  // Fetch notifications (latest 1 for dashboard)
+  useEffect(() => {
+    if (!hasProfile) return
+
+    fetch('/api/notifications?limit=1')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setNotifications(data.notifications || [])
+          setUnreadNotifCount(data.unreadCount || 0)
+        }
+      })
+      .catch(() => {})
+  }, [hasProfile])
+
+  const handleSurveySubmit = async () => {
+    if (!surveyForm.interestLevel) return
+    setSurveyLoading(true)
+    try {
+      await fetch('/api/event-interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(surveyForm),
+      })
+      setSurveyStep(0)
+    } catch {
+      // silent
+    } finally {
+      setSurveyLoading(false)
+    }
+  }
+
   const fetchStats = async () => {
     try {
-      // Fetch all stats from the single source of truth API
-      const matchesRes = await fetch(buildApiUrl('/api/matches/auto'))
-      const matchesData = await matchesRes.json()
+      // Fetch profile strength for any user with a profile
+      const strengthPromise = fetch('/api/profile/strength')
+        .then(res => res.ok ? res.json() : null)
+        .catch(() => null)
 
-      // Extract stats from the API response
-      const apiStats = matchesData.stats || {}
-      const lifetimeStats = apiStats.lifetime || {}
+      // Only fetch match stats for approved users
+      const matchesPromise = isApproved
+        ? fetch(buildApiUrl('/api/matches/auto'))
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null)
+        : Promise.resolve(null)
 
-      setStats({
-        // Active stats (current/dynamic)
-        interestsReceived: apiStats.interestsReceived?.total || 0,
-        interestsSent: apiStats.interestsSent?.total || 0,
-        mutualMatches: apiStats.mutualMatches || 0,
-        matchesCount: apiStats.potentialMatches || 0,
-        // Lifetime stats (never decrease)
-        lifetime: {
-          interestsReceived: lifetimeStats.interestsReceived || 0,
-          interestsSent: lifetimeStats.interestsSent || 0,
-          profileViews: lifetimeStats.profileViews || 0,
-          matches: lifetimeStats.matches || 0,
-        },
-      })
+      const [strengthData, matchesData] = await Promise.all([strengthPromise, matchesPromise])
 
-      // Capture profile info for display
-      if (matchesData.myProfile) {
-        setProfileInfo({
-          firstName: matchesData.myProfile.firstName,
-          odNumber: matchesData.myProfile.odNumber,
+      if (strengthData) {
+        setProfileStrength(strengthData)
+      }
+
+      if (matchesData) {
+        const apiStats = matchesData.stats || {}
+        const lifetimeStats = apiStats.lifetime || {}
+
+        setStats({
+          interestsReceived: apiStats.interestsReceived?.total || 0,
+          interestsSent: apiStats.interestsSent?.total || 0,
+          mutualMatches: apiStats.mutualMatches || 0,
+          matchesCount: apiStats.potentialMatches || 0,
+          lifetime: {
+            interestsReceived: lifetimeStats.interestsReceived || 0,
+            interestsSent: lifetimeStats.interestsSent || 0,
+            profileViews: lifetimeStats.profileViews || 0,
+            matches: lifetimeStats.matches || 0,
+          },
         })
+
+        if (matchesData.myProfile) {
+          setProfileInfo({
+            firstName: matchesData.myProfile.firstName,
+            odNumber: matchesData.myProfile.odNumber,
+          })
+        }
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
@@ -422,13 +485,7 @@ function DashboardContent() {
     }
   }
 
-  // Show loader while:
-  // 1. Session is loading
-  // 2. Admin view mode checks are pending
-  // 3. Session data (hasProfile) is not yet populated from JWT
-  // 4. Profile is being created after Google auth (prevents flash of dashboard)
-  // 5. Pending signup data waiting to be processed
-  // Safety: loadingTimeout prevents infinite loading if something goes wrong
+  // Loader
   const isCreatingOrPendingProfile = creatingProfile || hasPendingSignupData
   const shouldShowLoader = !loadingTimeout && (
     status === 'loading' ||
@@ -593,10 +650,10 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Approved User Stats */}
-        {isApproved && (
+        {/* Dashboard content for users with a profile */}
+        {hasProfile && (
           <>
-            {/* Success Banner for new approvals - shows only on first login after approval */}
+            {/* Success Banner for new approvals */}
             {showWelcomeBanner && (
               <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
                 <div className="flex items-start">
@@ -620,94 +677,308 @@ function DashboardContent() {
               </div>
             )}
 
-            {/* Stats Grid - Active Stats */}
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Current Activity</h3>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                <Link
-                  href={buildUrl('/matches?tab=matches')}
-                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-blue-200 border border-transparent transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-blue-600 transition-colors">Your Matches</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                        {loading ? '...' : stats.matchesCount}
-                      </p>
-                    </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                    </div>
-                  </div>
-                </Link>
-
-                <Link
-                  href={buildUrl('/matches?tab=received')}
-                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-pink-200 border border-transparent transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-pink-600 transition-colors">Interests Received</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                        {loading ? '...' : stats.interestsReceived}
-                      </p>
-                    </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
-                      <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
+            {/* 1. Event Survey */}
+            {surveyStep > 0 && (
+              <>
+                {surveyStep === 1 && (
+                  <div className="mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-xl p-4 sm:p-5 shadow-md">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-white">Singles Meet-Up Events</h3>
+                          <p className="text-sm text-purple-100">Would you attend a singles meet-up organized by VivaahReady?</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setSurveyForm(f => ({ ...f, interestLevel: 'yes' })); setSurveyStep(2) }}
+                        className="px-4 py-2 bg-white text-purple-700 rounded-lg text-sm font-semibold hover:bg-purple-50 transition-colors"
+                      >
+                        Interested?
+                      </button>
                     </div>
                   </div>
-                </Link>
+                )}
 
-                <Link
-                  href={buildUrl('/matches?tab=sent')}
-                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-purple-200 border border-transparent transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-purple-600 transition-colors">Interests Sent</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                        {loading ? '...' : stats.interestsSent}
-                      </p>
+                {surveyStep === 2 && (
+                  <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5 sm:p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Calendar className="h-5 w-5 text-indigo-600" />
+                      <h3 className="text-lg font-semibold text-gray-800">Zoom Meet-Up Preferences</h3>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                      <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                    <p className="text-base text-gray-600 mb-4">Help us plan the perfect virtual meet-up for you:</p>
+                    <div className="grid sm:grid-cols-3 gap-4 mb-5">
+                      <div>
+                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">When are you available?</label>
+                        <select
+                          value={surveyForm.availability}
+                          onChange={e => setSurveyForm(f => ({ ...f, availability: e.target.value }))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="">Select availability</option>
+                          <option value="weekend_morning">Weekend mornings</option>
+                          <option value="weekend_evening">Weekend evenings</option>
+                          <option value="weekday_evening">Weekday evenings</option>
+                          <option value="flexible">Flexible / Any time</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">What are you looking for?</label>
+                        <select
+                          value={surveyForm.goal}
+                          onChange={e => setSurveyForm(f => ({ ...f, goal: e.target.value }))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="">Select goal</option>
+                          <option value="matched_profiles">Only profiles that match my criteria</option>
+                          <option value="make_friends">Open to making new friends</option>
+                          <option value="find_partner">Looking to find a partner</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">Preferred duration</label>
+                        <select
+                          value={surveyForm.duration}
+                          onChange={e => setSurveyForm(f => ({ ...f, duration: e.target.value }))}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="">Select duration</option>
+                          <option value="1_hour">1 hour</option>
+                          <option value="1.5_hours">1.5 hours</option>
+                        </select>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        if (!surveyForm.interestLevel) setSurveyForm(f => ({ ...f, interestLevel: 'yes' }))
+                        handleSurveySubmit()
+                      }}
+                      disabled={surveyLoading}
+                      className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-base font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    >
+                      {surveyLoading ? 'Submitting...' : 'Submit'}
+                    </button>
                   </div>
-                </Link>
+                )}
+              </>
+            )}
 
-                <Link
-                  href={buildUrl('/connections')}
-                  className="bg-white rounded-xl shadow-sm p-4 sm:p-6 hover:shadow-md hover:border-green-200 border border-transparent transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm text-gray-500 group-hover:text-green-600 transition-colors">Connections</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                        {loading ? '...' : stats.mutualMatches}
-                      </p>
+            {/* 2. Profile Strength (with tips) + Engagement side by side */}
+            {!loading && (
+              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                {/* Profile Strength + Tips combined */}
+                {profileStrength && (
+                  <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 h-full">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Target className="h-5 w-5 text-primary-500" />
+                      <h3 className="text-base font-semibold text-gray-700 uppercase tracking-wide">Profile Strength</h3>
                     </div>
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                    <div className="flex items-center gap-5">
+                      <div className="flex-shrink-0">
+                        <svg className="w-28 h-28" viewBox="0 0 120 120">
+                          <circle cx="60" cy="60" r="52" fill="none" stroke="#f3f4f6" strokeWidth="10" />
+                          <circle
+                            cx="60" cy="60" r="52"
+                            fill="none"
+                            stroke={profileStrength.score >= 80 ? '#22c55e' : profileStrength.score >= 50 ? '#f59e0b' : '#ef4444'}
+                            strokeWidth="10"
+                            strokeDasharray={`${2 * Math.PI * 52}`}
+                            strokeDashoffset={`${2 * Math.PI * 52 * (1 - profileStrength.score / 100)}`}
+                            strokeLinecap="round"
+                            transform="rotate(-90 60 60)"
+                            className="transition-all duration-1000 ease-out"
+                          />
+                          <text x="60" y="55" textAnchor="middle" className="text-3xl font-bold" fill="#111827">{profileStrength.score}</text>
+                          <text x="60" y="75" textAnchor="middle" className="text-sm" fill="#6b7280">%</text>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        {profileStrength.tips.length > 0 ? (
+                          profileStrength.tips.map((tip, i) => (
+                            <div key={i} className="flex items-start gap-2 text-sm">
+                              <Lightbulb className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                              <span className="text-gray-600">{tip}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-green-600 font-medium">Your profile is looking great!</p>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Profile Tips inside the same card */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Profile Tips</p>
+                      <ul className="space-y-1.5 text-sm text-gray-500">
+                        <li className="flex items-start">
+                          <CheckCircle className="h-3.5 w-3.5 mr-2 mt-0.5 flex-shrink-0 text-primary-400" />
+                          Add clear, recent photos
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-3.5 w-3.5 mr-2 mt-0.5 flex-shrink-0 text-primary-400" />
+                          Complete all profile sections
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-3.5 w-3.5 mr-2 mt-0.5 flex-shrink-0 text-primary-400" />
+                          Write a detailed about section
+                        </li>
+                        <li className="flex items-start">
+                          <CheckCircle className="h-3.5 w-3.5 mr-2 mt-0.5 flex-shrink-0 text-primary-400" />
+                          Be specific about preferences
+                        </li>
+                      </ul>
+                    </div>
+
+                    {profileStrength.memberSince && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                        Member since {new Date(profileStrength.memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </div>
+                    )}
                   </div>
-                </Link>
-              </div>
-            </div>
+                )}
 
-            {/* Lifetime Stats - Simple text display */}
-            {(stats.lifetime.interestsReceived > 0 || stats.lifetime.interestsSent > 0 || stats.lifetime.matches > 0) && (
-              <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500">
-                <span className="font-medium text-gray-400">Since you joined:</span>
-                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.matches}</span> matches shown</span>
-                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.interestsReceived}</span> interests received</span>
-                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.interestsSent}</span> interests sent</span>
-                <span><span className="font-semibold text-gray-700">{loading ? '...' : stats.lifetime.profileViews}</span> profile views</span>
+                {/* Engagement Rewards */}
+                <EngagementRewardsCard compact />
               </div>
             )}
 
+            {/* 3. Daily Relationship Tidbit */}
+            {(() => {
+              const tidbits = [
+                'Couples who laugh together stay together. Shared humor builds resilience in relationships.',
+                'The average person falls in love 7 times before getting married.',
+                'Saying "thank you" to your partner daily strengthens emotional bonds more than grand gestures.',
+                'Research shows that couples who cook together report higher relationship satisfaction.',
+                'The most successful couples have a 5:1 ratio of positive to negative interactions.',
+                'Holding hands reduces stress hormones and increases feelings of security.',
+                'Couples who travel together have stronger communication and deeper trust.',
+                'Active listening is the #1 predictor of relationship longevity.',
+                'Sharing new experiences together releases dopamine, keeping the spark alive.',
+                'Partners who maintain their own friendships tend to have healthier relationships.',
+                'Small daily acts of kindness matter more than occasional big surprises.',
+                'Couples who express gratitude are 50% more likely to stay together long-term.',
+                'Having shared goals gives couples a sense of purpose and direction.',
+                'The way couples handle conflict matters more than how often they disagree.',
+                'Learning your partner\'s love language can transform your relationship.',
+                'Couples who exercise together report feeling more in love and satisfied.',
+                'A 6-second kiss each day can significantly improve relationship connection.',
+                'Writing love notes, even short ones, strengthens emotional intimacy.',
+                'Couples who celebrate small wins together build a culture of appreciation.',
+                'Eye contact during conversation deepens emotional connection between partners.',
+                'Date nights don\'t have to be expensive — consistency matters more than cost.',
+                'Vulnerability is the birthplace of love, belonging, and joy.',
+                'Couples who learn something new together feel more bonded and excited.',
+                'The happiest couples are those who are genuinely friends first.',
+                'Sharing a meal without screens increases quality time by 40%.',
+                'Successful relationships are built on mutual respect, not perfection.',
+                'Asking "How was your day?" and truly listening is a powerful daily ritual.',
+                'Surprise gestures, no matter how small, keep romance alive.',
+                'Couples who dream together about the future feel more aligned and hopeful.',
+                'Forgiveness is not about forgetting — it\'s about choosing the relationship over the grudge.',
+                'The strongest relationships are between two people who can be silly together.',
+              ]
+              const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+              const todayTidbit = tidbits[dayOfYear % tidbits.length]
+              return (
+                <div className="mb-6 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-xl p-4 sm:p-5 shadow-md">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Sparkles className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">Daily Relationship Tidbit</p>
+                      <p className="text-sm sm:text-base text-white font-medium leading-relaxed">{todayTidbit}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {/* 4. Stats Cards (colored boxes) + Referral */}
+            <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+              <div className="lg:col-span-2">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <Link
+                    href={buildUrl('/profile')}
+                    className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 sm:p-5 hover:shadow-md transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-blue-600 font-medium">Profile Views</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-blue-800 mt-1">
+                          {loading ? '...' : stats.lifetime.profileViews}
+                        </p>
+                      </div>
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-200/60 rounded-full flex items-center justify-center">
+                        <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-blue-700" />
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={buildUrl('/interest-received')}
+                    className="bg-gradient-to-br from-pink-50 to-pink-100 border border-pink-200 rounded-xl p-4 sm:p-5 hover:shadow-md transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-pink-600 font-medium">Interests Received</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-pink-800 mt-1">
+                          {loading ? '...' : stats.interestsReceived}
+                        </p>
+                      </div>
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-pink-200/60 rounded-full flex items-center justify-center">
+                        <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-700" />
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={buildUrl('/sent-interest')}
+                    className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 sm:p-5 hover:shadow-md transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-purple-600 font-medium">Interests Sent</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-purple-800 mt-1">
+                          {loading ? '...' : stats.interestsSent}
+                        </p>
+                      </div>
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-200/60 rounded-full flex items-center justify-center">
+                        <Users className="h-5 w-5 sm:h-6 sm:w-6 text-purple-700" />
+                      </div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={buildUrl('/connections')}
+                    className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 sm:p-5 hover:shadow-md transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs sm:text-sm text-green-600 font-medium">Connections</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-green-800 mt-1">
+                          {loading ? '...' : stats.mutualMatches}
+                        </p>
+                      </div>
+                      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-green-200/60 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-700" />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Referral */}
+              <div>
+                <ReferralCard />
+              </div>
+            </div>
+
             {/* Interest Notification */}
             {stats.interestsReceived > 0 && (
-              <div className="mb-8 bg-pink-50 border border-pink-200 rounded-xl p-6">
+              <div className="mb-6 bg-pink-50 border border-pink-200 rounded-xl p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className="h-12 w-12 bg-pink-100 rounded-full flex items-center justify-center mr-4">
@@ -731,285 +1002,36 @@ function DashboardContent() {
                 </div>
               </div>
             )}
-          </>
-        )}
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-                <Link
-                  href={buildUrl('/matches')}
-                  className={`flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors ${!hasProfile ? 'opacity-60 pointer-events-none' : ''}`}
-                >
-                  <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
-                    <Users className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">My Matches</p>
-                    <p className="text-sm text-gray-500">See profiles matched for you</p>
-                  </div>
-                </Link>
-
-                {hasProfile ? (
-                  <Link
-                    href={buildUrl('/profile/edit')}
-                    className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Edit Profile</p>
-                      <p className="text-sm text-gray-500">Update your information</p>
-                    </div>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => setShowCreateProfileModal(true)}
-                    className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
-                  >
-                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Create Profile</p>
-                      <p className="text-sm text-gray-500">Get started now</p>
-                    </div>
-                  </button>
-                )}
-
-                {isApproved && (
-                  <>
+            {/* 4. Notifications (latest 1) */}
+            {notifications.length > 0 && (
+              <div className="mb-6">
+                {(() => {
+                  const notif = notifications[0]
+                  return (
                     <Link
-                      href={buildUrl('/matches')}
-                      className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      href={notif.url || '/notifications'}
+                      className={`flex items-center gap-3 p-4 rounded-xl transition-colors ${notif.read ? 'bg-white shadow-sm hover:shadow-md' : 'bg-blue-50 border border-blue-200 hover:bg-blue-100'}`}
                     >
-                      <div className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center mr-4">
-                        <Heart className="h-5 w-5 text-pink-600" />
+                      <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Bell className={`h-5 w-5 ${notif.read ? 'text-gray-500' : 'text-primary-600'}`} />
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Express Interest</p>
-                        <p className="text-sm text-gray-500">Visit a profile to express interest</p>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${notif.read ? 'text-gray-700' : 'text-gray-900'}`}>{notif.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 truncate">{notif.body}</p>
                       </div>
+                      {unreadNotifCount > 1 && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0">+{unreadNotifCount - 1}</span>
+                      )}
+                      <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     </Link>
-
-                    <Link
-                      href={buildUrl('/connections')}
-                      className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Connections</p>
-                        <p className="text-sm text-gray-500">View and message your connections</p>
-                      </div>
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* State-aware guidance section */}
-            {isPending && hasPaid === true ? (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">What&apos;s Next</h2>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Profile Submitted</p>
-                      <p className="text-sm text-gray-500">Your profile and verification are complete</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Clock className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Under Review</p>
-                      <p className="text-sm text-gray-500">Our team is reviewing your profile (24-48 hours)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Bell className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">Get Notified</p>
-                      <p className="text-sm text-gray-400">You&apos;ll receive an email once approved</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Users className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">Start Matching</p>
-                      <p className="text-sm text-gray-400">View matches and express interest</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : isPending && hasPaid === false ? (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Complete Verification</h2>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Profile Created</p>
-                      <p className="text-sm text-gray-500">Your profile details are saved</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Shield className="h-4 w-4 text-primary-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Get Verified</p>
-                      <p className="text-sm text-gray-500">Complete verification to proceed</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Users className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">View Matches</p>
-                      <p className="text-sm text-gray-400">See profiles matched for you</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <Heart className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">Connect</p>
-                      <p className="text-sm text-gray-400">Mutual interest unlocks contact details</p>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowPaymentModal(true)}
-                  className="btn-primary w-full mt-4"
-                >
-                  Get Verified Now
-                </button>
-              </div>
-            ) : needsProfile ? (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Get Started</h2>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-primary-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <span className="text-primary-600 font-semibold">1</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">Create Your Profile</p>
-                      <p className="text-sm text-gray-500">Fill in your details and preferences</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <span className="text-gray-400 font-semibold">2</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">Get Verified</p>
-                      <p className="text-sm text-gray-400">Complete verification to proceed</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <span className="text-gray-400 font-semibold">3</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">View Matches</p>
-                      <p className="text-sm text-gray-400">See profiles matched for you</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                      <span className="text-gray-400 font-semibold">4</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-500">Connect</p>
-                      <p className="text-sm text-gray-400">Mutual interest unlocks contact details</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions for Profile */}
-            {(!hasProfile || (isPending && hasPaid !== true) || (hasProfile && !isApproved && hasPaid === true)) && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Next Step</h2>
-                {!hasProfile && (
-                  <button
-                    onClick={() => setShowCreateProfileModal(true)}
-                    className="btn-primary w-full text-center text-sm py-2"
-                  >
-                    Create Profile
-                  </button>
-                )}
-                {isPending && hasPaid !== true && (
-                  <Link
-                    href="/get-verified"
-                    className="btn-primary w-full text-center text-sm py-2 block"
-                  >
-                    Get Verified
-                  </Link>
-                )}
-                {hasProfile && !isApproved && hasPaid === true && (
-                  <Link
-                    href={buildUrl('/profile/edit')}
-                    className="btn-outline w-full text-center text-sm py-2 block"
-                  >
-                    Edit Profile
-                  </Link>
-                )}
+                  )
+                })()}
               </div>
             )}
 
-            {/* Referral */}
-            {hasProfile && <ReferralCard />}
-
-            {/* Tips */}
-            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-6 text-white">
-              <h2 className="text-lg font-semibold mb-3">Profile Tips</h2>
-              <ul className="space-y-2 text-sm text-primary-100">
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                  Add clear, recent photos
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                  Complete all profile sections
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                  Write a detailed about section
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-                  Be specific about preferences
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Create Profile Modal */}
@@ -1018,11 +1040,16 @@ function DashboardContent() {
         onClose={() => setShowCreateProfileModal(false)}
       />
 
-      {/* Verification Payment Modal - shown when pending and not paid */}
+      {/* Verification Payment Modal */}
       <VerificationPaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
       />
+
+      {/* Profile Feedback Popup */}
+      {showProfileFeedback && (
+        <ProfileFeedbackPopup onClose={() => setShowProfileFeedback(false)} />
+      )}
       </div>
   )
 }

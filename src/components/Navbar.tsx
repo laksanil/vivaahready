@@ -5,14 +5,12 @@ import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Menu, X, User, LogOut, Heart, Users, Settings, MessageCircle, Eye, Trash2, Edit } from 'lucide-react'
-import DeleteProfileModal from './DeleteProfileModal'
+import { Menu, X, User, LogOut, Eye } from 'lucide-react'
 
 export function Navbar() {
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const viewAsUser = searchParams.get('viewAsUser')
@@ -79,7 +77,10 @@ export function Navbar() {
     return null
   }
 
-  // Don't show navbar on photo upload page during signup flow
+  // Don't show navbar during profile creation flow
+  if (pathname === '/profile/complete') {
+    return null
+  }
   const fromSignup = searchParams.get('fromSignup') === 'true'
   if (pathname === '/profile/photos' && fromSignup) {
     return null
@@ -88,7 +89,7 @@ export function Navbar() {
   const isAdminViewMode = !!viewAsUser
 
   return (
-    <nav className="bg-primary-600 shadow-md sticky top-0 z-50">
+    <nav className="bg-primary-800 shadow-md sticky top-0 z-50">
       {/* Admin View Banner */}
       {isAdminViewMode && (
         <div className="bg-purple-600 text-white px-3 sm:px-4 py-1.5">
@@ -103,7 +104,7 @@ export function Navbar() {
               href="/admin"
               className="text-xs sm:text-sm bg-white text-purple-600 px-2 sm:px-3 py-1 rounded font-medium hover:bg-purple-50 whitespace-nowrap flex-shrink-0"
             >
-              <span className="hidden sm:inline">← </span>Exit
+              <span className="hidden sm:inline">&larr; </span>Exit
             </Link>
           </div>
         </div>
@@ -113,7 +114,7 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link href={session ? buildUrl('/dashboard') : "/"} className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
+            <Link href={(session || isAdminViewMode) ? buildUrl('/dashboard') : "/"} className="flex items-center gap-2 group hover:opacity-90 transition-opacity">
               <Image
                 src="/logo-icon.png"
                 alt="VivaahReady"
@@ -129,37 +130,23 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation — only global pages */}
           <div className="hidden md:flex items-center space-x-4">
-            {(session || isAdminViewMode) && (
-              <>
-                <Link href={buildUrl('/matches')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                  My Matches
-                </Link>
-                <Link href={buildUrl('/connections')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                  Connections
-                </Link>
-                <Link href={buildUrl('/profile')} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                  Edit Profile
-                </Link>
-              </>
-            )}
-            {(session || isAdminViewMode) && (
-              <Link href="/get-verified" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                Get Verified
-              </Link>
-            )}
             <Link href="/about" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               About
             </Link>
             <Link href="/contact" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               Contact Us
             </Link>
-            {(session || isAdminViewMode) && (
-              <Link href="/feedback" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
-                Feedback
-              </Link>
-            )}
+            <Link href="/feedback" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+              Feedback
+            </Link>
+            <Link href="/blog" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+              Blog
+            </Link>
+            <Link href="/community" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+              Community
+            </Link>
 
             {status === 'loading' && !isAdminViewMode ? (
               <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
@@ -187,70 +174,15 @@ export function Navbar() {
                   )}
                 </button>
 
-                {isProfileMenuOpen && (
+                {isProfileMenuOpen && !isAdminViewMode && (
                   <div className="absolute right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg py-1.5 border border-gray-100">
-                    <Link
-                      href={buildUrl('/dashboard')}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileMenuOpen(false)}
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
-                      <User className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </Link>
-                    <Link
-                      href={buildUrl('/profile')}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      My Profile
-                    </Link>
-                    <Link
-                      href={buildUrl('/matches')}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <Heart className="h-4 w-4 mr-2" />
-                      My Matches
-                    </Link>
-                    <Link
-                      href={buildUrl('/connections')}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      Connections
-                    </Link>
-                    <Link
-                      href={buildUrl('/messages')}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileMenuOpen(false)}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Messages
-                    </Link>
-                    {!isAdminViewMode && (
-                      <>
-                        <hr className="my-1.5 border-gray-100" />
-                        <button
-                          onClick={() => {
-                            setIsProfileMenuOpen(false)
-                            setIsDeleteModalOpen(true)
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Profile
-                        </button>
-                        <button
-                          onClick={() => signOut({ callbackUrl: '/' })}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
-                        </button>
-                      </>
-                    )}
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </button>
                   </div>
                 )}
               </div>
@@ -277,46 +209,12 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 py-3 space-y-1">
-            {(session || isAdminViewMode) && (
-              <>
-                <Link
-                  href={buildUrl('/matches')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Matches
-                </Link>
-                <Link
-                  href={buildUrl('/connections')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Connections
-                </Link>
-                <Link
-                  href={buildUrl('/profile')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Edit Profile
-                </Link>
-              </>
-            )}
-            {(session || isAdminViewMode) && (
-              <Link
-                href="/get-verified"
-                className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Get Verified
-              </Link>
-            )}
             <Link
               href="/about"
               className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              About Us
+              About
             </Link>
             <Link
               href="/contact"
@@ -325,51 +223,38 @@ export function Navbar() {
             >
               Contact Us
             </Link>
-            {(session || isAdminViewMode) && (
-              <Link
-                href="/feedback"
-                className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Feedback
-              </Link>
-            )}
+            <Link
+              href="/feedback"
+              className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Feedback
+            </Link>
+            <Link
+              href="/blog"
+              className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <Link
+              href="/community"
+              className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Community
+            </Link>
 
             {(session || isAdminViewMode) ? (
               <>
                 <hr className="my-2 border-gray-100" />
-                <Link
-                  href={buildUrl('/dashboard')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href={buildUrl('/profile')}
-                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Profile
-                </Link>
                 {!isAdminViewMode && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false)
-                        setIsDeleteModalOpen(true)
-                      }}
-                      className="block w-full text-left text-red-600 hover:bg-red-50 py-2 px-3 rounded-lg"
-                    >
-                      Delete Profile
-                    </button>
-                    <button
-                      onClick={() => signOut({ callbackUrl: '/' })}
-                      className="block w-full text-left text-red-600 hover:bg-red-50 py-2 px-3 rounded-lg"
-                    >
-                      Sign Out
-                    </button>
-                  </>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="block w-full text-left text-red-600 hover:bg-red-50 py-2 px-3 rounded-lg"
+                  >
+                    Sign Out
+                  </button>
                 )}
               </>
             ) : (
@@ -387,15 +272,6 @@ export function Navbar() {
           </div>
         </div>
       )}
-
-      {/* Delete Profile Modal */}
-      <DeleteProfileModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onSuccess={() => {
-          // Optionally sign out after successful deletion request
-        }}
-      />
     </nav>
   )
 }

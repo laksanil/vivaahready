@@ -5,6 +5,7 @@ import { recordCreatedTestUser } from './cleanup-registry'
 
 export const DEFAULT_PASSWORD = 'E2EPass123!'
 export const DEFAULT_PHOTO_PATH = path.join(process.cwd(), 'public', 'logo-couple.png')
+export const DEFAULT_TEST_PHOTO_URL = process.env.E2E_TEST_PHOTO_URL || 'https://vivaahready.com/logo-icon.png'
 
 export interface TestUser {
   firstName: string
@@ -87,6 +88,8 @@ export async function createProfile(
     smoking: 'No',
     drinking: 'No',
     pets: 'no_but_love',
+    openToDate: 'Yes',
+    openToPrenup: 'No',
     aboutMe: 'E2E seeded profile for coverage tests.',
     linkedinProfile: 'no_linkedin',
     referralSource: 'google',
@@ -146,6 +149,10 @@ export async function createUserWithProfile(
       prefReligions: ['Hindu'],
       prefReligion: 'Hindu',
       prefQualification: resolvedPrefQualification,
+      openToDate: 'Yes',
+      openToPrenup: 'No',
+      photoUrls: DEFAULT_TEST_PHOTO_URL,
+      profileImageUrl: DEFAULT_TEST_PHOTO_URL,
       prefAgeIsDealbreaker: true,
       prefHeightIsDealbreaker: true,
       prefMaritalStatusIsDealbreaker: true,
