@@ -77,13 +77,13 @@ export async function GET() {
       name: 'Education & Career',
       score: [p.qualification, p.occupation, p.employerName].filter(Boolean).length >= 2 ? 100 : [p.qualification, p.occupation].filter(Boolean).length >= 1 ? 60 : 0,
       weight: 10,
-      tip: !p.occupation ? 'Add your occupation details' : !p.employerName ? 'Adding your employer builds credibility' : null,
+      tip: !p.occupation ? 'Add your occupation details' : !p.employerName ? 'Adding your employer builds credibility' : !p.qualification ? 'Add your qualification for a stronger profile' : null,
     },
     {
       name: 'Lifestyle & Interests',
       score: [p.hobbies, p.fitness, p.interests, p.dietaryPreference].filter(Boolean).length >= 3 ? 100 : [p.hobbies, p.interests].filter(Boolean).length >= 1 ? 50 : 0,
       weight: 10,
-      tip: !p.hobbies ? 'Add your hobbies to find like-minded matches' : null,
+      tip: [p.hobbies, p.fitness, p.interests, p.dietaryPreference].filter(Boolean).length < 3 ? 'Add hobbies & interests to find like-minded matches' : null,
     },
     {
       name: 'Family Details',
@@ -107,7 +107,7 @@ export async function GET() {
       name: 'Social Links',
       score: hasSocialLink ? 100 : 0,
       weight: 5,
-      tip: !(hasLinkedIn || p.instagram) ? 'Add social links to build trust' : null,
+      tip: !hasSocialLink ? 'Add social links to build trust' : null,
     },
     {
       name: 'Verification',

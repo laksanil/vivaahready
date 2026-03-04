@@ -795,7 +795,9 @@ function DashboardContent() {
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0 space-y-2">
-                        {profileStrength.tips.length > 0 ? (
+                        {profileStrength.score >= 80 ? (
+                          <p className="text-sm text-green-600 font-medium">Your profile is looking great!</p>
+                        ) : profileStrength.tips.length > 0 ? (
                           profileStrength.tips.map((tip, i) => (
                             <div key={i} className="flex items-start gap-2 text-sm">
                               <Lightbulb className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -803,7 +805,7 @@ function DashboardContent() {
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-green-600 font-medium">Your profile is looking great!</p>
+                          <p className="text-sm text-amber-600 font-medium">Complete your profile to improve your match visibility</p>
                         )}
                       </div>
                     </div>
