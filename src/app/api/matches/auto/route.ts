@@ -330,9 +330,13 @@ export async function GET(request: Request) {
       const nearMatches = findNearMatches(myProfile as any, candidates as any[], 3)
       console.log(`[NEAR MATCH DEBUG] findNearMatches returned ${nearMatches.length} profiles`)
 
-      // Filter out declined profiles and existing matches
+      // Build set of user IDs already in regular matches to avoid duplicates
+      const matchingUserIds = new Set(matchingProfiles.map(m => m.userId))
+
+      // Filter out profiles already in regular matches, declined, or interacted
       nearMatchResults = nearMatches
         .filter(nm =>
+          !matchingUserIds.has(nm.profile.userId) &&
           !declinedUserIds.has(nm.profile.userId) &&
           !declinedByOthersIds.has(nm.profile.userId) &&
           !sentToUserIds.has(nm.profile.userId) &&
