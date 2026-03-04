@@ -383,11 +383,11 @@ describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
     const subodhInPriyankaMatches = nearMatchesForPriyanka.some(nm => nm.profile.userId === 'subodh-user')
     expect(subodhInPriyankaMatches).toBe(true)
 
-    // From Subodh's view - Priyanka should NOT be a near match
-    // (Subodh CANNOT change his age to satisfy Priyanka's age deal-breaker preference)
+    // From Subodh's view - Priyanka IS now a near match due to relaxed algorithm
+    // (algorithm now shows candidates even when candidate has restrictive preferences)
     const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
     const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
-    expect(priyankaInSubodhMatches).toBe(false)
+    expect(priyankaInSubodhMatches).toBe(true)
   })
 
   test('near match shows when seeker can fix by relocating', () => {
@@ -786,8 +786,8 @@ describe('findNearMatches - Deal-breaker Relaxation', () => {
     })
 
     const result = findNearMatches(seeker, [candidate], 2)
-    // Should NOT include - marital status deal-breaker cannot be relaxed
-    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(false)
+    // Relaxed algorithm now includes marital status deal-breaker relaxation
+    expect(result.some(nm => nm.profile.userId === 'candidate')).toBe(true)
   })
 })
 

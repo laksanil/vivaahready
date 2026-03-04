@@ -66,6 +66,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/blog/shame-of-looking-indian-american-matrimony`,
+      lastModified: new Date('2026-03-04'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/blog/caught-between-dating-apps-and-arranged-marriage`,
       lastModified: new Date('2026-02-16'),
       changeFrequency: 'yearly',

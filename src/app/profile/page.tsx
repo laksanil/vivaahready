@@ -25,10 +25,12 @@ import {
   Mail,
   Image,
   UserCheck,
+  GraduationCap,
 } from 'lucide-react'
 import ProfileEditModal from '@/components/ProfileEditModal'
 import { validateProfilePhoto } from '@/lib/faceDetection'
 import { useImpersonation } from '@/hooks/useImpersonation'
+import { getEducationLevelLabel, getFieldOfStudyLabel, getEducationWeight, QUALIFICATION_TO_NEW_FIELDS } from '@/lib/constants'
 
 interface Profile {
   id: string
@@ -55,6 +57,7 @@ interface Profile {
   occupation: string
   annualIncome: string
   educationCareerDetails: string
+  educationEntries: unknown
   fatherName: string
   motherName: string
   fatherOccupation: string
@@ -111,6 +114,8 @@ interface Profile {
   hobbies: string
   interests: string
   pets: string
+  openToDate: string | null
+  openToPrenup: string | null
   allergiesOrMedical: string
   fitness: string
   community: string
@@ -1178,33 +1183,95 @@ function ViewProfilePageContent() {
                   </div>
                 </div>
                 {/* Education & Career Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-12 gap-y-3 text-sm">
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Highest Qualification</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{formatValue(profile.qualification)}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">College(s) Attended</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.university || 'Not specified'}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Working With</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.employerName || 'Not specified'}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Working As</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{formatValue(profile.occupation)}</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Annual Income</span>
-                    <span className="text-gray-400 mr-2">:</span>
-                    <span className="text-gray-800">{profile.annualIncome || 'Not specified'}</span>
-                  </div>
-                </div>
+                {(() => {
+                  // Parse education entries - handle both parsed object (from API JSON) and string
+                  type EduEntry = { educationLevel: string; educationLevelOther?: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string; universityOther?: string }
+                  let entries: EduEntry[] = []
+                  try {
+                    const raw = profile.educationEntries
+                    if (raw) {
+                      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+                      if (Array.isArray(parsed)) entries = parsed.filter((e: { educationLevel?: string }) => e.educationLevel)
+                    }
+                  } catch { /* ignore parse errors */ }
+
+                  // Derive highest education from entries (by weight), fall back to qualification
+                  let highestLabel = 'Not specified'
+                  if (entries.length > 0) {
+                    const highest = entries.reduce((best, e) =>
+                      getEducationWeight(e.educationLevel) > getEducationWeight(best.educationLevel) ? e : best
+                    , entries[0])
+                    highestLabel = highest.educationLevel === 'other' ? (highest.educationLevelOther || 'Other') : getEducationLevelLabel(highest.educationLevel)
+                  } else if (profile.qualification) {
+                    // Map legacy qualification through QUALIFICATION_TO_NEW_FIELDS
+                    const mapped = QUALIFICATION_TO_NEW_FIELDS[profile.qualification]
+                    highestLabel = mapped ? getEducationLevelLabel(mapped.educationLevel) : getEducationLevelLabel(profile.qualification)
+                  }
+
+                  // Collect all universities from entries, fall back to legacy field
+                  const universities = entries.length > 0
+                    ? Array.from(new Set(entries.map(e => e.university === 'other' ? (e.universityOther || 'Other') : e.university).filter(Boolean))).join(', ')
+                    : (profile.university || '')
+
+                  return (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-12 gap-y-3 text-sm">
+                        <div className="flex">
+                          <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Highest Education</span>
+                          <span className="text-gray-400 mr-2">:</span>
+                          <span className="text-gray-800">{highestLabel}</span>
+                        </div>
+                        <div className="flex">
+                          <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">College(s) Attended</span>
+                          <span className="text-gray-400 mr-2">:</span>
+                          <span className="text-gray-800">{universities || 'Not specified'}</span>
+                        </div>
+                        <div className="flex">
+                          <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Working With</span>
+                          <span className="text-gray-400 mr-2">:</span>
+                          <span className="text-gray-800">{profile.employerName || 'Not specified'}</span>
+                        </div>
+                        <div className="flex">
+                          <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Working As</span>
+                          <span className="text-gray-400 mr-2">:</span>
+                          <span className="text-gray-800">{formatValue(profile.occupation)}</span>
+                        </div>
+                        <div className="flex">
+                          <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Annual Income</span>
+                          <span className="text-gray-400 mr-2">:</span>
+                          <span className="text-gray-800">{profile.annualIncome || 'Not specified'}</span>
+                        </div>
+                      </div>
+                      {/* Education Entries */}
+                      {entries.length > 0 && (
+                        <div className="mt-3 pt-3 border-t text-sm">
+                          <span className="text-gray-500 font-medium">Education</span>
+                          <div className="mt-2 space-y-2">
+                            {entries.map((entry, idx) => {
+                              const level = entry.educationLevel === 'other' ? (entry.educationLevelOther || 'Other') : getEducationLevelLabel(entry.educationLevel)
+                              const field = entry.fieldOfStudy
+                                ? (entry.fieldOfStudy === 'other' ? (entry.fieldOfStudyOther || '') : getFieldOfStudyLabel(entry.fieldOfStudy))
+                                : ''
+                              const uni = entry.university
+                                ? (entry.university === 'other' ? (entry.universityOther || '') : entry.university)
+                                : ''
+                              return (
+                                <div key={idx} className="flex items-start gap-2">
+                                  <GraduationCap className="w-4 h-4 text-primary-400 mt-0.5 shrink-0" />
+                                  <div>
+                                    <span className="text-gray-800 font-medium">{level}</span>
+                                    {field && <span className="text-gray-600"> in {field}</span>}
+                                    {uni && <div className="text-gray-500 text-xs">{uni}</div>}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
                 {profile.educationCareerDetails && (
                   <div className="mt-3 pt-3 border-t text-sm">
                     <span className="text-gray-500 font-medium">Education & Career Details</span>
@@ -1428,6 +1495,24 @@ function ViewProfilePageContent() {
                     <span className="text-gray-400 mr-2">:</span>
                     {profile.pets ? (
                       <span className="text-gray-800">{formatValue(profile.pets.replace(/_/g, ' '))}</span>
+                    ) : (
+                      <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
+                    )}
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Open to Date</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    {profile.openToDate ? (
+                      <span className="text-gray-800">{formatValue(profile.openToDate)}</span>
+                    ) : (
+                      <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
+                    )}
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-24 sm:w-32 flex-shrink-0">Open to Prenup</span>
+                    <span className="text-gray-400 mr-2">:</span>
+                    {profile.openToPrenup ? (
+                      <span className="text-gray-800">{formatValue(profile.openToPrenup)}</span>
                     ) : (
                       <button onClick={() => setEditSection('lifestyle')} className="text-cyan-500 hover:underline">Enter Now</button>
                     )}

@@ -1,11 +1,24 @@
 const { chromium, request } = require('playwright')
 
-const BASE_URL = 'https://vivaahready.com'
+const BASE_URL = String(process.env.QA_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '')
 const defects = []
 const notes = []
 const cleanupEmails = new Set()
 
 const TEST_EMAIL_PATTERN = /^(e2e-[a-z0-9-]+|qa\.profile\.[a-z0-9-]+)@example\.com$/i
+const PROD_URL_PATTERN = /^https:\/\/(www\.)?vivaahready\.com$/i
+
+function assertSafeQaTarget() {
+  if (!PROD_URL_PATTERN.test(BASE_URL)) return
+  if (process.env.ALLOW_PROD_QA === 'true') {
+    console.warn('WARNING: ALLOW_PROD_QA=true; running QA flow against production target.')
+    return
+  }
+  throw new Error(
+    `Refusing to run QA profile flow against production target (${BASE_URL}). ` +
+    'Set ALLOW_PROD_QA=true only for explicit, supervised production validation.'
+  )
+}
 
 function addDefect({ title, severity = 'High', steps, expected, actual }) {
   defects.push({ title, severity, steps, expected, actual })
@@ -827,6 +840,8 @@ async function testNonWorkingCompanyRule(page, seed) {
 }
 
 async function run() {
+  assertSafeQaTarget()
+  note(`Running QA profile flow against: ${BASE_URL}`)
   const browser = await chromium.launch({ headless: true })
 
   try {

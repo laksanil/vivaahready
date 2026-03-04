@@ -5,9 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
   Search,
-  MapPin,
   Briefcase,
-  GraduationCap,
   Heart,
   User,
   Loader2,
@@ -25,6 +23,9 @@ interface Profile {
   dateOfBirth: string | null
   height: string | null
   currentLocation: string | null
+  country: string | null
+  citizenship: string | null
+  grewUpIn: string | null
   caste: string | null
   community: string | null
   subCommunity: string | null
@@ -173,7 +174,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -346,10 +347,29 @@ function ProfileCard({
 
   // Mask location if no access
   const displayLocation = hasAccess
-    ? profile.currentLocation
+    ? [profile.currentLocation, profile.country].filter(Boolean).join(', ') || null
     : profile.currentLocation
       ? profile.currentLocation.split(',').pop()?.trim() + ' area'
       : null
+  const toCaps = (value: string) => value.toUpperCase()
+  const ageDisplay = age || 'Not specified'
+  const heightDisplay = formatHeight(profile.height) || 'Not specified'
+  const educationDisplay = hasAccess
+    ? toCaps(profile.qualification || 'Not specified')
+    : profile.qualification
+      ? 'HIDDEN'
+      : 'NOT SPECIFIED'
+  const locationDisplay = displayLocation || (hasAccess ? 'Not specified' : 'Location hidden')
+  const citizenshipDisplay = hasAccess
+    ? toCaps(profile.citizenship || 'Not specified')
+    : profile.citizenship
+      ? 'HIDDEN'
+      : 'NOT SPECIFIED'
+  const grewUpInDisplay = hasAccess
+    ? toCaps(profile.grewUpIn || 'Not specified')
+    : profile.grewUpIn
+      ? 'HIDDEN'
+      : 'NOT SPECIFIED'
 
   const handleExpressInterest = async () => {
     if (localInterestStatus?.sentByMe) return
@@ -417,9 +437,6 @@ function ProfileCard({
             <h3 className={`text-lg font-semibold text-gray-900 ${!hasAccess ? 'blur-[3px] select-none' : ''}`}>
               {hasAccess ? profile.user.name : displayName}
             </h3>
-            <p className="text-gray-600">
-              {age}{age && profile.height ? ', ' : ''}{formatHeight(profile.height)}
-            </p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             profile.gender === 'female' ? 'bg-pink-100 text-pink-800' : 'bg-blue-100 text-blue-800'
@@ -428,25 +445,20 @@ function ProfileCard({
           </span>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600">
-          {(profile.currentLocation || !hasAccess) && (
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-              <span className={!hasAccess ? 'blur-[2px] select-none' : ''}>
-                {displayLocation || 'Location hidden'}
-              </span>
-            </div>
-          )}
+        <div className={`grid grid-cols-1 gap-1.5 text-xs text-gray-600 ${!hasAccess ? 'blur-[2px] select-none' : ''}`}>
+          <span className="truncate"><span className="font-medium text-gray-700">Age:</span> {ageDisplay}</span>
+          <span className="truncate"><span className="font-medium text-gray-700">Height:</span> {heightDisplay}</span>
+          <span className="truncate"><span className="font-medium text-gray-700">Highest education:</span> {educationDisplay}</span>
+          <span className="truncate"><span className="font-medium text-gray-700">Location:</span> {locationDisplay}</span>
+          <span className="truncate"><span className="font-medium text-gray-700">Country of citizenship:</span> {citizenshipDisplay}</span>
+          <span className="truncate"><span className="font-medium text-gray-700">Grew up in:</span> {grewUpInDisplay}</span>
+        </div>
+
+        <div className="space-y-2 text-sm text-gray-600 mt-3">
           {profile.occupation && (
             <div className="flex items-center">
               <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
               {profile.occupation}
-            </div>
-          )}
-          {profile.qualification && (
-            <div className="flex items-center">
-              <GraduationCap className="h-4 w-4 mr-2 text-gray-400" />
-              {profile.qualification}
             </div>
           )}
           {(profile.community || profile.caste) && (

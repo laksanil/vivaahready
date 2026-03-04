@@ -1,10 +1,12 @@
 'use client'
 
 import { Fragment, useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   CheckCircle,
   Clock,
   Copy,
+  ExternalLink,
   Eye,
   EyeOff,
   Loader2,
@@ -24,6 +26,7 @@ type ResponseKindFilter = 'all' | ResponseMethod | 'none'
 interface SupportMessage {
   id: string
   userId: string | null
+  vrId: string | null
   name: string | null
   email: string | null
   phone: string | null
@@ -440,9 +443,39 @@ export default function AdminMessagesPage() {
                         <td className="px-4 py-3 align-top">
                           <div className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
                             <User className="h-3.5 w-3.5 text-gray-400" />
-                            {message.name || 'Anonymous'}
+                            {message.userId ? (
+                              <Link
+                                href={`/profile?viewAsUser=${message.userId}`}
+                                className="text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                              >
+                                {message.name || 'Anonymous'}
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            ) : (
+                              <span>{message.name || 'Anonymous'}</span>
+                            )}
+                            {message.userId ? (
+                              <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded-full font-semibold uppercase">Member</span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full font-semibold uppercase">Guest</span>
+                            )}
                           </div>
                           <div className="mt-1 space-y-1">
+                            {message.vrId && (
+                              <div className="flex items-center gap-1.5 text-xs text-primary-600 font-medium">
+                                {message.userId ? (
+                                  <Link
+                                    href={`/profile?viewAsUser=${message.userId}`}
+                                    className="hover:underline"
+                                  >
+                                    VR ID: {message.vrId}
+                                  </Link>
+                                ) : (
+                                  <span>VR ID: {message.vrId}</span>
+                                )}
+                                <CopyButton text={message.vrId} />
+                              </div>
+                            )}
                             {message.email && (
                               <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                 <Mail className="h-3.5 w-3.5 text-gray-400" />

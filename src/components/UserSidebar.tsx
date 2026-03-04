@@ -13,7 +13,8 @@ import DeleteProfileModal from './DeleteProfileModal'
 
 // Pages where sidebar should appear (authenticated user pages)
 const SIDEBAR_PATHS = [
-  '/dashboard', '/matches', '/connections', '/notifications',
+  '/dashboard', '/matches', '/sent-interest', '/interest-received',
+  '/connections', '/notifications',
   '/admin-messages', '/profile', '/settings', '/feedback',
   '/reconsider', '/search', '/get-verified', '/verify',
   '/verify-email', '/community',
@@ -53,10 +54,10 @@ const navSections: NavSection[] = [
     items: [
       {
         icon: Users, label: 'My Matches', href: '/matches', countKey: 'matches',
-        match: (p, sp) => p === '/matches' && sp?.get('tab') !== 'sent' && sp?.get('tab') !== 'received',
+        match: p => p === '/matches',
       },
-      { icon: Send, label: 'Sent Interest', href: '/matches?tab=sent', countKey: 'sent', match: (p, sp) => p === '/matches' && sp?.get('tab') === 'sent' },
-      { icon: Inbox, label: 'Interest Received', href: '/matches?tab=received', countKey: 'received', match: (p, sp) => p === '/matches' && sp?.get('tab') === 'received' },
+      { icon: Send, label: 'Sent Interest', href: '/sent-interest', countKey: 'sent', match: p => p === '/sent-interest' },
+      { icon: Inbox, label: 'Interest Received', href: '/interest-received', countKey: 'received', match: p => p === '/interest-received' },
       { icon: Heart, label: 'Connections', href: '/connections', countKey: 'connections', match: p => p === '/connections' || p.startsWith('/connections/') },
       { icon: RotateCcw, label: 'Reconsider', href: '/reconsider', countKey: 'reconsider', match: p => p === '/reconsider' },
     ],
@@ -198,7 +199,7 @@ export default function UserSidebar() {
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -206,7 +207,7 @@ export default function UserSidebar() {
       {/* Mobile sidebar toggle button - fixed in the header area */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-3 right-3 z-50 p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+        className="lg:hidden fixed top-3 right-3 z-50 p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
         aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
       >
         {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -214,9 +215,9 @@ export default function UserSidebar() {
 
       {/* Sidebar - sits below the header on desktop (top-16 = 64px) */}
       <aside
-        className={`fixed left-0 z-30 bg-primary-600 transition-transform duration-300 ease-in-out
+        className={`fixed left-0 z-30 bg-primary-800 transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0 w-64 flex flex-col
+          lg:translate-x-0 w-64 flex flex-col
           top-16 h-[calc(100vh-4rem)]`}
       >
 

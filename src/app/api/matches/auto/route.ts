@@ -264,8 +264,22 @@ export async function GET(request: Request) {
       })
     }
 
-    // Sort fresh profiles: active referral boost first, then liked-me-first, then match score
+    // Determine active engagement boosts (engagementBoostStart within 7 days)
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const engagementBoostedUserIds = new Set<string>()
+    for (const match of allCandidates) {
+      if (match.engagementBoostStart && new Date(match.engagementBoostStart) > sevenDaysAgo) {
+        engagementBoostedUserIds.add(match.userId)
+      }
+    }
+
+    // Sort fresh profiles: engagement boost, referral boost, liked-me-first, match score
     const sortedFreshMatches = matchesWithInterest.sort((a, b) => {
+      // Priority 0: Profiles with active engagement boost (spotlight)
+      const aEngBoost = engagementBoostedUserIds.has(a.userId) ? 1 : 0
+      const bEngBoost = engagementBoostedUserIds.has(b.userId) ? 1 : 0
+      if (bEngBoost !== aEngBoost) return bEngBoost - aEngBoost
+
       // Priority 1: Profiles with active referral boost (3+ referrals, within 30 days)
       const aReferralBoost = activeBoostedUserIds.has(a.userId) ? 1 : 0
       const bReferralBoost = activeBoostedUserIds.has(b.userId) ? 1 : 0
@@ -280,8 +294,11 @@ export async function GET(request: Request) {
       return (b.matchScore?.percentage || 0) - (a.matchScore?.percentage || 0)
     })
 
-    // Sort mutual matches by active referral boost, then match score (highest first)
+    // Sort mutual matches by engagement boost, referral boost, then match score
     const sortedMutualMatches = mutualMatches.sort((a, b) => {
+      const aEngBoost = engagementBoostedUserIds.has(a.userId) ? 1 : 0
+      const bEngBoost = engagementBoostedUserIds.has(b.userId) ? 1 : 0
+      if (bEngBoost !== aEngBoost) return bEngBoost - aEngBoost
       const aReferralBoost = activeBoostedUserIds.has(a.userId) ? 1 : 0
       const bReferralBoost = activeBoostedUserIds.has(b.userId) ? 1 : 0
       if (bReferralBoost !== aReferralBoost) return bReferralBoost - aReferralBoost
@@ -290,7 +307,11 @@ export async function GET(request: Request) {
 
     // Combine: fresh profiles + mutual matches (for backward compatibility)
     // Frontend will separate them based on interestStatus.mutual
-    const allMatches = [...sortedFreshMatches, ...sortedMutualMatches]
+    // Tag each profile with engagementBoostActive for spotlight display
+    const allMatches = [...sortedFreshMatches, ...sortedMutualMatches].map(m => ({
+      ...m,
+      engagementBoostActive: engagementBoostedUserIds.has(m.userId),
+    }))
 
     // Find "near matches" when user has few exact matches (< 3)
     // These are profiles that fail on 1-2 non-critical preferences
@@ -385,8 +406,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       matches: allMatches,
-      freshMatches: sortedFreshMatches,
-      mutualMatches: sortedMutualMatches,
+      freshMatches: sortedFreshMatches.map(m => ({ ...m, engagementBoostActive: engagementBoostedUserIds.has(m.userId) })),
+      mutualMatches: sortedMutualMatches.map(m => ({ ...m, engagementBoostActive: engagementBoostedUserIds.has(m.userId) })),
       nearMatches: nearMatchResults,
       showNearMatches,
       total: allMatches.length,

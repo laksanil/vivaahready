@@ -285,6 +285,7 @@ export const EDUCATION_LEVEL_OPTIONS = [
   { value: 'post_masters', label: 'Post-Master\'s (Ed.S, Advanced Certificates)', level: 7.5, weight: 7.5 },
   { value: 'doctorate', label: 'Doctorate (PhD, EdD, DPhil, DBA)', level: 8, weight: 8 },
   { value: 'postdoc', label: 'Post-Doctoral (Fellowships, Postdoc Research)', level: 9, weight: 9 },
+  { value: 'other', label: 'Other', level: 0, weight: 0 },
 ]
 
 // Degree Received — specific degree type earned

@@ -148,6 +148,8 @@ model Profile {
   interests         String?  // Comma-separated interests
   pets              String?  // have_love, no_but_love, no_but_open, prefer_not, allergic
   allergiesOrMedical String? // Allergies or medical conditions
+  openToDate        String?  // yes, no
+  openToPrenup      String?  // yes, no
 
   // About
   aboutMe           String?
@@ -247,6 +249,7 @@ model Profile {
   engagementPoints    Int      @default(0)
   engagementCoins     Int      @default(0)
   engagementBoosts    Int      @default(0)
+  engagementBoostStart DateTime?
   lastPointAwardDate  DateTime?
 
   // Legacy dealbreaker (kept for data preservation)
@@ -369,16 +372,21 @@ model DeclinedProfile {
   @@index([declinedUserId])
 }
 
-// Event Interest Survey (legacy - kept for data preservation)
+// Event Interest Survey
 model EventInterest {
   id            String   @id @default(cuid())
   userId        String   @unique
   profileId     String?
   interestLevel String
-  eventFormat   String?
-  preferredCity String?
-  eventType     String?
-  budgetRange   String?
+  eventFormat   String?  // stores: availability
+  preferredCity String?  // stores: nameSharing
+  eventType     String?  // stores: duration
+  budgetRange   String?  // stores: goal
+  frequency     String?
+  groupSize     String?
+  ageRange      String?
+  timeZone      String?
+  videoComfort  String?
   suggestions   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -542,6 +550,7 @@ model SupportMessage {
 
   // Sender info (can be anonymous or logged in user)
   userId          String?  // If logged in
+  vrId            String?  // VR ID (odNumber) if logged-in user
   name            String?  // Name if provided
   email           String?  // Email if provided
   phone           String?  // Phone if provided
@@ -666,4 +675,56 @@ model NotificationPreference {
   messageNotifications   Boolean @default(true)
   marketingEmails        Boolean @default(false)
   user                   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Community forum posts
+model CommunityPost {
+  id            String   @id @default(cuid())
+  authorId      String                       // userId of the author
+  title         String?                      // Optional title
+  slug          String?  @unique             // URL-friendly slug (auto-generated from title)
+  body          String                       // Required body text
+  isPublished   Boolean  @default(true)      // Draft vs published
+  showRealName  Boolean  @default(false)     // false = show VR ID, true = show "FirstName L."
+  likeCount     Int      @default(0)         // Denormalized counter
+  commentCount  Int      @default(0)         // Denormalized counter
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  likes         PostLike[]
+  comments      PostComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([slug])
+}
+
+model PostLike {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model PostComment {
+  id           String        @id @default(cuid())
+  postId       String
+  authorId     String
+  body         String
+  showRealName Boolean       @default(false)
+  parentId     String?                        // null = top-level comment, set = reply to another comment
+  post         CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent       PostComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      PostComment[] @relation("CommentReplies")
+  createdAt    DateTime      @default(now())
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@index([parentId])
 }

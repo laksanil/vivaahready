@@ -57,6 +57,7 @@ const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File
 }
 
 function PhotosUploadContent() {
+  const bypassFaceValidation = process.env.NEXT_PUBLIC_E2E_TEST === 'true'
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
@@ -95,6 +96,18 @@ function PhotosUploadContent() {
 
     for (const file of Array.from(files)) {
       if (photos.length >= 3) break
+
+      if (bypassFaceValidation) {
+        setPhotos((prev) => {
+          if (prev.length >= 3) return prev
+          return [...prev, {
+            file,
+            preview: URL.createObjectURL(file),
+            validated: true
+          }]
+        })
+        continue
+      }
 
       // Validate photo (includes face detection)
       const result = await validatePhoto(file)

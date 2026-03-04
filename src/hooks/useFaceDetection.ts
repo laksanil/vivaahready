@@ -17,18 +17,29 @@ interface UseFaceDetectionReturn {
 }
 
 export function useFaceDetection(): UseFaceDetectionReturn {
+  const bypassFaceValidation = process.env.NEXT_PUBLIC_E2E_TEST === 'true'
   const [isLoading, setIsLoading] = useState(false)
-  const [isModelLoaded, setIsModelLoaded] = useState(false)
+  const [isModelLoaded, setIsModelLoaded] = useState(bypassFaceValidation)
   const [result, setResult] = useState<FaceDetectionResult | null>(null)
 
   // Preload models on mount
   useEffect(() => {
+    if (bypassFaceValidation) {
+      setIsModelLoaded(true)
+      return
+    }
     loadFaceDetectionModels().then(loaded => {
       setIsModelLoaded(loaded)
     })
-  }, [])
+  }, [bypassFaceValidation])
 
   const validatePhoto = useCallback(async (file: File): Promise<FaceDetectionResult> => {
+    if (bypassFaceValidation) {
+      const validationResult = { isValid: true, message: 'Photo accepted' }
+      setResult(validationResult)
+      return validationResult
+    }
+
     setIsLoading(true)
     setResult(null)
 
@@ -39,7 +50,7 @@ export function useFaceDetection(): UseFaceDetectionReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [bypassFaceValidation])
 
   const clearResult = useCallback(() => {
     setResult(null)

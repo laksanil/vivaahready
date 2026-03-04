@@ -19,6 +19,19 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'shame-of-looking-indian-american-matrimony',
+    title: 'Nobody Talks About the Shame of Looking',
+    description:
+      'Why Indian Americans hide that they are searching for a life partner and what it costs them. An honest look at matrimony, shame, and finding clarity.',
+    excerpt:
+      'He is 34. An engineer at a well-known company in the Bay Area. He has not told his friends he created a profile on a matrimony site six months ago. He logs in late at night, scrolls through profiles, and closes the tab before bed.',
+    date: '2026-03-04',
+    dateFormatted: 'March 4, 2026',
+    readTime: '10 min read',
+    category: 'Perspectives',
+    author: 'Lakshmi',
+  },
+  {
     slug: 'indian-american-marriage-arranged-dating-apps-middle-path-usa',
     title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
     description:

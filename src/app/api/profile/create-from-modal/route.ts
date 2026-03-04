@@ -8,6 +8,7 @@ import { normalizeSameAsMinePreferences } from '@/lib/preferenceNormalization'
 import { sendReferralThankYouEmail } from '@/lib/email'
 import { getReferralCount } from '@/lib/referral'
 import { getEffectiveUniversity, getEffectiveOccupation, isNonWorkingOccupation } from '@/lib/profileFlowValidation'
+import { awardReferralPoints } from '@/lib/engagementPoints'
 
 /**
  * Format full name to "Firstname L." format for privacy
@@ -128,6 +129,8 @@ const profileSchema = z.object({
   fitness: z.string().optional(),
   interests: z.string().optional(),
   pets: z.string().optional(),
+  openToDate: z.string().optional(),
+  openToPrenup: z.string().optional(),
   allergiesOrMedical: z.string().optional(),
   aboutMe: z.string().optional(),
   referralSource: z.string().optional(),
@@ -428,6 +431,8 @@ export async function POST(request: Request) {
         fitness: data.fitness,
         interests: data.interests,
         pets: data.pets,
+        openToDate: data.openToDate,
+        openToPrenup: data.openToPrenup,
         allergiesOrMedical: data.allergiesOrMedical,
         aboutMe: data.aboutMe,
         referralSource: data.referralSource,
@@ -536,6 +541,7 @@ export async function POST(request: Request) {
             where: { referralCode: data.referredBy },
             select: {
               id: true,
+              userId: true,
               user: { select: { email: true, name: true } },
             },
           })
@@ -546,6 +552,11 @@ export async function POST(request: Request) {
               referrerProfile.user.name || 'User',
               count
             )
+
+            // Award referrer points for successful referral signup.
+            if (user?.id) {
+              await awardReferralPoints(referrerProfile.userId, user.id)
+            }
           }
         } catch (err) {
           console.error('Failed to send referral thank-you email:', err)

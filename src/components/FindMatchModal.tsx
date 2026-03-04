@@ -95,6 +95,13 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email)
 }
 
+const normalizeYesNoChoice = (value: unknown): string => {
+  const normalized = String(value ?? '').trim().toLowerCase()
+  if (normalized === 'yes' || normalized.startsWith('y')) return 'Yes'
+  if (normalized === 'no' || normalized.startsWith('n')) return 'No'
+  return ''
+}
+
 const SECTION_TITLES: Record<string, string> = {
   account: 'Get Started',
   basics: 'Basic Info',
@@ -253,12 +260,14 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   const familyValuesValue = formData.familyValues as string || ''
   const isFamilyComplete = familyLocationValue !== '' && familyValuesValue !== ''
 
-  // Lifestyle section validation - Diet, Smoking, Drinking, Pets are required
+  // Lifestyle section validation - Diet, Smoking, Drinking, Pets, Open to Date, Open to Prenup are required
   const dietValue = formData.dietaryPreference as string || ''
   const smokingValue = formData.smoking as string || ''
   const drinkingValue = formData.drinking as string || ''
   const petsValue = formData.pets as string || ''
-  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' && petsValue !== ''
+  const openToDateValue = normalizeYesNoChoice(formData.openToDate)
+  const openToPrenupValue = normalizeYesNoChoice(formData.openToPrenup)
+  const isLifestyleComplete = dietValue !== '' && smokingValue !== '' && drinkingValue !== '' && petsValue !== '' && openToDateValue !== '' && openToPrenupValue !== ''
 
   // About Me section validation (LinkedIn is required)
   const linkedinUrl = formData.linkedinProfile as string || ''

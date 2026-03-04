@@ -7,12 +7,10 @@ import {
   ChevronDown,
   ChevronUp,
   Settings,
-  MapPin,
-  Briefcase,
   Lock,
   Sparkles,
 } from 'lucide-react'
-import { calculateAge, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
+import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 
 interface FailedCriterion {
   name: string
@@ -29,8 +27,12 @@ interface NearMatchProfile {
   photoUrls?: string | null
   dateOfBirth?: string | null
   age?: number | string | null
+  height?: string | null
   currentLocation?: string | null
   country?: string | null
+  qualification?: string | null
+  grewUpIn?: string | null
+  citizenship?: string | null
   occupation?: string | null
   user?: {
     name?: string | null
@@ -169,6 +171,13 @@ export function NearMatchCard({
     : profile.age
     ? parseInt(profile.age)
     : null
+  const toCaps = (value: string) => value.toUpperCase()
+  const ageDisplay = age ? String(age) : 'Not specified'
+  const heightDisplay = profile.height ? formatHeight(profile.height) : 'Not specified'
+  const educationDisplay = toCaps(profile.qualification || 'Not specified')
+  const locationDisplay = [profile.currentLocation, profile.country].filter(Boolean).join(', ') || 'Not specified'
+  const citizenshipDisplay = toCaps(profile.citizenship || 'Not specified')
+  const grewUpInDisplay = toCaps(profile.grewUpIn || 'Not specified')
 
   const fullName = profile.firstName || profile.user?.name || 'Profile'
   // For unverified users, hide the name
@@ -232,19 +241,13 @@ export function NearMatchCard({
               {matchScore.percentage}% match
             </span>
           </div>
-          <div className="text-sm text-gray-600 flex items-center gap-3 mt-0.5">
-            {(profile.currentLocation || profile.country) && (
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
-              </span>
-            )}
-            {profile.occupation && (
-              <span className="flex items-center gap-1">
-                <Briefcase className="h-3 w-3" />
-                {profile.occupation}
-              </span>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-0.5 text-xs text-gray-600 mt-1">
+            <span className="truncate"><span className="font-medium text-gray-700">Age:</span> {ageDisplay}</span>
+            <span className="truncate"><span className="font-medium text-gray-700">Height:</span> {heightDisplay}</span>
+            <span className="truncate"><span className="font-medium text-gray-700">Highest education:</span> {educationDisplay}</span>
+            <span className="truncate sm:col-span-2 lg:col-span-1"><span className="font-medium text-gray-700">Location:</span> {locationDisplay}</span>
+            <span className="truncate"><span className="font-medium text-gray-700">Country of citizenship:</span> {citizenshipDisplay}</span>
+            <span className="truncate"><span className="font-medium text-gray-700">Grew up in:</span> {grewUpInDisplay}</span>
           </div>
           <p className="text-xs text-amber-700 mt-1">
             {new Set(failedCriteria.map(c => c.name)).size} preference{new Set(failedCriteria.map(c => c.name)).size > 1 ? 's' : ''} {getDirectionText()}

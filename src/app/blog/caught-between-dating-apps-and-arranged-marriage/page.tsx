@@ -377,6 +377,17 @@ export default function BlogPost() {
                 way to meet &mdash; one where intentions are understood early, conversations stay
                 comfortable, and families don&rsquo;t have to choose between involvement and distance.
               </p>
+
+              <p>
+                And beneath all of this, there is something else many families carry quietly:{' '}
+                <Link
+                  href="/blog/shame-of-looking-indian-american-matrimony"
+                  className="text-primary-600 hover:underline"
+                >
+                  the shame of looking itself
+                </Link>
+                . That is a conversation worth having too.
+              </p>
             </div>
 
             {/* Author sign-off */}

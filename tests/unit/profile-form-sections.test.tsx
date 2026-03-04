@@ -66,7 +66,7 @@ describe('Profile form sections', () => {
     cleanup()
 
     renderResult = renderSection(EducationSection, {})
-    expect(renderResult.container.querySelector('select[name="qualification"]')).toBeTruthy()
+    // Education section now uses multi-entry education fields instead of a single qualification select
     expect(renderResult.container.querySelector('select[name="occupation"]')).toBeTruthy()
     expect(renderResult.container.querySelector('select[name="annualIncome"]')).toBeTruthy()
     cleanup()
@@ -81,7 +81,7 @@ describe('Profile form sections', () => {
     cleanup()
 
     renderResult = renderSection(AboutMeSection, {
-      linkedinProfile: '',
+      linkedinProfile: 'https://linkedin.com/in/test',
     })
     const linkedinInput = renderResult.container.querySelector('input[name="linkedinProfile"]') as HTMLInputElement
     expect(linkedinInput).toBeTruthy()

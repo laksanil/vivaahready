@@ -158,8 +158,10 @@ export default function NotificationsPage() {
     return sortDir === 'asc' ? cmp : -cmp
   })
 
-  const adminMessageNotifications = sortedNotifications.filter((n) => isAdminMessageNotification(n.type))
-  const userMessageNotifications = sortedNotifications.filter((n) => isUserMessageNotification(n.type))
+  // Filter out support messages - they have their own dedicated page
+  const filteredNotifications = sortedNotifications.filter(
+    (n) => !isAdminMessageNotification(n.type) && !isUserMessageNotification(n.type)
+  )
 
   const SortIcon = ({ field }: { field: 'sent' | 'mode' }) => {
     if (sortField !== field) return <ArrowDown className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -214,61 +216,12 @@ export default function NotificationsPage() {
           )}
         </div>
         <p className="text-sm text-gray-600 mb-4">
-          {notifications.length} notification{notifications.length !== 1 ? 's' : ''}
+          {filteredNotifications.length} notification{filteredNotifications.length !== 1 ? 's' : ''}
           {unreadCount > 0 ? ` · ${unreadCount} unread` : ''}
         </p>
 
-        {/* Notification list */}
-        {(adminMessageNotifications.length > 0 || userMessageNotifications.length > 0) && (
-          <div className="space-y-4 mb-6">
-            {adminMessageNotifications.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <h2 className="text-sm font-semibold text-gray-900 mb-3">Messages from Admin</h2>
-                <div className="space-y-2">
-                  {adminMessageNotifications.map((n) => {
-                    const meta = parseNotificationMeta(n)
-                    return (
-                      <div
-                        key={`admin-${n.id}`}
-                        className={`p-3 rounded-lg border transition-colors ${!n.read ? 'bg-primary-50/50 border-primary-200' : 'bg-gray-50 border-gray-200'} ${n.url ? 'cursor-pointer' : ''}`}
-                        onClick={() => openNotification(n)}
-                      >
-                        <p className={`text-sm ${!n.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>{n.title}</p>
-                        <p className="text-sm text-gray-600 mt-0.5 whitespace-pre-wrap">{n.body}</p>
-                        <p className="text-xs text-gray-500 mt-1">{formatSentDate(meta.sentAt)} · {timeAgo(meta.sentAt)}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {userMessageNotifications.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <h2 className="text-sm font-semibold text-gray-900 mb-3">Your Messages</h2>
-                <div className="space-y-2">
-                  {userMessageNotifications.map((n) => {
-                    const meta = parseNotificationMeta(n)
-                    return (
-                      <div
-                        key={`user-${n.id}`}
-                        className="p-3 rounded-lg border bg-gray-50 border-gray-200 cursor-pointer"
-                        onClick={() => openNotification(n)}
-                      >
-                        <p className="text-sm font-medium text-gray-800">{n.title}</p>
-                        <p className="text-sm text-gray-600 mt-0.5 whitespace-pre-wrap">{n.body}</p>
-                        <p className="text-xs text-gray-500 mt-1">{formatSentDate(meta.sentAt)} · {timeAgo(meta.sentAt)}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {notifications.length === 0 ? (
+          {filteredNotifications.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-gray-500">No notifications yet</p>
               <p className="text-gray-400 text-sm mt-1">We&apos;ll notify you when something happens</p>
@@ -276,7 +229,7 @@ export default function NotificationsPage() {
           ) : (
             <>
               <div className="md:hidden divide-y divide-gray-100">
-                {sortedNotifications.map((n) => {
+                {filteredNotifications.map((n) => {
                   const meta = parseNotificationMeta(n)
                   return (
                     <div
@@ -335,7 +288,7 @@ export default function NotificationsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {sortedNotifications.map((n) => {
+                    {filteredNotifications.map((n) => {
                       const meta = parseNotificationMeta(n)
                       return (
                         <tr

@@ -113,6 +113,8 @@ interface ProfileData {
   fitness: string | null
   interests: string | null
   pets: string | null
+  openToDate: string | null
+  openToPrenup: string | null
   allergiesOrMedical: string | null
   residencyStatus: string | null
   approvalStatus: string
@@ -410,7 +412,7 @@ export default function ProfileViewPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-silver-50 to-silver-100 py-4">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -599,6 +601,7 @@ function ProfileCard({
       'law': 'Law Degree (JD)',
       'doctorate': 'Doctorate',
       'postdoc': 'Post-Doctoral',
+      'other': 'Other',
     }
     // Legacy qualification labels (for old profiles)
     const legacyMap: Record<string, string> = {
@@ -650,10 +653,15 @@ function ProfileCard({
   }
 
   // Format a single education entry as "Level · Field · University"
-  const formatEducationEntry = (entry: { educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }) => {
+  const formatEducationEntry = (entry: { educationLevel: string; educationLevelOther?: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string; universityOther?: string }) => {
     const parts: string[] = []
-    const level = formatEducation(entry.educationLevel)
-    if (level) parts.push(level)
+    // If education level is "other", show the custom text; otherwise use normal lookup
+    if (entry.educationLevel === 'other') {
+      parts.push(entry.educationLevelOther || 'Other')
+    } else {
+      const level = formatEducation(entry.educationLevel)
+      if (level) parts.push(level)
+    }
     // If degree is "other", show the custom text; otherwise use normal lookup
     if (entry.fieldOfStudy === 'other' && entry.fieldOfStudyOther) {
       parts.push(entry.fieldOfStudyOther)
@@ -661,13 +669,18 @@ function ProfileCard({
       const field = formatFieldOfStudy(entry.fieldOfStudy)
       if (field) parts.push(field)
     }
-    if (entry.university) parts.push(entry.university)
+    // If university is "other", show the custom text; otherwise show as-is
+    if (entry.university === 'other') {
+      if (entry.universityOther) parts.push(entry.universityOther)
+    } else if (entry.university) {
+      parts.push(entry.university)
+    }
     return parts.join(' · ')
   }
 
   // Get all education entries for display
-  const getEducationEntries = (): Array<{ educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }> => {
-    const entries = profile.educationEntries as Array<{ educationLevel: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string }> | null
+  const getEducationEntries = (): Array<{ educationLevel: string; educationLevelOther?: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string; universityOther?: string }> => {
+    const entries = profile.educationEntries as Array<{ educationLevel: string; educationLevelOther?: string; fieldOfStudy: string; fieldOfStudyOther?: string; university: string; universityOther?: string }> | null
     if (Array.isArray(entries) && entries.length > 0) return entries
     // Fall back to single fields
     if (profile.educationLevel || profile.university || profile.qualification) {
@@ -1095,15 +1108,25 @@ function ProfileCard({
           {/* EDUCATION & CAREER Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-bold text-primary-600 uppercase tracking-wider mb-2">Education & Career</h3>
-            {/* Show all education entries */}
+            {/* Education entries as structured rows */}
             {getEducationEntries().length > 0 && (
-              <div className="space-y-1.5 text-sm mb-2">
-                {getEducationEntries().map((entry, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <span className="text-gray-500 shrink-0">{idx === 0 ? 'Education' : ''}</span>
-                    <span className="text-gray-800">{formatEducationEntry(entry)}</span>
-                  </div>
-                ))}
+              <div className="space-y-2 text-sm mb-3">
+                <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">Education</span>
+                {getEducationEntries().map((entry, idx) => {
+                  const level = entry.educationLevel === 'other' ? (entry.educationLevelOther || 'Other') : formatEducation(entry.educationLevel)
+                  const field = entry.fieldOfStudy === 'other' ? (entry.fieldOfStudyOther || '') : formatFieldOfStudy(entry.fieldOfStudy)
+                  const uni = entry.university === 'other' ? (entry.universityOther || '') : entry.university
+                  return (
+                    <div key={idx} className="flex items-start gap-2 pl-1">
+                      <GraduationCap className="w-4 h-4 text-primary-400 mt-0.5 shrink-0" />
+                      <div>
+                        <span className="text-gray-800 font-medium">{level}</span>
+                        {field && <span className="text-gray-600"> in {field}</span>}
+                        {uni && <div className="text-gray-500 text-xs">{uni}</div>}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 text-sm">
@@ -1124,6 +1147,8 @@ function ProfileCard({
               {profile.smoking && <><span className="text-gray-500">Smoking</span><span className="text-gray-800">{formatValue(profile.smoking)}</span></>}
               {profile.drinking && <><span className="text-gray-500">Drinking</span><span className="text-gray-800">{formatValue(profile.drinking)}</span></>}
               {profile.pets && <><span className="text-gray-500">Pets</span><span className="text-gray-800">{formatValue(profile.pets)}</span></>}
+              {profile.openToDate && <><span className="text-gray-500">Open to Date</span><span className="text-gray-800">{formatValue(profile.openToDate)}</span></>}
+              {profile.openToPrenup && <><span className="text-gray-500">Open to Prenup</span><span className="text-gray-800">{formatValue(profile.openToPrenup)}</span></>}
             </div>
           </div>
         </div>

@@ -81,8 +81,14 @@ async function completeAccountStep(page: Page, user: typeof userA) {
   await page.locator('input[type="tel"]').fill(user.phone)
   await page.waitForTimeout(500) // Wait for auth options to appear
 
+  // Terms consent is required before signup options are shown
+  const termsCheckbox = page.locator('input[type="checkbox"]').nth(1)
+  if (await termsCheckbox.isVisible().catch(() => false)) {
+    await termsCheckbox.check()
+  }
+
   // Expand email form (click "Don't have Gmail?" toggle)
-  await page.click('text=Don\'t have Gmail')
+  await page.getByRole('button', { name: /Don't have Gmail|Use another email/i }).first().click()
   await page.waitForTimeout(300)
 
   // Fill email and password fields
@@ -124,7 +130,8 @@ async function completeBasics(page: Page, user: typeof userA) {
 async function completeLocationEducation(page: Page) {
   await mockZipLookup(page)
   await page.fill('input[name="zipCode"]', '10001')
-  await page.selectOption('select[name="qualification"]', 'bachelors_cs')
+  await page.selectOption('select[name="educationLevel"]', 'bachelors')
+  await page.selectOption('select[name="fieldOfStudy"]', 'bs')
   const universityInput = page.locator('input[placeholder="Type to search universities..."]').first()
   await universityInput.click()
   await universityInput.fill('Stanford')
@@ -164,6 +171,8 @@ async function completeLifestyle(page: Page) {
   await page.selectOption('select[name="smoking"]', 'No')
   await page.selectOption('select[name="drinking"]', 'No')
   await page.selectOption('select[name="pets"]', 'no_but_love')
+  await page.selectOption('select[name="openToDate"]', 'Yes')
+  await page.selectOption('select[name="openToPrenup"]', 'No')
   await page.getByRole('button', { name: /Continue/i }).click()
   await expect(page.getByRole('heading', { name: /About Me/i })).toBeVisible()
 }
@@ -265,7 +274,7 @@ async function login(page: Page, email: string, userPassword: string) {
   const emailInput = page.locator('#email')
   const emailInputVisible = await emailInput.isVisible().catch(() => false)
   if (!emailInputVisible) {
-    const toggle = page.getByRole('button', { name: /Don't have Gmail\? Sign in with email/i }).first()
+    const toggle = page.getByRole('button', { name: /Don't have Gmail|Use another email|Sign in with email/i }).first()
     if (await toggle.isVisible().catch(() => false)) {
       await toggle.click()
     }
@@ -309,10 +318,17 @@ async function login(page: Page, email: string, userPassword: string) {
 }
 
 async function signOut(page: Page, firstName: string) {
-  const profileButton = page.getByRole('button', { name: new RegExp(firstName, 'i') })
+  const profileButton = page.getByRole('button', { name: new RegExp(firstName, 'i') }).first()
   await expect(profileButton).toBeVisible()
   await profileButton.click()
-  await page.getByRole('button', { name: /Sign Out/i }).click()
+
+  const menuSignOut = page.locator('button.text-red-600:has-text("Sign Out")').first()
+  if (await menuSignOut.isVisible().catch(() => false)) {
+    await menuSignOut.click()
+  } else {
+    await page.getByRole('button', { name: /Sign Out/i }).first().click()
+  }
+
   await page.waitForURL(/\//)
 }
 
@@ -358,14 +374,15 @@ async function likeProfile(page: Page, firstName: string) {
   if (await namedLikeButton.isVisible().catch(() => false)) {
     await namedLikeButton.click()
   } else {
-    // Directory cards may render icon-only buttons, so choose the first non-pass button.
+    // Directory cards may render icon-only buttons, so use label heuristics and avoid "view/pass".
     const cardButtons = card.locator('button')
     const totalButtons = await cardButtons.count()
     let clickedInterest = false
     for (let i = 0; i < totalButtons; i += 1) {
       const candidate = cardButtons.nth(i)
       const label = `${await candidate.innerText().catch(() => '')} ${await candidate.getAttribute('aria-label') || ''} ${await candidate.getAttribute('title') || ''}`.toLowerCase()
-      if (label.includes('pass')) continue
+      if (label.includes('pass') || label.includes('view') || label.includes('full size') || label.includes('preview')) continue
+      if (!(label.includes('interest') || label.includes('like') || label.includes('accept'))) continue
       await candidate.click()
       clickedInterest = true
       break
@@ -376,8 +393,12 @@ async function likeProfile(page: Page, firstName: string) {
   }
 
   const interestResponse = await interestResponsePromise
-  if (!interestResponse || !interestResponse.ok()) {
-    throw new Error(`Failed to express interest for ${firstName}`)
+  if (!interestResponse) {
+    throw new Error(`No /api/interest POST captured for ${firstName}`)
+  }
+  if (!interestResponse.ok()) {
+    const errorBody = await interestResponse.text().catch(() => '')
+    throw new Error(`Failed to express interest for ${firstName} (status ${interestResponse.status()}): ${errorBody.slice(0, 400)}`)
   }
 
   const cardRemoved = await card.waitFor({ state: 'detached', timeout: 15000 }).then(() => true).catch(() => false)
@@ -565,7 +586,7 @@ test.describe.serial('End-to-end user journey', () => {
     }
 
     await page.goto('/connections')
-    await expect(page.getByRole('heading', { name: /Connections/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Connections/i }).first()).toBeVisible()
     const messageButton = page.getByRole('button', { name: /^Message$/ }).first()
     if (await messageButton.isVisible()) {
       await messageButton.click()

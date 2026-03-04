@@ -154,12 +154,21 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
     }
   }
 
-  // Validate "other" degree text for primary entry
+  // Validate "other" degree text for primary (highest-weight) entry
   if (fieldOfStudy === 'other') {
-    const primaryEntry = educationEntries.length > 0
-      ? (educationEntries[0] as { fieldOfStudyOther?: string })
-      : null
-    const otherText = normalizeString(primaryEntry?.fieldOfStudyOther || data.fieldOfStudyOther)
+    // data.fieldOfStudyOther is synced from the highest-weight entry
+    // Also check all entries to find the one that's actually the primary
+    let otherText = normalizeString(data.fieldOfStudyOther)
+    if (!otherText && educationEntries.length > 0) {
+      // Fallback: search entries for one with fieldOfStudy === 'other' that has text
+      for (const entry of educationEntries) {
+        const e = entry as { fieldOfStudy?: string; fieldOfStudyOther?: string }
+        if (normalizeString(e?.fieldOfStudy) === 'other' && normalizeString(e?.fieldOfStudyOther)) {
+          otherText = normalizeString(e.fieldOfStudyOther)
+          break
+        }
+      }
+    }
     if (!otherText) errors.push('Please specify your degree.')
   }
   if (!occupation) errors.push('Occupation is required.')

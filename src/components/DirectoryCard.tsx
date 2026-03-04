@@ -6,10 +6,7 @@ import Link from 'next/link'
 import {
   Heart,
   X,
-  MapPin,
   Briefcase,
-  GraduationCap,
-  Ruler,
   Loader2,
   Lock,
   Sparkles,
@@ -61,7 +58,14 @@ export function DirectoryCard({
 
   const profileUrl = buildUrl(`/profile/${profile.id}`)
 
+  const toCaps = (value: string) => value.toUpperCase()
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
+  const ageDisplay = age ? String(age) : 'Not specified'
+  const heightDisplay = profile.height ? formatHeight(profile.height) : 'Not specified'
+  const educationDisplay = toCaps(profile.qualification || 'Not specified')
+  const locationDisplay = profile.currentLocation || profile.country || 'Not specified'
+  const citizenshipDisplay = toCaps(profile.citizenship || 'Not specified')
+  const grewUpInDisplay = toCaps(profile.grewUpIn || 'Not specified')
 
   // Get all photos
   const extractedPhotos = extractPhotoUrls(profile.photoUrls)
@@ -199,6 +203,12 @@ export function DirectoryCard({
                   {isRestricted ? maskText(profile.user.name, 2) : profile.user.name}{age ? `, ${age}` : ''}
                 </h3>
               </Link>
+              {profile.odNumber && (
+                <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 truncate">
+                  <span className="font-semibold text-gray-600">VR ID:</span>{' '}
+                  {isRestricted ? maskText(profile.odNumber, 2) : profile.odNumber}
+                </p>
+              )}
               {isRestricted && (
                 <p className="text-xs text-amber-600 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
@@ -221,28 +231,26 @@ export function DirectoryCard({
             </div>
           </div>
 
-          {/* Key Info Row */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 mb-2">
-            {profile.height && (
-              <span className="flex items-center gap-1">
-                <Ruler className="h-3.5 w-3.5 text-gray-400" />
-                {formatHeight(profile.height)}
-              </span>
-            )}
-            {(profile.currentLocation || profile.country) && (
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[100px] sm:max-w-[150px]">
-                  {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
-                </span>
-              </span>
-            )}
-            {profile.qualification && (
-              <span className="hidden sm:flex items-center gap-1">
-                <GraduationCap className="h-3.5 w-3.5 text-gray-400" />
-                <span className="truncate max-w-[80px] sm:max-w-[100px]">{profile.qualification}</span>
-              </span>
-            )}
+          {/* Required Match Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-1 text-xs text-gray-600 mb-2">
+            <span className="truncate">
+              <span className="font-medium text-gray-700">Age:</span> {ageDisplay}
+            </span>
+            <span className="truncate">
+              <span className="font-medium text-gray-700">Height:</span> {heightDisplay}
+            </span>
+            <span className="truncate">
+              <span className="font-medium text-gray-700">Highest education:</span> {educationDisplay}
+            </span>
+            <span className="truncate sm:col-span-2 lg:col-span-1">
+              <span className="font-medium text-gray-700">Location:</span> {locationDisplay}
+            </span>
+            <span className="truncate">
+              <span className="font-medium text-gray-700">Country of citizenship:</span> {citizenshipDisplay}
+            </span>
+            <span className="truncate">
+              <span className="font-medium text-gray-700">Grew up in:</span> {grewUpInDisplay}
+            </span>
           </div>
 
           {/* Occupation Row */}
@@ -275,94 +283,69 @@ export function DirectoryCard({
 
         {/* Actions Column */}
         {showActions && (
-          <div className="flex flex-col justify-center gap-1.5 sm:gap-2 p-2 sm:p-3 border-l border-gray-100">
+          <div className="flex flex-col justify-center gap-1 sm:gap-1.5 p-2 sm:p-3 border-l border-gray-100">
             {/* View Profile Button */}
-            <div className="group relative">
-              <Link
-                href={buildUrl(`/profile/${profile.id}`)}
-                className="block p-2 sm:p-2.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-              >
-                <Eye className="h-5 w-5" />
-              </Link>
-              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                  <div className="font-semibold">View Profile</div>
-                  <div className="text-gray-300">See full details</div>
-                </div>
-              </div>
-            </div>
+            <Link
+              href={buildUrl(`/profile/${profile.id}`)}
+              onClick={(e) => e.stopPropagation()}
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 sm:px-3 sm:py-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+            >
+              <Eye className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium leading-tight">View</span>
+            </Link>
 
             {/* Like Button */}
             {!canLike ? (
-              <div className="group relative">
-                <Link
-                  href={buildUrl('/profile')}
-                  className="block p-2 sm:p-2.5 text-gray-400 bg-gray-100 rounded-lg"
-                >
-                  <Lock className="h-5 w-5" />
-                </Link>
-                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    <div className="font-semibold">Verification Required</div>
-                    <div className="text-gray-300">Get verified to express interest</div>
-                  </div>
-                </div>
-              </div>
+              <Link
+                href={buildUrl('/profile')}
+                onClick={(e) => e.stopPropagation()}
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 sm:px-3 sm:py-2 text-gray-400 bg-gray-100 rounded-lg"
+              >
+                <Lock className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                <span className="text-[10px] sm:text-xs font-medium leading-tight">Locked</span>
+              </Link>
             ) : profile.theyLikedMeFirst && isRestricted ? (
-              /* They liked me first but I'm not approved - can't create mutual match */
               <button
                 onClick={(e) => { e.stopPropagation(); setVerificationModalOpen(true) }}
-                className="p-2.5 rounded-lg bg-gray-200 text-gray-400 hover:bg-gray-300 transition-colors"
+                className="flex flex-col items-center gap-0.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-gray-200 text-gray-400 hover:bg-gray-300 transition-colors"
               >
-                <Heart className="h-5 w-5 fill-current" />
+                <Heart className="h-4.5 w-4.5 sm:h-5 sm:w-5 fill-current" />
+                <span className="text-[10px] sm:text-xs font-medium leading-tight">Accept</span>
               </button>
             ) : (
-              <div className="group relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onLike?.() }}
-                  disabled={isLoading}
-                  className={`p-2.5 rounded-lg transition-colors disabled:opacity-50 ${
-                    profile.theyLikedMeFirst
-                      ? 'text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800'
-                      : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
-                  }`}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Heart className={`h-5 w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
-                  )}
-                </button>
-                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                  <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                    <div className="font-semibold">{profile.theyLikedMeFirst ? 'Accept Interest' : 'Express Interest'}</div>
-                    <div className="text-gray-300">{profile.theyLikedMeFirst ? 'They like you! Click to connect' : 'Let them know you\'re interested'}</div>
-                  </div>
-                </div>
-              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); onLike?.() }}
+                disabled={isLoading}
+                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors disabled:opacity-50 ${
+                  profile.theyLikedMeFirst
+                    ? 'text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800'
+                    : 'text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50'
+                }`}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4.5 w-4.5 sm:h-5 sm:w-5 animate-spin" />
+                ) : (
+                  <Heart className={`h-4.5 w-4.5 sm:h-5 sm:w-5 ${profile.theyLikedMeFirst ? 'fill-current' : ''}`} />
+                )}
+                <span className="text-[10px] sm:text-xs font-medium leading-tight">
+                  {profile.theyLikedMeFirst ? 'Accept' : 'Interest'}
+                </span>
+              </button>
             )}
 
             {/* Pass Button */}
-            <div className="group relative">
-              <button
-                onClick={(e) => { e.stopPropagation(); onPass?.() }}
-                disabled={isLoading}
-                title="Pass"
-                className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <X className="h-5 w-5" />
-                )}
-              </button>
-              <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50">
-                <div className="bg-gray-900 text-white text-xs rounded-lg py-2 px-3 whitespace-nowrap shadow-lg">
-                  <div className="font-semibold">Skip Profile</div>
-                  <div className="text-gray-300">You can reconsider later</div>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onPass?.() }}
+              disabled={isLoading}
+              className="flex flex-col items-center gap-0.5 px-2 py-1.5 sm:px-3 sm:py-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4.5 w-4.5 sm:h-5 sm:w-5 animate-spin" />
+              ) : (
+                <X className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+              )}
+              <span className="text-[10px] sm:text-xs font-medium leading-tight">Pass</span>
+            </button>
           </div>
         )}
       </div>
@@ -514,10 +497,10 @@ export function DirectoryCardSkeleton() {
           <div className="h-4 bg-gray-200 rounded w-2/3" />
           <div className="h-4 bg-gray-200 rounded w-1/3" />
         </div>
-        <div className="flex flex-col justify-center gap-2 p-3 border-l border-gray-100">
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-          <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+        <div className="flex flex-col justify-center gap-1.5 p-3 border-l border-gray-100">
+          <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+          <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+          <div className="w-12 h-12 bg-gray-200 rounded-lg" />
         </div>
       </div>
     </div>

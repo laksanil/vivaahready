@@ -429,8 +429,8 @@ describe('education validation', () => {
 // ─── Constants completeness ───────────────────────────────────────────────────
 
 describe('constants completeness', () => {
-  it('EDUCATION_LEVEL_OPTIONS has 9 options (new taxonomy)', () => {
-    expect(EDUCATION_LEVEL_OPTIONS).toHaveLength(9)
+  it('EDUCATION_LEVEL_OPTIONS has 10 options (new taxonomy)', () => {
+    expect(EDUCATION_LEVEL_OPTIONS).toHaveLength(10)
   })
 
   it('FIELD_OF_STUDY_OPTIONS has 25 degree options', () => {
@@ -441,7 +441,7 @@ describe('constants completeness', () => {
     for (const opt of EDUCATION_LEVEL_OPTIONS) {
       expect(opt.value).toBeTruthy()
       expect(opt.label).toBeTruthy()
-      expect(opt.weight).toBeGreaterThanOrEqual(1)
+      expect(opt.weight).toBeGreaterThanOrEqual(0)
     }
   })
 

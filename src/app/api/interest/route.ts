@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { getTargetUserId } from '@/lib/admin'
 import { incrementInterestStats, incrementMutualMatchesForBoth } from '@/lib/lifetimeStats'
 import { sendNewInterestEmail, sendInterestAcceptedEmail } from '@/lib/email'
+import { awardInterestPoints, awardResponsePoints } from '@/lib/engagementPoints'
 
 export const dynamic = 'force-dynamic'
 
@@ -92,12 +93,19 @@ export async function GET(request: Request) {
                 select: {
                   id: true,
                   gender: true,
+                  dateOfBirth: true,
+                  height: true,
                   currentLocation: true,
+                  country: true,
+                  grewUpIn: true,
+                  citizenship: true,
                   occupation: true,
+                  qualification: true,
                   profileImageUrl: true,
                   photoUrls: true,
                   linkedinProfile: true,
                   facebookInstagram: true,
+                  odNumber: true,
                 }
               }
             }
@@ -150,10 +158,17 @@ export async function GET(request: Request) {
                 select: {
                   id: true,
                   gender: true,
+                  dateOfBirth: true,
+                  height: true,
                   currentLocation: true,
+                  country: true,
+                  grewUpIn: true,
+                  citizenship: true,
                   occupation: true,
+                  qualification: true,
                   profileImageUrl: true,
                   photoUrls: true,
+                  odNumber: true,
                 }
               }
             }
@@ -269,6 +284,10 @@ export async function POST(request: Request) {
         }
       })
 
+      await awardInterestPoints(currentUserId, newInterest.id).catch((error) => {
+        console.error('Failed to award express interest points:', error)
+      })
+
       // Increment lifetime stats for both sender and receiver
       await incrementInterestStats(currentUserId, targetProfile.userId)
 
@@ -325,6 +344,10 @@ export async function POST(request: Request) {
         message,
         status: 'pending',
       }
+    })
+
+    await awardInterestPoints(currentUserId, newInterest.id).catch((error) => {
+      console.error('Failed to award express interest points:', error)
     })
 
     // Increment lifetime stats for both sender and receiver
@@ -384,19 +407,36 @@ export async function PATCH(request: Request) {
     const { userId: currentUserId } = targetUser
 
     const body = await request.json()
-    const { interestId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
+    const { interestId, targetUserId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
 
-    if (!interestId || !action) {
-      return NextResponse.json({ error: 'Interest ID and action are required' }, { status: 400 })
+    if ((!interestId && !targetUserId) || !action) {
+      return NextResponse.json({ error: 'Interest ID (or targetUserId) and action are required' }, { status: 400 })
     }
 
     if (!['accept', 'reject', 'reconsider', 'withdraw'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
+    // Look up the interest by ID or by sender+receiver pair (for connections page)
+    let resolvedInterestId = interestId
+    if (!resolvedInterestId && targetUserId && action === 'withdraw') {
+      const found = await prisma.match.findUnique({
+        where: {
+          senderId_receiverId: {
+            senderId: currentUserId,
+            receiverId: targetUserId,
+          }
+        }
+      })
+      if (!found) {
+        return NextResponse.json({ error: 'Interest not found' }, { status: 404 })
+      }
+      resolvedInterestId = found.id
+    }
+
     // Get the interest
     const interest = await prisma.match.findUnique({
-      where: { id: interestId },
+      where: { id: resolvedInterestId },
       include: {
         sender: {
           select: {
@@ -518,8 +558,25 @@ export async function PATCH(request: Request) {
         } else {
           // Delete the interest entirely if it was pending/rejected
           await prisma.match.delete({
-            where: { id: interestId }
+            where: { id: resolvedInterestId }
           })
+
+          // Add the receiver to the declined list so they appear in "Passed Profiles"
+          // instead of going back to matches
+          await prisma.declinedProfile.upsert({
+            where: {
+              userId_declinedUserId: {
+                userId: currentUserId,
+                declinedUserId: interest.receiverId,
+              },
+            },
+            update: {},
+            create: {
+              userId: currentUserId,
+              declinedUserId: interest.receiverId,
+            },
+          })
+
           return NextResponse.json({
             message: 'Interest withdrawn and removed.',
             deleted: true,
@@ -533,9 +590,15 @@ export async function PATCH(request: Request) {
 
     // Update the interest status
     const updatedInterest = await prisma.match.update({
-      where: { id: interestId },
+      where: { id: resolvedInterestId },
       data: { status: newStatus }
     })
+
+    if (action === 'accept' || action === 'reject' || action === 'reconsider') {
+      await awardResponsePoints(currentUserId, updatedInterest.id).catch((error) => {
+        console.error('Failed to award response points:', error)
+      })
+    }
 
     // Increment lifetime mutual matches when a connection is created (accept or reconsider)
     if (action === 'accept' || action === 'reconsider') {

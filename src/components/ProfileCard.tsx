@@ -7,17 +7,12 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  MapPin,
   Briefcase,
-  GraduationCap,
-  Ruler,
   Utensils,
   Loader2,
   Lock,
   Sparkles,
   ZoomIn,
-  Globe,
-  Flag,
 } from 'lucide-react'
 import { calculateAge, formatHeight, getInitials, extractPhotoUrls, isValidImageUrl } from '@/lib/utils'
 import { useImpersonation } from '@/hooks/useImpersonation'
@@ -25,6 +20,7 @@ import { useImpersonation } from '@/hooks/useImpersonation'
 export interface ProfileData {
   id: string
   userId: string
+  odNumber?: string | null
   gender: string
   dateOfBirth: string | null
   height: string | null
@@ -52,6 +48,7 @@ export interface ProfileData {
   grewUpIn: string | null
   citizenship: string | null
   theyLikedMeFirst?: boolean
+  engagementBoostActive?: boolean
   user: {
     id: string
     name: string
@@ -95,7 +92,14 @@ export function ProfileCard({
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const { buildUrl } = useImpersonation()
 
+  const toCaps = (value: string) => value.toUpperCase()
   const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
+  const ageDisplay = age ? String(age) : 'Not specified'
+  const heightDisplay = profile.height ? formatHeight(profile.height) : 'Not specified'
+  const educationDisplay = toCaps(profile.qualification || 'Not specified')
+  const locationDisplay = [profile.currentLocation, profile.country].filter(Boolean).join(', ') || 'Not specified'
+  const citizenshipDisplay = toCaps(profile.citizenship || 'Not specified')
+  const grewUpInDisplay = toCaps(profile.grewUpIn || 'Not specified')
 
   // Get all photos
   const extractedPhotos = extractPhotoUrls(profile.photoUrls)
@@ -233,48 +237,26 @@ export function ProfileCard({
 
           {/* Key Details */}
           <div className="space-y-2.5 text-sm flex-1">
-            {/* Location */}
-            {(profile.currentLocation || profile.country) && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                <span className="truncate">
-                  {[profile.currentLocation, profile.country].filter(Boolean).join(', ')}
-                </span>
-              </div>
-            )}
-
-            {/* Grew Up In & Citizenship Row */}
-            {(profile.grewUpIn || profile.citizenship) && (
-              <div className="flex items-center gap-4 text-gray-600">
-                {profile.grewUpIn && (
-                  <div className="flex items-center gap-1.5">
-                    <Globe className="h-4 w-4 text-gray-400" />
-                    <span className="text-xs">Grew up in {profile.grewUpIn}</span>
-                  </div>
-                )}
-                {profile.citizenship && (
-                  <div className="flex items-center gap-1.5">
-                    <Flag className="h-4 w-4 text-gray-400" />
-                    <span className="text-xs">{profile.citizenship}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Height & Diet Row */}
-            <div className="flex items-center gap-4 text-gray-600">
-              {profile.height && (
-                <div className="flex items-center gap-1.5">
-                  <Ruler className="h-4 w-4 text-gray-400" />
-                  <span>{formatHeight(profile.height)}</span>
-                </div>
-              )}
-              {profile.dietaryPreference && (
-                <div className="flex items-center gap-1.5">
-                  <Utensils className="h-4 w-4 text-gray-400" />
-                  <span>{profile.dietaryPreference}</span>
-                </div>
-              )}
+            {/* Required Match Details */}
+            <div className="grid grid-cols-1 gap-1.5 text-xs text-gray-600">
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Age:</span> {ageDisplay}
+              </span>
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Height:</span> {heightDisplay}
+              </span>
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Highest education:</span> {educationDisplay}
+              </span>
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Location:</span> {locationDisplay}
+              </span>
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Country of citizenship:</span> {citizenshipDisplay}
+              </span>
+              <span className="truncate">
+                <span className="font-medium text-gray-700">Grew up in:</span> {grewUpInDisplay}
+              </span>
             </div>
 
             {/* Occupation */}
@@ -285,11 +267,11 @@ export function ProfileCard({
               </div>
             )}
 
-            {/* Education */}
-            {profile.qualification && (
+            {/* Diet */}
+            {profile.dietaryPreference && (
               <div className="flex items-center gap-2 text-gray-600">
-                <GraduationCap className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                <span className="truncate">{profile.qualification}</span>
+                <Utensils className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{profile.dietaryPreference}</span>
               </div>
             )}
 
