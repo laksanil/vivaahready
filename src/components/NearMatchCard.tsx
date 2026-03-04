@@ -57,6 +57,11 @@ const criterionToEditUrl: Record<string, string> = {
   'Height': '/profile?tab=preferences&edit=preferences_1',
   'Education': '/profile?tab=preferences&edit=preferences_2',
   'Income': '/profile?tab=preferences&edit=preferences_2',
+  'Religion': '/profile?tab=preferences&edit=preferences_1',
+  'Community': '/profile?tab=preferences&edit=preferences_1',
+  'Gotra': '/profile?tab=preferences&edit=preferences_1',
+  'Marital Status': '/profile?tab=preferences&edit=preferences_1',
+  'Diet': '/profile?tab=preferences&edit=preferences_1',
   'Smoking': '/profile?tab=preferences&edit=preferences_1',
   'Drinking': '/profile?tab=preferences&edit=preferences_1',
   'Occupation': '/profile?tab=preferences&edit=preferences_2',
@@ -80,6 +85,11 @@ const criterionDescriptions: Record<string, string> = {
   'Height': 'height preferences',
   'Education': 'education preferences',
   'Income': 'income preferences',
+  'Religion': 'religion preferences',
+  'Community': 'community preferences',
+  'Gotra': 'gotra preferences',
+  'Marital Status': 'marital status preferences',
+  'Diet': 'diet preferences',
   'Smoking': 'smoking preferences',
   'Drinking': 'drinking preferences',
   'Occupation': 'occupation preferences',
@@ -115,6 +125,10 @@ const getNudgeMessage = (criterionName: string): string => {
       return 'Immigration status can change - focus on compatibility first'
     case 'Family Location':
       return 'Family distance becomes less important when two people are committed'
+
+    // Diet
+    case 'Diet':
+      return 'Dietary habits can evolve over time - shared values matter more'
 
     // Physical/Lifestyle
     case 'Height':
