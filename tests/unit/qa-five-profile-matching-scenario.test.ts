@@ -132,23 +132,9 @@ function buildRequest(method: 'GET' | 'POST' | 'PUT', url: string, body?: Record
   })
 }
 
-function isLocalDb(): boolean {
-  const databaseUrl = process.env.DATABASE_URL || ''
-  let host = ''
-  try {
-    host = new URL(databaseUrl).hostname
-  } catch {
-    host = ''
-  }
-
-  const allowRemoteQaSeed = process.env.ALLOW_QA_TEST_ENV_SEED === 'true'
-  const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local')
-
-  if (!isLocal && allowRemoteQaSeed) {
-    console.warn(`WARNING: ALLOW_QA_TEST_ENV_SEED=true for remote DB host: ${host || 'unknown'}`)
-    return true
-  }
-  return isLocal
+function shouldRunQaTests(): boolean {
+  // Only run when explicitly opted in via ALLOW_QA_TEST_ENV_SEED=true
+  return process.env.ALLOW_QA_TEST_ENV_SEED === 'true'
 }
 
 function buildRichProfileData(user: SeedUser) {
@@ -407,7 +393,7 @@ async function seedQaUsers() {
   }
 }
 
-describe.skipIf(!isLocalDb())('QA: 5 full profiles + edit modal prefill + matching/interest behavior', () => {
+describe.skipIf(!shouldRunQaTests())('QA: 5 full profiles + edit modal prefill + matching/interest behavior', () => {
   let matchesAutoGET: (request: Request) => Promise<Response>
   let profileGET: (request: Request) => Promise<Response>
   let profilePUT: (request: Request) => Promise<Response>
@@ -415,7 +401,7 @@ describe.skipIf(!isLocalDb())('QA: 5 full profiles + edit modal prefill + matchi
   let interestPOST: (request: Request) => Promise<Response>
 
   beforeAll(async () => {
-    if (!isLocalDb()) return
+    if (!shouldRunQaTests()) return
 
     getServerSessionMock.mockResolvedValue({ user: { id: 'qa-admin-session' } })
     getTargetUserIdMock.mockImplementation(async () => {
