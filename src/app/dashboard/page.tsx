@@ -374,13 +374,14 @@ function DashboardContent() {
     }
   }, [isApproved])
 
-  // Show profile feedback popup for users who haven't given feedback yet.
-  // Small delay so the dashboard has time to render first.
+  // Show profile feedback popup once for users who haven't given feedback yet.
+  // Marks as shown immediately so it never appears again, even if dismissed without submitting.
   useEffect(() => {
     if (!hasProfile || typeof window === 'undefined') return
     if (localStorage.getItem('vivaah_profile_feedback_given')) return
 
     const timer = setTimeout(() => {
+      localStorage.setItem('vivaah_profile_feedback_given', 'true')
       setShowProfileFeedback(true)
     }, 2000)
     return () => clearTimeout(timer)
