@@ -19,6 +19,45 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'how-indian-matchmaking-works-in-america-2026',
+    title: 'How Indian Matchmaking Actually Works in America in 2026',
+    description:
+      'A clear, honest guide to how Indian matchmaking works in the USA today. From family-led searches to AI-powered platforms, here is what the process actually looks like for Indian Americans.',
+    excerpt:
+      'There is no single version of Indian matchmaking in America. There is no rulebook, no standard process, no instruction manual that families pass around. And yet, millions of Indian Americans navigate some version of it every year.',
+    date: '2026-03-05',
+    dateFormatted: 'March 5, 2026',
+    readTime: '12 min read',
+    category: 'Guide',
+    author: 'Lakshmi',
+  },
+  {
+    slug: 'what-indian-parents-should-know-about-matchmaking-usa',
+    title: 'What Indian Parents Should Know About Modern Matchmaking in the US',
+    description:
+      'A practical guide for Indian parents in America navigating the matchmaking process for their children. How to help without overstepping, what has changed, and where to start.',
+    excerpt:
+      'I am a parent. I have been exactly where you are. Wanting to help. Not knowing how. Watching your child build a career, a life, a circle of friends \u2014 and wondering when the conversation about marriage will happen.',
+    date: '2026-03-05',
+    dateFormatted: 'March 5, 2026',
+    readTime: '10 min read',
+    category: 'Guide',
+    author: 'Lakshmi',
+  },
+  {
+    slug: 'indian-matchmaking-vs-dating-apps-honest-comparison',
+    title: 'Indian Matchmaking vs Dating Apps: An Honest Comparison',
+    description:
+      'A side-by-side comparison of Indian matrimony platforms and dating apps for Indian Americans. Costs, family involvement, and what actually works for finding a life partner.',
+    excerpt:
+      'Every week, I hear some version of the same question from Indian Americans across the country: should I use a matrimony site or a dating app? The question sounds simple. The answer is not.',
+    date: '2026-03-05',
+    dateFormatted: 'March 5, 2026',
+    readTime: '10 min read',
+    category: 'Comparison',
+    author: 'Lakshmi',
+  },
+  {
     slug: 'shame-of-looking-indian-american-matrimony',
     title: 'Nobody Talks About the Shame of Looking',
     description:
