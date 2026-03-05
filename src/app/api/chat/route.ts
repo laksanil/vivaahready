@@ -36,7 +36,7 @@ WHY $25 IS WORTH IT:
 - Full refund if you cancel 48+ hours before
 
 ELIGIBILITY:
-- Age: 24-35 years old
+- Age: 29-35 years old
 - Location: California resident
 - Diet: Vegetarian
 - Citizenship: US Citizen
@@ -164,7 +164,7 @@ function getFallbackResponse(message: string): string {
   if (msg.includes('not able to register') || msg.includes('cannot register') || msg.includes('can\'t register') ||
       msg.includes('unable to register') || msg.includes('registration not working') || msg.includes('won\'t let me register') ||
       msg.includes('problem register') || msg.includes('issue register') || msg.includes('error register')) {
-    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 24-35, California resident, vegetarian, and US citizen. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
+    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 29-35, California resident, vegetarian, and US citizen. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
   }
 
   // Zoom link specific questions
@@ -216,7 +216,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('eligible') || msg.includes('requirement') || msg.includes('who can')) {
-    return 'To join this exclusive event, you must be: 24-35 years old, a California resident, vegetarian, and a US Citizen with a complete VivaahReady profile. If you meet these criteria, you\'re perfect for this event - register now!'
+    return 'To join this exclusive event, you must be: 29-35 years old, a California resident, vegetarian, and a US Citizen with a complete VivaahReady profile. If you meet these criteria, you\'re perfect for this event - register now!'
   }
 
   if (msg.includes('refund') || msg.includes('cancel')) {

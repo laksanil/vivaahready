@@ -264,7 +264,7 @@ function EventPaymentContent() {
           </div>
           <div className="flex items-center gap-2 text-sm text-purple-100">
             <Calendar className="h-4 w-4" />
-            <span>April 5, 2026 &bull; 6:00 PM PT &bull; Ages 24-35</span>
+            <span>April 5, 2026 &bull; 6:00 PM PT &bull; Ages 29-35</span>
           </div>
         </div>
 

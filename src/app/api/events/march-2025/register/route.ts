@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // Event configuration
 const EVENT_SLUG = 'april-2026-vegetarian'
 const EVENT_CONFIG = {
-  minAge: 24,
+  minAge: 29,
   maxAge: 35,
   dietaryReq: 'Vegetarian',
   locationReq: 'California',
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
         data: {
           slug: EVENT_SLUG,
           title: 'Singles Zoom Mixer - April 2026',
-          description: 'Exclusive vegetarian singles event for California residents aged 24-35',
+          description: 'Exclusive vegetarian singles event for California residents aged 29-35',
           eventDate: new Date('2026-04-05T18:00:00-07:00'),
           timezone: 'America/Los_Angeles',
           duration: 60,

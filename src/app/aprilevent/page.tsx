@@ -41,7 +41,7 @@ const EVENT_CONFIG = {
   price: MARCH_EVENT_CONFIG.priceDollars,
   maxSeats: 20,
   minAttendees: 12,
-  minAge: 24,
+  minAge: 29,
   maxAge: 35,
   location: 'California',
   dietary: 'Vegetarian',
