@@ -6,6 +6,15 @@ import { awardCommunityCommentPoints } from '@/lib/engagementPoints'
 
 export const dynamic = 'force-dynamic'
 
+/** Format VR ID for display: VR20251124011 → "VR 11/24/2025 #011" */
+function formatVrIdDisplay(odNumber: string | null | undefined): string {
+  if (!odNumber) return 'VR Member'
+  const match = odNumber.match(/^VR(\d{4})(\d{2})(\d{2})(\d{3,})$/)
+  if (!match) return odNumber
+  const [, year, month, day, seq] = match
+  return `VR ${month}/${day}/${year} #${seq}`
+}
+
 interface FormattedComment {
   id: string
   body: string
@@ -58,7 +67,7 @@ export async function GET(
 
   for (const comment of comments) {
     const author = profileMap.get(comment.authorId)
-    const authorDisplayName = author?.odNumber || 'VR-UNKNOWN'
+    const authorDisplayName = formatVrIdDisplay(author?.odNumber)
 
     const formatted: FormattedComment = {
       id: comment.id,

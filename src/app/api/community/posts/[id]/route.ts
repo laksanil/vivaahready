@@ -5,6 +5,15 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
+/** Format VR ID for display: VR20251124011 → "VR 11/24/2025 #011" */
+function formatVrIdDisplay(odNumber: string | null | undefined): string {
+  if (!odNumber) return 'VR Member'
+  const match = odNumber.match(/^VR(\d{4})(\d{2})(\d{2})(\d{3,})$/)
+  if (!match) return odNumber
+  const [, year, month, day, seq] = match
+  return `VR ${month}/${day}/${year} #${seq}`
+}
+
 /**
  * GET /api/community/posts/[id] — Get a single post with metadata
  * Supports lookup by id or slug. Publicly readable — no auth required.
@@ -35,14 +44,18 @@ export async function GET(
     select: { odNumber: true, firstName: true, lastName: true, profileImageUrl: true },
   })
 
-  let authorDisplayName = 'Anonymous'
-  if (author) {
+  let authorDisplayName = 'VR Member'
+  if (post.isAnonymous) {
+    authorDisplayName = 'Anonymous'
+  } else if (author) {
     if (post.showRealName && author.firstName) {
       const lastInitial = author.lastName ? ` ${author.lastName.charAt(0)}.` : ''
       authorDisplayName = `${author.firstName}${lastInitial}`
     } else {
-      authorDisplayName = author.odNumber || 'Member'
+      authorDisplayName = formatVrIdDisplay(author.odNumber)
     }
+  } else if (post.authorId.startsWith('vr-seeded-')) {
+    authorDisplayName = post.authorId.replace('vr-seeded-', 'VR ')
   }
 
   // Check if current user liked this post (only if logged in)

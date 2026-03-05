@@ -27,6 +27,7 @@ interface Post {
   likeCount: number
   commentCount: number
   likedByMe: boolean
+  isPinned: boolean
   isMyPost: boolean
   createdAt: string
 }
@@ -70,7 +71,7 @@ export default function CommunityPage() {
   const [creating, setCreating] = useState(false)
   const [postTitle, setPostTitle] = useState('')
   const [postBody, setPostBody] = useState('')
-  const [showRealName, setShowRealName] = useState(false)
+  const [identityMode, setIdentityMode] = useState<'vr_id' | 'real_name' | 'anonymous'>('vr_id')
 
   // Expanded post (inline comments)
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null)
@@ -149,14 +150,14 @@ export default function CommunityPage() {
         body: JSON.stringify({
           title: postTitle.trim() || null,
           body: postBody.trim(),
-          showRealName,
+          identityMode,
         }),
       })
 
       if (res.ok) {
         setPostTitle('')
         setPostBody('')
-        setShowRealName(false)
+        setIdentityMode('vr_id')
         setShowCreateForm(false)
         // Refresh feed
         const data = await fetchPosts()
@@ -328,15 +329,18 @@ export default function CommunityPage() {
             required
           />
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showRealName}
-                onChange={e => setShowRealName(e.target.checked)}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-              />
-              Show my name (instead of VR ID)
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500">Post as:</label>
+              <select
+                value={identityMode}
+                onChange={e => setIdentityMode(e.target.value as 'vr_id' | 'real_name' | 'anonymous')}
+                className="text-xs border border-gray-300 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="vr_id">My VR ID</option>
+                <option value="real_name">My Real Name</option>
+                <option value="anonymous">Anonymous</option>
+              </select>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">{postBody.length}/5000</span>
               <button
@@ -385,6 +389,11 @@ export default function CommunityPage() {
                 </div>
 
                 {/* Post content */}
+                {post.isPinned && (
+                  <span className="inline-block text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 mb-2">
+                    📌 Pinned
+                  </span>
+                )}
                 {post.title && (
                   <h3 className="text-base font-semibold text-gray-900 mb-1">{post.title}</h3>
                 )}

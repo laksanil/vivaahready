@@ -32,7 +32,7 @@ async function ensureRecentWelcomeNotification(userId: string): Promise<void> {
       userId,
       type: 'welcome',
       title: 'Welcome to VivaahReady!',
-      body: 'Your profile was created successfully. We will review it shortly.',
+      body: 'Welcome to VivaahReady — and thank you for creating your account. Complete your profile and start viewing mutual-preference matches.',
       url: '/dashboard',
       data: JSON.stringify({
         profileId: profile.id,

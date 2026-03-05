@@ -685,7 +685,9 @@ model CommunityPost {
   slug          String?  @unique             // URL-friendly slug (auto-generated from title)
   body          String                       // Required body text
   isPublished   Boolean  @default(true)      // Draft vs published
+  isPinned      Boolean  @default(false)     // Pinned posts appear first in feed
   showRealName  Boolean  @default(false)     // false = show VR ID, true = show "FirstName L."
+  isAnonymous   Boolean  @default(false)     // true = show "Anonymous" (overrides showRealName/VR ID)
   likeCount     Int      @default(0)         // Denormalized counter
   commentCount  Int      @default(0)         // Denormalized counter
 
