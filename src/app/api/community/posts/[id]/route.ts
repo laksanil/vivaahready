@@ -35,13 +35,13 @@ export async function GET(
     select: { odNumber: true, firstName: true, lastName: true, profileImageUrl: true },
   })
 
-  let authorDisplayName = 'Anonymous'
+  let authorDisplayName = 'VR Member'
   if (author) {
     if (post.showRealName && author.firstName) {
       const lastInitial = author.lastName ? ` ${author.lastName.charAt(0)}.` : ''
       authorDisplayName = `${author.firstName}${lastInitial}`
     } else {
-      authorDisplayName = author.odNumber || 'Member'
+      authorDisplayName = author.odNumber || 'VR Member'
     }
   }
 

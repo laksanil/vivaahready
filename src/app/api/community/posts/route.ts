@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
   const posts = await prisma.communityPost.findMany({
     where: { isPublished: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
   })
@@ -68,13 +68,13 @@ export async function GET(request: NextRequest) {
 
   const formatted = sliced.map(post => {
     const author = profileMap.get(post.authorId)
-    let authorDisplayName = 'Anonymous'
+    let authorDisplayName = 'VR Member'
     if (author) {
       if (post.showRealName && author.firstName) {
         const lastInitial = author.lastName ? ` ${author.lastName.charAt(0)}.` : ''
         authorDisplayName = `${author.firstName}${lastInitial}`
       } else {
-        authorDisplayName = author.odNumber || 'Member'
+        authorDisplayName = author.odNumber || 'VR Member'
       }
     }
 
@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
       likeCount: post.likeCount,
       commentCount: post.commentCount,
       likedByMe: likedSet.has(post.id),
+      isPinned: post.isPinned,
       isMyPost: currentUserId ? post.authorId === currentUserId : false,
       createdAt: post.createdAt.toISOString(),
     }
