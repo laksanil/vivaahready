@@ -14,7 +14,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Idempotent: awards daily-login points at most once per UTC day.
+  // Idempotent: awards daily-login points at most once per configured PST day.
   await awardDailyLoginPoints(session.user.id).catch((error) => {
     console.error('Failed to award daily login points:', error)
   })

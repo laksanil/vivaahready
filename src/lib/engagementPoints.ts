@@ -26,15 +26,23 @@ export interface EngagementSummary {
   }
 }
 
-function getUtcDateString(date: Date): string {
-  return date.toISOString().split('T')[0]
-}
+function getDateStringInTimeZone(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
 
-function getUtcDayRange(date: Date): { start: Date; end: Date } {
-  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-  const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + 1)
-  return { start, end }
+  const year = parts.find((part) => part.type === 'year')?.value
+  const month = parts.find((part) => part.type === 'month')?.value
+  const day = parts.find((part) => part.type === 'day')?.value
+
+  if (!year || !month || !day) {
+    throw new Error('Failed to derive date parts for timezone-aware daily login.')
+  }
+
+  return `${year}-${month}-${day}`
 }
 
 function getBoostExpiryDate(start: Date): Date {
@@ -92,16 +100,23 @@ async function normalizeTodayDailyLoginAmount(
   currentPoints: number,
   date = new Date()
 ): Promise<number> {
-  const { start, end } = getUtcDayRange(date)
-  const logs = await prisma.engagementPointLog.findMany({
+  const todayPst = getDateStringInTimeZone(date, POINTS_CONFIG.DAILY_LOGIN_TIMEZONE)
+  const candidateLogs = await prisma.engagementPointLog.findMany({
     where: {
       userId,
       action: 'daily_login',
-      createdAt: { gte: start, lt: end },
+      createdAt: {
+        gte: new Date(date.getTime() - 48 * 60 * 60 * 1000),
+        lt: new Date(date.getTime() + 24 * 60 * 60 * 1000),
+      },
     },
     orderBy: { createdAt: 'asc' },
-    select: { id: true, points: true },
+    select: { id: true, points: true, createdAt: true },
   })
+
+  const logs = candidateLogs.filter(
+    (log) => getDateStringInTimeZone(log.createdAt, POINTS_CONFIG.DAILY_LOGIN_TIMEZONE) === todayPst
+  )
 
   if (logs.length === 0) {
     return currentPoints
@@ -278,11 +293,12 @@ async function reconcileCommunityActivityPoints(userId: string): Promise<void> {
 }
 
 /**
- * Award daily login points (idempotent — once per calendar day UTC)
+ * Award daily login points (idempotent — once per calendar day in configured timezone)
  */
 export async function awardDailyLoginPoints(userId: string): Promise<{ awarded: boolean; points: number; newBalance: number }> {
-  const today = getUtcDateString(new Date())
-  const idempotencyKey = `daily_login:${today}:${userId}`
+  const now = new Date()
+  const todayPst = getDateStringInTimeZone(now, POINTS_CONFIG.DAILY_LOGIN_TIMEZONE)
+  const idempotencyKey = `daily_login:${todayPst}:${userId}`
 
   const profile = await prisma.profile.findUnique({
     where: { userId },
@@ -291,8 +307,11 @@ export async function awardDailyLoginPoints(userId: string): Promise<{ awarded: 
 
   if (!profile) return { awarded: false, points: 0, newBalance: 0 }
 
-  if (profile.lastPointAwardDate && getUtcDateString(profile.lastPointAwardDate) === today) {
-    const normalizedBalance = await normalizeTodayDailyLoginAmount(userId, profile.engagementPoints)
+  if (
+    profile.lastPointAwardDate &&
+    getDateStringInTimeZone(profile.lastPointAwardDate, POINTS_CONFIG.DAILY_LOGIN_TIMEZONE) === todayPst
+  ) {
+    const normalizedBalance = await normalizeTodayDailyLoginAmount(userId, profile.engagementPoints, now)
     return { awarded: false, points: 0, newBalance: normalizedBalance }
   }
 
@@ -311,7 +330,7 @@ export async function awardDailyLoginPoints(userId: string): Promise<{ awarded: 
         where: { userId },
         data: {
           engagementPoints: { increment: POINTS_CONFIG.DAILY_LOGIN },
-          lastPointAwardDate: new Date(),
+          lastPointAwardDate: now,
         },
       }),
     ])
@@ -327,7 +346,8 @@ export async function awardDailyLoginPoints(userId: string): Promise<{ awarded: 
       })
       const normalizedBalance = await normalizeTodayDailyLoginAmount(
         userId,
-        latestProfile?.engagementPoints || profile.engagementPoints
+        latestProfile?.engagementPoints || profile.engagementPoints,
+        now
       )
       return { awarded: false, points: 0, newBalance: normalizedBalance }
     }

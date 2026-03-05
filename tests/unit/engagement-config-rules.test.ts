@@ -4,6 +4,7 @@ import { ENGAGEMENT_EARNING_RULES, POINTS_CONFIG } from '@/lib/engagementConfig'
 describe('engagement reward configuration', () => {
   it('uses points-only economy with 100-point boost threshold', () => {
     expect(POINTS_CONFIG.DAILY_LOGIN).toBe(2)
+    expect(POINTS_CONFIG.DAILY_LOGIN_TIMEZONE).toBe('America/Los_Angeles')
     expect(POINTS_CONFIG.COMMUNITY_POST).toBe(5)
     expect(POINTS_CONFIG.COMMUNITY_COMMENT).toBe(1)
     expect(POINTS_CONFIG.REFERRAL_SUCCESS).toBe(30)
@@ -34,4 +35,3 @@ describe('engagement reward configuration', () => {
     )
   })
 })
-

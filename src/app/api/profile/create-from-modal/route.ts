@@ -533,6 +533,27 @@ export async function POST(request: Request) {
       })
     }
 
+    // Create an in-app welcome notification after successful profile creation.
+    try {
+      const sentAt = new Date()
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: 'welcome',
+          title: 'Welcome to VivaahReady!',
+          body: 'Your profile was created successfully. We will review it shortly.',
+          url: '/dashboard',
+          data: JSON.stringify({
+            profileId: profile.id,
+            __deliveryModes: ['in_app'],
+            __sentAt: sentAt.toISOString(),
+          }),
+        },
+      })
+    } catch (notificationError) {
+      console.error('Failed to create profile welcome notification:', notificationError)
+    }
+
     // Send thank-you email to referrer (fire and forget)
     if (data.referredBy) {
       (async () => {
