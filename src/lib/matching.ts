@@ -244,6 +244,8 @@ export interface NearMatchResult {
     seekerPref: string | null
     candidateValue: string | null
     isDealbreaker: boolean
+    /** 'seeker' = seeker's preference doesn't match candidate (seeker can adjust), 'candidate' = candidate's preference doesn't match seeker (seeker can't change) */
+    direction: 'seeker' | 'candidate'
   }[]
   matchScore: {
     percentage: number
@@ -2943,27 +2945,31 @@ export function findNearMatches(
       ...filteredSeekerFailedNonCritical.map(c => ({
         ...c,
         seekerPref: c.seekerPref,
-        candidateValue: c.candidateValue
+        candidateValue: c.candidateValue,
+        direction: 'seeker' as const
       })),
       ...filteredCandidateFailedNonCritical.map(c => ({
         name: c.name,
         seekerPref: c.candidateValue, // Swap for display - candidate's value is their "requirement"
         candidateValue: c.seekerPref, // What seeker has
-        isDealbreaker: c.isDealbreaker
+        isDealbreaker: c.isDealbreaker,
+        direction: 'candidate' as const
       })),
       // Add relaxed deal-breakers (Location, Age, Height) from seeker's side
       ...seekerRelaxedDealbreakers.map(c => ({
         name: c.name,
         seekerPref: c.seekerPref,
         candidateValue: c.candidateValue,
-        isDealbreaker: true // Mark as was-dealbreaker for special nudge
+        isDealbreaker: true, // Mark as was-dealbreaker for special nudge
+        direction: 'seeker' as const
       })),
       // Add relaxed deal-breakers from candidate's side
       ...candidateRelaxedDealbreakers.map(c => ({
         name: c.name,
         seekerPref: c.candidateValue, // Swap for display
         candidateValue: c.seekerPref,
-        isDealbreaker: true
+        isDealbreaker: true,
+        direction: 'candidate' as const
       }))
     ]
 
