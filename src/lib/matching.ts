@@ -2043,10 +2043,10 @@ export function matchesSeekerPreferences(
     }
   }
 
-  // 19. Relocation check
-  if (isPrefSet(seeker.prefRelocation)) {
+  // 19. Relocation check — only evaluated when it's a deal-breaker
+  if (isPrefSet(seeker.prefRelocation) && isDealbreaker(seeker.prefRelocationIsDealbreaker)) {
     const matches = isRelocationMatch(seeker.prefRelocation, candidate.openToRelocation, false)
-    if (!matches && isDealbreaker(seeker.prefRelocationIsDealbreaker)) {
+    if (!matches) {
       return false
     }
   }
@@ -2561,17 +2561,15 @@ export function calculateMatchScore(
     isDealbreaker: isDealbreaker(seeker.prefGrewUpInIsDealbreaker)
   })
 
-  // 19. Relocation match — only counts toward scoring when explicitly set as a deal-breaker.
-  // Relocation is a soft preference; mismatches should not affect matching/near-matches
-  // unless the user has specifically flagged it as a must-have.
+  // 19. Relocation match — only evaluated when explicitly set as a deal-breaker.
+  // When not a deal-breaker, relocation is completely ignored (treated as matched)
+  // so it never appears as a failed criterion in near-matches.
   let relocationMatched = true
   const relocationIsDealbreaker = isDealbreaker(seeker.prefRelocationIsDealbreaker)
-  if (isPrefSet(seeker.prefRelocation)) {
+  if (isPrefSet(seeker.prefRelocation) && relocationIsDealbreaker) {
+    totalCriteria++
     relocationMatched = isRelocationMatch(seeker.prefRelocation, candidate.openToRelocation, true)
-    if (relocationIsDealbreaker) {
-      totalCriteria++
-      if (relocationMatched) matchedCount++
-    }
+    if (relocationMatched) matchedCount++
   }
 
   criteria.push({
