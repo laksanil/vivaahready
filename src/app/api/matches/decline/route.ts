@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
     const currentUserId = targetUser.userId
 
-    const { declinedUserId } = await request.json()
+    const { declinedUserId, reason } = await request.json()
 
     if (!declinedUserId) {
       return NextResponse.json({ error: 'declinedUserId is required' }, { status: 400 })
@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Cannot decline yourself' }, { status: 400 })
     }
 
+    const reasonText = typeof reason === 'string' ? reason.trim().slice(0, 500) : null
+
     // Create the declined profile record
     const declined = await prisma.declinedProfile.upsert({
       where: {
@@ -34,10 +36,11 @@ export async function POST(request: NextRequest) {
           declinedUserId: declinedUserId,
         },
       },
-      update: {}, // No update needed if exists
+      update: { ...(reasonText ? { reason: reasonText } : {}) },
       create: {
         userId: currentUserId,
         declinedUserId: declinedUserId,
+        ...(reasonText ? { reason: reasonText } : {}),
       },
     })
 
@@ -137,12 +140,13 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Add the declined date to each profile
+    // Add the declined date and reason to each profile
     const profilesWithDeclinedDate = profiles.map(profile => {
       const declinedRecord = declinedRecords.find(d => d.declinedUserId === profile.userId)
       return {
         ...profile,
         declinedAt: declinedRecord?.createdAt,
+        declineReason: declinedRecord?.reason || null,
       }
     })
 

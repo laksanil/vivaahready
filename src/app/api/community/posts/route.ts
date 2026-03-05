@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         authorDisplayName = formatVrIdDisplay(author.odNumber)
       }
     } else if (post.authorId.startsWith('vr-seeded-')) {
-      authorDisplayName = post.authorId.replace('vr-seeded-', 'VR ')
+      authorDisplayName = 'VR Member'
     }
 
     return {

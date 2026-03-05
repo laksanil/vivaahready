@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
-import { Heart, Shield, Users, CheckCircle, Star, Lock, Sparkles, Ban, Quote } from 'lucide-react'
+import Link from 'next/link'
+import { Heart, Shield, Users, CheckCircle, Star, Sparkles, Ban, Quote } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import ProfilePhoto from '@/components/ProfilePhoto'
 import FindMatchButton from '@/components/FindMatchButton'
 
 // JSON-LD Structured Data for SEO
@@ -114,36 +113,12 @@ const jsonLd = {
   ],
 }
 
-async function getPreviewProfiles() {
-  try {
-    const profiles = await prisma.profile.findMany({
-      where: {
-        approvalStatus: 'approved',
-        isActive: true,
-      },
-      take: 6,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: { name: true }
-        }
-      }
-    })
-    return profiles
-  } catch {
-    return []
-  }
-}
-
-
 export default async function HomePage() {
   // Redirect logged-in users to dashboard
   const session = await getServerSession(authOptions)
   if (session) {
     redirect('/dashboard')
   }
-
-  const previewProfiles = await getPreviewProfiles()
 
   return (
     <>
@@ -156,8 +131,8 @@ export default async function HomePage() {
       <div>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-white via-silver-50 to-silver-100 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-16 md:py-24">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
             <div>
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Modern Matchmaking with a{' '}
@@ -198,10 +173,112 @@ export default async function HomePage() {
 
             </div>
 
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2 hover:rotate-0 transition-transform duration-300">
+            {/* Community Stories Teaser */}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Real Stories from Real People</p>
+              <p className="text-sm text-gray-400 mb-4">Because the best proof is hearing it from them.</p>
+              <div className="space-y-4">
+                <Link
+                  href="/community"
+                  className="block bg-white rounded-2xl shadow-2xl p-5 group"
+                >
+                  <span className="inline-block text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 mb-3">
+                    💬 Community
+                  </span>
+                  <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    I Made My Daughter&apos;s Profile. She Doesn&apos;t Know Yet.
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                    &ldquo;I am not that kind of mother. I always said I would never do this...&rdquo;
+                  </p>
+                  <span className="text-sm font-semibold text-primary-600 group-hover:text-primary-700 transition-colors">
+                    Read why she did it anyway →
+                  </span>
+                </Link>
+                <Link
+                  href="/community"
+                  className="block bg-white rounded-2xl shadow-lg p-5 group"
+                >
+                  <span className="inline-block text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 mb-3">
+                    💬 Community
+                  </span>
+                  <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    Okay but why am I actually on here
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                    &ldquo;I have a masters degree. I negotiated my salary. I filed my own taxes. But making a profile on a matrimonial site? Total disaster...&rdquo;
+                  </p>
+                  <span className="text-sm font-semibold text-primary-600 group-hover:text-primary-700 transition-colors">
+                    Read why she&apos;s here anyway →
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-16 bg-white">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-6">
+            {/* Left: Title + Steps */}
+            <div className="lg:w-[60%]">
+              <div className="text-center mb-8">
+                <h2 className="section-title">How VivaahReady Works</h2>
+                <p className="mt-3 text-gray-500">
+                  Privacy-first matchmaking with phone-verified profiles.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+                <div className="text-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-lg font-bold text-primary-600">1</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold mb-1">Create Profile (Free)</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    Add your preferences and deal-breakers.
+                  </p>
+                </div>
+
+                <div className="text-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-lg font-bold text-primary-600">2</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold mb-1">Find & Express Interest (Free)</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    See curated matches and signal intent.
+                  </p>
+                </div>
+
+                <div className="text-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-lg font-bold text-primary-600">3</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold mb-1">Verify to Proceed</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    Verification keeps the community genuine.
+                  </p>
+                </div>
+
+                <div className="text-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-lg font-bold text-primary-600">4</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-semibold mb-1">Connect</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    Mutual interest unlocks contact details.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Smart Matching card - aligned with heading */}
+            <div className="lg:w-[40%] flex justify-center lg:pt-2">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform rotate-1 hover:rotate-0 transition-transform duration-300">
                 <div className="flex items-center space-x-4 mb-5">
-                  <div className="h-14 w-14 rounded-full bg-primary-100 flex items-center justify-center">
+                  <div className="h-14 w-14 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
                     <Heart className="h-7 w-7 text-primary-600" />
                   </div>
                   <div>
@@ -233,137 +310,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="section-title">How VivaahReady Works</h2>
-            <p className="mt-3 text-gray-500">
-              Privacy-first matchmaking with phone-verified profiles.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
-            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-primary-600">1</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Create Profile (Free)</h3>
-              <p className="text-gray-600 text-sm">
-                Create your profile and preferences. Add deal-breakers and match preferences.
-              </p>
-            </div>
-
-            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-primary-600">2</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Find Matches (Free)</h3>
-              <p className="text-gray-600 text-sm">
-                See curated matches where both sides&apos; preferences align. Identity stays hidden.
-              </p>
-            </div>
-
-            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-primary-600">3</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Express Interest (Free)</h3>
-              <p className="text-gray-600 text-sm">
-                Express interest to signal intent.
-              </p>
-            </div>
-
-            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-primary-600">4</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Verify to Proceed</h3>
-              <p className="text-gray-600 text-sm">
-                Verification is required to unlock next steps and keep the community genuine.
-              </p>
-            </div>
-
-            <div className="text-center p-3 sm:p-5 rounded-xl hover:bg-gray-50 transition-colors">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl font-bold text-primary-600">5</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Connect</h3>
-              <p className="text-gray-600 text-sm">
-                Mutual interest unlocks messaging and contact details.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Blurred Profiles Preview */}
-      {previewProfiles.length > 0 && (
-        <section className="py-16 bg-gradient-to-b from-white via-silver-50 to-silver-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="section-title">Real Profiles Waiting for You</h2>
-              <p className="mt-3 text-gray-500 max-w-xl mx-auto">
-                Join to see complete profiles and start connecting with compatible matches.
-              </p>
-            </div>
-
-            <div className="relative">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
-                {previewProfiles.map((profile) => (
-                  <div key={profile.id} className="relative group">
-                    <div className="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl overflow-hidden">
-                      <div className="relative h-full w-full">
-                        <ProfilePhoto
-                          profile={profile}
-                          name={profile.user.name}
-                          size="xl"
-                          blurred={true}
-                          className="filter blur-md scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                      <p className="font-medium text-sm blur-[3px]">
-                        {profile.user.name.charAt(0)}****
-                      </p>
-                      <p className="text-xs text-white/80 blur-[2px]">
-                        {profile.currentLocation?.split(',').pop()?.trim() || 'Location'}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Overlay CTA - Premium Styling */}
-              <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[2px] rounded-xl">
-                <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md mx-4 border border-gray-100">
-                  <Lock className="h-10 w-10 text-primary-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">
-                    Unlock matches after you create your profile
-                  </h3>
-                  <ul className="space-y-2 mb-6 text-sm text-gray-600">
-                    <li className="flex items-start">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>No public browsing — matches appear only when compatible.</span>
-                    </li>
-                    <li className="flex items-start">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                      <span>Photos & contact unlock after verification + mutual interest.</span>
-                    </li>
-                  </ul>
-                  <FindMatchButton variant="primary" className="w-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Features */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-2 gap-6 sm:gap-12 items-center">
             <div>
               <h2 className="section-title">Why Choose VivaahReady?</h2>
@@ -452,7 +402,7 @@ export default async function HomePage() {
 
       {/* Testimonials */}
       <section className="py-16 bg-gradient-to-b from-silver-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="section-title">What Our Members Say</h2>
             <p className="mt-3 text-gray-500">
@@ -499,7 +449,7 @@ export default async function HomePage() {
 
       {/* SEO Internal Links — Find Matchmaking Near You */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="section-title">Find Indian Matchmaking Near You</h2>
             <p className="mt-3 text-gray-500">
@@ -542,7 +492,7 @@ export default async function HomePage() {
 
       {/* Final CTA Section - Light background */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Ready to create your profile?
           </h2>

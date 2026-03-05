@@ -407,7 +407,7 @@ export async function PATCH(request: Request) {
     const { userId: currentUserId } = targetUser
 
     const body = await request.json()
-    const { interestId, targetUserId, action } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
+    const { interestId, targetUserId, action, reason } = body // action: 'accept' | 'reject' | 'reconsider' | 'withdraw'
 
     if ((!interestId && !targetUserId) || !action) {
       return NextResponse.json({ error: 'Interest ID (or targetUserId) and action are required' }, { status: 400 })
@@ -533,6 +533,25 @@ export async function PATCH(request: Request) {
         }
         newStatus = 'rejected'
         responseMessage = 'Interest declined. You can reconsider later if you change your mind.'
+
+        // Store decline reason if provided
+        {
+          const reasonText = typeof reason === 'string' ? reason.trim().slice(0, 500) : null
+          await prisma.declinedProfile.upsert({
+            where: {
+              userId_declinedUserId: {
+                userId: currentUserId,
+                declinedUserId: interest.senderId,
+              },
+            },
+            update: { ...(reasonText ? { reason: reasonText } : {}) },
+            create: {
+              userId: currentUserId,
+              declinedUserId: interest.senderId,
+              ...(reasonText ? { reason: reasonText } : {}),
+            },
+          })
+        }
         break
 
       case 'reconsider':
@@ -550,11 +569,28 @@ export async function PATCH(request: Request) {
         }
         break
 
-      case 'withdraw':
+      case 'withdraw': {
+        const reasonText = typeof reason === 'string' ? reason.trim().slice(0, 500) : null
         if (interest.status === 'accepted') {
           // Can withdraw even accepted interest (but receiver keeps their accepted status)
           newStatus = 'withdrawn'
           responseMessage = 'Interest withdrawn.'
+
+          // Store decline reason if provided
+          await prisma.declinedProfile.upsert({
+            where: {
+              userId_declinedUserId: {
+                userId: currentUserId,
+                declinedUserId: interest.senderId === currentUserId ? interest.receiverId : interest.senderId,
+              },
+            },
+            update: { ...(reasonText ? { reason: reasonText } : {}) },
+            create: {
+              userId: currentUserId,
+              declinedUserId: interest.senderId === currentUserId ? interest.receiverId : interest.senderId,
+              ...(reasonText ? { reason: reasonText } : {}),
+            },
+          })
         } else {
           // Delete the interest entirely if it was pending/rejected
           await prisma.match.delete({
@@ -570,10 +606,11 @@ export async function PATCH(request: Request) {
                 declinedUserId: interest.receiverId,
               },
             },
-            update: {},
+            update: { ...(reasonText ? { reason: reasonText } : {}) },
             create: {
               userId: currentUserId,
               declinedUserId: interest.receiverId,
+              ...(reasonText ? { reason: reasonText } : {}),
             },
           })
 
@@ -583,6 +620,7 @@ export async function PATCH(request: Request) {
           })
         }
         break
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

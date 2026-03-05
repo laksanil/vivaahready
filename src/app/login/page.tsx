@@ -270,7 +270,7 @@ function LoginForm() {
             setGoogleLoading(true)
             // Always route through /login after OAuth so the profile-status
             // check in the useEffect runs before deciding where to send the user
-            signIn('google', { callbackUrl: '/login?fromGoogle=true' })
+            signIn('google', { callbackUrl: `/login?fromGoogle=true${callbackUrl !== '/dashboard' ? `&callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}` })
           }}
           disabled={googleLoading}
           className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border-2 border-primary-200 rounded-xl text-gray-700 hover:bg-primary-50 hover:border-primary-300 transition-all font-semibold shadow-sm"

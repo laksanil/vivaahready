@@ -1004,7 +1004,7 @@ function DashboardContent() {
               </div>
             )}
 
-            {/* 4. Notifications (latest 1) */}
+            {/* 4. Notifications — temporarily hidden
             {notifications.length > 0 && (
               <div className="mb-6">
                 {(() => {
@@ -1030,6 +1030,7 @@ function DashboardContent() {
                 })()}
               </div>
             )}
+            */}
 
           </>
         )}

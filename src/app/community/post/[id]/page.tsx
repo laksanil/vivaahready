@@ -243,7 +243,25 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
           {post.title && (
             <h1 className="text-lg font-semibold text-gray-900 mb-2">{post.title}</h1>
           )}
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{post.body}</p>
+          {session ? (
+            <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{post.body}</p>
+          ) : (
+            <>
+              <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                {post.body.length > 500
+                  ? post.body.slice(0, post.body.indexOf('\n\n', 400) > 0 ? post.body.indexOf('\n\n', 400) : 500) + '...'
+                  : post.body}
+              </p>
+              {post.body.length > 500 && (
+                <Link
+                  href="/login?callbackUrl=/community"
+                  className="inline-block mt-3 text-sm font-semibold text-primary-600 hover:text-primary-700 hover:underline transition-colors"
+                >
+                  Sign in to read more
+                </Link>
+              )}
+            </>
+          )}
         </div>
 
         {/* Action bar */}

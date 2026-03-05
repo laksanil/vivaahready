@@ -89,6 +89,7 @@ function SentInterestContent() {
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [withdrawConfirm, setWithdrawConfirm] = useState<SentInterest | null>(null)
+  const [withdrawReason, setWithdrawReason] = useState('')
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -124,13 +125,15 @@ function SentInterestContent() {
   }
 
   const handleWithdraw = async (interest: SentInterest) => {
+    const reason = withdrawReason.trim()
     setWithdrawConfirm(null)
+    setWithdrawReason('')
     setWithdrawingId(interest.id)
     try {
       await fetch(buildApiUrl('/api/interest'), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interestId: interest.id, action: 'withdraw' }),
+        body: JSON.stringify({ interestId: interest.id, action: 'withdraw', ...(reason ? { reason } : {}) }),
       })
       setInterests(prev => prev.filter(i => i.id !== interest.id))
     } catch (error) {
@@ -278,12 +281,21 @@ function SentInterestContent() {
             <h3 className="text-lg font-bold text-center text-gray-900 mb-2">
               Withdraw Interest?
             </h3>
-            <p className="text-center text-gray-600 text-sm mb-6">
+            <p className="text-center text-gray-600 text-sm mb-4">
               Are you sure you want to withdraw your interest in <span className="font-semibold">{withdrawConfirm.receiver?.name}</span>? This action cannot be undone.
             </p>
+            <p className="text-xs text-gray-500 mb-2">Your feedback helps us refine your matches.</p>
+            <textarea
+              value={withdrawReason}
+              onChange={e => setWithdrawReason(e.target.value)}
+              placeholder="What didn't feel like a fit? (optional)"
+              maxLength={500}
+              rows={3}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none mb-4"
+            />
             <div className="flex gap-3">
               <button
-                onClick={() => setWithdrawConfirm(null)}
+                onClick={() => { setWithdrawConfirm(null); setWithdrawReason('') }}
                 className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
               >
                 Cancel

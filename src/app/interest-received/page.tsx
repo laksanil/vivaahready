@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
+import DeclineReasonModal from '@/components/DeclineReasonModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -88,6 +89,7 @@ function InterestReceivedContent() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [pendingDecline, setPendingDecline] = useState<ReceivedInterest | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -138,13 +140,20 @@ function InterestReceivedContent() {
     }
   }
 
-  const handleDecline = async (interest: ReceivedInterest) => {
+  const handleDecline = (interest: ReceivedInterest) => {
+    setPendingDecline(interest)
+  }
+
+  const confirmDecline = async (reason: string) => {
+    if (!pendingDecline) return
+    const interest = pendingDecline
+    setPendingDecline(null)
     setActionId(interest.id)
     try {
       await fetch(buildApiUrl('/api/interest'), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interestId: interest.id, action: 'reject' }),
+        body: JSON.stringify({ interestId: interest.id, action: 'reject', ...(reason ? { reason } : {}) }),
       })
       setInterests(prev => prev.filter(i => i.id !== interest.id))
     } catch (error) {
@@ -250,6 +259,15 @@ function InterestReceivedContent() {
           </div>
         )}
       </div>
+
+      {/* Decline Reason Modal */}
+      {pendingDecline && (
+        <DeclineReasonModal
+          profileName={pendingDecline.sender?.name || 'this profile'}
+          onConfirm={confirmDecline}
+          onCancel={() => setPendingDecline(null)}
+        />
+      )}
     </div>
   )
 }

@@ -42,6 +42,7 @@ function ConnectionsPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
   const [withdrawConfirm, setWithdrawConfirm] = useState<ConnectionProfile | null>(null)
+  const [withdrawReason, setWithdrawReason] = useState('')
   const [reportModal, setReportModal] = useState<{
     isOpen: boolean
     userId: string
@@ -103,13 +104,15 @@ function ConnectionsPageContent() {
   }
 
   const handleWithdraw = async (profile: ConnectionProfile) => {
+    const reason = withdrawReason.trim()
     setWithdrawConfirm(null)
+    setWithdrawReason('')
     setWithdrawingId(profile.user.id)
     try {
       await fetch(buildApiUrl('/api/interest'), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUserId: profile.user.id, action: 'withdraw' }),
+        body: JSON.stringify({ targetUserId: profile.user.id, action: 'withdraw', ...(reason ? { reason } : {}) }),
       })
       setConnections(prev => prev.filter(c => c.user.id !== profile.user.id))
     } catch (error) {
@@ -356,12 +359,21 @@ function ConnectionsPageContent() {
               <h3 className="text-lg font-bold text-center text-gray-900 mb-2">
                 Withdraw Connection?
               </h3>
-              <p className="text-center text-gray-600 text-sm mb-6">
+              <p className="text-center text-gray-600 text-sm mb-4">
                 Are you sure you want to withdraw your connection with <span className="font-semibold">{withdrawConfirm.user?.name}</span>? This will remove the mutual match.
               </p>
+              <p className="text-xs text-gray-500 mb-2">Your feedback helps us refine your matches.</p>
+              <textarea
+                value={withdrawReason}
+                onChange={e => setWithdrawReason(e.target.value)}
+                placeholder="What didn't feel like a fit? (optional)"
+                maxLength={500}
+                rows={3}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none mb-4"
+              />
               <div className="flex gap-3">
                 <button
-                  onClick={() => setWithdrawConfirm(null)}
+                  onClick={() => { setWithdrawConfirm(null); setWithdrawReason('') }}
                   className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors text-sm"
                 >
                   Cancel

@@ -332,12 +332,13 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        {/* Settings link */}
+        {/* Settings link — temporarily hidden
         <div className="mt-4 text-center">
           <Link href="/settings" className="text-sm text-gray-500 hover:text-gray-800">
             Manage notification preferences
           </Link>
         </div>
+        */}
       </div>
     </div>
   )
