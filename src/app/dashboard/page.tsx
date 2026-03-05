@@ -647,7 +647,7 @@ function DashboardContent() {
 
             {/* 1. Singles Zoom Mixer Event Sign-Up */}
             {eventRegistered === false && (
-              <Link href="/marchevent" className="block mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-xl p-4 sm:p-5 shadow-md group hover:shadow-lg transition-shadow">
+              <Link href="/aprilevent" className="block mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-xl p-4 sm:p-5 shadow-md group hover:shadow-lg transition-shadow">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">

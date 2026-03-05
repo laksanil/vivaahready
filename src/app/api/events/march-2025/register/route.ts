@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
     if (!profile) {
       return NextResponse.json(
-        { error: 'Please create your profile first', redirectTo: '/profile/complete?returnTo=/marchevent/payment' },
+        { error: 'Please create your profile first', redirectTo: '/profile/complete?returnTo=/aprilevent/payment' },
         { status: 400 }
       )
     }
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     // Check profile completion
     if (profile.signupStep < 10) {
       return NextResponse.json(
-        { error: 'Please complete your profile first', redirectTo: '/profile/complete?returnTo=/marchevent' },
+        { error: 'Please complete your profile first', redirectTo: '/profile/complete?returnTo=/aprilevent' },
         { status: 400 }
       )
     }
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       registrationId: registration.id,
-      paymentUrl: `/marchevent/payment?registrationId=${registration.id}`,
+      paymentUrl: `/aprilevent/payment?registrationId=${registration.id}`,
       amount: EVENT_CONFIG.price,
     })
   } catch (error) {
