@@ -5,9 +5,14 @@ const getTargetUserIdMock = vi.fn()
 
 const prismaMock = {
   notification: {
+    findFirst: vi.fn(),
     findMany: vi.fn(),
     count: vi.fn(),
+    create: vi.fn(),
     updateMany: vi.fn(),
+  },
+  profile: {
+    findUnique: vi.fn(),
   },
 }
 
@@ -44,10 +49,16 @@ describe('/api/notifications and /api/notifications/read', () => {
     vi.clearAllMocks()
     getServerSessionMock.mockResolvedValue({ user: { id: 'session_user' } })
     getTargetUserIdMock.mockResolvedValue({ userId: 'user_123' })
+    prismaMock.notification.findFirst.mockResolvedValue(null)
     prismaMock.notification.findMany.mockResolvedValue([
       { id: 'n1', userId: 'user_123', read: false, createdAt: new Date('2026-03-01T10:00:00.000Z') },
     ])
     prismaMock.notification.count.mockResolvedValue(3)
+    prismaMock.notification.create.mockResolvedValue({ id: 'welcome_1' })
+    prismaMock.profile.findUnique.mockResolvedValue({
+      id: 'profile_1',
+      createdAt: new Date(),
+    })
     prismaMock.notification.updateMany.mockResolvedValue({ count: 1 })
   })
 
@@ -96,6 +107,30 @@ describe('/api/notifications and /api/notifications/read', () => {
     expect(response.status).toBe(200)
     const call = prismaMock.notification.findMany.mock.calls[0][0]
     expect(call.take).toBeUndefined()
+  })
+
+  it('backfills a welcome notification for a newly created profile when missing', async () => {
+    const { GET } = await import('@/app/api/notifications/route')
+    const response = await GET(buildGetRequest() as any)
+
+    expect(response.status).toBe(200)
+    expect(prismaMock.notification.findFirst).toHaveBeenCalledWith({
+      where: { userId: 'user_123', type: 'welcome' },
+      select: { id: true },
+    })
+    expect(prismaMock.profile.findUnique).toHaveBeenCalledWith({
+      where: { userId: 'user_123' },
+      select: { id: true, createdAt: true },
+    })
+    expect(prismaMock.notification.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: 'user_123',
+          type: 'welcome',
+          url: '/dashboard',
+        }),
+      })
+    )
   })
 
   it('returns 500 when notifications GET throws', async () => {
@@ -164,4 +199,3 @@ describe('/api/notifications and /api/notifications/read', () => {
     await expect(response.json()).resolves.toMatchObject({ error: 'Failed to update notifications' })
   })
 })
-
