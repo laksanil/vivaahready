@@ -11,7 +11,7 @@ He walked in and said "I've been reading the same parking sign outside for 10 mi
 
 I nearly choked on my filter coffee.
 
-Three hours, one biryani debate, and zero awkward silences later — I drove home and just... smiled the whole way.
+Three hours, one biryani debate, and zero awkward silences later, I drove home and just... smiled the whole way.
 
 Still not sure where this goes. But for the first time, I'm curious to find out.`,
     showRealName: false,
@@ -33,13 +33,13 @@ The best part? There were a few awkward silences, but they didn't feel uncomfort
 
 A few things I learned from my first date that might help others here:
 
-1. It's okay to be nervous — they probably are too
+1. It's okay to be nervous, they probably are too
 2. Pick a place where you feel comfortable (familiar food helps!)
-3. Don't try to be someone you're not — authenticity goes so much further
+3. Don't try to be someone you're not, authenticity goes so much further
 4. Ask genuine questions and actually listen to the answers
-5. It's totally fine if there are quiet moments — not every second needs to be filled with conversation
+5. It's totally fine if there are quiet moments, not every second needs to be filled with conversation
 
-I'm not sure where this will go, but I'm grateful for the experience and for this platform that made it possible. To everyone still waiting for their first meeting — your time will come, and it'll be worth the wait!
+I'm not sure where this will go, but I'm grateful for the experience and for this platform that made it possible. To everyone still waiting for their first meeting, your time will come, and it'll be worth the wait!
 
 Would love to hear about your first date stories too. We're all in this together!`,
     showRealName: false,
