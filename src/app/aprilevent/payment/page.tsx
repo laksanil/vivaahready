@@ -233,7 +233,7 @@ function EventPaymentContent() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">You&apos;re In!</h2>
           <p className="text-gray-600 mb-6">
-            Your spot for the Singles Zoom Mixer on April 12 is confirmed.
+            Your spot for the Singles Zoom Mixer on April 5 is confirmed.
             We&apos;ll send you event details before the day.
           </p>
           <Link href="/dashboard" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
@@ -264,7 +264,7 @@ function EventPaymentContent() {
           </div>
           <div className="flex items-center gap-2 text-sm text-purple-100">
             <Calendar className="h-4 w-4" />
-            <span>April 12, 2026 &bull; 6:00 PM PT &bull; Ages 24-35</span>
+            <span>April 5, 2026 &bull; 6:00 PM PT &bull; Ages 24-35</span>
           </div>
         </div>
 

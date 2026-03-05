@@ -132,7 +132,7 @@ export async function POST(request: Request) {
           slug: EVENT_SLUG,
           title: 'Singles Zoom Mixer - April 2026',
           description: 'Exclusive vegetarian singles event for California residents aged 24-35',
-          eventDate: new Date('2026-04-12T18:00:00-07:00'),
+          eventDate: new Date('2026-04-05T18:00:00-07:00'),
           timezone: 'America/Los_Angeles',
           duration: 60,
           maxMaleSpots: EVENT_CONFIG.maxMaleSpots,
