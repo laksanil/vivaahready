@@ -8,5 +8,5 @@ export const MARCH_EVENT_CONFIG = {
 
 // Returns the event date
 export function getMarchEventDate(): Date {
-  return new Date('2026-04-05T18:00:00-07:00')
+  return new Date('2026-04-05T11:00:00-07:00')
 }
