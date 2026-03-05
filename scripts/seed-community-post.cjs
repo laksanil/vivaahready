@@ -23,9 +23,9 @@ Still not sure where this goes. But for the first time, I'm curious to find out.
     slug: "the-moment-i-knew-arranged-wasnt-a-dirty-word",
     body: `Growing up in the US, I used to cringe when my parents brought up "arranged marriage." It felt like giving up on finding love on my own terms.
 
-Then I realized — VivaahReady isn't about someone else choosing for you. It's about having a system that actually understands what matters to you and filters out the noise.
+Then I realized VivaahReady isn't about someone else choosing for you. It's about having a system that actually understands what matters to you and filters out the noise.
 
-My first real conversation through here lasted two hours. We talked about our careers, our families, our weird hobbies. No swiping, no games.
+My first real conversation through here lasted two hours. We talked about our families, our careers, our love for old Telugu movies, and even debated whether Hyderabadi biryani is better than Chennai biryani (spoiler: we agreed to disagree and that's okay!). No swiping, no games.
 
 I don't know if this is "the one." But I know this feels more real than anything I found on a dating app.
 
