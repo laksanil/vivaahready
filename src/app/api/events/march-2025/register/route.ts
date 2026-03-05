@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 // Event configuration
 const EVENT_SLUG = 'april-2026-vegetarian'
+const MIN_PROFILE_SIGNUP_STEP = 9
 const EVENT_CONFIG = {
   minAge: 29,
   maxAge: 35,
@@ -78,13 +79,13 @@ export async function POST(request: Request) {
 
     if (!profile) {
       return NextResponse.json(
-        { error: 'Please create your profile first', redirectTo: '/profile/complete?returnTo=/aprilevent/payment' },
+        { error: 'Please create your profile first', redirectTo: '/profile/complete?returnTo=/aprilevent' },
         { status: 400 }
       )
     }
 
-    // Check profile completion
-    if (profile.signupStep < 10) {
+    // Profile is complete when signupStep reaches 9 (photos done).
+    if (profile.signupStep < MIN_PROFILE_SIGNUP_STEP) {
       return NextResponse.json(
         { error: 'Please complete your profile first', redirectTo: '/profile/complete?returnTo=/aprilevent' },
         { status: 400 }

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { EventChatbot } from '@/components/EventChatbot'
-import FindMatchModal from '@/components/FindMatchModal'
 import { MARCH_EVENT_CONFIG, getMarchEventDate } from '@/lib/marchEventConfig'
 import {
   Calendar,
@@ -162,7 +161,6 @@ export default function MarchEventPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling] = useState(false)
   const [cancelled, setCancelled] = useState(false)
-  const [showFindMatchModal, setShowFindMatchModal] = useState(false)
 
   // Fetch registration status
   useEffect(() => {
@@ -223,9 +221,9 @@ export default function MarchEventPage() {
       return
     }
 
-    // Check if profile is complete - if not, show FindMatchModal
-    if (!registrationStatus?.userEligibility?.profileComplete) {
-      setShowFindMatchModal(true)
+    // If status says profile is incomplete, send user to the profile completion flow.
+    if (registrationStatus?.userEligibility?.profileComplete === false) {
+      router.push('/profile/complete?returnTo=/aprilevent')
       return
     }
 
@@ -246,9 +244,9 @@ export default function MarchEventPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        // If API says profile incomplete, show FindMatchModal
-        if (data.redirectTo && data.redirectTo.includes('profile')) {
-          setShowFindMatchModal(true)
+        // Backend controls the exact completion path.
+        if (typeof data.redirectTo === 'string' && data.redirectTo.length > 0) {
+          router.push(data.redirectTo)
           setRegistering(false)
           return
         }
@@ -371,10 +369,10 @@ export default function MarchEventPage() {
             <div className="space-y-4">
               <button
                 onClick={handleRegisterClick}
-                disabled={registering || status === 'loading' || isEventPast}
+                disabled={registering || status === 'loading' || checkingStatus || isEventPast}
                 className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {registering || status === 'loading' ? (
+                {registering || status === 'loading' || checkingStatus ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Processing...
@@ -694,10 +692,10 @@ export default function MarchEventPage() {
 
                 <button
                   onClick={handleRegisterClick}
-                  disabled={registering || status === 'loading'}
+                  disabled={registering || status === 'loading' || checkingStatus}
                   className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registering || status === 'loading' ? (
+                  {registering || status === 'loading' || checkingStatus ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Processing...
@@ -940,10 +938,10 @@ export default function MarchEventPage() {
           {!registrationStatus?.isRegistered && !registrationStatus?.isWaitlisted && !isEventPast && (
             <button
               onClick={handleRegisterClick}
-              disabled={registering || status === 'loading'}
+              disabled={registering || status === 'loading' || checkingStatus}
               className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:bg-gray-100 transition-all disabled:opacity-50"
             >
-              {registering ? (
+              {registering || checkingStatus ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   Processing...
@@ -976,10 +974,10 @@ export default function MarchEventPage() {
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden z-40">
           <button
             onClick={handleRegisterClick}
-            disabled={registering || status === 'loading'}
+            disabled={registering || status === 'loading' || checkingStatus}
             className="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
           >
-            {registering ? 'Processing...' : `Register — $${EVENT_CONFIG.price}`}
+            {registering || checkingStatus ? 'Processing...' : `Register — $${EVENT_CONFIG.price}`}
           </button>
         </div>
       )}
@@ -1084,15 +1082,6 @@ export default function MarchEventPage() {
 
       {/* AI Chatbot */}
       <EventChatbot context="aprilevent" />
-
-      {/* Find Match Modal for profile completion */}
-      <FindMatchModal
-        isOpen={showFindMatchModal}
-        onClose={() => {
-          setShowFindMatchModal(false)
-          router.push('/aprilevent/payment')
-        }}
-      />
     </div>
   )
 }
