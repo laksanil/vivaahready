@@ -41,7 +41,7 @@ const EVENT_CONFIG = {
   price: MARCH_EVENT_CONFIG.priceDollars,
   maxSeats: 20,
   minAttendees: 12,
-  minAge: 29,
+  minAge: 30,
   maxAge: 35,
   location: 'California',
   dietary: 'Vegetarian',
@@ -317,7 +317,7 @@ export default function MarchEventPage() {
               </div>
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                <span>10:00 AM PST</span>
+                <span>11:00 AM PST</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Video className="w-4 h-4" />
@@ -391,7 +391,7 @@ export default function MarchEventPage() {
                   </>
                 ) : (
                   <>
-                    Register — ${EVENT_CONFIG.price}
+                    {`Register — $${EVENT_CONFIG.price}`}
                   </>
                 )}
               </button>
@@ -704,7 +704,7 @@ export default function MarchEventPage() {
                     </>
                   ) : session ? (
                     <>
-                      Register — ${EVENT_CONFIG.price}
+                      {`Register — $${EVENT_CONFIG.price}`}
                       <ArrowRight className="w-5 h-5" />
                     </>
                   ) : (
@@ -950,7 +950,7 @@ export default function MarchEventPage() {
                 </>
               ) : (
                 <>
-                  Register — ${EVENT_CONFIG.price}
+                  {`Register — $${EVENT_CONFIG.price}`}
                 </>
               )}
             </button>

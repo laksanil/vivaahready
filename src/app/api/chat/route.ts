@@ -22,8 +22,8 @@ WHO IS HOSTING:
 
 EVENT DETAILS:
 - Event: Singles Zoom Meetup - Vegetarian Edition
-- Date: March 15, 2026
-- Time: 10:00 AM PST (Pacific Standard Time)
+- Date: April 5, 2026
+- Time: 11:00 AM PST (Pacific Standard Time)
 - Duration: Approximately 1 hour
 - Location: Online via Zoom
 - Price: Only $25 registration fee (great value!)
@@ -212,7 +212,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('date') || msg.includes('when') || msg.includes('time')) {
-    return 'Mark your calendar! The Singles Zoom Meetup is on March 15, 2026 at 10:00 AM PDT. It\'s just 1 hour of your time that could change your life! Register now before spots fill up.'
+    return 'Mark your calendar! The Singles Zoom Meetup is on April 5, 2026 at 11:00 AM PST. It\'s just 1 hour of your time that could change your life! Register now before spots fill up.'
   }
 
   if (msg.includes('eligible') || msg.includes('requirement') || msg.includes('who can')) {
