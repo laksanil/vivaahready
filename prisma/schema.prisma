@@ -364,6 +364,7 @@ model DeclinedProfile {
 
   hiddenFromReconsider Boolean @default(false)
   source               String?
+  reason               String?
 
   createdAt       DateTime @default(now())
 

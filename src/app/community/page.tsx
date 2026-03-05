@@ -400,17 +400,26 @@ export default function CommunityPage() {
                 <p className="text-sm text-gray-700 whitespace-pre-line">
                   {expandedPostId === post.id
                     ? post.body
-                    : post.body.length > 300
-                      ? post.body.slice(0, 300) + '...'
+                    : post.body.length > 500
+                      ? post.body.slice(0, post.body.indexOf('\n\n', 400) > 0 ? post.body.indexOf('\n\n', 400) : 500) + '...'
                       : post.body}
                 </p>
-                {post.body.length > 300 && expandedPostId !== post.id && (
-                  <button
-                    onClick={() => toggleComments(post.id)}
-                    className="text-primary-600 text-xs font-medium mt-1 hover:underline"
-                  >
-                    Read more
-                  </button>
+                {post.body.length > 500 && expandedPostId !== post.id && (
+                  session ? (
+                    <button
+                      onClick={() => toggleComments(post.id)}
+                      className="text-primary-600 text-xs font-medium mt-1 hover:underline"
+                    >
+                      Read more
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login?callbackUrl=/community"
+                      className="text-primary-600 text-xs font-medium mt-1 hover:underline inline-block"
+                    >
+                      Sign in to read more
+                    </Link>
+                  )
                 )}
               </div>
 

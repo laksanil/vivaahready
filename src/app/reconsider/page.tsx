@@ -46,6 +46,7 @@ interface DeclinedProfile {
   citizenship: string | null
   odNumber: string | null
   declinedAt?: string
+  declineReason?: string | null
   user: {
     id: string
     name: string
@@ -241,26 +242,37 @@ function ReconsiderPageContent() {
         ) : (
           <div className="space-y-2">
             {filteredProfiles.map((profile) => (
-              <div key={profile.id} className="relative">
-                <DirectoryCard
-                  profile={toProfileData(profile)}
-                  showActions={false}
-                />
-                {/* Bring Back button */}
-                <div className="absolute bottom-2 right-2">
-                  <button
-                    onClick={() => handleReconsider(profile.userId)}
-                    disabled={reconsidering === profile.userId}
-                    className="inline-flex items-center gap-1.5 text-xs bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
-                  >
-                    {reconsidering === profile.userId ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <RotateCcw className="h-3.5 w-3.5" />
-                    )}
-                    Bring Back
-                  </button>
+              <div key={profile.id}>
+                <div className="relative">
+                  <DirectoryCard
+                    profile={toProfileData(profile)}
+                    showActions={false}
+                  />
+                  {/* Bring Back button */}
+                  <div className="absolute bottom-2 right-2">
+                    <button
+                      onClick={() => handleReconsider(profile.userId)}
+                      disabled={reconsidering === profile.userId}
+                      className="inline-flex items-center gap-1.5 text-xs bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded-lg transition-colors font-medium shadow-sm disabled:opacity-50"
+                    >
+                      {reconsidering === profile.userId ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-3.5 w-3.5" />
+                      )}
+                      Bring Back
+                    </button>
+                  </div>
                 </div>
+                {/* Decline reason below the card */}
+                {profile.declineReason && (
+                  <div className="mt-1 px-3 pb-1">
+                    <p className="text-xs text-gray-500">
+                      <span className="text-gray-400">Your reason:</span>{' '}
+                      <span className="text-gray-600 font-medium">&ldquo;{profile.declineReason}&rdquo;</span>
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -122,12 +122,20 @@ export default function EngagementRewardsCard({ primary = false, compact = false
           <div className="mt-4 pt-3 border-t border-gray-100">
             <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2">How you earned</p>
             <div className="space-y-1.5">
-              {data.recentActivity.filter(a => a.points > 0).slice(0, 3).map((activity, i) => (
-                <div key={i} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">{ACTION_LABELS[activity.action] || activity.action}</span>
-                  <span className="text-green-600 font-semibold">+{activity.points} pts</span>
-                </div>
-              ))}
+              {(() => {
+                const grouped = data.recentActivity
+                  .filter(a => a.points > 0)
+                  .reduce<Record<string, number>>((acc, a) => {
+                    acc[a.action] = (acc[a.action] || 0) + a.points
+                    return acc
+                  }, {})
+                return Object.entries(grouped).slice(0, 4).map(([action, points]) => (
+                  <div key={action} className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">{ACTION_LABELS[action] || action}</span>
+                    <span className="text-green-600 font-semibold">+{points} pts</span>
+                  </div>
+                ))
+              })()}
             </div>
           </div>
         )}

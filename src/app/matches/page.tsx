@@ -15,6 +15,7 @@ import {
 import { DirectoryCard, DirectoryCardSkeleton } from '@/components/DirectoryCard'
 import { ProfileData } from '@/components/ProfileCard'
 import { NearMatchesSection } from '@/components/NearMatchCard'
+import DeclineReasonModal from '@/components/DeclineReasonModal'
 import { useImpersonation } from '@/hooks/useImpersonation'
 import { useAdminViewAccess } from '@/hooks/useAdminViewAccess'
 
@@ -44,6 +45,7 @@ function FeedPageContent() {
   const [hasConnections, setHasConnections] = useState(false)
   const [nearMatches, setNearMatches] = useState<any[]>([])
   const [showNearMatches, setShowNearMatches] = useState(false)
+  const [pendingDecline, setPendingDecline] = useState<FeedProfile | null>(null)
 
   const canAccess = !!session || (isAdminView && isAdmin)
 
@@ -147,14 +149,21 @@ function FeedPageContent() {
     }
   }
 
-  const handlePass = async (profile: FeedProfile) => {
+  const handlePass = (profile: FeedProfile) => {
+    setPendingDecline(profile)
+  }
+
+  const confirmDecline = async (reason: string) => {
+    if (!pendingDecline) return
+    const profile = pendingDecline
+    setPendingDecline(null)
     setLoadingProfileId(profile.id)
 
     try {
       await fetch(buildApiUrl('/api/matches/decline'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ declinedUserId: profile.userId }),
+        body: JSON.stringify({ declinedUserId: profile.userId, ...(reason ? { reason } : {}) }),
       })
       removeProfile(profile.id)
     } catch (error) {
@@ -456,6 +465,15 @@ function FeedPageContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Decline Reason Modal */}
+      {pendingDecline && (
+        <DeclineReasonModal
+          profileName={pendingDecline.user.name || 'this profile'}
+          onConfirm={confirmDecline}
+          onCancel={() => setPendingDecline(null)}
+        />
       )}
 
       </div>

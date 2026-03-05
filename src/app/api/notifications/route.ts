@@ -36,7 +36,7 @@ async function ensureRecentWelcomeNotification(userId: string): Promise<void> {
       url: '/dashboard',
       data: JSON.stringify({
         profileId: profile.id,
-        __deliveryModes: ['in_app'],
+        __deliveryModes: ['in_app', 'email'],
         __sentAt: sentAt.toISOString(),
       }),
     },

@@ -3,53 +3,54 @@ const prisma = new PrismaClient();
 
 const POSTS = [
   {
-    title: "My First VivaahReady Date: A Dosa, A Parking Sign, and 3 Hours I Didn't Plan For",
-    slug: "my-first-vivaahready-date-a-dosa-a-parking-sign-and-3-hours-i-didnt-plan-for",
-    body: `I showed up 15 minutes early and spent the whole time pretending to read the menu. (I now know every dosa variety by heart. Ask me anything.)
+    title: "I Made My Daughter's Profile. She Doesn't Know Yet.",
+    slug: "i-made-my-daughters-profile-she-doesnt-know-yet",
+    body: `I am not that kind of mother. I always said I would never do this.
 
-He walked in and said "I've been reading the same parking sign outside for 10 minutes, so we're equally nervous."
+And then I did it at 11pm on a Wednesday when she was not answering my calls.
 
-I nearly choked on my filter coffee.
+She is 29. She has a good job. She has her whole life sorted out. Except this one thing. And she will tell me she is not ready. She has been saying that for two years.
 
-Three hours, one biryani debate, and zero awkward silences later, I drove home and just... smiled the whole way.
+Here is what I will never tell her. I did not make her profile because my relatives are asking. I did not do it because of some checklist. I did it because last Diwali she was the only one who came alone. And she smiled the whole night. And I watched her and I just thought. She is so good at being alone. I hope that is a choice and not a habit.
 
-Still not sure where this goes. But for the first time, I'm curious to find out.`,
+I have not told her yet. Maybe I will show her this post first.
+
+If there are other parents here doing the same quiet worrying — you are not alone.`,
     showRealName: false,
-    isAnonymous: false, // Shows VR ID
+    isAnonymous: false,
     isPinned: true,
+    daysAgo: 1,
   },
   {
-    title: "The Moment I Knew Arranged Wasn't a Dirty Word",
-    slug: "the-moment-i-knew-arranged-wasnt-a-dirty-word",
-    body: `Growing up in the US, I used to cringe when my parents brought up "arranged marriage." It felt like giving up on finding love on my own terms.
+    title: "Okay but why am I actually on here",
+    slug: "okay-but-why-am-i-actually-on-here",
+    body: `I have a masters degree. I negotiated my salary. I filed my own taxes. I know what I want from life. Mostly.
 
-Then I realized VivaahReady isn't about someone else choosing for you. It's about having a system that actually understands what matters to you and filters out the noise.
+But deciding whether to make a profile on a matrimonial site? Total disaster.
 
-My first real conversation through here lasted two hours. We talked about our families, our careers, our love for old Telugu movies, and even debated whether Hyderabadi biryani is better than Chennai biryani (spoiler: we agreed to disagree and that's okay!). No swiping, no games.
+My mom didn't pressure me. My dad didn't hint. I literally opened this, made a profile, and then just stared at it for a good 20 minutes wondering what I just did.
 
-I don't know if this is "the one." But I know this feels more real than anything I found on a dating app.
+Here's the thing nobody at work would understand. Hinge felt wrong. Not because anything bad happened. Just because every conversation felt like it was going nowhere near where I actually wanted to end up. I want someone who gets why I still call my nani every Sunday. Who doesn't think meeting the parents is some six month milestone. Who understands that my culture isn't a personality trait I perform. It's just me.
 
-The best part? There were a few awkward silences, but they didn't feel uncomfortable. They felt... natural? Like we were both just taking a moment to appreciate that this was actually happening.
+So here I am. On a matrimonial site. At 28. Feeling equal parts ready and ridiculous.
 
-A few things I learned from my first date that might help others here:
+Is this the right way? Honestly no idea. But it feels more honest than pretending I want something casual when I don't.
 
-1. It's okay to be nervous, they probably are too
-2. Pick a place where you feel comfortable (familiar food helps!)
-3. Don't try to be someone you're not, authenticity goes so much further
-4. Ask genuine questions and actually listen to the answers
-5. It's totally fine if there are quiet moments, not every second needs to be filled with conversation
-
-I'm not sure where this will go, but I'm grateful for the experience and for this platform that made it possible. To everyone still waiting for their first meeting, your time will come, and it'll be worth the wait!
-
-Would love to hear about your first date stories too. We're all in this together!`,
+If you're also here wondering the same thing — hi.`,
     showRealName: false,
-    isAnonymous: true, // Shows Anonymous
-    isPinned: false,
+    isAnonymous: false,
+    isPinned: true,
+    daysAgo: 4,
   },
 ];
 
-// Fictitious author ID for seeded posts (VR ID 999999999 so admin knows it's seeded)
-const SEEDED_AUTHOR_ID = "vr-seeded-999999999";
+// Fictitious author ID for seeded posts (embeds a realistic VR ID for display)
+const SEEDED_AUTHOR_ID = "vr-seeded-VR20251111012";
+
+// Old slugs to clean up when replacing posts
+const OLD_SLUGS = [
+  "my-first-vivaahready-date-a-dosa-a-parking-sign-and-3-hours-i-didnt-plan-for",
+];
 
 async function main() {
   // Find a real user for VR ID posts
@@ -66,6 +67,17 @@ async function main() {
 
   console.log("Using seeded author ID:", SEEDED_AUTHOR_ID);
 
+  // Clean up old posts
+  for (const slug of OLD_SLUGS) {
+    const old = await prisma.communityPost.findUnique({ where: { slug } });
+    if (old) {
+      await prisma.postLike.deleteMany({ where: { postId: old.id } });
+      await prisma.postComment.deleteMany({ where: { postId: old.id } });
+      await prisma.communityPost.delete({ where: { id: old.id } });
+      console.log("Removed old post:", slug);
+    }
+  }
+
   for (const postData of POSTS) {
     const authorId = SEEDED_AUTHOR_ID;
 
@@ -75,6 +87,9 @@ async function main() {
 
     if (existing) {
       console.log("Updating existing post:", postData.slug);
+      const updatedAt = postData.daysAgo
+        ? new Date(Date.now() - postData.daysAgo * 24 * 60 * 60 * 1000)
+        : undefined;
       await prisma.communityPost.update({
         where: { id: existing.id },
         data: {
@@ -85,11 +100,16 @@ async function main() {
           isPublished: true,
           showRealName: postData.showRealName,
           isAnonymous: postData.isAnonymous,
+          ...(updatedAt ? { createdAt: updatedAt } : {}),
         },
       });
       console.log("  Updated:", existing.id, "| author:", authorId);
       continue;
     }
+
+    const createdAt = postData.daysAgo
+      ? new Date(Date.now() - postData.daysAgo * 24 * 60 * 60 * 1000)
+      : new Date();
 
     const post = await prisma.communityPost.create({
       data: {
@@ -101,13 +121,13 @@ async function main() {
         isPinned: postData.isPinned,
         showRealName: postData.showRealName,
         isAnonymous: postData.isAnonymous,
+        createdAt,
       },
     });
 
     console.log("Created post:");
     console.log("  ID:", post.id);
     console.log("  Title:", post.title);
-    console.log("  Anonymous:", post.isAnonymous);
     console.log("  Pinned:", post.isPinned);
   }
 }
