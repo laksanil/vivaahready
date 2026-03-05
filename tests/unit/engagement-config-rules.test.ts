@@ -3,7 +3,7 @@ import { ENGAGEMENT_EARNING_RULES, POINTS_CONFIG } from '@/lib/engagementConfig'
 
 describe('engagement reward configuration', () => {
   it('uses points-only economy with 100-point boost threshold', () => {
-    expect(POINTS_CONFIG.DAILY_LOGIN).toBe(2)
+    expect(POINTS_CONFIG.DAILY_LOGIN).toBe(5)
     expect(POINTS_CONFIG.DAILY_LOGIN_TIMEZONE).toBe('America/Los_Angeles')
     expect(POINTS_CONFIG.COMMUNITY_POST).toBe(5)
     expect(POINTS_CONFIG.COMMUNITY_COMMENT).toBe(1)
@@ -25,7 +25,7 @@ describe('engagement reward configuration', () => {
 
     expect(ENGAGEMENT_EARNING_RULES).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ action: 'daily_login', label: 'Daily login', points: 2 }),
+        expect.objectContaining({ action: 'daily_login', label: 'Daily login', points: 5 }),
         expect.objectContaining({ action: 'community_post', label: 'Community post', points: 5 }),
         expect.objectContaining({ action: 'community_comment', label: 'Community comment', points: 1 }),
         expect.objectContaining({ action: 'referral_joined', label: 'Refer a friend', points: 30 }),
