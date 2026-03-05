@@ -29,7 +29,19 @@ My first real conversation through here lasted two hours. We talked about our ca
 
 I don't know if this is "the one." But I know this feels more real than anything I found on a dating app.
 
-To anyone on the fence — give it a chance. You might surprise yourself.`,
+The best part? There were a few awkward silences, but they didn't feel uncomfortable. They felt... natural? Like we were both just taking a moment to appreciate that this was actually happening.
+
+A few things I learned from my first date that might help others here:
+
+1. It's okay to be nervous — they probably are too
+2. Pick a place where you feel comfortable (familiar food helps!)
+3. Don't try to be someone you're not — authenticity goes so much further
+4. Ask genuine questions and actually listen to the answers
+5. It's totally fine if there are quiet moments — not every second needs to be filled with conversation
+
+I'm not sure where this will go, but I'm grateful for the experience and for this platform that made it possible. To everyone still waiting for their first meeting — your time will come, and it'll be worth the wait!
+
+Would love to hear about your first date stories too. We're all in this together!`,
     showRealName: false,
     isAnonymous: true, // Shows Anonymous
     isPinned: false,
