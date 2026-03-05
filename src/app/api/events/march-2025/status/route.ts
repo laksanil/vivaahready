@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // Event configuration
-const EVENT_SLUG = 'march-2025-vegetarian'
+const EVENT_SLUG = 'april-2026-vegetarian'
 const EVENT_CONFIG = {
   minAge: 24,
   maxAge: 35,
@@ -73,9 +73,9 @@ export async function GET() {
       event = await prisma.event.create({
         data: {
           slug: EVENT_SLUG,
-          title: 'Singles Zoom Meetup - March 2025',
+          title: 'Singles Zoom Mixer - April 2026',
           description: 'Exclusive vegetarian singles event for California residents aged 24-35',
-          eventDate: new Date('2026-03-15T10:00:00-07:00'),
+          eventDate: new Date('2026-04-12T18:00:00-07:00'),
           timezone: 'America/Los_Angeles',
           duration: 60,
           maxMaleSpots: EVENT_CONFIG.maxMaleSpots,

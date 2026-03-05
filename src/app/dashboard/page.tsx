@@ -88,22 +88,8 @@ function DashboardContent() {
   const [notifications, setNotifications] = useState<{ id: string; type: string; title: string; body: string; url: string | null; read: boolean; createdAt: string }[]>([])
   const [unreadNotifCount, setUnreadNotifCount] = useState(0)
 
-  // Event survey state
-  const [surveyStep, setSurveyStep] = useState(0) // 0=not shown, 1=interest question, 2=details
-  const [surveyLoading, setSurveyLoading] = useState(false)
-  const [surveyForm, setSurveyForm] = useState({
-    interestLevel: '',
-    availability: '',
-    duration: '',
-    goal: '',
-    nameSharing: '',
-    frequency: '',
-    groupSize: '',
-    ageRange: '',
-    timeZone: '',
-    videoComfort: '',
-    suggestions: '',
-  })
+  // Event sign-up state
+  const [eventRegistered, setEventRegistered] = useState<boolean | null>(null)
 
   // Check for status query param (redirected from profile creation)
   const showPendingMessage = searchParams.get('status') === 'pending'
@@ -387,15 +373,15 @@ function DashboardContent() {
     return () => clearTimeout(timer)
   }, [hasProfile])
 
-  // Check event survey status
+  // Check event registration status
   useEffect(() => {
     if (!hasProfile || typeof window === 'undefined') return
 
-    fetch('/api/event-interest')
-      .then(res => res.json())
+    fetch('/api/events/march-2025/status')
+      .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (!data.submitted) {
-          setSurveyStep(1)
+        if (data) {
+          setEventRegistered(data.isRegistered || false)
         }
       })
       .catch(() => {})
@@ -415,23 +401,6 @@ function DashboardContent() {
       })
       .catch(() => {})
   }, [hasProfile])
-
-  const handleSurveySubmit = async () => {
-    if (!surveyForm.interestLevel) return
-    setSurveyLoading(true)
-    try {
-      await fetch('/api/event-interest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(surveyForm),
-      })
-      setSurveyStep(0)
-    } catch {
-      // silent
-    } finally {
-      setSurveyLoading(false)
-    }
-  }
 
   const fetchStats = async () => {
     try {
@@ -676,92 +645,40 @@ function DashboardContent() {
               </div>
             )}
 
-            {/* 1. Event Survey */}
-            {surveyStep > 0 && (
-              <>
-                {surveyStep === 1 && (
-                  <div className="mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-xl p-4 sm:p-5 shadow-md">
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                          <Calendar className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-base font-semibold text-white">Singles Meet-Up Events</h3>
-                          <p className="text-sm text-purple-100">Would you attend a singles meet-up organized by VivaahReady?</p>
-                        </div>
+            {/* 1. Singles Zoom Mixer Event Sign-Up */}
+            {eventRegistered === false && (
+              <Link href="/marchevent" className="block mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-xl p-4 sm:p-5 shadow-md group hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-semibold text-white">Singles Zoom Mixer</h3>
+                        <span className="text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">$25</span>
                       </div>
-                      <button
-                        onClick={() => { setSurveyForm(f => ({ ...f, interestLevel: 'yes' })); setSurveyStep(2) }}
-                        className="px-4 py-2 bg-white text-purple-700 rounded-lg text-sm font-semibold hover:bg-purple-50 transition-colors"
-                      >
-                        Interested?
-                      </button>
+                      <p className="text-sm text-purple-100">April 12 &bull; Vegetarian Edition &bull; Ages 24-35 &bull; California</p>
                     </div>
                   </div>
-                )}
-
-                {surveyStep === 2 && (
-                  <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5 sm:p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="h-5 w-5 text-indigo-600" />
-                      <h3 className="text-lg font-semibold text-gray-800">Zoom Meet-Up Preferences</h3>
-                    </div>
-                    <p className="text-base text-gray-600 mb-4">Help us plan the perfect virtual meet-up for you:</p>
-                    <div className="grid sm:grid-cols-3 gap-4 mb-5">
-                      <div>
-                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">When are you available?</label>
-                        <select
-                          value={surveyForm.availability}
-                          onChange={e => setSurveyForm(f => ({ ...f, availability: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="">Select availability</option>
-                          <option value="weekend_morning">Weekend mornings</option>
-                          <option value="weekend_evening">Weekend evenings</option>
-                          <option value="weekday_evening">Weekday evenings</option>
-                          <option value="flexible">Flexible / Any time</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">What are you looking for?</label>
-                        <select
-                          value={surveyForm.goal}
-                          onChange={e => setSurveyForm(f => ({ ...f, goal: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="">Select goal</option>
-                          <option value="matched_profiles">Only profiles that match my criteria</option>
-                          <option value="make_friends">Open to making new friends</option>
-                          <option value="find_partner">Looking to find a partner</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-600 font-medium mb-1.5 block">Preferred duration</label>
-                        <select
-                          value={surveyForm.duration}
-                          onChange={e => setSurveyForm(f => ({ ...f, duration: e.target.value }))}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="">Select duration</option>
-                          <option value="1_hour">1 hour</option>
-                          <option value="1.5_hours">1.5 hours</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (!surveyForm.interestLevel) setSurveyForm(f => ({ ...f, interestLevel: 'yes' }))
-                        handleSurveySubmit()
-                      }}
-                      disabled={surveyLoading}
-                      className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-base font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                    >
-                      {surveyLoading ? 'Submitting...' : 'Submit'}
-                    </button>
+                  <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-purple-700 rounded-lg text-sm font-semibold group-hover:bg-purple-50 transition-colors">
+                    Sign Up <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </Link>
+            )}
+            {eventRegistered === true && (
+              <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 sm:p-5">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
-                )}
-              </>
+                  <div>
+                    <h3 className="text-base font-semibold text-green-800">You&apos;re signed up for the Zoom Mixer!</h3>
+                    <p className="text-sm text-green-600">April 12, 2026 &bull; We&apos;ll send you details before the event.</p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* 2. Profile Strength (with tips) + Engagement side by side */}

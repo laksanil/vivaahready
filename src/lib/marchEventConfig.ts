@@ -1,6 +1,6 @@
-// Centralized configuration for March 2025 event
+// Centralized configuration for April 2026 event
 export const MARCH_EVENT_CONFIG = {
-  slug: 'march-2025-vegetarian',
+  slug: 'april-2026-vegetarian',
   priceDollars: 25,
   title: 'Singles Zoom Mixer',
   subtitle: 'Vegetarian Edition',
@@ -8,5 +8,5 @@ export const MARCH_EVENT_CONFIG = {
 
 // Returns the event date
 export function getMarchEventDate(): Date {
-  return new Date('2025-03-15T18:00:00-08:00')
+  return new Date('2026-04-12T18:00:00-07:00')
 }
