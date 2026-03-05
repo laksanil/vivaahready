@@ -705,7 +705,7 @@ function ProfileCompleteContent() {
 
   const currentSection = SECTION_ORDER[step - 1]
   const totalSteps = SECTION_ORDER.length
-  const progress = Math.round((step / totalSteps) * 100)
+  const progress = Math.round(((step - 1) / totalSteps) * 100)
 
   const sectionProps = { formData, handleChange, setFormData }
 
