@@ -800,7 +800,7 @@ export default function FindMatchModal({ isOpen, onClose, isAdminMode = false, o
   // Account is now step 1, so all steps are displayed directly
   const displayStepNumber = step
   const totalDisplaySteps = PROFILE_SECTIONS.length // 9 sections total (including account)
-  const progress = Math.round((displayStepNumber / totalDisplaySteps) * 100)
+  const progress = Math.round(((displayStepNumber - 1) / totalDisplaySteps) * 100)
 
   const sectionProps = { formData, handleChange, setFormData }
 
