@@ -208,6 +208,30 @@ export async function POST(request: Request) {
         (cleanNps !== null ? `\nNPS: ${cleanNps}/10` : '') +
         (typeof severity === 'string' && severity.trim() ? `\nSeverity: ${severity.trim()}` : '')
 
+      // ─── Generate auto-response based on star rating ─────────
+      let autoResponse: string
+      if (stars === 5) {
+        autoResponse = 'Thank you for your wonderful feedback! Your kind words are truly encouraging and motivate us to keep improving VivaahReady for you. We\'re glad you\'re having a great experience!'
+      } else if (stars === 4) {
+        autoResponse = cleanSummary
+          ? 'Thank you for your feedback! We\'re glad you\'re mostly enjoying VivaahReady. We\'ve noted your comments and will work on making your experience even better.'
+          : 'Thank you for your feedback! We\'re glad you\'re mostly enjoying VivaahReady. If you have specific suggestions, feel free to share — we\'d love to hear how we can improve.'
+      } else if (stars === 3) {
+        autoResponse = cleanSummary
+          ? 'Thank you for taking the time to share your thoughts. Your feedback helps us understand where we can do better. We\'ll review your comments and work on improvements.'
+          : 'Thank you for your feedback. We\'d love to understand how we can improve your experience. Feel free to reach out to our support team with any specific suggestions.'
+      } else if (stars === 2) {
+        autoResponse = cleanSummary
+          ? 'We\'re sorry to hear your experience hasn\'t met expectations. We take your feedback seriously and will review your comments carefully. Our team is committed to making things better for you.'
+          : 'We\'re sorry your experience hasn\'t been great. We\'d really appreciate hearing more about what went wrong so we can improve. Please don\'t hesitate to contact our support team.'
+      } else {
+        autoResponse = cleanSummary
+          ? 'We\'re truly sorry about your experience. Your feedback is important to us and we will prioritize reviewing the issues you\'ve raised. We\'re committed to doing better.'
+          : 'We\'re truly sorry about your experience. We want to make things right — please reach out to our support team so we can understand what went wrong and help resolve it.'
+      }
+
+      const respondedAt = new Date()
+
       const supportMessage = await prisma.supportMessage.create({
         data: {
           userId: dbUser.id,
@@ -217,7 +241,10 @@ export async function POST(request: Request) {
           subject: `Feedback: ${primaryIssue}`,
           message: feedbackMessage,
           context: 'feedback',
-          status: 'new',
+          status: 'replied',
+          adminResponse: autoResponse,
+          respondedAt,
+          respondedVia: 'auto',
         },
       })
 
