@@ -6,6 +6,15 @@ import { awardCommunityPostPoints } from '@/lib/engagementPoints'
 
 export const dynamic = 'force-dynamic'
 
+/** Format VR ID for display: VR20251124011 → "VR 11/24/2025 #011" */
+function formatVrIdDisplay(odNumber: string | null | undefined): string {
+  if (!odNumber) return 'VR Member'
+  const match = odNumber.match(/^VR(\d{4})(\d{2})(\d{2})(\d{3,})$/)
+  if (!match) return odNumber
+  const [, year, month, day, seq] = match
+  return `VR ${month}/${day}/${year} #${seq}`
+}
+
 /** Generate a URL-friendly slug from a title */
 function generateSlug(title: string): string {
   return title
@@ -69,12 +78,14 @@ export async function GET(request: NextRequest) {
   const formatted = sliced.map(post => {
     const author = profileMap.get(post.authorId)
     let authorDisplayName = 'VR Member'
-    if (author) {
+    if (post.isAnonymous) {
+      authorDisplayName = 'Anonymous'
+    } else if (author) {
       if (post.showRealName && author.firstName) {
         const lastInitial = author.lastName ? ` ${author.lastName.charAt(0)}.` : ''
         authorDisplayName = `${author.firstName}${lastInitial}`
       } else {
-        authorDisplayName = author.odNumber || 'VR Member'
+        authorDisplayName = formatVrIdDisplay(author.odNumber)
       }
     }
 
@@ -123,7 +134,11 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const postBody = typeof body.body === 'string' ? body.body.trim() : ''
   const postTitle = typeof body.title === 'string' ? body.title.trim() : null
-  const showRealName = body.showRealName === true
+
+  // Support new identityMode ('vr_id' | 'real_name' | 'anonymous') with fallback to legacy showRealName
+  const identityMode = body.identityMode || (body.showRealName === true ? 'real_name' : 'vr_id')
+  const showRealName = identityMode === 'real_name'
+  const isAnonymous = identityMode === 'anonymous'
 
   if (!postBody || postBody.length > 5000) {
     return NextResponse.json({ error: 'Post body is required (max 5000 characters)' }, { status: 400 })
@@ -148,6 +163,7 @@ export async function POST(request: NextRequest) {
       slug,
       body: postBody,
       showRealName,
+      isAnonymous,
     },
   })
 
