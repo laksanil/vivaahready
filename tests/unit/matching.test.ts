@@ -383,11 +383,12 @@ describe('findNearMatches - One-Way (Seeker Can Fix)', () => {
     const subodhInPriyankaMatches = nearMatchesForPriyanka.some(nm => nm.profile.userId === 'subodh-user')
     expect(subodhInPriyankaMatches).toBe(true)
 
-    // From Subodh's view - Priyanka IS now a near match due to relaxed algorithm
-    // (algorithm now shows candidates even when candidate has restrictive preferences)
+    // From Subodh's view - Priyanka is NOT a near match because Priyanka's age
+    // deal-breaker (24-27) doesn't match Subodh (28), and Subodh can't change his age.
+    // Candidate-side age/height deal-breakers are never relaxed since the seeker can't fix them.
     const nearMatchesForSubodh = findNearMatches(subodh, [priyanka], 2)
     const priyankaInSubodhMatches = nearMatchesForSubodh.some(nm => nm.profile.userId === 'priyanka-user')
-    expect(priyankaInSubodhMatches).toBe(true)
+    expect(priyankaInSubodhMatches).toBe(false)
   })
 
   test('near match shows when seeker can fix by relocating', () => {
