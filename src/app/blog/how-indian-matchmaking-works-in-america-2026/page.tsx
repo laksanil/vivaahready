@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -165,6 +166,19 @@ export default function BlogPost() {
             </div>
           </div>
         </header>
+
+        {/* Hero Image */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
+            <Image
+              src="https://images.pexels.com/photos/8841296/pexels-photo-8841296.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
+              alt="Father having a thoughtful conversation with his adult son about life and relationships"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
