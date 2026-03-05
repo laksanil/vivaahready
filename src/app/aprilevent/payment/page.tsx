@@ -216,7 +216,7 @@ function EventPaymentContent() {
           <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Missing Registration</h2>
           <p className="text-gray-600 mb-6">No registration found. Please register for the event first.</p>
-          <Link href="/marchevent" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
+          <Link href="/aprilevent" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
             <ArrowLeft className="h-4 w-4" /> Back to Event
           </Link>
         </div>
@@ -247,7 +247,7 @@ function EventPaymentContent() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-8 px-4">
       <div className="max-w-md mx-auto">
-        <Link href="/marchevent" className="inline-flex items-center gap-2 text-gray-600 hover:text-purple-600 mb-6 text-sm">
+        <Link href="/aprilevent" className="inline-flex items-center gap-2 text-gray-600 hover:text-purple-600 mb-6 text-sm">
           <ArrowLeft className="h-4 w-4" /> Back to Event
         </Link>
 

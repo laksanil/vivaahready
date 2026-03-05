@@ -222,7 +222,7 @@ export default async function HomePage() {
       <section className="py-0">
         <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 overflow-hidden">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-            <Link href="/marchevent" className="block py-4 sm:py-5 group">
+            <Link href="/aprilevent" className="block py-4 sm:py-5 group">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                   <div className="h-10 w-10 sm:h-12 sm:w-12 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">

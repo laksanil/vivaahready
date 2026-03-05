@@ -130,7 +130,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 const STATUS_OPTIONS = ['all', 'new', 'read', 'replied', 'resolved'] as const
-const CONTEXT_OPTIONS = ['all', 'contact_form', 'chatbot', 'marchevent', 'feedback'] as const
+const CONTEXT_OPTIONS = ['all', 'contact_form', 'chatbot', 'aprilevent', 'marchevent', 'feedback'] as const
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<SupportMessage[]>([])
@@ -360,6 +360,7 @@ export default function AdminMessagesPage() {
           <option value="all">All Sources</option>
           <option value="contact_form">Contact Form</option>
           <option value="chatbot">Chatbot</option>
+          <option value="aprilevent">April Event</option>
           <option value="marchevent">March Event</option>
           <option value="feedback">Feedback</option>
         </select>

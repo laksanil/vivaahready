@@ -219,7 +219,7 @@ export default function MarchEventPage() {
 
     // If not logged in, redirect to Google OAuth
     if (!session) {
-      signIn('google', { callbackUrl: '/marchevent' })
+      signIn('google', { callbackUrl: '/aprilevent' })
       return
     }
 
@@ -1083,14 +1083,14 @@ export default function MarchEventPage() {
       )}
 
       {/* AI Chatbot */}
-      <EventChatbot context="marchevent" />
+      <EventChatbot context="aprilevent" />
 
       {/* Find Match Modal for profile completion */}
       <FindMatchModal
         isOpen={showFindMatchModal}
         onClose={() => {
           setShowFindMatchModal(false)
-          router.push('/marchevent/payment')
+          router.push('/aprilevent/payment')
         }}
       />
     </div>
