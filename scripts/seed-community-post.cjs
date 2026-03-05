@@ -48,8 +48,11 @@ Would love to hear about your first date stories too. We're all in this together
   },
 ];
 
+// Fictitious author ID for anonymous posts (not linked to any real user)
+const ANONYMOUS_AUTHOR_ID = "vr-community-anonymous";
+
 async function main() {
-  // Find a user to be the author
+  // Find a real user for VR ID posts
   const user = await prisma.user.findFirst({
     where: { profile: { isNot: null } },
     select: { id: true, email: true },
@@ -61,9 +64,12 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Using author:", user.email, "(", user.id, ")");
+  console.log("Using real author for VR ID posts:", user.email, "(", user.id, ")");
+  console.log("Using fictitious author for anonymous posts:", ANONYMOUS_AUTHOR_ID);
 
   for (const postData of POSTS) {
+    const authorId = postData.isAnonymous ? ANONYMOUS_AUTHOR_ID : user.id;
+
     const existing = await prisma.communityPost.findUnique({
       where: { slug: postData.slug },
     });
@@ -73,6 +79,7 @@ async function main() {
       await prisma.communityPost.update({
         where: { id: existing.id },
         data: {
+          authorId,
           title: postData.title,
           body: postData.body,
           isPinned: postData.isPinned,
@@ -81,13 +88,13 @@ async function main() {
           isAnonymous: postData.isAnonymous,
         },
       });
-      console.log("  Updated:", existing.id);
+      console.log("  Updated:", existing.id, "| author:", authorId);
       continue;
     }
 
     const post = await prisma.communityPost.create({
       data: {
-        authorId: user.id,
+        authorId,
         title: postData.title,
         slug: postData.slug,
         body: postData.body,
