@@ -54,6 +54,8 @@ export async function GET(
     } else {
       authorDisplayName = formatVrIdDisplay(author.odNumber)
     }
+  } else if (post.authorId.startsWith('vr-seeded-')) {
+    authorDisplayName = post.authorId.replace('vr-seeded-', 'VR ')
   }
 
   // Check if current user liked this post (only if logged in)

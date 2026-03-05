@@ -48,8 +48,8 @@ Would love to hear about your first date stories too. We're all in this together
   },
 ];
 
-// Fictitious author ID for anonymous posts (not linked to any real user)
-const ANONYMOUS_AUTHOR_ID = "vr-community-anonymous";
+// Fictitious author ID for seeded posts (VR ID 999999999 so admin knows it's seeded)
+const SEEDED_AUTHOR_ID = "vr-seeded-999999999";
 
 async function main() {
   // Find a real user for VR ID posts
@@ -64,11 +64,10 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Using real author for VR ID posts:", user.email, "(", user.id, ")");
-  console.log("Using fictitious author for anonymous posts:", ANONYMOUS_AUTHOR_ID);
+  console.log("Using seeded author ID:", SEEDED_AUTHOR_ID);
 
   for (const postData of POSTS) {
-    const authorId = postData.isAnonymous ? ANONYMOUS_AUTHOR_ID : user.id;
+    const authorId = SEEDED_AUTHOR_ID;
 
     const existing = await prisma.communityPost.findUnique({
       where: { slug: postData.slug },
