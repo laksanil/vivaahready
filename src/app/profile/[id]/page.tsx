@@ -786,6 +786,9 @@ function ProfileCard({
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-xl font-bold truncate">{(viewerIsApproved || isOwnProfile) ? profile.user.name : (profile.odNumber || 'Profile')}</h2>
+                {profile.odNumber && (
+                  <p className="text-xs text-white/70 font-medium mt-0.5">VR ID: {profile.odNumber}</p>
+                )}
                 <div className="text-sm text-white/90 mt-0.5">
                   {age ? `${age} yrs` : ''}{profile.height ? ` • ${profile.height}` : ''}{profile.maritalStatus ? ` • ${formatValue(profile.maritalStatus)}` : ''}
                 </div>
