@@ -84,6 +84,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/blog/how-indian-matchmaking-works-in-america-2026`,
+      lastModified: new Date('2026-03-05'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/what-indian-parents-should-know-about-matchmaking-usa`,
+      lastModified: new Date('2026-03-05'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/indian-matchmaking-vs-dating-apps-honest-comparison`,
+      lastModified: new Date('2026-03-05'),
+      changeFrequency: 'yearly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/blog/shame-of-looking-indian-american-matrimony`,
       lastModified: new Date('2026-03-04'),
       changeFrequency: 'yearly',
