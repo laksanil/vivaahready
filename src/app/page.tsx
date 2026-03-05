@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import Link from 'next/link'
-import { Heart, Shield, Users, CheckCircle, Star, Sparkles, Ban, Quote } from 'lucide-react'
+import { Heart, Shield, Users, CheckCircle, Star, Sparkles, Ban, Quote, Calendar, Video, ArrowRight } from 'lucide-react'
 import { authOptions } from '@/lib/auth'
 import FindMatchButton from '@/components/FindMatchButton'
 
@@ -214,6 +214,40 @@ export default async function HomePage() {
                 </Link>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Singles Meetup Event Banner */}
+      <section className="py-0">
+        <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 overflow-hidden">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+            <Link href="/marchevent" className="block py-4 sm:py-5 group">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Video className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm sm:text-lg font-bold text-white">Singles Zoom Mixer</h3>
+                      <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
+                        $25
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-purple-200 flex items-center gap-1.5 mt-0.5">
+                      <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                      April 12, 2026 &bull; Vegetarian Edition &bull; Ages 24-35 &bull; California
+                    </p>
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-purple-700 rounded-lg text-sm font-semibold group-hover:bg-purple-50 transition-colors shadow-sm">
+                    Sign Up <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
