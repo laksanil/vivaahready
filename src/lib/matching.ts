@@ -244,6 +244,8 @@ export interface NearMatchResult {
     seekerPref: string | null
     candidateValue: string | null
     isDealbreaker: boolean
+    /** 'seeker' = seeker's preference doesn't match candidate (seeker can adjust), 'candidate' = candidate's preference doesn't match seeker (seeker can't change) */
+    direction: 'seeker' | 'candidate'
   }[]
   matchScore: {
     percentage: number
@@ -2689,9 +2691,12 @@ export function findNearMatches(
       NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
     )
 
+    // Exclude Age and Height from candidate's non-critical failures because the
+    // seeker can't change their own age or height — only include mutable attributes
     const candidateFailedNonCritical = candidateScore.criteria.filter(
       c => !c.matched &&
       !c.isDealbreaker &&
+      c.name !== 'Age' && c.name !== 'Height' &&
       NON_CRITICAL_PREFERENCES.includes(c.name as NonCriticalPreference)
     )
 
@@ -2799,16 +2804,16 @@ export function findNearMatches(
     // Check if candidate's deal-breakers can be relaxed for near matches
     const seekerOpenToRelocate = seeker.openToRelocation?.toLowerCase() !== 'no'
 
-    // Check candidate's deal-breakers - allow some to be relaxed for near matches
+    // Check candidate's deal-breakers - only relax attributes the seeker CAN change.
+    // Age and Height are immutable — if the candidate's deal-breaker doesn't match
+    // the seeker's actual age/height, this is NOT a near match (seeker can't fix it).
     const candidateDealbreakersRelaxable = candidateFailedDealbreakers.every(c => {
       if (c.name === 'Location') return seekerOpenToRelocate
-      // Age/Height within tolerance from candidate's perspective
-      if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, seekerAgeStr)) return true
-      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, seekerHeightStr)) return true
-      // Education/Diet/Marital Status - candidate might also adjust
+      // Education/Diet/Marital Status - seeker might potentially adjust
       if (c.name === 'Qualification' || c.name === 'Education') return true
       if (c.name === 'Diet') return true
       if (c.name === 'Marital Status') return true
+      // Age and Height are NOT relaxable from candidate's side — seeker can't change these
       return false
     })
 
@@ -2818,11 +2823,9 @@ export function findNearMatches(
     // Track which deal-breakers were relaxed (for adding to failed criteria)
     // Only include seeker's relaxed deal-breakers (what seeker can change)
     const seekerRelaxedDealbreakers = seekerFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
-    // Track candidate's relaxed deal-breakers
+    // Track candidate's relaxed deal-breakers (only mutable attributes)
     const candidateRelaxedDealbreakers = candidateFailedDealbreakers.filter(c => {
       if (c.name === 'Location') return seekerOpenToRelocate
-      if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, seekerAgeStr)) return true
-      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, seekerHeightStr)) return true
       if (c.name === 'Qualification' || c.name === 'Education') return true
       if (c.name === 'Diet') return true
       if (c.name === 'Marital Status') return true
@@ -2943,27 +2946,31 @@ export function findNearMatches(
       ...filteredSeekerFailedNonCritical.map(c => ({
         ...c,
         seekerPref: c.seekerPref,
-        candidateValue: c.candidateValue
+        candidateValue: c.candidateValue,
+        direction: 'seeker' as const
       })),
       ...filteredCandidateFailedNonCritical.map(c => ({
         name: c.name,
         seekerPref: c.candidateValue, // Swap for display - candidate's value is their "requirement"
         candidateValue: c.seekerPref, // What seeker has
-        isDealbreaker: c.isDealbreaker
+        isDealbreaker: c.isDealbreaker,
+        direction: 'candidate' as const
       })),
       // Add relaxed deal-breakers (Location, Age, Height) from seeker's side
       ...seekerRelaxedDealbreakers.map(c => ({
         name: c.name,
         seekerPref: c.seekerPref,
         candidateValue: c.candidateValue,
-        isDealbreaker: true // Mark as was-dealbreaker for special nudge
+        isDealbreaker: true, // Mark as was-dealbreaker for special nudge
+        direction: 'seeker' as const
       })),
       // Add relaxed deal-breakers from candidate's side
       ...candidateRelaxedDealbreakers.map(c => ({
         name: c.name,
         seekerPref: c.candidateValue, // Swap for display
         candidateValue: c.seekerPref,
-        isDealbreaker: true
+        isDealbreaker: true,
+        direction: 'candidate' as const
       }))
     ]
 

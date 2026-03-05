@@ -17,6 +17,8 @@ interface FailedCriterion {
   seekerPref: string | null
   candidateValue: string | null
   isDealbreaker: boolean
+  /** 'seeker' = your preference doesn't match their profile (you can adjust), 'candidate' = their preference doesn't match your profile (you can't change) */
+  direction?: 'seeker' | 'candidate'
 }
 
 interface NearMatchProfile {
@@ -285,38 +287,57 @@ export function NearMatchCard({
             Preferences that don't match:
           </h4>
           <div className="space-y-2">
-            {failedCriteria.map((criterion, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg p-3 border border-amber-100"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 text-sm">
-                      {criterion.name}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your preference: <span className="text-gray-700">{criterion.seekerPref || 'Any'}</span>
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Their profile: <span className="text-gray-700">{criterion.candidateValue || 'Not specified'}</span>
-                    </p>
-                    <p className="text-xs text-amber-600 mt-1 italic">
-                      💡 {getNudgeMessage(criterion.name)}
-                    </p>
+            {failedCriteria.map((criterion, index) => {
+              const isFromCandidate = criterion.direction === 'candidate'
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-lg p-3 border border-amber-100"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 text-sm">
+                        {criterion.name}
+                      </p>
+                      {isFromCandidate ? (
+                        <>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Their preference: <span className="text-gray-700">{criterion.seekerPref || 'Any'}</span>
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Your profile: <span className="text-gray-700">{criterion.candidateValue || 'Not specified'}</span>
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1 italic">
+                            This is their requirement — not something you can change
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Your preference: <span className="text-gray-700">{criterion.seekerPref || 'Any'}</span>
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Their profile: <span className="text-gray-700">{criterion.candidateValue || 'Not specified'}</span>
+                          </p>
+                          <p className="text-xs text-amber-600 mt-1 italic">
+                            💡 {getNudgeMessage(criterion.name)}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    {!isFromCandidate && criterionToEditUrl[criterion.name] && (
+                      <Link
+                        href={criterionToEditUrl[criterion.name]}
+                        className="flex items-center gap-1 text-xs text-amber-700 hover:text-amber-800 font-medium px-2 py-1 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
+                      >
+                        <Settings className="h-3 w-3" />
+                        Adjust
+                      </Link>
+                    )}
                   </div>
-                  {criterionToEditUrl[criterion.name] && (
-                    <Link
-                      href={criterionToEditUrl[criterion.name]}
-                      className="flex items-center gap-1 text-xs text-amber-700 hover:text-amber-800 font-medium px-2 py-1 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
-                    >
-                      <Settings className="h-3 w-3" />
-                      Adjust
-                    </Link>
-                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="mt-3 pt-3 border-t border-amber-100">
@@ -350,9 +371,12 @@ export function NearMatchesSection({
   }
 
   // Aggregate preferences blocking matches (for summary)
+  // Only include seeker-direction criteria (things the user can actually adjust)
   const preferenceCountMap = new Map<string, Set<string>>()
   nearMatches.forEach(nm => {
     nm.failedCriteria.forEach(criterion => {
+      // Skip candidate-direction criteria — user can't change their own profile attributes
+      if (criterion.direction === 'candidate') return
       if (!preferenceCountMap.has(criterion.name)) {
         preferenceCountMap.set(criterion.name, new Set())
       }

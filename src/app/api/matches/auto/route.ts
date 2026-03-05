@@ -317,7 +317,7 @@ export async function GET(request: Request) {
     // These are profiles that fail on 1-2 non-critical preferences
     let nearMatchResults: {
       profile: typeof candidates[0]
-      failedCriteria: { name: string; seekerPref: string | null; candidateValue: string | null; isDealbreaker: boolean }[]
+      failedCriteria: { name: string; seekerPref: string | null; candidateValue: string | null; isDealbreaker: boolean; direction: 'seeker' | 'candidate' }[]
       matchScore: { percentage: number; totalScore: number; maxScore: number }
       failedDirection: 'seeker' | 'candidate' | 'both'
     }[] = []
