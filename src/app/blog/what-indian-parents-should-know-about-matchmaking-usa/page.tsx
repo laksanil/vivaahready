@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'What Indian Parents Should Know About Modern Matchmaking in the US | VivaahReady',
+  title: 'Indian Parents: Essential Matchmaking Guide for the US',
   description:
-    'A practical guide for Indian parents in America navigating the matchmaking process for their children. How to help without overstepping, what has changed, and where to start in 2026.',
+    '77% of matrimony profiles are self-managed (Jeevansathi 2025). A practical guide for Indian parents on how to support matchmaking without overstepping.',
   keywords: [
     'Indian parents matchmaking USA',
     'Indian matchmaking for parents',
@@ -20,12 +19,18 @@ export const metadata: Metadata = {
     'Indian matchmaking family involvement',
   ],
   openGraph: {
-    title: 'What Indian Parents Should Know About Modern Matchmaking in the US',
+    title: 'Indian Parents: Essential Matchmaking Guide for the US',
     description:
-      'A practical guide for Indian parents navigating the matchmaking process for their children in America. How to help without overstepping.',
+      '77% of matrimony profiles are self-managed (Jeevansathi 2025). A practical guide for Indian parents on how to support matchmaking without overstepping.',
     url: 'https://vivaahready.com/blog/what-indian-parents-should-know-about-matchmaking-usa',
     type: 'article',
     publishedTime: '2026-03-05T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Indian Parents: Essential Matchmaking Guide for the US',
+    description:
+      '77% of matrimony profiles are self-managed (Jeevansathi 2025). A practical guide for Indian parents on how to support matchmaking without overstepping.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/what-indian-parents-should-know-about-matchmaking-usa',
@@ -35,9 +40,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'What Indian Parents Should Know About Modern Matchmaking in the US',
+  headline: 'Indian Parents: Essential Matchmaking Guide for the US',
   description:
-    'A practical guide for Indian parents in America navigating the matchmaking process for their children. How to help without overstepping, what has changed, and where to start in 2026.',
+    '77% of matrimony profiles are self-managed (Jeevansathi 2025). A practical guide for Indian parents on how to support matchmaking without overstepping.',
   datePublished: '2026-03-05T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -135,7 +140,7 @@ export default function BlogPost() {
               </div>
 
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.15] tracking-tight">
-                What Indian Parents Should Know About Modern Matchmaking in the US
+                Indian Parents: Essential Matchmaking Guide for the US
               </h1>
 
               <p className="mt-4 text-2xl md:text-3xl font-display text-gray-500 leading-snug">
@@ -165,18 +170,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/7114089/pexels-photo-7114089.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Indian parents sitting with their adult daughter discussing life decisions at the dining table"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -189,9 +182,9 @@ export default function BlogPost() {
                 </p>
                 <p className="text-gray-700 leading-relaxed">
                   Modern Indian matchmaking in America is driven by the individual with family
-                  support, not the other way around. A 2025 Jeevansathi report found that 77%
+                  support, not the other way around. A <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">2025 Jeevansathi report</a> found that 77%
                   of matrimony profiles are now self-managed. Parents who approach the process
-                  as partners rather than directors have the best outcomes &mdash; and the
+                  as partners rather than directors have the best outcomes, and the
                   strongest relationships with their children through the journey.
                 </p>
               </div>
@@ -199,7 +192,7 @@ export default function BlogPost() {
               {/* Opening */}
               <p className="first-letter:text-6xl first-letter:font-display first-letter:font-bold first-letter:text-primary-600 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:leading-none">
                 I am a parent. I have been exactly where you are. Wanting to help. Not knowing
-                how. Watching your child build a career, a life, a circle of friends &mdash; and
+                how. Watching your child build a career, a life, a circle of friends, and
                 wondering when the conversation about marriage will happen. Or if it already
                 should have happened years ago.
               </p>
@@ -213,8 +206,9 @@ export default function BlogPost() {
 
               <p>
                 If you are reading this, you are already doing something important: you are trying
-                to understand. That matters more than you think. Because the matchmaking process
-                has changed, and the parents who adapt are the ones whose children feel supported
+                to understand. With nearly <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">4.8 million Indian Americans</a> (Pew Research, 2024)
+                building lives across the country, the matchmaking process
+                has changed. The parents who adapt are the ones whose children feel supported
                 rather than pressured.
               </p>
 
@@ -225,7 +219,7 @@ export default function BlogPost() {
                 <div className="flex-1 border-t border-gray-200" />
               </div>
 
-              <h2>Why Does the Process Feel So Different in America?</h2>
+              <h2>Why Does Indian Matchmaking Feel So Different in America?</h2>
 
               <p>
                 In India, matchmaking is supported by an entire ecosystem: extended family,
@@ -233,11 +227,13 @@ export default function BlogPost() {
                 where families naturally meet. According to a 2025 Outlook Business survey,
                 arranged marriages in India have declined from 68% in 2020 to 44% in 2023,
                 but even that reduced number relies on networks that simply do not exist in the
-                same way in America.
+                same way in America. The <a href="https://www.migrationpolicy.org/article/indian-immigrants-united-states" target="_blank" rel="noopener">Migration Policy Institute</a> notes that
+                Indian immigrants are among the most geographically dispersed groups in the US,
+                making community-based matching harder.
               </p>
 
               <p>
-                In the US, your network is likely limited to your immediate circle &mdash; friends
+                In the US, your network is likely limited to your immediate circle: friends
                 from work, a handful of families from the temple or community association, maybe
                 a WhatsApp group. The support system that made matchmaking feel natural in India
                 is fragmented here.
@@ -252,8 +248,8 @@ export default function BlogPost() {
               <h2>What Has Changed About How Young Indian Americans Think About Marriage?</h2>
 
               <p>
-                The Jeevansathi 2025 Annual Marriage Trends Report, covered by Business Standard
-                and The Tribune, revealed several shifts that every parent should understand.
+                The <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">Jeevansathi 2025 Annual Marriage Trends Report</a> revealed
+                several shifts that every parent should understand.
                 The median age for starting a partner search has moved from 27 to 29. Among
                 users, 90% prioritize finding the &ldquo;right person&rdquo; over meeting age
                 or financial benchmarks.
@@ -261,14 +257,18 @@ export default function BlogPost() {
 
               <p>
                 Your child probably does want to get married. But they want to do it on their
-                own terms, at their own pace, with a partner they genuinely connect with. The
+                own terms, at their own pace, with a partner they genuinely connect with. Many feel{' '}
+                <a href="/blog/caught-between-dating-apps-and-arranged-marriage">caught between
+                dating apps and arranged marriage</a>, unsure which path fits. The
                 gap between what parents see (delay) and what children feel (intentionality) is
                 where most family friction lives.
               </p>
 
               <p>
                 What looks like avoidance to a parent often looks like thoughtfulness to the
-                child. They are not rejecting the idea of marriage. They are rejecting the idea
+                child. The <a href="https://carnegieendowment.org/research/2021/06/social-realities-of-indian-americans-results-from-the-2020-indian-american-attitudes-survey?lang=en" target="_blank" rel="noopener">Carnegie Endowment&rsquo;s 2020 survey</a> found that
+                Indian Americans hold nuanced views on marriage that blend traditional values
+                with American individualism. They are not rejecting the idea of marriage. They are rejecting the idea
                 of rushing into it.
               </p>
 
@@ -335,6 +335,9 @@ export default function BlogPost() {
               <p>
                 The worst thing a parent can do is dismiss a platform they have never seen. The
                 best thing is to say: &ldquo;Show me how it works. I want to understand.&rdquo;
+                For a clear breakdown of the options, see our{' '}
+                <a href="/blog/indian-matchmaking-vs-dating-apps-honest-comparison">honest comparison
+                of matchmaking platforms and dating apps</a>.
               </p>
 
               <h3>Widen Your Criteria</h3>
@@ -349,7 +352,7 @@ export default function BlogPost() {
               <p>
                 This does not mean values do not matter. It means the definition of compatibility
                 has expanded. A good match in 2026 is someone who shares your child&rsquo;s core
-                values, communicates well, and wants the same kind of life &mdash; not necessarily
+                values, communicates well, and wants the same kind of life. Not necessarily
                 someone from the same sub-community or with the same degree.
               </p>
 
@@ -362,8 +365,8 @@ export default function BlogPost() {
               </p>
 
               <p>
-                Naming those fears honestly &mdash; &ldquo;I worry because I love you and I want
-                you to have a partner in life&rdquo; &mdash; is far more effective than converting
+                Naming those fears honestly helps. Saying &ldquo;I worry because I love you and I want
+                you to have a partner in life&rdquo; is far more effective than converting
                 those fears into pressure. Children respond to vulnerability. They resist demands.
               </p>
 
@@ -402,7 +405,7 @@ export default function BlogPost() {
               <p>
                 <strong>Treating every family gathering as a marriage discussion.</strong> When
                 marriage comes up every time your child visits home, they stop wanting to visit.
-                Keep the topic to designated, calm conversations &mdash; not ambient pressure.
+                Keep the topic to designated, calm conversations, not ambient pressure.
               </p>
 
               <p>
@@ -412,7 +415,7 @@ export default function BlogPost() {
                 influence is to dismiss what your child tells you they need.
               </p>
 
-              <h2>What Does a Healthy Family Matchmaking Process Look Like?</h2>
+              <h2>What Does a Healthy Indian Matchmaking Process Look Like for Families?</h2>
 
               <p>
                 The families that navigate this process well share a simple dynamic: the child
@@ -439,7 +442,7 @@ export default function BlogPost() {
 
               <p>
                 <strong>The parents provide perspective, not decisions.</strong> &ldquo;I noticed
-                they seemed a little hesitant about relocating &mdash; did you discuss that?&rdquo;
+                they seemed a little hesitant about relocating. Did you discuss that?&rdquo;
                 is helpful. &ldquo;I do not think they are right for you&rdquo; without explanation
                 is not.
               </p>
@@ -470,10 +473,6 @@ export default function BlogPost() {
                 guidance on this. They rely on what they know from their own experience or what
                 their friends suggest. But the landscape has changed, and your willingness to
                 learn is the single most important thing you bring to this process.
-              </p>
-
-              <p>
-                Here is what I would suggest.
               </p>
 
               <p>
