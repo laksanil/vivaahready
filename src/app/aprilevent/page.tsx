@@ -257,8 +257,8 @@ export default function MarchEventPage() {
       }
 
       if (data.paymentUrl) {
-        // Redirect to payment
-        window.location.href = data.paymentUrl
+        // Keep SPA session state intact when moving to payment.
+        router.push(data.paymentUrl)
       } else if (data.waitlisted) {
         // Added to waitlist
         setRegistrationStatus(prev => prev ? { ...prev, isWaitlisted: true } : null)

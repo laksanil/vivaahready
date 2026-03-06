@@ -62,10 +62,36 @@ function EventPaymentContent() {
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
+    if (status !== 'unauthenticated') return
+
+    let cancelled = false
+    const callbackUrl = registrationId
+      ? `/aprilevent/payment?registrationId=${registrationId}`
+      : '/aprilevent'
+
+    const verifyAndRedirect = async () => {
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' })
+        const sessionData = await res.json()
+        if (!cancelled && sessionData?.user) {
+          router.refresh()
+          return
+        }
+      } catch {
+        // Fall through to login redirect
+      }
+
+      if (!cancelled) {
+        router.replace(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+      }
     }
-  }, [status, router])
+
+    const timer = window.setTimeout(verifyAndRedirect, 800)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [status, router, registrationId])
 
   useEffect(() => {
     mountedRef.current = true
