@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'How Indian Matchmaking Actually Works in America in 2026 | VivaahReady',
+  title: 'How Indian Matchmaking Actually Works in America in 2026',
   description:
     'A clear, honest guide to how Indian matchmaking works in the USA today. From family-led searches to AI-powered platforms, here is what the process actually looks like for Indian Americans in 2026.',
   keywords: [

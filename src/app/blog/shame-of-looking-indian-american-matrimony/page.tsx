@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Nobody Talks About the Shame of Looking | VivaahReady',
+  title: 'Nobody Talks About the Shame of Looking',
   description:
     'Why Indian Americans hide that they are searching for a life partner and what it costs them. An honest look at matrimony, shame, and finding clarity.',
   keywords: [

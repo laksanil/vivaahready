@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'What Indian Parents Should Know About Modern Matchmaking in the US | VivaahReady',
+  title: 'What Indian Parents Should Know About Modern Matchmaking in the US',
   description:
     'A practical guide for Indian parents in America navigating the matchmaking process for their children. How to help without overstepping, what has changed, and where to start in 2026.',
   keywords: [

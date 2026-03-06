@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026) | VivaahReady',
+  title: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026)',
   description:
     'A side-by-side comparison of Indian matrimony platforms and dating apps for Indian Americans. Costs, success rates, family involvement, and what actually works for finding a life partner in the US.',
   keywords: [
