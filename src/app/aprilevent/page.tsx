@@ -36,7 +36,7 @@ const EVENT_CONFIG = {
   title: 'Singles Zoom Mixer',
   subtitle: 'Vegetarian Edition',
   date: getMarchEventDate(),
-  duration: '60-80',
+  duration: '90-120',
   price: MARCH_EVENT_CONFIG.priceDollars,
   maxSeats: 20,
   minAttendees: 12,
@@ -44,8 +44,10 @@ const EVENT_CONFIG = {
   maxAge: 35,
   location: 'California',
   dietary: 'Vegetarian',
-  registrationDeadlineHours: 48,
+  registrationDeadlineHours: 168,
 }
+const CANCELLATION_DEADLINE = new Date('2026-03-28T23:59:59-07:00')
+const CANCELLATION_DEADLINE_LABEL = 'March 28, 2026'
 
 function CountdownTimer({ targetDate, compact = false }: { targetDate: Date; compact?: boolean }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -426,11 +428,12 @@ export default function MarchEventPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
             <div className="space-y-6">
               {[
-                { time: '5 min', title: 'Welcome + how breakouts work' },
-                { time: '12 min', title: 'Round 1 small-group breakout' },
-                { time: '12 min', title: 'Round 2 small-group breakout' },
-                { time: '15 min', title: 'Choose-your-room mingle' },
-                { time: '5–10 min', title: 'Wrap + optional mutual opt-in to connect' },
+                { time: '10-15 min', title: 'Welcome + how breakouts work' },
+                { time: '20 min', title: 'Round 1 small-group breakout' },
+                { time: '20 min', title: 'Round 2 small-group breakout' },
+                { time: '10 min', title: 'Break (stretch + water)' },
+                { time: '25-30 min', title: 'Choose-your-room mingle' },
+                { time: '15-25 min', title: 'Wrap + optional mutual opt-in to connect' },
               ].map((item, index) => (
                 <div key={index} className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-16 text-right">
@@ -445,7 +448,7 @@ export default function MarchEventPage() {
               ))}
             </div>
             <p className="text-sm text-gray-500 mt-6 pt-6 border-t border-gray-100">
-              We may end around 60 minutes or extend to ~80 based on the group's energy.
+              Total session time is typically 100-120 minutes, including a 10-minute break.
             </p>
           </div>
         </div>
@@ -861,13 +864,13 @@ export default function MarchEventPage() {
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-700">
-                  <strong>Cancel 48+ hours before:</strong> Full refund
+                  <strong>Cancel on or before March 28, 2026 (1 week before):</strong> Full refund
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-700">
-                  <strong>Within 48 hours:</strong> No refund (we've finalized breakout rooms)
+                  <strong>After March 28, 2026:</strong> No cancellation or refund
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -915,7 +918,7 @@ export default function MarchEventPage() {
             />
             <FAQItem
               question="What if I can't attend after registering?"
-              answer="Cancel 48+ hours before for a full refund. Within 48 hours, we can't offer refunds because we've finalized breakout rooms and seating. If we cancel due to minimum attendance, you'll receive a full refund."
+              answer="Cancel on or before March 28, 2026 for a full refund. After March 28, cancellations and refunds are not available. If we cancel due to minimum attendance, you'll receive a full refund."
             />
             <FAQItem
               question="Do I need a full VivaahReady profile?"
@@ -1005,8 +1008,7 @@ export default function MarchEventPage() {
             </p>
 
             {(() => {
-              const hoursUntilEvent = (EVENT_CONFIG.date.getTime() - new Date().getTime()) / (1000 * 60 * 60)
-              const canRefund = hoursUntilEvent > 48
+              const canRefund = new Date() <= CANCELLATION_DEADLINE
               return (
                 <div className={`p-3 rounded-lg mb-4 ${canRefund ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
                   {canRefund ? (
@@ -1017,7 +1019,7 @@ export default function MarchEventPage() {
                   ) : (
                     <p className="text-amber-700 text-sm">
                       <AlertCircle className="w-4 h-4 inline mr-1" />
-                      Within 48 hours — <strong>no refund available</strong>.
+                      After {CANCELLATION_DEADLINE_LABEL} — <strong>no cancellation or refund available</strong>.
                     </p>
                   )}
                 </div>
@@ -1088,8 +1090,7 @@ export default function MarchEventPage() {
 
 // Registered State Component
 function RegisteredState({ eventDate, onCancelClick }: { eventDate: Date; onCancelClick: () => void }) {
-  const hoursUntilEvent = (eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60)
-  const canCancel = hoursUntilEvent > 48
+  const canCancel = new Date() <= CANCELLATION_DEADLINE
 
   return (
     <div className="space-y-6">
@@ -1112,11 +1113,11 @@ function RegisteredState({ eventDate, onCancelClick }: { eventDate: Date; onCanc
           onClick={onCancelClick}
           className="text-sm text-gray-500 hover:text-red-600 underline"
         >
-          Need to cancel?
+          Need to cancel? (before {CANCELLATION_DEADLINE_LABEL})
         </button>
       ) : (
         <p className="text-sm text-gray-500">
-          Cancellations are no longer available (within 48 hours of event).
+          Cancellations are closed after {CANCELLATION_DEADLINE_LABEL}.
         </p>
       )}
     </div>
