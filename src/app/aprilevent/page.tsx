@@ -167,9 +167,14 @@ export default function MarchEventPage() {
   // Fetch registration status
   useEffect(() => {
     const fetchStatus = async () => {
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), 10000)
       setCheckingStatus(true)
       try {
-        const response = await fetch('/api/events/march-2025/status')
+        const response = await fetch('/api/events/march-2025/status', {
+          signal: controller.signal,
+          cache: 'no-store',
+        })
         if (response.ok) {
           const data = await response.json()
           setRegistrationStatus(data)
@@ -177,6 +182,7 @@ export default function MarchEventPage() {
       } catch (err) {
         console.error('Error fetching status:', err)
       } finally {
+        window.clearTimeout(timeoutId)
         setCheckingStatus(false)
       }
     }
@@ -215,7 +221,7 @@ export default function MarchEventPage() {
   }
 
   const handleRegisterClick = async () => {
-    if (status === 'loading' || checkingStatus) return
+    if (status === 'loading') return
 
     // If not logged in, redirect to Google OAuth
     if (!session) {
@@ -247,6 +253,7 @@ export default function MarchEventPage() {
           return
         }
         setError(data.error || 'Registration failed')
+        document.getElementById('event-register-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         return
       }
 
@@ -365,10 +372,10 @@ export default function MarchEventPage() {
             <div className="space-y-4">
               <button
                 onClick={handleRegisterClick}
-                disabled={registering || status === 'loading' || checkingStatus || isEventPast}
+                disabled={registering || status === 'loading' || isEventPast}
                 className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {registering || status === 'loading' || checkingStatus ? (
+                {registering || status === 'loading' ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Processing...
@@ -389,6 +396,12 @@ export default function MarchEventPage() {
                   </>
                 )}
               </button>
+              {error && (
+                <div id="event-register-error" className="max-w-md mx-auto flex items-center justify-center gap-2 text-red-100 bg-red-500/20 border border-red-300/40 px-4 py-3 rounded-lg">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{error}</span>
+                </div>
+              )}
 
               {/* Secondary CTA */}
               <div>
@@ -689,10 +702,10 @@ export default function MarchEventPage() {
 
                 <button
                   onClick={handleRegisterClick}
-                  disabled={registering || status === 'loading' || checkingStatus}
+                  disabled={registering || status === 'loading'}
                   className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {registering || status === 'loading' || checkingStatus ? (
+                  {registering || status === 'loading' ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Processing...
@@ -935,10 +948,10 @@ export default function MarchEventPage() {
           {!registrationStatus?.isRegistered && !registrationStatus?.isWaitlisted && !isEventPast && (
             <button
               onClick={handleRegisterClick}
-              disabled={registering || status === 'loading' || checkingStatus}
+              disabled={registering || status === 'loading'}
               className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:bg-gray-100 transition-all disabled:opacity-50"
             >
-              {registering || checkingStatus ? (
+              {registering ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   Processing...
@@ -971,10 +984,10 @@ export default function MarchEventPage() {
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden z-40">
           <button
             onClick={handleRegisterClick}
-            disabled={registering || status === 'loading' || checkingStatus}
+            disabled={registering || status === 'loading'}
             className="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
           >
-            {registering || checkingStatus ? 'Processing...' : `Register — $${EVENT_CONFIG.price}`}
+            {registering ? 'Processing...' : `Register — $${EVENT_CONFIG.price}`}
           </button>
         </div>
       )}
