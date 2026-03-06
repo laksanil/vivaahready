@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     // Check eligibility - use dateOfBirth if available, otherwise fall back to age field
-    const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : profile.age
+    const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : (profile.age ? Number(profile.age) : null)
     if (!age || age < EVENT_CONFIG.minAge || age > EVENT_CONFIG.maxAge) {
       return NextResponse.json(
         { error: `This event is only for ages ${EVENT_CONFIG.minAge}-${EVENT_CONFIG.maxAge}` },

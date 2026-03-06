@@ -118,9 +118,10 @@ export default function SearchPage() {
 
   const calculateAge = (dob: string | null): string => {
     if (!dob) return ''
-    // Handle ISO date format (YYYY-MM-DD)
-    if (dob.includes('-')) {
-      const date = new Date(dob)
+    // Handle MM/DD/YYYY format
+    const mmddyyyy = dob.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+    if (mmddyyyy) {
+      const date = new Date(parseInt(mmddyyyy[3]), parseInt(mmddyyyy[1]) - 1, parseInt(mmddyyyy[2]))
       const today = new Date()
       let age = today.getFullYear() - date.getFullYear()
       const monthDiff = today.getMonth() - date.getMonth()
@@ -129,14 +130,16 @@ export default function SearchPage() {
       }
       return `${age} yrs`
     }
-    // Handle MM/YYYY format
-    const parts = dob.split('/')
-    if (parts.length >= 2) {
-      const year = parseInt(parts[parts.length - 1])
-      if (year > 1900 && year < 2020) {
-        const age = new Date().getFullYear() - year
-        return `${age} yrs`
+    // Handle ISO date format (YYYY-MM-DD) or other parseable formats
+    const date = new Date(dob)
+    if (!isNaN(date.getTime())) {
+      const today = new Date()
+      let age = today.getFullYear() - date.getFullYear()
+      const monthDiff = today.getMonth() - date.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+        age--
       }
+      return `${age} yrs`
     }
     return ''
   }

@@ -151,13 +151,19 @@ export function calculateAgeFromDOB(dob: string | null): number | null {
     return age
   }
 
-  // Handle MM/YYYY format
+  // Handle MM/YYYY format (use middle of month as approximation)
   const mmyyyy = dob.match(/^(\d{1,2})\/(\d{4})$/)
   if (mmyyyy) {
+    const month = parseInt(mmyyyy[1]) - 1
     const year = parseInt(mmyyyy[2])
-    if (year > 1900 && year < 2020) {
-      return new Date().getFullYear() - year
+    const date = new Date(year, month, 15)
+    const today = new Date()
+    let age = today.getFullYear() - date.getFullYear()
+    const monthDiff = today.getMonth() - date.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age--
     }
+    return age
   }
 
   // Handle ISO date format (YYYY-MM-DD)

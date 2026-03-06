@@ -15,7 +15,20 @@ export function formatDate(date: Date | string): string {
 
 export function calculateAge(dateOfBirth: Date | string): number {
   const today = new Date()
-  const birthDate = new Date(dateOfBirth)
+  let birthDate: Date
+
+  if (typeof dateOfBirth === 'string') {
+    // Handle MM/DD/YYYY format
+    const mmddyyyy = dateOfBirth.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+    if (mmddyyyy) {
+      birthDate = new Date(parseInt(mmddyyyy[3]), parseInt(mmddyyyy[1]) - 1, parseInt(mmddyyyy[2]))
+    } else {
+      birthDate = new Date(dateOfBirth)
+    }
+  } else {
+    birthDate = dateOfBirth
+  }
+
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDiff = today.getMonth() - birthDate.getMonth()
 

@@ -522,13 +522,19 @@ function ViewProfilePageContent() {
 
   const calculateAge = (dob: string) => {
     if (!dob) return null
-    const parts = dob.split('/')
-    if (parts.length >= 2) {
-      const year = parseInt(parts[parts.length - 1])
-      if (year > 1900 && year < 2020) {
-        return new Date().getFullYear() - year
+    // Handle MM/DD/YYYY format
+    const mmddyyyy = dob.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+    if (mmddyyyy) {
+      const date = new Date(parseInt(mmddyyyy[3]), parseInt(mmddyyyy[1]) - 1, parseInt(mmddyyyy[2]))
+      const today = new Date()
+      let age = today.getFullYear() - date.getFullYear()
+      const monthDiff = today.getMonth() - date.getMonth()
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+        age--
       }
+      return age
     }
+    // Handle ISO or other parseable date formats
     const date = new Date(dob)
     if (!isNaN(date.getTime())) {
       const today = new Date()
