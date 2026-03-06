@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'How Indian Matchmaking Actually Works in America in 2026 | VivaahReady',
+  title: 'How Indian Matchmaking Works in America: Real Guide',
   description:
-    'A clear, honest guide to how Indian matchmaking works in the USA today. From family-led searches to AI-powered platforms, here is what the process actually looks like for Indian Americans in 2026.',
+    'How Indian matchmaking works in the USA today. 77% of matrimony profiles are now self-managed (Jeevansathi 2025). Five approaches compared step by step.',
   keywords: [
     'Indian matchmaking USA',
     'how does Indian matchmaking work',
@@ -23,12 +22,18 @@ export const metadata: Metadata = {
     'Indian matchmaking New York',
   ],
   openGraph: {
-    title: 'How Indian Matchmaking Actually Works in America in 2026',
+    title: 'How Indian Matchmaking Works in America: Real Guide',
     description:
-      'A clear, honest guide to the matchmaking process for Indian Americans. From family networks to AI-powered platforms, here is what it actually looks like today.',
+      'How Indian matchmaking works in the USA today. 77% of matrimony profiles are now self-managed (Jeevansathi 2025). Five approaches compared step by step.',
     url: 'https://vivaahready.com/blog/how-indian-matchmaking-works-in-america-2026',
     type: 'article',
     publishedTime: '2026-03-05T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'How Indian Matchmaking Works in America: Real Guide',
+    description:
+      'How Indian matchmaking works in the USA today. 77% of matrimony profiles are now self-managed (Jeevansathi 2025). Five approaches compared step by step.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/how-indian-matchmaking-works-in-america-2026',
@@ -38,9 +43,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'How Indian Matchmaking Actually Works in America in 2026',
+  headline: 'How Indian Matchmaking Works in America: Real Guide',
   description:
-    'A clear, honest guide to how Indian matchmaking works in the USA today. From family-led searches to AI-powered platforms, here is what the process actually looks like for Indian Americans in 2026.',
+    'How Indian matchmaking works in the USA today. 77% of matrimony profiles are now self-managed (Jeevansathi 2025). Five approaches compared step by step.',
   datePublished: '2026-03-05T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -146,8 +151,8 @@ export default function BlogPost() {
               </p>
 
               <p className="mt-6 text-xl text-gray-500 leading-relaxed">
-                If you have ever wondered what Indian matchmaking in the USA actually looks like
-                today &mdash; beyond what Netflix shows you &mdash; this is for you.
+                If you&rsquo;ve ever wondered what Indian matchmaking in the USA actually looks like
+                today, beyond what Netflix shows you, this is for you.
               </p>
 
               {/* Author */}
@@ -167,18 +172,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/8841296/pexels-photo-8841296.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Father having a thoughtful conversation with his adult son about life and relationships"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -193,30 +186,34 @@ export default function BlogPost() {
                   Indian matchmaking in America has evolved far beyond traditional arranged marriage.
                   According to a 2025 Jeevansathi report, 77% of profiles on Indian matrimony
                   platforms are now self-managed, not family-controlled. The process today blends
-                  family involvement, online platforms, and personal choice &mdash; and understanding
+                  family involvement, online platforms, and personal choice. Understanding
                   how it works can save you months of confusion.
                 </p>
               </div>
 
               {/* Opening */}
               <p className="first-letter:text-6xl first-letter:font-display first-letter:font-bold first-letter:text-primary-600 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:leading-none">
-                There is no single version of Indian matchmaking in America. There is no rulebook,
-                no standard process, no instruction manual that families pass around. And yet, millions
-                of Indian Americans navigate some version of it every year.
+                There is no single version of Indian matchmaking in America. No rulebook,
+                no standard process, no instruction manual that families pass around. And yet,{' '}
+                <a href="https://www.migrationpolicy.org/article/indian-immigrants-united-states" target="_blank" rel="noopener">
+                  over 4.8 million Indian immigrants live in the United States
+                </a>{' '}
+                (Migration Policy Institute), and millions of them navigate some version of
+                matchmaking every year.
               </p>
 
               <p>
-                Some families do it the way their parents did &mdash; through networks, community
+                Some families do it the way their parents did, through networks, community
                 connections, and word-of-mouth introductions. Others use matrimony platforms.
                 Some hire matchmakers. And a growing number are finding a middle path that
                 combines family values with personal autonomy.
               </p>
 
               <p>
-                The problem is that nobody talks openly about how any of this actually works. The
+                The problem? Nobody talks openly about how any of this actually works. The
                 process stays behind closed doors, which means every family ends up figuring it out
-                alone. So here is what Indian matchmaking in America actually looks like in 2026,
-                step by step, with honesty about what works and what does not.
+                alone. So here&rsquo;s what Indian matchmaking in America actually looks like in 2026,
+                step by step, with honesty about what works and what doesn&rsquo;t.
               </p>
 
               {/* Transition */}
@@ -229,8 +226,11 @@ export default function BlogPost() {
               <h2>How Has Indian Matchmaking Changed in America?</h2>
 
               <p>
-                According to a 2025 Jeevansathi survey reported in Business Standard, arranged
-                marriages in India declined from 68% in 2020 to 44% in 2023 &mdash; a 24% drop
+                According to a{' '}
+                <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">
+                  2025 Jeevansathi survey
+                </a>, arranged
+                marriages in India declined from 68% in 2020 to 44% in 2023, a 24% drop
                 in just three years. Among Indian Americans, the shift has been even more pronounced.
                 Matchmaking today is less about families choosing for their children and more about
                 families supporting their children&rsquo;s choices.
@@ -238,16 +238,16 @@ export default function BlogPost() {
 
               <p>
                 The same report found that 77% of matrimony profiles are now self-managed, meaning
-                the individual &mdash; not a parent or relative &mdash; creates and controls their
+                the individual, not a parent or relative, creates and controls their
                 own profile. Caste preferences have dropped from 91% in 2016 to 54% in 2025, and
                 in metropolitan areas, that number is even lower at 49%.
               </p>
 
               <p>
-                What this means in practice: if you are an Indian American in your late twenties or
-                thirties, the matchmaking process your parents experienced is not the one you will
-                experience. The bones are similar &mdash; intentionality, family awareness, compatibility
-                focus &mdash; but the execution has changed dramatically.
+                What this means in practice: if you&rsquo;re an Indian American in your late twenties or
+                thirties, the matchmaking process your parents experienced isn&rsquo;t the one you&rsquo;ll
+                experience. The bones are similar: intentionality, family awareness, compatibility
+                focus. But the execution has changed dramatically.
               </p>
 
               <h2>What Are the Main Approaches to Indian Matchmaking in the USA?</h2>
@@ -261,7 +261,7 @@ export default function BlogPost() {
               <h3>1. Family and Community Networks</h3>
 
               <p>
-                This is the oldest approach, and it still works &mdash; when the network is large
+                This is the oldest approach, and it still works when the network is large
                 enough. Parents ask friends, relatives, temple connections, and community members
                 if they know anyone suitable. In India, this network is naturally wide. In America,
                 it is often painfully narrow.
@@ -310,10 +310,14 @@ export default function BlogPost() {
 
               <p>
                 The limitation:{' '}
-                <Link href="/blog/caught-between-dating-apps-and-arranged-marriage">
-                  dating apps were not designed for marriage-intent connections
-                </Link>
-                . Intentions vary widely, from casual dating to serious relationships. For Indian
+                <a href="/blog/caught-between-dating-apps-and-arranged-marriage">
+                  dating apps weren&rsquo;t designed for marriage-intent connections
+                </a>
+                . Intentions vary widely, from casual dating to serious relationships. For a deeper
+                look at how they compare, see this{' '}
+                <a href="/blog/indian-matchmaking-vs-dating-apps-honest-comparison">
+                  honest comparison of matchmaking vs dating apps
+                </a>. For Indian
                 Americans who know they want marriage, the ambiguity can be exhausting. There is
                 no built-in family involvement, and the swipe-based format rewards appearance over
                 compatibility.
@@ -327,8 +331,8 @@ export default function BlogPost() {
               <h3>4. Professional Matchmakers</h3>
 
               <p>
-                Professional Indian matchmakers &mdash; the kind featured on Netflix&rsquo;s
-                Indian Matchmaking &mdash; offer a personalized, high-touch experience. They
+                Professional Indian matchmakers, the kind featured on Netflix&rsquo;s
+                Indian Matchmaking, offer a personalized, high-touch experience. They
                 interview clients, understand family preferences, and hand-select potential matches.
               </p>
 
@@ -347,11 +351,11 @@ export default function BlogPost() {
               <h3>5. Curated, Privacy-First Platforms</h3>
 
               <p>
-                A newer category of platforms &mdash; including{' '}
+                A newer category of platforms, including{' '}
                 <Link href="/indian-matchmaking-usa">
                   VivaahReady
-                </Link>{' '}
-                &mdash; focuses on verified profiles, serious intent, and privacy. These platforms
+                </Link>
+                , focuses on verified profiles, serious intent, and privacy. These platforms
                 are smaller by design. Instead of millions of profiles, they offer a curated
                 community where every member has been verified, profiles are not publicly visible,
                 and the emphasis is on quality over quantity.
@@ -388,16 +392,16 @@ export default function BlogPost() {
               <p>
                 This is often the hardest part. Many Indian Americans delay starting because of the
                 stigma of{' '}
-                <Link href="/blog/shame-of-looking-indian-american-matrimony">
+                <a href="/blog/shame-of-looking-indian-american-matrimony">
                   actively looking for a partner
-                </Link>
+                </a>
                 . Others delay because they are not sure how to involve their parents, or because
                 they feel caught between what their family expects and what they want.
               </p>
 
               <p>
-                The most effective first step is an honest conversation &mdash; either with your
-                family or with yourself &mdash; about what you actually want. Not what your parents
+                The most effective first step is an honest conversation, either with your
+                family or with yourself, about what you actually want. Not what your parents
                 want. Not what your friends are doing. What you want.
               </p>
 
@@ -413,7 +417,7 @@ export default function BlogPost() {
                 A good profile is honest, specific, and written in your own voice. The biggest
                 mistake people make is writing profiles that sound like resumes. Nobody falls in
                 love with a job description. Share what matters to you, how you spend your time,
-                and what kind of partnership you are looking for.
+                and what kind of partnership you&rsquo;re looking for.
               </p>
 
               <h3>Stage 3: Filtering and Evaluating Matches</h3>
@@ -437,8 +441,8 @@ export default function BlogPost() {
               <p>
                 In Indian matchmaking, first conversations are typically more direct than in
                 Western dating. Both sides know why they are there. Questions about family
-                background, career plans, values, and life goals come up early &mdash; and that
-                is a feature, not a bug.
+                background, career plans, values, and life goals come up early. That&rsquo;s
+                a feature, not a bug.
               </p>
 
               <p>
@@ -450,7 +454,7 @@ export default function BlogPost() {
               <h3>Stage 5: Family Introductions</h3>
 
               <p>
-                In most Indian matchmaking processes, families meet relatively early &mdash; often
+                In most Indian matchmaking processes, families meet relatively early, often
                 after just a few conversations between the individuals. This is one of the biggest
                 differences from Western dating, where meeting family can take months or years.
               </p>
@@ -459,9 +463,9 @@ export default function BlogPost() {
                 The family meeting is not a formality. It is an important step where both families
                 assess compatibility on a broader level: values alignment, family dynamics, cultural
                 expectations. For many Indian Americans, this is the stage where{' '}
-                <Link href="/blog/indian-families-america-marriage-gap">
+                <a href="/blog/indian-families-america-marriage-gap">
                   the gap between generations becomes most visible
-                </Link>
+                </a>
                 , and honest communication matters most.
               </p>
 
@@ -469,7 +473,7 @@ export default function BlogPost() {
 
               <p>
                 If both the individuals and families feel good about the connection, the
-                relationship moves into a deeper phase &mdash; spending more time together,
+                relationship moves into a deeper phase: spending more time together,
                 discussing practical matters like where to live and how to merge two lives,
                 and eventually deciding on engagement and marriage.
               </p>
@@ -490,14 +494,19 @@ export default function BlogPost() {
               <h2>What Are the Biggest Mistakes People Make?</h2>
 
               <p>
-                After building VivaahReady and speaking with hundreds of families across the US,
-                I have seen the same patterns repeat. Here are the most common mistakes.
+                After speaking with hundreds of families across the US,
+                I&rsquo;ve seen the same patterns repeat. Here are the most common mistakes.
               </p>
 
               <p>
-                <strong>Waiting too long to start.</strong> The median marriage age for Indian
-                Americans has moved to 29, but many people do not begin actively looking until
-                their early thirties, when they feel ready but the urgency is higher. Starting
+                <strong>Waiting too long to start.</strong>{' '}
+                <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">
+                  Pew Research data
+                </a>{' '}
+                shows Indian Americans are among the most highly educated immigrant groups, and many
+                prioritize career before marriage. The median marriage age has moved to 29, but many
+                people don&rsquo;t begin actively looking until their early thirties, when they feel
+                ready but the urgency is higher. Starting
                 the process earlier, even casually, gives you more time and less pressure.
               </p>
 
@@ -508,13 +517,15 @@ export default function BlogPost() {
               </p>
 
               <p>
-                <strong>Not involving family early enough.</strong> Even if your family is not
+                <strong>Not involving family early enough.</strong> Even if your family isn&rsquo;t
                 directly managing the search, keeping them informed reduces friction later. The
                 families who struggle most are the ones where{' '}
-                <Link href="/blog/caught-between-dating-apps-and-arranged-marriage">
+                <a href="/blog/caught-between-dating-apps-and-arranged-marriage">
                   parents and children are searching separately without talking about it
-                </Link>
-                .
+                </a>. If you&rsquo;re a parent, there&rsquo;s a{' '}
+                <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">
+                  guide for what Indian parents should know about matchmaking in the USA
+                </a>.
               </p>
 
               <p>
@@ -527,8 +538,8 @@ export default function BlogPost() {
               <h2>What Has Changed About Indian Matchmaking in 2026?</h2>
 
               <p>
-                Three trends are reshaping the landscape right now, and they are worth understanding
-                if you are entering the process.
+                Three trends are reshaping things right now, and they&rsquo;re worth understanding
+                if you&rsquo;re entering the process.
               </p>
 
               <p>
@@ -542,11 +553,11 @@ export default function BlogPost() {
               <p>
                 <strong>Privacy as a priority.</strong> Indian Americans are increasingly unwilling
                 to have their profiles publicly visible on large databases. The demand for{' '}
-                <Link href="/privacy-first-matchmaking">
+                <a href="/privacy-first-matchmaking">
                   privacy-first matchmaking
-                </Link>
-                {' '}&mdash; where your information is only shared with verified, compatible individuals
-                &mdash; has grown substantially.
+                </a>
+                , where your information is only shared with verified, compatible individuals,
+                has grown substantially.
               </p>
 
               <p>
@@ -560,7 +571,7 @@ export default function BlogPost() {
               <h2>How Do You Choose the Right Approach for Your Family?</h2>
 
               <p>
-                There is no single right answer. The best approach depends on your specific
+                There&rsquo;s no single right answer. The best approach depends on your specific
                 situation. Here are the questions that matter most.
               </p>
 
@@ -590,12 +601,12 @@ export default function BlogPost() {
 
               <p>
                 The{' '}
-                <Link href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
+                <a href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
                   middle path that many Indian Americans are finding
-                </Link>
+                </a>
                 {' '}combines the intentionality of traditional matchmaking with the personal
-                autonomy of modern relationships. It is not arranged marriage. It is not Western
-                dating. It is something new, and it is working.
+                autonomy of modern relationships. It&rsquo;s not arranged marriage. It&rsquo;s not Western
+                dating. It&rsquo;s something new, and it&rsquo;s working.
               </p>
             </div>
 

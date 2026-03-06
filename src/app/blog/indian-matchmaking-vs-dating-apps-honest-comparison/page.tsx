@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026) | VivaahReady',
+  title: 'Indian Matchmaking vs Dating Apps: Honest Guide | VivaahReady',
   description:
-    'A side-by-side comparison of Indian matrimony platforms and dating apps for Indian Americans. Costs, success rates, family involvement, and what actually works for finding a life partner in the US.',
+    'Shaadi.com has 50M+ users while Hinge serves all intentions. See how Indian matrimony platforms and dating apps compare on intent, cost, and family fit.',
   keywords: [
     'Indian matchmaking vs dating apps',
     'Shaadi vs Hinge',
@@ -22,12 +21,18 @@ export const metadata: Metadata = {
     'BharatMatrimony vs dating apps',
   ],
   openGraph: {
-    title: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026)',
+    title: 'Indian Matchmaking vs Dating Apps: Honest Guide',
     description:
-      'A side-by-side comparison of matrimony platforms and dating apps for Indian Americans. What actually works for finding a life partner.',
+      'Shaadi.com has 50M+ users while Hinge serves all intentions. See how Indian matrimony platforms and dating apps compare on intent, cost, and family fit.',
     url: 'https://vivaahready.com/blog/indian-matchmaking-vs-dating-apps-honest-comparison',
     type: 'article',
     publishedTime: '2026-03-05T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Indian Matchmaking vs Dating Apps: Honest Guide',
+    description:
+      'Shaadi.com has 50M+ users while Hinge serves all intentions. See how Indian matrimony platforms and dating apps compare on intent, cost, and family fit.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/indian-matchmaking-vs-dating-apps-honest-comparison',
@@ -37,7 +42,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026)',
+  headline: 'Indian Matchmaking vs Dating Apps: Honest Guide',
   description:
     'A side-by-side comparison of Indian matrimony platforms and dating apps for Indian Americans. Costs, success rates, family involvement, and what actually works for finding a life partner in the US.',
   datePublished: '2026-03-05T00:00:00Z',
@@ -137,7 +142,7 @@ export default function BlogPost() {
               </div>
 
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.15] tracking-tight">
-                Indian Matchmaking vs Dating Apps: An Honest Comparison
+                Indian Matchmaking vs Dating Apps: An Honest Guide
               </h1>
 
               <p className="mt-4 text-2xl md:text-3xl font-display text-gray-500 leading-snug">
@@ -166,18 +171,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/5638704/pexels-photo-5638704.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Multigenerational family enjoying a warm dinner together celebrating togetherness"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -192,8 +185,8 @@ export default function BlogPost() {
                   Indian matrimony platforms and dating apps serve fundamentally different purposes.
                   Matrimony platforms are built around marriage intent and family involvement.
                   Dating apps serve a broader spectrum from casual to serious. For Indian Americans
-                  who know they want marriage, a matrimony platform removes the guesswork &mdash;
-                  but the right choice depends on where you are in your journey.
+                  who know they want marriage, a matrimony platform removes the guesswork. But the
+                  right choice depends on where you are in your journey.
                 </p>
               </div>
 
@@ -227,19 +220,20 @@ export default function BlogPost() {
               <h2>What Is the Core Difference Between Matrimony Platforms and Dating Apps?</h2>
 
               <p>
-                The fundamental difference is intent. Indian matrimony platforms &mdash; Shaadi.com,
+                The fundamental difference is intent. Indian matrimony platforms (Shaadi.com,
                 BharatMatrimony, Jeevansathi, and smaller platforms like{' '}
-                <Link href="/indian-matchmaking-usa">VivaahReady</Link>
-                {' '}&mdash; exist for one purpose: marriage. Every person on the platform has
+                <Link href="/indian-matchmaking-usa">VivaahReady</Link>)
+                exist for one purpose: marriage. <a href="https://www.shaadi.com/info/introduction/about-us" target="_blank" rel="noopener">Shaadi.com alone</a> reports
+                over 35 million members worldwide. Every person on these platforms has
                 signaled they are looking for a life partner. Family involvement is expected and
                 often built into the platform.
               </p>
 
               <p>
-                Dating apps &mdash; Hinge, Bumble, Dil Mil, Coffee Meets Bagel &mdash; serve a
+                Dating apps (Hinge, Bumble, Dil Mil, Coffee Meets Bagel) serve a
                 wider range of intentions. Some users want marriage. Some want serious
-                relationships. Some want casual dating. Some are not sure. You do not know which
-                category someone falls into until you have invested time getting to know them.
+                relationships. Some want casual dating. Some are not sure. You don&rsquo;t know which
+                category someone falls into until you&rsquo;ve invested time getting to know them.
               </p>
 
               <p>
@@ -304,7 +298,7 @@ export default function BlogPost() {
               <h2>What Are the Strengths of Indian Matrimony Platforms?</h2>
 
               <p>
-                Matrimony platforms like Shaadi.com and BharatMatrimony have over 50 million active
+                Matrimony platforms like <a href="https://www.shaadi.com/info/introduction/about-us" target="_blank" rel="noopener">Shaadi.com</a> and BharatMatrimony have over 50 million
                 users combined, according to their published data. That scale is their biggest
                 advantage. If you want the widest possible pool of marriage-minded Indian singles,
                 these platforms deliver it.
@@ -333,8 +327,10 @@ export default function BlogPost() {
               <h2>What Are the Strengths of Dating Apps?</h2>
 
               <p>
-                Dating apps have strengths that matrimony platforms often lack, particularly for
-                younger Indian Americans who grew up with mobile-first experiences.
+                Dating apps have real strengths that matrimony platforms often lack. According to{' '}
+                <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">Pew Research (2024)</a>,
+                Indian Americans are the largest Asian-origin group in the US at nearly 4.8 million,
+                and younger members of this community grew up with mobile-first experiences.
               </p>
 
               <p>
@@ -375,8 +371,11 @@ export default function BlogPost() {
               <h2>What Are the Real Frustrations with Each?</h2>
 
               <p>
-                Neither option is perfect. Here are the complaints I hear most often from Indian
-                Americans who have used both.
+                Neither option is perfect. The complaints I hear most often come from Indian
+                Americans who have tried both and felt let down by each. This frustration
+                reflects a broader{' '}
+                <a href="/blog/indian-families-america-marriage-gap">marriage gap
+                facing Indian families in America</a>.
               </p>
 
               <h3>Frustrations with Matrimony Platforms</h3>
@@ -425,8 +424,8 @@ export default function BlogPost() {
               <p>
                 <strong>&ldquo;Swipe fatigue.&rdquo;</strong> The swipe-based model rewards
                 snap judgments based on photos and short prompts. This format works against the
-                deeper compatibility factors &mdash; values, family dynamics, cultural alignment
-                &mdash; that matter most for long-term partnership.
+                deeper compatibility factors (values, family dynamics, cultural alignment)
+                that matter most for long-term partnership.
               </p>
 
               <p>
@@ -444,15 +443,16 @@ export default function BlogPost() {
                 </blockquote>
               </figure>
 
-              <h2>Is There a Third Option?</h2>
+              <h2>Is There a Third Option Beyond Matchmaking and Dating Apps?</h2>
 
               <p>
-                This is exactly the gap I built VivaahReady to fill. The frustration I heard
-                from hundreds of families was consistent:{' '}
-                <Link href="/blog/caught-between-dating-apps-and-arranged-marriage">
-                  they felt caught between two imperfect choices
-                </Link>
-                .
+                A growing number of Indian Americans feel{' '}
+                <a href="/blog/caught-between-dating-apps-and-arranged-marriage">
+                  caught between two imperfect choices
+                </a>
+                . According to the <a href="https://carnegieendowment.org/research/2021/06/social-realities-of-indian-americans-results-from-the-2020-indian-american-attitudes-survey?lang=en" target="_blank" rel="noopener">2020 Indian American Attitudes Survey</a> by
+                the Carnegie Endowment, Indian Americans hold complex views on marriage that don&rsquo;t
+                fit neatly into either the traditional or Western dating model.
               </p>
 
               <p>
@@ -463,14 +463,15 @@ export default function BlogPost() {
               </p>
 
               <p>
-                <Link href="/privacy-first-matchmaking">Privacy-first matchmaking</Link> means
+                Privacy-first matchmaking means
                 your profile is not publicly visible in a database. Verification means every
                 person you interact with has been confirmed as genuine. Family involvement means
                 the platform is designed so{' '}
-                <Link href="/blog/what-indian-parents-should-know-about-matchmaking-usa">
+                <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">
                   parents can participate
-                </Link>
-                {' '}without taking over.
+                </a>
+                {' '}without taking over. If you&rsquo;re a parent trying to understand this space,
+                that guide is worth reading.
               </p>
 
               <h2>How Do You Choose What Is Right for You?</h2>
@@ -510,12 +511,16 @@ export default function BlogPost() {
 
               <p>
                 If you are ready to explore a{' '}
-                <Link href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
-                  middle path
-                </Link>
+                <a href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
+                  middle path between arranged marriage and dating apps
+                </a>
                 , you are not alone. A growing number of Indian Americans are finding that the
-                right answer is not matrimony or dating apps &mdash; it is something new
-                altogether.
+                right answer is not matrimony or dating apps. It is something new
+                altogether. Understanding{' '}
+                <a href="/blog/how-indian-matchmaking-works-in-america-2026">
+                  how Indian matchmaking actually works in America today
+                </a>
+                {' '}can help you figure out what fits.
               </p>
             </div>
 

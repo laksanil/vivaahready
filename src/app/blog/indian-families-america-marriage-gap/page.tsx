@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
+  title: 'The Marriage Gap in Indian American Families: A Real Story',
   description:
-    'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+    'Over 2.8M Indian immigrants live in the U.S. (Migration Policy Institute). A founder shares the marriage conversation most Indian families in America never had.',
   keywords: [
     'Indian families in the USA',
     'raising Indian children in America',
@@ -18,12 +17,18 @@ export const metadata: Metadata = {
     'compatibility and family values',
   ],
   openGraph: {
-    title: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
+    title: 'The Marriage Gap in Indian American Families: A Real Story',
     description:
-      'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+      'Over 2.8M Indian immigrants live in the U.S. (Migration Policy Institute). A founder shares the marriage conversation most Indian families in America never had.',
     url: 'https://vivaahready.com/blog/indian-families-america-marriage-gap',
     type: 'article',
     publishedTime: '2026-02-14T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Marriage Gap in Indian American Families: A Real Story',
+    description:
+      'Over 2.8M Indian immigrants live in the U.S. (Migration Policy Institute). A founder shares the marriage conversation most Indian families in America never had.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/indian-families-america-marriage-gap',
@@ -33,9 +38,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Raising Indian Children in America: The Marriage Conversation We Didn\u2019t Have',
+  headline: 'The Marriage Gap in Indian American Families: A Real Story',
   description:
-    'A founder\u2019s story about tradition, the Y2K IT wave, and the quiet marriage gap many Indian families in the USA face \u2014 and why VivaahReady began.',
+    'A founder shares the marriage conversation most Indian families in America never had, and what it taught her about building something better.',
   datePublished: '2026-02-14T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -58,7 +63,7 @@ const faqs = [
   {
     question: 'How do Indian families in the USA typically approach marriage conversations?',
     answer:
-      'Many Indian families in the USA prioritize academics and career-building during their children\u2019s formative years, often deferring marriage conversations until later. This can create a gap where children feel unprepared or hesitant to discuss partnership openly with their parents.',
+      'Many Indian families in the USA prioritize academics and career-building during their children\u2019s formative years, often deferring marriage conversations until later. This can create a gap where children feel unprepared or hesitant to discuss partnership openly with their parents. According to the Carnegie Endowment\u2019s 2020 Indian American Attitudes Survey, Indian Americans strongly value family ties, yet structured marriage conversations remain uncommon in many diaspora households.',
   },
   {
     question: 'What challenges do Indian parents face when helping their children find a partner in America?',
@@ -73,7 +78,7 @@ const faqs = [
   {
     question: 'How can Indian families start healthy marriage conversations with their children?',
     answer:
-      'The key is to begin with open, pressure-free dialogue \u2014 treating partnership as a natural part of life planning, much like education or career. Families who approach marriage as a shared conversation, rather than a directive, tend to find that their children are more receptive and engaged.',
+      'The key is to begin with open, pressure-free dialogue, treating partnership as a natural part of life planning, much like education or career. Families who approach marriage as a shared conversation, rather than a directive, tend to find that their children are more receptive and engaged.',
   },
 ]
 
@@ -128,7 +133,7 @@ export default function BlogPost() {
               </div>
 
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.15] tracking-tight">
-                Raising Indian Children in America: The Marriage Conversation We Didn&rsquo;t Have
+                The Marriage Gap in Indian American Families: A Real Story
               </h1>
 
               <p className="mt-6 text-xl text-gray-500 leading-relaxed">
@@ -153,18 +158,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/8841681/pexels-photo-8841681.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Indian daughter having a heartfelt conversation with her parents at home"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -178,7 +171,7 @@ export default function BlogPost() {
 
               <p>
                 We grew up in Hyderabad and Kurnool in homes where culture was not something you
-                displayed &mdash; it was something you practiced.
+                displayed. It was something you practiced.
               </p>
 
               <p>In our homes, character wasn&rsquo;t loud.</p>
@@ -215,15 +208,14 @@ export default function BlogPost() {
                   &ldquo;We wanted our children to know why we lit the lamp. Why we fasted. Why certain days mattered. We didn&rsquo;t want culture to become something they saw only on YouTube.&rdquo;
                 </blockquote>
                 <figcaption className="mt-4 text-sm text-gray-500 font-medium">
-                  &mdash; Lakshmi, Founder of VivaahReady
+                  Lakshmi, Founder of VivaahReady
                 </figcaption>
               </figure>
 
-              <h2>Building a Life During the Y2K Wave</h2>
+              <h2>What Was It Like Building a Life During the Y2K Wave?</h2>
 
               <p>
-                When we moved to the U.S., it was the height of the Y2K IT wave. Everything was moving
-                fast. There was opportunity everywhere, but also pressure.
+                When we moved to the U.S., it was the height of the Y2K IT wave. According to the <a href="https://www.migrationpolicy.org/article/indian-immigrants-united-states" target="_blank" rel="noopener">Migration Policy Institute</a>, Indian immigration to the U.S. surged during this period, growing from about 450,000 in 1990 to over a million by 2000. Everything was moving fast. There was opportunity everywhere, but also pressure.
               </p>
 
               <p>We were fortunate to receive our green card in less than two years.</p>
@@ -254,17 +246,17 @@ export default function BlogPost() {
 
               <p>
                 They worked hard. They grew confident. They learned to move comfortably between Indian
-                traditions at home and American independence outside.
+                traditions at home and American independence outside. Many children of the Y2K generation now find themselves <a href="/blog/caught-between-dating-apps-and-arranged-marriage">caught between dating apps and arranged marriage</a>, unsure which path to take.
               </p>
 
-              <h2>The Conversation We Missed</h2>
+              <h2>Why Did We Miss the Marriage Conversation?</h2>
 
               <p>What we did not talk about clearly was partnership.</p>
 
               <p>
                 Looking back, I sometimes wonder if we focused so much on stability that we forgot to
                 talk about companionship. We prepared them for exams, internships, and promotions. But
-                we never really prepared them for marriage.
+                we never really prepared them for marriage. A <a href="https://carnegieendowment.org/research/2021/06/social-realities-of-indian-americans-results-from-the-2020-indian-american-attitudes-survey?lang=en" target="_blank" rel="noopener">Carnegie Endowment survey (2020)</a> found that Indian Americans overwhelmingly value family bonds, yet many families still struggle to talk openly about partnership.
               </p>
 
               {/* Pull quote */}
@@ -276,14 +268,14 @@ export default function BlogPost() {
 
               <p>
                 Today, many Indian families in the United States are quietly navigating this same
-                space. Our children move comfortably between two worlds. They respect tradition. They value independence.
+                space. Our children move comfortably between two worlds. They respect tradition. They value independence. According to <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">Pew Research (2024)</a>, Indian Americans are among the most educated and highest-earning immigrant groups in the country, yet that professional success hasn&rsquo;t simplified the marriage question.
               </p>
 
               <p>But when it comes to marriage, there is hesitation.</p>
 
-              <p>Some feel they are supposed to figure it out alone. Some feel involving parents might look like weakness. Some simply feel there is still time.</p>
+              <p>Some feel they are supposed to figure it out alone. Some feel involving parents might look like weakness. Some simply feel there is still time. This tension is something many families experience quietly, as we explored in our piece on <a href="/blog/shame-of-looking-indian-american-matrimony">the shame of looking for a match</a>.</p>
 
-              <h2>From Reflection to Action</h2>
+              <h2>How Did Reflection Turn Into Action?</h2>
 
               <p>
                 We realized partnership needs the same thoughtfulness we gave to education.
@@ -296,9 +288,9 @@ export default function BlogPost() {
               </p>
 
               <p>
-                And over time, it led us to build something we wished had existed earlier &mdash; a
+                Over time, it led us to build something we wished had existed earlier. A
                 space where Indian-origin professionals in the U.S. and their families could approach
-                marriage thoughtfully, privately, and without shame.
+                marriage thoughtfully, privately, and without shame. If you are wondering what the process looks like today, our guide on <a href="/blog/how-indian-matchmaking-works-in-america-2026">how Indian matchmaking works in America</a> walks through the options available. And for parents specifically, we wrote about <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">what Indian parents should know about matchmaking in the USA</a>.
               </p>
 
               <p className="text-xl font-display font-semibold text-gray-900">

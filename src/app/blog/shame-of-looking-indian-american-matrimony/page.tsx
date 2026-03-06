@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Nobody Talks About the Shame of Looking | VivaahReady',
+  title: 'The Real Shame of Looking: Indian American Matrimony',
   description:
-    'Why Indian Americans hide that they are searching for a life partner and what it costs them. An honest look at matrimony, shame, and finding clarity.',
+    '77% of matrimony profiles are now self-managed (Jeevansathi 2025), yet most Indian Americans still search in secret. Why the stigma persists and what to do.',
   keywords: [
     'Indian American matrimony shame',
     'Indian matrimony USA',
@@ -20,12 +19,18 @@ export const metadata: Metadata = {
     'looking for life partner shame',
   ],
   openGraph: {
-    title: 'Nobody Talks About the Shame of Looking',
+    title: 'The Real Shame of Looking: Indian American Matrimony',
     description:
-      'Admitting you are actively looking feels like admitting something is missing. Why so many Indian Americans search in secret, and what changes when they stop.',
+      '77% of matrimony profiles are now self-managed (Jeevansathi 2025), yet most Indian Americans still search in secret. Why the stigma persists and what to do.',
     url: 'https://vivaahready.com/blog/shame-of-looking-indian-american-matrimony',
     type: 'article',
     publishedTime: '2026-03-04T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Real Shame of Looking: Indian American Matrimony',
+    description:
+      '77% of matrimony profiles are now self-managed (Jeevansathi 2025), yet most Indian Americans still search in secret. Why the stigma persists and what to do.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/shame-of-looking-indian-american-matrimony',
@@ -35,9 +40,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Nobody Talks About the Shame of Looking',
+  headline: 'The Real Shame of Looking: Indian American Matrimony',
   description:
-    'Why Indian Americans hide that they are searching for a life partner and what it costs them. An honest look at matrimony, shame, and finding clarity.',
+    '77% of matrimony profiles are now self-managed (Jeevansathi 2025), yet most Indian Americans still search in secret. Why the stigma persists and what to do.',
   datePublished: '2026-03-04T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -130,7 +135,7 @@ export default function BlogPost() {
               </div>
 
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-[1.15] tracking-tight">
-                Nobody Talks About the Shame of Looking
+                The Real Shame of Looking: Indian American Matrimony
               </h1>
 
               <p className="mt-4 text-2xl md:text-3xl font-display text-gray-500 leading-snug">
@@ -159,18 +164,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/4419630/pexels-photo-4419630.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Indian father and family sharing a warm moment together at home"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -205,19 +198,23 @@ export default function BlogPost() {
                 <div className="flex-1 border-t border-gray-200" />
               </div>
 
-              <h2>The Unspoken Rule</h2>
+              <h2>Why Does Indian American Matrimony Feel Like a Secret?</h2>
 
               <p>
-                There is an unspoken rule among many Indian Americans when it comes to finding a
-                life partner. You are allowed to want marriage. You are allowed to be ready. But you
-                are not supposed to look like you are trying too hard.
+                According to a <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">2025 Jeevansathi report</a>,
+                77% of matrimony profiles are now self-managed, meaning people are taking ownership of
+                their search. Yet among Indian Americans, there&rsquo;s an unspoken rule: you are
+                allowed to want marriage, but you are not supposed to look like you are trying too hard.
               </p>
 
               <p>
                 Being on a dating app is casual enough to mention over coffee. Being on a matrimony
                 site feels different. It signals something more deliberate, more vulnerable. It says
                 you have thought about this seriously, that you have taken a step, and that it has
-                not happened on its own yet.
+                not happened on its own yet. This tension between the two is something many Indian Americans feel, and it&rsquo;s
+                worth understanding the{' '}
+                <a href="/blog/indian-matchmaking-vs-dating-apps-honest-comparison">real differences
+                between matchmaking platforms and dating apps</a>.
               </p>
 
               <p>
@@ -235,7 +232,7 @@ export default function BlogPost() {
                 </blockquote>
               </figure>
 
-              <h2>What We Actually Hide</h2>
+              <h2>What Do Indian Americans Actually Hide About Their Marriage Search?</h2>
 
               <p>
                 It is not marriage itself that feels embarrassing. Most people I talk to want
@@ -266,7 +263,9 @@ export default function BlogPost() {
 
               <p>
                 Two people in the same family, working toward the same goal, and neither one talking
-                about it.
+                about it. This is a common pattern among{' '}
+                <a href="/blog/indian-families-america-marriage-gap">Indian families in
+                America navigating the marriage gap</a>.
               </p>
 
               {/* Transition */}
@@ -276,18 +275,22 @@ export default function BlogPost() {
                 <div className="flex-1 border-t border-gray-200" />
               </div>
 
-              <h2>The Double Standard Nobody Mentions</h2>
+              <h2>Why Is There a Double Standard About Arranged Marriage in the Diaspora?</h2>
 
               <p>
-                Here is the strange part. In India, arranged marriage is a system. Nobody apologizes
-                for it. Families sit down, talk openly, and work together to find a match. There is
-                structure, clarity, and purpose. Nobody hides.
+                Think about how differently this plays out across continents. In India, arranged marriage is a system. Nobody apologizes
+                for it. Families sit down, talk openly, and work together to find a match. A{' '}
+                <a href="https://pubmed.ncbi.nlm.nih.gov/22897093/" target="_blank" rel="noopener">study published in PubMed</a> found
+                that satisfaction in arranged marriages often grows over time, suggesting the model itself
+                isn&rsquo;t the problem. Nobody hides.
               </p>
 
               <p>
                 But in America, among the diaspora, that same process carries a different weight.
+                There are nearly <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">4.8 million Indian Americans</a> (Pew Research, 2024),
+                and many of them navigate two cultural identities every day.
                 Saying &ldquo;my parents are looking for matches&rdquo; in a room full of colleagues
-                or American friends feels awkward. It does not translate easily. And so Indian
+                or American friends feels awkward. It doesn&rsquo;t translate easily. And so Indian
                 Americans who are doing the exact same thing their parents did, just in a new
                 country, end up doing it quietly.
               </p>
@@ -308,7 +311,7 @@ export default function BlogPost() {
                 There is a real difference between wanting something and being caught wanting it.
               </p>
 
-              <h2>What Secrecy Actually Costs</h2>
+              <h2>What Does Searching in Secret Actually Cost You?</h2>
 
               <p>
                 When you search in silence, every part of the process becomes heavier than it needs
@@ -354,7 +357,7 @@ export default function BlogPost() {
                 somehow fallen short.
               </p>
 
-              <h2>When I Stopped Hiding</h2>
+              <h2>What Changed When I Stopped Hiding?</h2>
 
               <p>
                 I remember the moment clearly. A friend of mine, someone I respect deeply, told me
@@ -402,7 +405,9 @@ export default function BlogPost() {
 
               <p>
                 First, when the space where you look feels safe. When profiles are verified, when
-                intentions are clear, when families can be involved without it feeling forced. When
+                intentions are clear, when{' '}
+                <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">families can
+                be involved without it feeling forced</a>. When
                 the platform itself says: this is a serious place for serious people. Not a last
                 resort. A first choice.
               </p>
@@ -429,14 +434,16 @@ export default function BlogPost() {
 
               <p>
                 If you have ever felt{' '}
-                <Link
+                <a
                   href="/blog/caught-between-dating-apps-and-arranged-marriage"
-                  className="text-primary-600 hover:underline"
                 >
                   caught between dating apps and arranged marriage
-                </Link>
+                </a>
                 , you are not alone. That tension is real, and it is worth understanding before you
-                decide how to move forward.
+                decide how to move forward. You might also find it helpful to explore{' '}
+                <a href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
+                  the middle path between arranged marriage and dating apps
+                </a>.
               </p>
             </div>
 

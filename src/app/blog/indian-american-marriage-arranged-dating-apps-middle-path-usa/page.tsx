@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
+  title: 'Indian American Marriage: An Honest Middle Path Guide',
   description:
-    'Looking for Indian matrimony in the USA? Whether you are in the Bay Area, New York, Chicago, Dallas, Austin, or Houston, VivaahReady founder Lakshmi explains why Indian Americans feel stuck between arranged marriage and dating apps and what a better, commitment-focused process looks like.',
+    'Indian Americans are rethinking marriage. 77% of profiles are now self-managed (Jeevansathi 2025). A real look at the middle path between arranged marriage and dating apps.',
   keywords: [
     'Indian matrimony USA',
     'Indian American marriage',
@@ -25,12 +24,18 @@ export const metadata: Metadata = {
     'Indian American professionals marriage',
   ],
   openGraph: {
-    title: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
+    title: 'Indian American Marriage: An Honest Middle Path Guide',
     description:
-      'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like.',
+      'Indian Americans are rethinking marriage. 77% of profiles are now self-managed (Jeevansathi 2025). A real look at the middle path between arranged marriage and dating apps.',
     url: 'https://vivaahready.com/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa',
     type: 'article',
     publishedTime: '2026-02-19T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Indian American Marriage: An Honest Middle Path Guide',
+    description:
+      'Indian Americans are rethinking marriage. 77% of profiles are now self-managed (Jeevansathi 2025). A real look at the middle path between arranged marriage and dating apps.',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa',
@@ -40,9 +45,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA',
+  headline: 'Indian American Marriage: An Honest Middle Path Guide',
   description:
-    'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like.',
+    'Indian Americans are rethinking marriage. A real look at the middle path between arranged marriage and dating apps.',
   datePublished: '2026-02-19T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -80,7 +85,7 @@ const faqs = [
   {
     question: 'How is VivaahReady different from other Indian matrimony platforms?',
     answer:
-      'VivaahReady is a commitment-focused Indian matrimony platform built specifically for Indian Americans in the USA. Every profile is verified, privacy is respected with contact details shared only with mutual consent, and commitment is the shared starting point. It is not a casual dating app or an endless browsing platform — it is designed for marriage-minded Indian Americans who want clarity from the very beginning.',
+      'VivaahReady is a commitment-focused Indian matrimony platform built specifically for Indian Americans in the USA. Every profile is verified, privacy is respected with contact details shared only with mutual consent, and commitment is the shared starting point. It is not a casual dating app or an endless browsing platform. It is designed for marriage-minded Indian Americans who want clarity from the very beginning.',
   },
 ]
 
@@ -143,7 +148,7 @@ export default function BlogPost() {
               </p>
 
               <p className="mt-6 text-xl text-gray-500 leading-relaxed">
-                After hearing so many stories from daughters pulling away from conversations, daughters exhausted from dating apps, and parents walking carefully around the topic, I began to notice something else. There were stories about sons too &mdash; and they just sounded different.
+                After hearing so many stories from daughters pulling away from conversations, daughters exhausted from dating apps, and parents walking carefully around the topic, I began to notice something else. There were stories about sons too. And they just sounded different.
               </p>
 
               {/* Author */}
@@ -163,18 +168,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/6149192/pexels-photo-6149192.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Multigenerational family embracing warmly showing the bond between parents and adult children"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -186,18 +179,18 @@ export default function BlogPost() {
               </p>
 
               {/* Section: Why Indian Americans Struggle */}
-              <h2>Why Indian Americans Struggle With Marriage in the USA</h2>
+              <h2>Why Do Indian Americans Struggle With Marriage in the USA?</h2>
 
               <p>
-                The Indian American community is one of the fastest-growing in the country. We are well-educated, well-settled, deeply family-oriented, and marriage remains one of our most deeply held priorities across every generation. And yet, finding a life partner as an Indian American in the USA has never felt more confusing.
+                The Indian American community is one of the fastest-growing in the country. According to the <a href="https://www.migrationpolicy.org/article/indian-immigrants-united-states" target="_blank" rel="noopener">Migration Policy Institute</a>, over 2.8 million Indian-born immigrants lived in the U.S. as of 2022. We are well-educated, deeply family-oriented, and marriage remains a priority across generations. Yet finding a life partner has never felt more confusing.
               </p>
 
               <p>
-                Traditional arranged marriage feels too rigid for the lives we are living here. Western dating apps were never designed for families who want to be part of the journey. And most Indian matrimony sites available in the USA were built for India, not for the diaspora &mdash; and it shows in every single interaction.
+                Traditional arranged marriage feels too rigid for the lives we are living here. Western dating apps were never designed for families who want to be part of the journey. Most Indian matrimony sites available in the USA were built for India, not for the diaspora. It shows in every single interaction.
               </p>
 
               <p>
-                The result is a generation of first-gen and second-gen Indian Americans caught somewhere in the middle, and a growing number of parents who feel helpless watching it happen.
+                The result is a generation of first-gen and second-gen Indian Americans caught somewhere in the middle. A growing number of parents feel helpless watching it happen. If you are a parent trying to understand how the process works in 2026, our guide on <a href="/blog/how-indian-matchmaking-works-in-america-2026">how Indian matchmaking works in America</a> covers the landscape in detail.
               </p>
 
               {/* Transition */}
@@ -208,10 +201,10 @@ export default function BlogPost() {
               </div>
 
               {/* Section: The Quiet Struggle of Indian American Sons */}
-              <h2>The Quiet Struggle of Indian American Sons</h2>
+              <h2>Why Are Indian American Sons Quietly Struggling to Find a Partner?</h2>
 
               <p>
-                One mother told me about her 34-year-old son, a software engineer in the Bay Area, well-settled, and genuinely open to marriage. His family sent biodatas from India, reached out through community contacts, and set up introductions through matrimonial sites. He talked to someone for two months and then said there was no connection. Another person wanted to move too fast. A third just felt off somehow.
+                One mother told me about her 34-year-old son, a software engineer in the Bay Area. Well-settled and genuinely open to marriage. His family sent biodatas from India, reached out through community contacts, and set up introductions through matrimonial sites. He talked to someone for two months, then said there was no connection. Another person wanted to move too fast. A third just felt off somehow.
               </p>
 
               {/* Pull quote */}
@@ -226,11 +219,11 @@ export default function BlogPost() {
               </p>
 
               <p>
-                This is one of the most common patterns I hear from Indian American families across the Bay Area, San Jose, San Francisco, New York, Chicago, Dallas, Austin, Houston, and beyond. Sons are not always avoiding marriage. More often they are avoiding the structure around it, or getting lost in too many options, or hesitating because no process feels quite right for where they are in life.
+                This is one of the most common patterns I hear from Indian American families across the Bay Area, New York, Chicago, Dallas, Austin, Houston, and beyond. Sons are not always avoiding marriage. More often they are avoiding the structure around it. They get lost in too many options, or hesitate because no process feels quite right for where they are in life. Many families find themselves <a href="/blog/caught-between-dating-apps-and-arranged-marriage">caught between dating apps and arranged marriage</a>, unsure which direction to go.
               </p>
 
               {/* Section: The Pattern Across Both Daughters and Sons */}
-              <h2>The Pattern Across Both Daughters and Sons</h2>
+              <h2>What Pattern Shows Up Across Both Daughters and Sons?</h2>
 
               <p>
                 Daughters feel exhausted by the ambiguity of modern desi dating. Sons feel overwhelmed by the expectations built into traditional Indian matchmaking. Parents feel uncertain about how much to say and when to say it.
@@ -241,7 +234,7 @@ export default function BlogPost() {
               </p>
 
               <p>
-                In traditional arranged marriage, sons sometimes felt pushed into timelines set entirely by family. On dating apps built for Western culture, Indian Americans often drift without any real direction. In both systems, the same essential thing is missing &mdash; shared intention from the very beginning.
+                In traditional arranged marriage, sons sometimes felt pushed into timelines set entirely by family. On dating apps built for Western culture, Indian Americans often drift without any real direction. In both systems, the same essential thing is missing: shared intention from the very beginning.
               </p>
 
               <p>
@@ -256,7 +249,7 @@ export default function BlogPost() {
               </div>
 
               {/* Section: What Traditional Indian Arranged Marriage Got Right */}
-              <h2>What Traditional Indian Arranged Marriage Got Right</h2>
+              <h2>What Did Traditional Indian Arranged Marriage Get Right?</h2>
 
               <p>It removed the guessing.</p>
 
@@ -269,16 +262,16 @@ export default function BlogPost() {
               </p>
 
               {/* Section: What Modern Dating Apps Got Right */}
-              <h2>What Modern Dating Apps Got Right</h2>
+              <h2>What Did Modern Dating Apps Get Right?</h2>
 
               <p>
-                They gave Indian Americans real autonomy. You could meet people on your own terms without involving family from day one, and you could explore compatibility at your own pace.
+                They gave Indian Americans real autonomy. You could meet people on your own terms without involving family from day one. You could explore compatibility at your own pace.
               </p>
 
               <p>The problem was never the freedom. The problem was the uncertainty that came with it.</p>
 
               <p>
-                In cities like San Jose, San Francisco, New York, Chicago, Dallas, Austin, and Houston, desi dating apps and general dating platforms create endless exposure but rarely clarify who is genuinely marriage-minded and who is simply browsing out of curiosity. So sons and daughters invest real time and real emotion, only to discover not incompatibility but misaligned timelines &mdash; an entirely different and far more frustrating problem.
+                In cities like San Jose, San Francisco, New York, Chicago, Dallas, Austin, and Houston, desi dating apps create endless exposure but rarely clarify who is genuinely marriage-minded. Sons and daughters invest real time and real emotion, only to discover misaligned timelines, not incompatibility. That is an entirely different and far more frustrating problem. We compared the two approaches in depth in our <a href="/blog/indian-matchmaking-vs-dating-apps-honest-comparison">honest comparison of Indian matchmaking vs. dating apps</a>.
               </p>
 
               {/* Pull quote */}
@@ -293,10 +286,10 @@ export default function BlogPost() {
               </p>
 
               {/* Section: The Real Gap in Indian American Matchmaking */}
-              <h2>The Real Gap in Indian American Matchmaking</h2>
+              <h2>What Is the Real Gap in Indian American Matchmaking?</h2>
 
               <p>
-                This is not really about arranged marriage versus love marriage. It is about clarity versus confusion.
+                This is not really about arranged marriage versus love marriage. It is about clarity versus confusion. A <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">Pew Research Center survey (2024)</a> found that 87% of Indian Americans say family is very important to them. The desire for marriage is strong. The confusion is about process, not commitment.
               </p>
 
               <p>
@@ -321,7 +314,7 @@ export default function BlogPost() {
               </ul>
 
               <p>
-                Indian American dating struggles are not about a lack of commitment. They are about a lack of clarity in the process. And that distinction matters enormously when you are trying to find a life partner, not just a date.
+                Indian American dating struggles are not about a lack of commitment. They are about a lack of clarity in the process. That distinction matters enormously when you are trying to find a life partner, not just a date. Many families carry a quiet sense of <a href="/blog/shame-of-looking-indian-american-matrimony">shame around the process of looking</a>, which only deepens the confusion.
               </p>
 
               <p className="text-xl font-display font-semibold text-gray-900">
@@ -336,7 +329,7 @@ export default function BlogPost() {
               </div>
 
               {/* Section: What a Healthier Middle Path Looks Like */}
-              <h2>What a Healthier Middle Path for Indian Americans Looks Like</h2>
+              <h2>What Does a Healthier Middle Path for Indian American Marriage Look Like?</h2>
 
               <p>
                 Imagine a space where everyone joining has already committed to being marriage-minded before any conversations begin. Where intentions are clear upfront, the way semi-arranged marriage used to be, but with personal choice genuinely at the center.
@@ -361,15 +354,15 @@ export default function BlogPost() {
               <h2>Why I Built VivaahReady</h2>
 
               <p>
-                I come from a traditional Indian family, and like many parents in the diaspora, I wanted to help my daughter find the right life partner &mdash; someone who shared our values, understood our culture, and was genuinely serious about building a life together.
+                I come from a traditional Indian family, and like many parents in the diaspora, I wanted to help my daughter find the right life partner. Someone who shared our values, understood our culture, and was genuinely serious about building a life together.
               </p>
 
               <p>
-                I tried every Indian matrimony site in the USA I could find. Some felt outdated and impersonal. Others were full of unverified profiles from people who were not truly serious. None of them felt right for families like ours &mdash; families who wanted a real blend of tradition and personal choice without having to sacrifice one for the other. The big platforms felt like they were built for a different generation, in a different country, living a different life entirely.
+                I tried every Indian matrimony site in the USA I could find. Some felt outdated and impersonal. Others were full of unverified profiles from people who were not truly serious. None of them felt right for families like ours. We wanted a real blend of tradition and personal choice without having to sacrifice one for the other. The big platforms felt like they were built for a different generation, in a different country, living a different life entirely.
               </p>
 
               <p>
-                After listening to so many mothers of daughters and mothers of sons across the Indian American community &mdash; in the Bay Area, in New York, in Chicago, in Dallas, in Austin, in Houston, and in cities across the country &mdash; one thing became impossible to ignore. The community does not need more options. It needs better alignment.
+                After listening to so many mothers of daughters and mothers of sons across the Indian American community, in the Bay Area, in New York, in Chicago, in Dallas, in Austin, in Houston, one thing became impossible to ignore. The community does not need more options. It needs better alignment.
               </p>
 
               <p className="text-xl font-display font-semibold text-gray-900">
@@ -377,7 +370,7 @@ export default function BlogPost() {
               </p>
 
               <p>
-                VivaahReady is a commitment-focused Indian matrimony platform built specifically for Indian Americans in the USA. It is not a casual desi dating app, not a parental control system, and not another NRI matrimony site built for endless browsing. It is a space where:
+                VivaahReady is a commitment-focused Indian matrimony platform built specifically for Indian Americans in the USA. It is not a casual desi dating app, not a parental control system, and not another NRI matrimony site built for endless browsing. A <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">2025 Jeevansathi report</a> shows that 77% of matrimonial profiles are now self-managed, confirming the shift toward personal ownership. It is a space where:
               </p>
 
               <ul>
@@ -406,7 +399,7 @@ export default function BlogPost() {
               </p>
 
               <p>
-                The generation of Indian Americans living between arranged marriage and dating apps is not confused about commitment. They are confused about the process &mdash; and that is a very different problem with a very different solution.
+                The generation of Indian Americans living between arranged marriage and dating apps is not confused about commitment. They are confused about the process. That is a very different problem with a very different solution.
               </p>
 
               <p>Whether you are:</p>
@@ -421,15 +414,15 @@ export default function BlogPost() {
               <p>You are not alone in feeling like something is missing.</p>
 
               <p>
-                Maybe the answer is not choosing between arranged marriage and modern dating. Maybe it is building something better &mdash; something designed for the culture we come from and the lives we are genuinely living today, right here in the USA.
+                Maybe the answer is not choosing between arranged marriage and modern dating. Maybe it is building something better. Something designed for the culture we come from and the lives we are genuinely living today, right here in the USA.
               </p>
 
               <p className="text-xl font-display font-semibold text-gray-900">
-                If you are an Indian American professional who is serious about marriage, or a parent who wants to be part of the journey without taking it over, VivaahReady was built for you.
+                If you are an Indian American professional who is serious about marriage, or a parent who wants to be part of the journey without taking it over, VivaahReady was built for you. Parents who want to understand their role better can start with our guide on <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">what Indian parents should know about matchmaking in the USA</a>.
               </p>
 
               <p className="text-gray-600 italic">
-                &mdash; Lakshmi
+                Lakshmi
                 <br />
                 Founder, VivaahReady
               </p>
@@ -443,7 +436,7 @@ export default function BlogPost() {
               <div>
                 <p className="font-semibold text-gray-900">About the Author</p>
                 <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-                  Lakshmi is a Bay Area mother with traditional Indian family roots and the founder of VivaahReady, a commitment-focused Indian matrimony platform built for Indian Americans across the USA &mdash; from the Bay Area and Silicon Valley to Dallas, Austin, Houston, New York, and Chicago. When she set out to find the right life partner for her own daughter, she tried every major Indian matrimony site available in the USA and found them either outdated, full of unverified profiles, or simply not built for desi families in the diaspora who want both tradition and personal choice. So she built what she could not find. VivaahReady is the platform she wished had existed &mdash; with verified profiles, a privacy-first approach, and a genuinely commitment-focused community for marriage-minded Indian Americans.
+                  Lakshmi is a Bay Area mother with traditional Indian family roots and the founder of VivaahReady, a commitment-focused Indian matrimony platform built for Indian Americans across the USA. When she set out to find the right life partner for her own daughter, she tried every major Indian matrimony site available and found them either outdated, full of unverified profiles, or simply not built for desi families in the diaspora. So she built what she could not find. VivaahReady is the platform she wished had existed, with verified profiles, a privacy-first approach, and a genuinely commitment-focused community for marriage-minded Indian Americans.
                 </p>
                 <p className="mt-3">
                   <Link href="/about" className="text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">

@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
+  title: 'Dating Apps vs Arranged Marriage: An Honest Look',
   description:
-    'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck. Why many Indian Americans feel trapped between dating apps and arranged marriage.',
+    'Why Indian American families feel stuck between dating apps and arranged marriage. 77% of matrimony profiles are now self-managed (Jeevansathi 2025).',
   keywords: [
     'Indian American dating',
     'arranged marriage vs dating apps',
@@ -18,12 +17,18 @@ export const metadata: Metadata = {
     'dating apps Indian Americans',
   ],
   openGraph: {
-    title: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
+    title: 'Dating Apps vs Arranged Marriage: An Honest Look',
     description:
-      'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck.',
+      'Why Indian American families feel stuck between dating apps and arranged marriage. 77% of matrimony profiles are now self-managed (Jeevansathi 2025).',
     url: 'https://vivaahready.com/blog/caught-between-dating-apps-and-arranged-marriage',
     type: 'article',
     publishedTime: '2026-02-16T00:00:00Z',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dating Apps vs Arranged Marriage: An Honest Look',
+    description:
+      'Why Indian American families feel stuck between dating apps and arranged marriage. 77% of matrimony profiles are now self-managed (Jeevansathi 2025).',
   },
   alternates: {
     canonical: 'https://vivaahready.com/blog/caught-between-dating-apps-and-arranged-marriage',
@@ -33,9 +38,9 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
-  headline: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck',
+  headline: 'Dating Apps vs Arranged Marriage: An Honest Look',
   description:
-    'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck.',
+    'Why Indian American families feel stuck between dating apps and arranged marriage. 77% of matrimony profiles are now self-managed (Jeevansathi 2025).',
   datePublished: '2026-02-16T00:00:00Z',
   author: {
     '@type': 'Person',
@@ -58,22 +63,22 @@ const faqs = [
   {
     question: 'Why do Indian American families struggle with the marriage conversation?',
     answer:
-      'Parents notice time passing and feel they should help, while children feel repeated attention and step back to protect their space. Both reactions make sense, yet they move in opposite directions \u2014 creating tension without discussion.',
+      'Parents notice time passing and feel they should help, while children feel repeated attention and step back to protect their space. Both reactions make sense, yet they move in opposite directions, creating tension without discussion.',
   },
   {
     question: 'Why do dating apps feel exhausting for many Indian Americans?',
     answer:
-      'The frustration isn\u2019t about meeting people \u2014 it\u2019s about restarting the same emotional conversation again and again without knowing early enough whether both people want the same outcome. Uncertainty, not rejection, is what drains energy.',
+      'The frustration isn\u2019t about meeting people. It\u2019s about restarting the same emotional conversation again and again without knowing early enough whether both people want the same outcome. Uncertainty, not rejection, is what drains energy.',
   },
   {
     question: 'How can Indian families bridge the gap between tradition and modern dating?',
     answer:
-      'Structure doesn\u2019t take away choice \u2014 it takes away guessing. When expectations are clear early, conversations become calmer. When direction exists, families naturally step back. A healthier approach combines the intentionality of tradition with the personal ownership of modern relationships.',
+      'Structure doesn\u2019t take away choice. It takes away guessing. When expectations are clear early, conversations become calmer. When direction exists, families naturally step back. A healthier approach combines the intentionality of tradition with the personal ownership of modern relationships.',
   },
   {
     question: 'What do Indian American professionals actually want in a matchmaking process?',
     answer:
-      'They\u2019re not looking for more options. They want a healthier way to meet \u2014 one where intentions are understood early, conversations stay comfortable, and families don\u2019t have to choose between involvement and distance.',
+      'They\u2019re not looking for more options. They want a healthier way to meet, one where intentions are understood early, conversations stay comfortable, and families don\u2019t have to choose between involvement and distance.',
   },
 ]
 
@@ -136,7 +141,7 @@ export default function BlogPost() {
               </p>
 
               <p className="mt-6 text-xl text-gray-500 leading-relaxed">
-                Two families, two opposite situations &mdash; one daughter avoids the topic, another is
+                Two families, two opposite situations. One daughter avoids the topic, another is
                 actively trying but feels stuck. Yet both homes share the same quiet tension.
               </p>
 
@@ -157,18 +162,6 @@ export default function BlogPost() {
           </div>
         </header>
 
-        {/* Hero Image */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden">
-            <Image
-              src="https://images.pexels.com/photos/8489355/pexels-photo-8489355.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop"
-              alt="Mother and adult daughter having a meaningful conversation about relationships and marriage"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
 
         {/* Article Body */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -213,7 +206,7 @@ export default function BlogPost() {
 
               <p>
                 &ldquo;My daughter is 29. Berkeley graduate. Software engineer in Cupertino. She&rsquo;s
-                meeting people constantly &mdash; dating apps, introductions, family connections. But
+                meeting people constantly through dating apps, introductions, family connections. But
                 nothing works. The ones she likes aren&rsquo;t serious. The ones who seem serious
                 don&rsquo;t connect. She&rsquo;s exhausted&hellip; and honestly, so are we.&rdquo;
               </p>
@@ -229,7 +222,7 @@ export default function BlogPost() {
 
               <p>
                 Yet both families have started walking carefully around the conversation. And in both
-                homes, the feeling is the same &mdash; everyone is dealing with it alone.
+                homes, the feeling is the same. Everyone is dealing with it alone.
               </p>
 
               {/* Pull quote */}
@@ -240,7 +233,7 @@ export default function BlogPost() {
                 </blockquote>
               </figure>
 
-              <h2>It&rsquo;s Not Really About Marriage</h2>
+              <h2>Is the Real Problem Actually About Marriage?</h2>
 
               <p>Neither family disagrees about marriage itself.</p>
 
@@ -249,16 +242,26 @@ export default function BlogPost() {
               <p>
                 In traditional arranged settings, families created direction but sometimes removed
                 comfort. In modern dating culture, individuals have freedom but often lose clarity.
+                There&rsquo;s an{' '}
+                <a href="/blog/indian-matchmaking-vs-dating-apps-honest-comparison">
+                  honest comparison of matchmaking and dating apps
+                </a>{' '}
+                that breaks down these trade-offs in more detail.
               </p>
 
               <p>Too much structure feels heavy. Too little structure feels endless.</p>
 
               <p>
-                Many Indian families today aren&rsquo;t choosing between tradition and independence
-                &mdash; they&rsquo;re trying to make both coexist.
+                Many Indian families today aren&rsquo;t choosing between tradition and independence.
+                They&rsquo;re trying to make both coexist. A{' '}
+                <a href="https://carnegieendowment.org/research/2021/06/social-realities-of-indian-americans-results-from-the-2020-indian-american-attitudes-survey?lang=en" target="_blank" rel="noopener">
+                  Carnegie Endowment survey
+                </a>{' '}
+                found that Indian Americans hold strong family values while also prioritizing
+                individual autonomy, and that tension shapes how they approach marriage.
               </p>
 
-              <h2>The Real Frustration: Not Rejection, but Uncertainty</h2>
+              <h2>Why Does Dating Feel So Exhausting for Indian Americans?</h2>
 
               <p>The second daughter explained this to me during a visit home.</p>
 
@@ -296,7 +299,10 @@ export default function BlogPost() {
 
               <p>
                 They wanted to help, but didn&rsquo;t know how. She didn&rsquo;t know what help would
-                even look like.
+                even look like. This disconnect is something{' '}
+                <a href="/blog/what-indian-parents-should-know-about-matchmaking-usa">
+                  many Indian parents face when trying to support their children&rsquo;s search
+                </a>.
               </p>
 
               <p>The problem wasn&rsquo;t effort.</p>
@@ -305,7 +311,7 @@ export default function BlogPost() {
                 It was not knowing early enough whether both people wanted the same outcome.
               </p>
 
-              <h2>The Other Side of Silence</h2>
+              <h2>What Happens When Families Stop Talking About Marriage?</h2>
 
               <p>The doctor in San Francisco had a different difficulty.</p>
 
@@ -317,7 +323,7 @@ export default function BlogPost() {
               </p>
 
               <p>
-                She told a friend she loved her parents &mdash; she just didn&rsquo;t want every visit
+                She told a friend she loved her parents. She just didn&rsquo;t want every visit
                 to revolve around one life decision she hadn&rsquo;t emotionally scheduled yet.
               </p>
 
@@ -333,7 +339,7 @@ export default function BlogPost() {
                 </blockquote>
               </figure>
 
-              <h2>Why Families Feel Stuck</h2>
+              <h2>Why Do Indian Families Feel Stuck Between Dating Apps and Arranged Marriage?</h2>
 
               <p>Parents notice time passing and feel they should help.</p>
 
@@ -351,11 +357,16 @@ export default function BlogPost() {
               <p>The result isn&rsquo;t freedom or support. It&rsquo;s tension without discussion.</p>
 
               <p>
-                This is where many Indian families today find themselves &mdash; somewhere between
+                This is where many Indian families today find themselves, somewhere between
                 dating apps and arranged meetings, between autonomy and reassurance.
+                Understanding{' '}
+                <a href="/blog/how-indian-matchmaking-works-in-america-2026">
+                  how Indian matchmaking actually works today
+                </a>{' '}
+                can help bridge that gap.
               </p>
 
-              <h2>What Actually Helps</h2>
+              <h2>What Actually Helps Families Move Forward?</h2>
 
               <p>Pressure rarely comes from a single question.</p>
 
@@ -367,15 +378,29 @@ export default function BlogPost() {
 
               <p>When commitment is possible, honesty becomes easier.</p>
 
+              <p>
+                A{' '}
+                <a href="https://www.tribuneindia.com/news/advertorial-disclaimer/marriage-timelines-shift-remarriage-rises-jeevansathi-report-reveals-how-india-is-redefining-partner-search-and-marriage" target="_blank" rel="noopener">
+                  2025 Jeevansathi report
+                </a>{' '}
+                found that 77% of matrimony profiles are now self-managed. People want to own their
+                search while keeping family close. That&rsquo;s the shift.
+              </p>
+
               <p className="text-xl font-display font-semibold text-gray-900">
                 Structure doesn&rsquo;t take away choice. It takes away guessing.
               </p>
 
-              <h2>A Quiet Realization</h2>
+              <h2>What Are Indian American Families Really Looking For?</h2>
 
               <p>
                 Across different homes, the situations look different but the feeling underneath is
-                similar.
+                similar. According to a{' '}
+                <a href="https://www.pewresearch.org/2024/08/06/indian-americans-a-survey-data-snapshot/" target="_blank" rel="noopener">
+                  Pew Research snapshot
+                </a>
+                , Indian Americans are among the most educated and highest-earning immigrant groups
+                in the country, yet family and marriage remain central priorities.
               </p>
 
               <p>Parents want stability. Children want ownership.</p>
@@ -388,8 +413,13 @@ export default function BlogPost() {
 
               <p>
                 So what people are searching for today isn&rsquo;t more options. It&rsquo;s a healthier
-                way to meet &mdash; one where intentions are understood early, conversations stay
+                way to meet, one where intentions are understood early, conversations stay
                 comfortable, and families don&rsquo;t have to choose between involvement and distance.
+                Many are finding that{' '}
+                <a href="/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa">
+                  a middle path between arranged marriage and dating apps
+                </a>{' '}
+                is what actually works.
               </p>
 
               <p>
