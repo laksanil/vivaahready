@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Singles Zoom Mixer - Indian Vegetarian Singles in California',
   description:
-    'Join VivaahReady\'s Singles Zoom Mixer for Indian vegetarian singles in California, ages 29-35. Moderated, structured conversations. 20 seats max. March 15, 2026.',
+    'Join VivaahReady\'s Singles Zoom Mixer for Indian vegetarian singles in California, ages 28-35. Moderated, structured conversations. 20 seats max. March 15, 2026.',
   alternates: {
     canonical: 'https://vivaahready.com/aprilevent',
   },

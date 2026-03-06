@@ -33,12 +33,12 @@ WHY $25 IS WORTH IT:
 - All participants are verified - no fake profiles!
 - Safe, moderated environment
 - Could be your chance to meet your life partner!
-- Full refund if you cancel 48+ hours before
+- Full refund if you cancel 7+ days before
 
 ELIGIBILITY:
-- Age: 29-35 years old
+- Age: 28-35 years old
 - Location: California resident
-- Diet: Vegetarian
+- Diet: Vegetarian or Eggetarian
 - Citizenship: US Citizen
 - Profile: Complete VivaahReady profile
 
@@ -62,7 +62,7 @@ HOW IT WORKS:
 KEY SELLING POINTS TO EMPHASIZE:
 - All participants are VERIFIED - no catfishing!
 - Founder personally hosts - safe and professional
-- Exclusive event for vegetarian singles
+- Exclusive event for vegetarian and eggetarian singles
 - Only $25 - small investment for finding love
 - Fun, engaging format - not a boring video call
 
@@ -164,7 +164,7 @@ function getFallbackResponse(message: string): string {
   if (msg.includes('not able to register') || msg.includes('cannot register') || msg.includes('can\'t register') ||
       msg.includes('unable to register') || msg.includes('registration not working') || msg.includes('won\'t let me register') ||
       msg.includes('problem register') || msg.includes('issue register') || msg.includes('error register')) {
-    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 29-35, California resident, vegetarian, and US citizen. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
+    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 28-35, vegetarian or eggetarian. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
   }
 
   // Zoom link specific questions
@@ -203,12 +203,12 @@ function getFallbackResponse(message: string): string {
 
   // Questions about what the event is
   if (msg.includes('what is') || msg.includes('what do') || msg.includes('mixer') || msg.includes('about') || msg.includes('tell me') || msg.includes('explain') || msg.includes('how does it work') || msg.includes('what happens')) {
-    return 'This is an exciting Singles Zoom Meetup - a fun virtual speed dating event for Indian vegetarian singles in California! You\'ll meet 10 verified singles (10 males, 10 females) in a 1-hour moderated Zoom call. It\'s on March 15, 2026 at 10 AM PDT. Only $25 to register - don\'t miss out!'
+    return 'This is an exciting Singles Zoom Meetup - a fun virtual speed dating event for Indian vegetarian and eggetarian singles in California! You\'ll meet 10 verified singles (10 males, 10 females) in a 1-hour moderated Zoom call. It\'s on March 15, 2026 at 10 AM PDT. Only $25 to register - don\'t miss out!'
   }
 
   // Pricing questions (but not "how to pay")
   if (msg.includes('price') || msg.includes('cost') || msg.includes('fee') || msg.includes('how much') || msg.includes('charg') || msg.includes('dollar') || msg.includes('$25') || msg.includes('money')) {
-    return 'Just $25 to register! This covers event organization, Zoom hosting, participant verification, and personal moderation by our founder. It\'s a small investment for a chance to meet your perfect match! Full refund available if you cancel 48+ hours before the event.'
+    return 'Just $25 to register! This covers event organization, Zoom hosting, participant verification, and personal moderation by our founder. It\'s a small investment for a chance to meet your perfect match! Full refund available if you cancel 7+ days before the event.'
   }
 
   if (msg.includes('date') || msg.includes('when') || msg.includes('time')) {
@@ -216,11 +216,12 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('eligible') || msg.includes('requirement') || msg.includes('who can')) {
-    return 'To join this exclusive event, you must be: 29-35 years old, a California resident, vegetarian, and a US Citizen with a complete VivaahReady profile. If you meet these criteria, you\'re perfect for this event - register now!'
+    return 'To join this exclusive event, you must be: 28-35 years old, vegetarian or eggetarian, with a complete VivaahReady profile. If you meet these criteria, you\'re perfect for this event - register now!'
   }
 
   if (msg.includes('refund') || msg.includes('cancel')) {
-    return "We offer a full refund if you cancel 48+ hours before the event - no questions asked! To cancel, use the 'Talk to Support' button. But we hope you'll join us - it's going to be a fantastic event!"
+    return "We offer a full refund if you cancel 7+ days before the event - no questions asked! To cancel, use the 'Talk to Support' button. But we hope you'll join us - it's going to be a fantastic event!"
+
   }
 
   if (msg.includes('zoom') || msg.includes('link') || msg.includes('join')) {
@@ -232,7 +233,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('vegetarian') || msg.includes('veg') || msg.includes('diet')) {
-    return 'Yes! This event is exclusively for vegetarians - meet singles who share your dietary values and lifestyle! It\'s a unique opportunity to connect with like-minded people. Register now!'
+    return 'Yes! This event is for vegetarians and eggetarians - meet singles who share your dietary values and lifestyle! It\'s a unique opportunity to connect with like-minded people. Register now!'
   }
 
   // Privacy-related questions - do not disclose registration numbers or participant identities
@@ -266,5 +267,5 @@ function getFallbackResponse(message: string): string {
   }
 
   // Default response
-  return "Great question! I'm here to help with anything about this Singles Zoom Meetup - eligibility, registration, pricing, or the event itself. This is a fantastic opportunity to meet verified vegetarian singles from California. Register now for just $25!"
+  return "Great question! I'm here to help with anything about this Singles Zoom Meetup - eligibility, registration, pricing, or the event itself. This is a fantastic opportunity to meet verified vegetarian and eggetarian singles from California. Register now for just $25!"
 }

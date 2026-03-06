@@ -40,7 +40,7 @@ const EVENT_CONFIG = {
   price: MARCH_EVENT_CONFIG.priceDollars,
   maxSeats: 20,
   minAttendees: 12,
-  minAge: 30,
+  minAge: 28,
   maxAge: 35,
   location: 'California',
   dietary: 'Vegetarian',
@@ -728,7 +728,7 @@ export default function MarchEventPage() {
                 </button>
 
                 <p className="text-xs text-gray-500">
-                  Registration closes 48 hours before the event
+                  Registration closes 7 days before the event
                 </p>
               </div>
             )}
@@ -941,7 +941,7 @@ export default function MarchEventPage() {
             Ready to meet someone great?
           </h2>
           <p className="text-gray-400 mb-8">
-            20 seats max. Registration closes 48 hours before the event.
+            20 seats max. Registration closes 7 days before the event.
           </p>
 
           {!registrationStatus?.isRegistered && !registrationStatus?.isWaitlisted && !isEventPast && (
