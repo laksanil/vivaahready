@@ -36,10 +36,8 @@ WHY $25 IS WORTH IT:
 - Full refund if you cancel 7+ days before
 
 ELIGIBILITY:
-- Age: 28-35 years old
-- Location: California resident
+- Age: We're targeting 28-35 year olds, but it's not a strict cutoff. If you're slightly outside this range, you're still welcome to register! However, you'll only be invited to the event if we have matching profiles in your age group.
 - Diet: Vegetarian or Eggetarian
-- Citizenship: US Citizen
 - Profile: Complete VivaahReady profile
 
 CAPACITY:
@@ -164,7 +162,7 @@ function getFallbackResponse(message: string): string {
   if (msg.includes('not able to register') || msg.includes('cannot register') || msg.includes('can\'t register') ||
       msg.includes('unable to register') || msg.includes('registration not working') || msg.includes('won\'t let me register') ||
       msg.includes('problem register') || msg.includes('issue register') || msg.includes('error register')) {
-    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 28-35, vegetarian or eggetarian. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
+    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: around ages 28-35 (flexible), vegetarian or eggetarian. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
   }
 
   // Zoom link specific questions
@@ -215,8 +213,12 @@ function getFallbackResponse(message: string): string {
     return 'Mark your calendar! The Singles Zoom Meetup is on April 5, 2026 at 11:00 AM PST. It\'s just 1 hour of your time that could change your life! Register now before spots fill up.'
   }
 
+  if (msg.includes('age') || msg.includes('old') || msg.includes('years') || msg.includes('young') || msg.includes('older') || msg.includes('younger')) {
+    return 'We\'re targeting ages 28-35 for this event, but it\'s not a strict cutoff! If you\'re slightly outside this range, you\'re still welcome to register. Just keep in mind that you\'ll only be invited to the event if we have matching profiles in your age group. So go ahead and sign up - we\'ll do our best to match you!'
+  }
+
   if (msg.includes('eligible') || msg.includes('requirement') || msg.includes('who can')) {
-    return 'To join this exclusive event, you must be: 28-35 years old, vegetarian or eggetarian, with a complete VivaahReady profile. If you meet these criteria, you\'re perfect for this event - register now!'
+    return 'To join this event: be around 28-35 years old (not strict - slightly outside is fine!), vegetarian or eggetarian, with a complete VivaahReady profile. The age range is a target, not a hard cutoff - you\'ll be invited if we have matching profiles for you. Register now!'
   }
 
   if (msg.includes('refund') || msg.includes('cancel')) {
