@@ -28,36 +28,6 @@ function calculateAge(dateOfBirth: string): number {
   return age
 }
 
-// Helper to check if location is in California using zip code
-function isCaliforniaResident(zipCode: string | null): boolean {
-  if (!zipCode) return false
-
-  const zip = zipCode.trim()
-
-  // California zip codes range from 90001 to 96162
-  if (zip.length === 5 && /^\d{5}$/.test(zip)) {
-    const zipNum = parseInt(zip)
-    if (zipNum >= 90001 && zipNum <= 96162) {
-      return true
-    }
-  }
-
-  return false
-}
-
-// Helper to check if user is US Citizen
-function isUSCitizen(citizenship: string | null): boolean {
-  if (!citizenship) return false
-
-  const status = citizenship.toLowerCase()
-  // Only accept US Citizens
-  return (
-    status.includes('us citizen') ||
-    status === 'citizen' ||
-    status.includes('american citizen') ||
-    status.includes('united states citizen')
-  )
-}
 
 export async function POST(request: Request) {
   try {
@@ -83,17 +53,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const hasRequiredEventData =
-      !!profile.dateOfBirth &&
-      !!profile.zipCode &&
-      !!profile.dietaryPreference &&
-      !!profile.citizenship &&
-      (profile.gender === 'male' || profile.gender === 'female')
+    const missingFields: string[] = []
+    if (!profile.dateOfBirth) missingFields.push('date of birth')
+    if (!profile.dietaryPreference) missingFields.push('dietary preference')
+    if (profile.gender !== 'male' && profile.gender !== 'female') missingFields.push('gender')
 
-    if (!hasRequiredEventData) {
+    if (missingFields.length > 0) {
       return NextResponse.json(
         {
-          error: 'Please add date of birth, ZIP code, dietary preference, citizenship, and gender in your profile before registering.',
+          error: `Please add ${missingFields.join(', ')} in your profile before registering.`,
         },
         { status: 400 }
       )
@@ -108,23 +76,10 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!isCaliforniaResident(profile.zipCode)) {
+    const diet = profile.dietaryPreference?.toLowerCase()
+    if (diet !== 'vegetarian' && diet !== 'eggetarian') {
       return NextResponse.json(
-        { error: 'This event is only for California residents' },
-        { status: 400 }
-      )
-    }
-
-    if (profile.dietaryPreference?.toLowerCase() !== 'vegetarian') {
-      return NextResponse.json(
-        { error: 'This event is exclusively for vegetarians' },
-        { status: 400 }
-      )
-    }
-
-    if (!isUSCitizen(profile.citizenship)) {
-      return NextResponse.json(
-        { error: 'This event is only for US Citizens' },
+        { error: 'This event is exclusively for vegetarians and eggetarians' },
         { status: 400 }
       )
     }

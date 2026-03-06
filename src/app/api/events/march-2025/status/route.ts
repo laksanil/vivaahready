@@ -27,37 +27,6 @@ function calculateAge(dateOfBirth: string): number {
   return age
 }
 
-// Helper to check if location is in California using zip code
-function isCaliforniaResident(zipCode: string | null): boolean {
-  if (!zipCode) return false
-
-  const zip = zipCode.trim()
-
-  // California zip codes range from 90001 to 96162
-  if (zip.length === 5 && /^\d{5}$/.test(zip)) {
-    const zipNum = parseInt(zip)
-    // California zip codes: 90001-96162
-    if (zipNum >= 90001 && zipNum <= 96162) {
-      return true
-    }
-  }
-
-  return false
-}
-
-// Helper to check if user is US Citizen
-function isUSCitizen(citizenship: string | null): boolean {
-  if (!citizenship) return false
-
-  const status = citizenship.toLowerCase()
-  // Only accept US Citizens
-  return (
-    status.includes('us citizen') ||
-    status === 'citizen' ||
-    status.includes('american citizen') ||
-    status.includes('united states citizen')
-  )
-}
 
 export async function GET() {
   try {
@@ -123,9 +92,7 @@ export async function GET() {
       reason?: string
       profileComplete: boolean
       ageEligible: boolean
-      locationEligible: boolean
       dietEligible: boolean
-      citizenshipEligible: boolean
     } | undefined
 
     if (session?.user?.id) {
@@ -153,31 +120,24 @@ export async function GET() {
         const profileComplete = userProfile.signupStep >= 9
         const age = userProfile.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : null
         const ageEligible = age !== null && age >= EVENT_CONFIG.minAge && age <= EVENT_CONFIG.maxAge
-        const locationEligible = isCaliforniaResident(userProfile.zipCode)
-        const dietEligible = userProfile.dietaryPreference?.toLowerCase() === 'vegetarian'
-        const citizenshipEligible = isUSCitizen(userProfile.citizenship)
+        const diet = userProfile.dietaryPreference?.toLowerCase()
+        const dietEligible = diet === 'vegetarian' || diet === 'eggetarian'
 
         let reason: string | undefined
         if (!profileComplete) {
           reason = 'Please complete your profile to register for this event.'
         } else if (!ageEligible) {
           reason = `This event is only for ages ${EVENT_CONFIG.minAge}-${EVENT_CONFIG.maxAge}.`
-        } else if (!locationEligible) {
-          reason = 'This event is only for California residents.'
         } else if (!dietEligible) {
-          reason = 'This event is exclusively for vegetarians.'
-        } else if (!citizenshipEligible) {
-          reason = 'This event is only for US Citizens.'
+          reason = 'This event is exclusively for vegetarians and eggetarians.'
         }
 
         userEligibility = {
-          eligible: profileComplete && ageEligible && locationEligible && dietEligible && citizenshipEligible,
+          eligible: profileComplete && ageEligible && dietEligible,
           reason,
           profileComplete,
           ageEligible,
-          locationEligible,
           dietEligible,
-          citizenshipEligible,
         }
       } else {
         // No profile yet
@@ -186,9 +146,7 @@ export async function GET() {
           reason: 'Please create your profile to register for this event.',
           profileComplete: false,
           ageEligible: false,
-          locationEligible: false,
           dietEligible: false,
-          citizenshipEligible: false,
         }
       }
     }

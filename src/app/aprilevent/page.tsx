@@ -150,7 +150,6 @@ export default function MarchEventPage() {
       reason?: string
       profileComplete: boolean
       ageEligible: boolean
-      locationEligible: boolean
       dietEligible: boolean
     }
   } | null>(null)
