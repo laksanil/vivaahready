@@ -223,12 +223,6 @@ export default function MarchEventPage() {
       return
     }
 
-    // If status says profile is incomplete, send user to the profile completion flow.
-    if (registrationStatus?.userEligibility?.profileComplete === false) {
-      router.push('/profile/complete?returnTo=/aprilevent')
-      return
-    }
-
     // Proceed to registration - let the API handle eligibility checks
     setRegistering(true)
     setError(null)

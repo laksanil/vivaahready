@@ -64,6 +64,8 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
       '/pricing',
       '/get-verified',
       '/search',
+      '/aprilevent',
+      '/aprilevent/payment',
       '/',
     ]
 

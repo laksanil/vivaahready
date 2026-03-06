@@ -208,9 +208,12 @@ function DashboardContent() {
   useEffect(() => {
     if (status !== 'authenticated' || isAdminView || !hasProfile) return
 
+    let active = true
+
     fetch('/api/profile/completion-status')
       .then(res => res.json())
       .then(data => {
+        if (!active) return
         if (!data.hasProfile) return
 
         if (data.signupStep < 8) {
@@ -223,6 +226,10 @@ function DashboardContent() {
         }
       })
       .catch(() => {})
+
+    return () => {
+      active = false
+    }
   }, [status, isAdminView, hasProfile, router])
 
   // Clean up orphaned signupFormData
