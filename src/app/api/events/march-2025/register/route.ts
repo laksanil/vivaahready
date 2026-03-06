@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     const missingFields: string[] = []
-    if (!profile.dateOfBirth) missingFields.push('date of birth')
+    if (!profile.dateOfBirth && !profile.age) missingFields.push('date of birth or age')
     if (!profile.dietaryPreference) missingFields.push('dietary preference')
     if (profile.gender !== 'male' && profile.gender !== 'female') missingFields.push('gender')
 
@@ -67,8 +67,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check eligibility
-    const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : null
+    // Check eligibility - use dateOfBirth if available, otherwise fall back to age field
+    const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : profile.age
     if (!age || age < EVENT_CONFIG.minAge || age > EVENT_CONFIG.maxAge) {
       return NextResponse.json(
         { error: `This event is only for ages ${EVENT_CONFIG.minAge}-${EVENT_CONFIG.maxAge}` },

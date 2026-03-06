@@ -118,7 +118,7 @@ export async function GET() {
 
         // Check eligibility
         const profileComplete = userProfile.signupStep >= 9
-        const age = userProfile.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : null
+        const age = userProfile.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : userProfile.age
         const ageEligible = age !== null && age >= EVENT_CONFIG.minAge && age <= EVENT_CONFIG.maxAge
         const diet = userProfile.dietaryPreference?.toLowerCase()
         const dietEligible = diet === 'vegetarian' || diet === 'eggetarian'
