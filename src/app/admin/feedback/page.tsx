@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
-import { Loader2, Star, Search, ChevronLeft, ChevronRight, MessageSquare, Eye, X, Phone, ExternalLink, Download, ShieldCheck, Users, BarChart3, Copy } from 'lucide-react'
+import { Loader2, Star, Search, ChevronLeft, ChevronRight, MessageSquare, Eye, X, Phone, ExternalLink, Download, ShieldCheck, Users, BarChart3, Copy, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { maskPhone } from '@/lib/phone'
+import { adminLinks } from '@/lib/adminLinks'
 
 type FeedbackEntry = {
   id: string
@@ -369,6 +370,15 @@ function AdminFeedbackContent() {
                             <Eye className="h-4 w-4" />
                             View
                           </button>
+                          <Link
+                            href={adminLinks.editProfile(fb.userId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-gray-900 text-sm flex items-center gap-1"
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                            Profile
+                          </Link>
                           <Link
                             href={`/admin/feedback/${fb.id}`}
                             className="text-gray-600 hover:text-gray-900 text-sm"
