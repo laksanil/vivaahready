@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       where: { id: 'default' },
       create: {
         id: 'default',
-        verificationPrice: verificationPrice || 50,
+        verificationPrice: verificationPrice || 100,
         promoPrice: promoPrice || null,
         promoEndDate: promoEndDate ? new Date(promoEndDate) : null,
       },
