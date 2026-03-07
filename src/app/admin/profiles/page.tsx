@@ -447,6 +447,7 @@ function AdminProfilesContent() {
         { key: 'progress', label: 'Progress' },
         { key: 'missing', label: 'Missing Fields' },
         { key: 'created', label: 'Created' },
+        { key: 'lastLogin', label: 'Last Login' },
         { key: 'actions', label: 'Actions' },
       ]
     }
@@ -676,6 +677,9 @@ function AdminProfilesContent() {
           </td>
           <td className="px-4 py-3 text-sm text-gray-600">
             {formatDate(profile.createdAt)}
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {profile.user.lastLogin ? formatRelativeDate(profile.user.lastLogin) : 'Never'}
           </td>
           <td className="px-4 py-3">
             {isLoading ? (
@@ -1029,7 +1033,7 @@ function AdminProfilesContent() {
       )}
 
       {loading ? (
-        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 7 : activeTab === 'no_profile' ? 7 : 8} />
+        <AdminTableSkeleton rows={10} columns={activeTab === 'deletions' ? 7 : activeTab === 'incomplete' ? 8 : activeTab === 'no_profile' ? 7 : 8} />
       ) : profiles.length === 0 ? (
         <AdminEmptyState
           icon={activeTab === 'deletions' ? <Trash2 className="h-12 w-12" /> : activeTab === 'incomplete' ? <AlertTriangle className="h-12 w-12" /> : activeTab === 'no_profile' ? <User className="h-12 w-12" /> : <Users className="h-12 w-12" />}
