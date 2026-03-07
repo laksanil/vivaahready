@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
-import { Loader2, Star, Search, ChevronLeft, ChevronRight, MessageSquare, Eye, X, Phone, ExternalLink, Download, ShieldCheck, Users, BarChart3, Copy, Edit } from 'lucide-react'
+import { Loader2, Star, Search, ChevronLeft, ChevronRight, MessageSquare, Eye, X, Phone, ExternalLink, Download, ShieldCheck, Users, BarChart3, Copy, Edit, Mail, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { maskPhone } from '@/lib/phone'
@@ -124,6 +124,11 @@ function AdminFeedbackContent() {
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackEntry | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [replyModal, setReplyModal] = useState<{ isOpen: boolean; feedback: FeedbackEntry | null }>({ isOpen: false, feedback: null })
+  const [replySubject, setReplySubject] = useState('')
+  const [replyMessage, setReplyMessage] = useState('')
+  const [replySending, setReplySending] = useState(false)
+  const [replyResult, setReplyResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const fetchFeedbacks = useCallback(async () => {
     setLoading(true)
@@ -192,6 +197,40 @@ function AdminFeedbackContent() {
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  const openReplyModal = (fb: FeedbackEntry) => {
+    setReplyModal({ isOpen: true, feedback: fb })
+    setReplySubject(`Re: Your feedback on VivaahReady`)
+    setReplyMessage('')
+    setReplyResult(null)
+  }
+
+  const handleSendReply = async () => {
+    if (!replyModal.feedback || !replySubject.trim() || !replyMessage.trim()) return
+    setReplySending(true)
+    setReplyResult(null)
+    try {
+      const res = await fetch('/api/admin/feedback/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedbackId: replyModal.feedback.id,
+          subject: replySubject,
+          message: replyMessage,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setReplyResult({ success: true, message: `Email sent to ${data.sentTo}` })
+      } else {
+        setReplyResult({ success: false, message: data.error || 'Failed to send' })
+      }
+    } catch {
+      setReplyResult({ success: false, message: 'Failed to send email' })
+    } finally {
+      setReplySending(false)
+    }
   }
 
   const parseJson = (str: string | null): any => {
@@ -369,6 +408,13 @@ function AdminFeedbackContent() {
                           >
                             <Eye className="h-4 w-4" />
                             View
+                          </button>
+                          <button
+                            onClick={() => openReplyModal(fb)}
+                            className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-1"
+                          >
+                            <Mail className="h-4 w-4" />
+                            Reply
                           </button>
                           <Link
                             href={adminLinks.editProfile(fb.userId)}
@@ -610,6 +656,85 @@ function AdminFeedbackContent() {
                   )}
                   <p className="font-mono">Feedback ID: {selectedFeedback.id}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Reply Modal */}
+      {replyModal.isOpen && replyModal.feedback && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setReplyModal({ isOpen: false, feedback: null })}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-green-600" />
+                  Reply to {replyModal.feedback.userName || 'User'}
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Send email response to feedback
+                </p>
+              </div>
+              <button onClick={() => setReplyModal({ isOpen: false, feedback: null })} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              {/* Original feedback context */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Original Feedback</p>
+                <p className="text-sm text-gray-700">{replyModal.feedback.summaryText || `${replyModal.feedback.primaryIssue} - ${replyModal.feedback.overallStars}/5 stars`}</p>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <input
+                  type="text"
+                  value={replySubject}
+                  onChange={(e) => setReplySubject(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              {/* Message */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  rows={10}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-y"
+                  placeholder="Type your reply..."
+                />
+              </div>
+
+              {/* Result */}
+              {replyResult && (
+                <div className={`rounded-lg px-4 py-3 text-sm ${replyResult.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                  {replyResult.message}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setReplyModal({ isOpen: false, feedback: null })}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendReply}
+                  disabled={replySending || !replySubject.trim() || !replyMessage.trim()}
+                  className="px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium flex items-center gap-2 disabled:opacity-50"
+                >
+                  {replySending ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</>
+                  ) : (
+                    <><Send className="h-4 w-4" /> Send Email</>
+                  )}
+                </button>
               </div>
             </div>
           </div>
