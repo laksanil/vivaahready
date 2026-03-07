@@ -28,7 +28,7 @@ export async function GET() {
       settings = await prisma.settings.create({
         data: {
           id: 'default',
-          verificationPrice: 50,
+          verificationPrice: 100,
         },
       })
     }

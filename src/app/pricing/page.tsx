@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PRICING, isPromoActive, getPromoTimeRemaining } from '@/lib/pricing'
+import { PRICING } from '@/lib/pricing'
 import {
   Shield,
   Users,
@@ -14,7 +14,6 @@ import {
   ArrowRight,
   MessageCircle,
   BadgeCheck,
-  Clock,
 } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -29,26 +28,6 @@ export const metadata: Metadata = {
 
 // Pricing display component
 function PricingDisplay() {
-  const promoActive = isPromoActive()
-  const timeRemaining = getPromoTimeRemaining()
-
-  if (promoActive && timeRemaining) {
-    return (
-      <div className="inline-block">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <span className="text-2xl text-stone-400 line-through">${PRICING.regularPrice}</span>
-          <span className="text-4xl font-bold text-primary-600">${PRICING.currentPrice}</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 text-sm text-stone-600">
-          <Clock className="h-4 w-4" />
-          <span>
-            {PRICING.promo.name} ends in {timeRemaining.days} days
-          </span>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <span className="text-4xl font-bold text-stone-900">${PRICING.regularPrice}</span>
   )

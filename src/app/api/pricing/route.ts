@@ -21,9 +21,9 @@ export async function GET() {
     // Default if no settings exist
     if (!settings) {
       return NextResponse.json({
-        price: 50,
+        price: 100,
         isPromo: false,
-        regularPrice: 50,
+        regularPrice: 100,
       })
     }
 

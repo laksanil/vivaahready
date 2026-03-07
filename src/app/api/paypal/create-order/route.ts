@@ -14,7 +14,7 @@ async function getCurrentPrice(): Promise<number> {
       where: { id: 'default' },
     })
 
-    if (!settings) return 50
+    if (!settings) return 100
 
     const now = new Date()
     if (settings.promoPrice && settings.promoEndDate && new Date(settings.promoEndDate) > now) {
@@ -23,7 +23,7 @@ async function getCurrentPrice(): Promise<number> {
 
     return settings.verificationPrice
   } catch {
-    return 50
+    return 100
   }
 }
 

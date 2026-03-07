@@ -19,7 +19,7 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState(false)
 
   // Form state
-  const [verificationPrice, setVerificationPrice] = useState(50)
+  const [verificationPrice, setVerificationPrice] = useState(100)
   const [promoPrice, setPromoPrice] = useState<string>('')
   const [promoEndDate, setPromoEndDate] = useState<string>('')
 
