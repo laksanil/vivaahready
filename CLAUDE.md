@@ -366,6 +366,29 @@ To prevent conflicts on critical files, use explicit locks in the worklog:
 
 ---
 
+## Blog Content Rules
+
+When creating or editing blog posts, ALWAYS follow these rules:
+
+### URL Format
+- Blog post slugs must NOT contain hyphens
+- Use concatenated lowercase words: `/blog/indianmatchmakingusa` not `/blog/indian-matchmaking-usa`
+- This applies to new posts only. Existing posts keep their current URLs.
+
+### Images
+- ONLY use images of South Asian people and families
+- Images must be contextually relevant to the blog topic
+- If relevant South Asian images cannot be found, do NOT add any images — leave the post without images rather than using irrelevant stock photos
+- Search Pexels/Unsplash/Pixabay with terms like "Indian family", "South Asian couple", "Indian wedding", "desi family" etc.
+
+### Writing Style
+- Write in a natural, human voice — like a friend sharing their experience
+- Avoid AI-detectable patterns: no "in today's world", "navigating the landscape", "it's important to note"
+- Use Lakshmi's founder perspective where appropriate
+- Keep it conversational and personal
+
+---
+
 ## Code Standards
 
 ### TypeScript
