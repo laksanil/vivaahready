@@ -61,7 +61,6 @@ export function ProfileCompletionGuard({ children }: { children: React.ReactNode
       '/privacy',
       '/terms',
       '/success-stories',
-      '/pricing',
       '/get-verified',
       '/search',
       '/aprilevent',

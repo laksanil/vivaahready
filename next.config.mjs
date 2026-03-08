@@ -4,6 +4,15 @@ const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === 'true'
 const nextConfig = {
   // Keep E2E dev-server artifacts isolated from local dev/build output.
   ...(isPlaywrightTest ? { distDir: '.next-e2e' } : {}),
+  async redirects() {
+    return [
+      {
+        source: '/pricing',
+        destination: '/get-verified',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {
