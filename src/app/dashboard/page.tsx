@@ -368,16 +368,25 @@ function DashboardContent() {
   }, [isApproved])
 
   // Show profile feedback popup once for users who haven't given feedback yet.
-  // Marks as shown immediately so it never appears again, even if dismissed without submitting.
+  // Checks server-side so it works across browsers/devices and survives localStorage clears.
   useEffect(() => {
     if (!hasProfile || typeof window === 'undefined') return
     if (localStorage.getItem('vivaah_profile_feedback_given')) return
 
-    const timer = setTimeout(() => {
-      localStorage.setItem('vivaah_profile_feedback_given', 'true')
-      setShowProfileFeedback(true)
-    }, 2000)
-    return () => clearTimeout(timer)
+    fetch('/api/feedback/status')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.hasGivenFeedback) {
+          localStorage.setItem('vivaah_profile_feedback_given', 'true')
+          return
+        }
+        const timer = setTimeout(() => {
+          localStorage.setItem('vivaah_profile_feedback_given', 'true')
+          setShowProfileFeedback(true)
+        }, 2000)
+        return () => clearTimeout(timer)
+      })
+      .catch(() => {})
   }, [hasProfile])
 
   // Check event registration status
