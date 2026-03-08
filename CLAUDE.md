@@ -381,11 +381,38 @@ When creating or editing blog posts, ALWAYS follow these rules:
 - If relevant South Asian images cannot be found, do NOT add any images — leave the post without images rather than using irrelevant stock photos
 - Search Pexels/Unsplash/Pixabay with terms like "Indian family", "South Asian couple", "Indian wedding", "desi family" etc.
 
-### Writing Style
-- Write in a natural, human voice — like a friend sharing their experience
-- Avoid AI-detectable patterns: no "in today's world", "navigating the landscape", "it's important to note"
-- Use Lakshmi's founder perspective where appropriate
-- Keep it conversational and personal
+### Writing Style — MUST READ AS HUMAN-WRITTEN
+This is the most important rule. Every blog post must pass as written by a real person. No exceptions.
+
+**Voice**: Write like Lakshmi (founder) talking to a friend over chai. Real opinions, real stories, occasional humor. Not a content marketer writing SEO copy.
+
+**Banned phrases** (these are instant AI tells — NEVER use them):
+- "In today's world", "In today's digital age", "In the ever-evolving"
+- "Navigating the landscape", "Navigate the complexities"
+- "It's important to note", "It's worth mentioning"
+- "Let's dive in", "Let's explore", "Let's take a closer look"
+- "Whether you're... or...", "From X to Y"
+- "At the end of the day", "When it comes to"
+- "This comprehensive guide", "In this article, we will"
+- "Leverage", "Empower", "Unlock", "Elevate"
+- "Game-changer", "Revolutionize", "Seamlessly"
+- "Holistic approach", "Robust", "Cutting-edge"
+- "Foster meaningful connections" (or any "foster" + abstract noun)
+
+**Sentence structure**:
+- Vary sentence length. Mix short punchy sentences with longer ones.
+- Start some sentences with "And", "But", "So" — real people do this.
+- Use contractions: "don't", "can't", "it's", "we're"
+- Use first person ("I", "we") and second person ("you") freely
+- Include specific details and anecdotes, not generic statements
+- It's OK to be opinionated. Take a stance instead of hedging everything.
+
+**Paragraph structure**:
+- Keep paragraphs short (2-4 sentences max)
+- No walls of text
+- Break up with subheadings, but make them sound natural, not like keyword-stuffed SEO headers
+
+**Test**: Before publishing, read the post out loud. If any sentence sounds like it came from a corporate blog or a language model, rewrite it.
 
 ---
 
