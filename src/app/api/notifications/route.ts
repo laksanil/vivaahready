@@ -22,7 +22,8 @@ async function ensureRecentWelcomeNotification(userId: string): Promise<void> {
     return
   }
 
-  if (Date.now() - profile.createdAt.getTime() > WELCOME_BACKFILL_WINDOW_MS) {
+  // Backfill welcome notifications for profiles created within the last 30 days
+  if (Date.now() - profile.createdAt.getTime() > 30 * 24 * 60 * 60 * 1000) {
     return
   }
 

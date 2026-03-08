@@ -136,15 +136,27 @@ export async function PATCH(
             select: { firstName: true }
           })
 
+          const senderName = senderProfile?.firstName || 'there'
+          const receiverName = receiverProfile?.firstName || 'Someone'
+
           if (match.sender.phone) {
-            const senderName = senderProfile?.firstName || 'there'
-            const receiverName = receiverProfile?.firstName || 'Someone'
             await sendMatchAcceptedSms(
               formatPhoneNumber(match.sender.phone),
               senderName,
               receiverName
             )
           }
+
+          // In-app notification for mutual match (to the original sender)
+          await prisma.notification.create({
+            data: {
+              userId: match.senderId,
+              type: 'mutual_match',
+              title: "It's a Mutual Match!",
+              body: `${receiverName} has also expressed interest in you. You can now connect!`,
+              url: '/connections',
+            },
+          })
         } catch (smsError) {
           console.error('Failed to send mutual match SMS:', smsError)
         }
@@ -174,15 +186,27 @@ export async function PATCH(
           select: { firstName: true }
         })
 
-        if (match.sender.phone) {
-          const senderName = senderProfile?.firstName || 'there'
+        const senderName = senderProfile?.firstName || 'there'
           const receiverName = receiverProfile?.firstName || 'Someone'
-          await sendMatchAcceptedSms(
-            formatPhoneNumber(match.sender.phone),
-            senderName,
-            receiverName
-          )
-        }
+
+          if (match.sender.phone) {
+            await sendMatchAcceptedSms(
+              formatPhoneNumber(match.sender.phone),
+              senderName,
+              receiverName
+            )
+          }
+
+          // In-app notification for interest accepted (to the original sender)
+          await prisma.notification.create({
+            data: {
+              userId: match.senderId,
+              type: 'interest_accepted',
+              title: 'Interest Accepted!',
+              body: `${receiverName} has accepted your interest. Express your interest back to connect!`,
+              url: '/matches?type=received',
+            },
+          })
       } catch (smsError) {
         console.error('Failed to send match accepted SMS:', smsError)
       }

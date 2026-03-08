@@ -248,6 +248,17 @@ async function notifyMatchingUsers(approvedProfiles: any[]) {
             1
           )
 
+          // Create in-app notification for new match
+          await prisma.notification.create({
+            data: {
+              userId: match.user.id,
+              type: 'new_match',
+              title: 'New Match Available!',
+              body: 'You have a new match waiting for you. Check your matches to see who it is!',
+              url: '/matches',
+            },
+          })
+
           // Update the user's last notification timestamp
           await prisma.user.update({
             where: { id: match.user.id },

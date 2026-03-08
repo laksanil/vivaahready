@@ -216,18 +216,30 @@ export async function POST(request: Request) {
         select: { profile: { select: { firstName: true } } }
       })
 
+      const senderName = sender?.profile?.firstName || 'Someone'
+
       if (receiver?.phone && receiver.phoneVerified) {
         const receiverName = receiver.profile?.firstName || 'there'
-        const senderName = sender?.profile?.firstName || 'Someone'
         await sendMatchNotificationSms(
           formatPhoneNumber(receiver.phone),
           receiverName,
           senderName
         )
       }
+
+      // Create in-app notification for receiver
+      await prisma.notification.create({
+        data: {
+          userId: receiverId,
+          type: 'new_interest',
+          title: 'New Interest Received!',
+          body: `${senderName} has expressed interest in your profile. Check it out!`,
+          url: '/matches?type=received',
+        },
+      })
     } catch (smsError) {
-      // Log but don't fail the match creation if SMS fails
-      console.error('Failed to send match notification SMS:', smsError)
+      // Log but don't fail the match creation if SMS/notification fails
+      console.error('Failed to send match notification:', smsError)
     }
 
     return NextResponse.json({ message: 'Interest sent successfully', match }, { status: 201 })
