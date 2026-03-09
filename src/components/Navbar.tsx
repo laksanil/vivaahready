@@ -148,7 +148,7 @@ export function Navbar() {
               Community
             </Link>
             {(session || isAdminViewMode) && (
-              <Link href="/dashboard" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+              <Link href={viewAsUser ? `/dashboard?viewAsUser=${viewAsUser}` : '/dashboard'} className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
                 Dashboard
               </Link>
             )}
@@ -253,7 +253,7 @@ export function Navbar() {
             {(session || isAdminViewMode) ? (
               <>
                 <Link
-                  href="/dashboard"
+                  href={viewAsUser ? `/dashboard?viewAsUser=${viewAsUser}` : '/dashboard'}
                   className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
