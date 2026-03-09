@@ -34,6 +34,7 @@ WHY $25 IS WORTH IT:
 - Safe, moderated environment
 - Could be your chance to meet your life partner!
 - Full refund if you cancel 7+ days before
+- We guarantee at least 2-3 profiles matching your preferences. If we can't find enough matches, we'll let you know ahead of time and refund your money.
 
 ELIGIBILITY:
 - Age: We're targeting 28-35 year olds, but it's not a strict cutoff. If you're slightly outside this range, you're still welcome to register! However, you'll only be invited to the event if we have matching profiles in your age group.
@@ -221,7 +222,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('refund') || msg.includes('cancel')) {
-    return "We offer a full refund if you cancel 7+ days before the event - no questions asked! To cancel, use the 'Talk to Support' button. But we hope you'll join us - it's going to be a fantastic event!"
+    return "We offer a full refund if you cancel 7+ days before the event - no questions asked! We also guarantee at least 2-3 matching profiles for you. If we can't find enough matches, we'll let you know ahead of time and refund your money. To cancel, use the 'Talk to Support' button."
 
   }
 

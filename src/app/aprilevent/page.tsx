@@ -45,7 +45,7 @@ const EVENT_CONFIG = {
   registrationDeadlineHours: 168,
 }
 const CANCELLATION_DEADLINE = new Date('2026-03-28T23:59:59-07:00')
-const CANCELLATION_DEADLINE_LABEL = 'March 28, 2026'
+const CANCELLATION_DEADLINE_LABEL = 'March 29, 2026'
 
 function CountdownTimer({ targetDate, compact = false }: { targetDate: Date; compact?: boolean }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -847,10 +847,14 @@ export default function MarchEventPage() {
         <div className="max-w-3xl mx-auto">
           <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
             <Shield className="w-8 h-8 text-green-600 mx-auto mb-3" />
-            <h3 className="font-semibold text-green-800 mb-2">Event Guarantee</h3>
-            <p className="text-green-700 text-sm">
+            <h3 className="font-semibold text-green-800 mb-2">Our Promise to You</h3>
+            <p className="text-green-700 text-sm mb-3">
               Event runs with a minimum of {EVENT_CONFIG.minAttendees} confirmed attendees.
-              If we don't reach the minimum, you'll receive a full refund.
+              If we don&apos;t reach the minimum, you&apos;ll receive a full refund.
+            </p>
+            <p className="text-green-700 text-sm">
+              We also ensure there are at least 2–3 profiles in the mixer that match your preferences.
+              If we can&apos;t find enough matching profiles for you, we&apos;ll let you know ahead of time and offer a full refund.
             </p>
           </div>
         </div>
@@ -865,13 +869,13 @@ export default function MarchEventPage() {
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-700">
-                  <strong>Cancel on or before March 28, 2026 (1 week before):</strong> Full refund
+                  <strong>Cancel on or before March 29, 2026 (1 week before):</strong> Full refund
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-700">
-                  <strong>After March 28, 2026:</strong> No cancellation or refund
+                  <strong>After March 29, 2026:</strong> No cancellation or refund
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -919,7 +923,11 @@ export default function MarchEventPage() {
             />
             <FAQItem
               question="What if I can't attend after registering?"
-              answer="Cancel on or before March 28, 2026 for a full refund. After March 28, cancellations and refunds are not available. If we cancel due to minimum attendance, you'll receive a full refund."
+              answer="Cancel on or before March 29, 2026 for a full refund. After March 29, cancellations and refunds are not available. If we cancel due to minimum attendance or can't find enough matching profiles for you, you'll receive a full refund."
+            />
+            <FAQItem
+              question="What if no one at the event matches my preferences?"
+              answer="We review all registrations and ensure there are at least 2–3 profiles in the mixer that match your preferences. If we can't find enough matching profiles for you, we'll let you know ahead of time and offer a full refund — so you never pay for an event that isn't a good fit."
             />
             <FAQItem
               question="Do I need a full VivaahReady profile?"
