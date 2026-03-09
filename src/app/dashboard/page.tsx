@@ -983,7 +983,7 @@ function DashboardContent() {
 
       {/* Profile Feedback Popup */}
       {showProfileFeedback && (
-        <ProfileFeedbackPopup onClose={() => setShowProfileFeedback(false)} />
+        <ProfileFeedbackPopup storageKey="dashboard_feedback_dismissed" onClose={() => setShowProfileFeedback(false)} />
       )}
       </div>
   )
