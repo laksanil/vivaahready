@@ -285,12 +285,12 @@ function EventPaymentContent() {
             </div>
             <div>
               <h2 className="text-lg font-bold">Singles Zoom Mixer</h2>
-              <p className="text-purple-200 text-sm">Vegetarian Edition</p>
+              <p className="text-purple-200 text-sm">April Edition</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-purple-100">
             <Calendar className="h-4 w-4" />
-            <span>April 5, 2026 &bull; 11:00 AM PST &bull; Ages 30-35</span>
+            <span>April 5, 2026 &bull; 11:00 AM PST &bull; Ages 28-35</span>
           </div>
         </div>
 

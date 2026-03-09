@@ -147,6 +147,11 @@ export function Navbar() {
             <Link href="/community" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
               Community
             </Link>
+            {(session || isAdminViewMode) && (
+              <Link href="/dashboard" className="text-white/90 hover:text-white text-sm font-medium transition-colors px-2">
+                Dashboard
+              </Link>
+            )}
 
             {status === 'loading' && !isAdminViewMode ? (
               <div className="h-8 w-8 rounded-full bg-white/30 animate-pulse" />
@@ -247,6 +252,13 @@ export function Navbar() {
 
             {(session || isAdminViewMode) ? (
               <>
+                <Link
+                  href="/dashboard"
+                  className="block text-gray-700 hover:text-primary-600 hover:bg-gray-50 font-medium py-2 px-3 rounded-lg"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
                 <hr className="my-2 border-gray-100" />
                 {!isAdminViewMode && (
                   <button

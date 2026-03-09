@@ -674,7 +674,7 @@ function DashboardContent() {
                         <h3 className="text-base font-semibold text-white">Singles Zoom Mixer</h3>
                         <span className="text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">$25</span>
                       </div>
-                      <p className="text-sm text-purple-100">April 5 &bull; Vegetarian Edition &bull; Ages 28-35 &bull; California</p>
+                      <p className="text-sm text-purple-100">April 5 &bull; April Edition &bull; Ages 28-35</p>
                     </div>
                   </div>
                   <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-purple-700 rounded-lg text-sm font-semibold group-hover:bg-purple-50 transition-colors">

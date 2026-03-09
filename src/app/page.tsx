@@ -237,7 +237,7 @@ export default async function HomePage() {
                     </div>
                     <p className="text-xs sm:text-sm text-purple-200 flex items-center gap-1.5 mt-0.5">
                       <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                      April 5, 2026 &bull; Vegetarian Edition &bull; Ages 28-35 &bull; California
+                      April 5, 2026 &bull; April Edition &bull; Ages 28-35
                     </p>
                   </div>
                 </div>
