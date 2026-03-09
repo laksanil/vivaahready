@@ -34,7 +34,7 @@ import {
 // Event configuration
 const EVENT_CONFIG = {
   title: 'Singles Zoom Mixer',
-  subtitle: 'Vegetarian Edition',
+  subtitle: 'April Edition',
   date: getMarchEventDate(),
   duration: '90-120',
   price: MARCH_EVENT_CONFIG.priceDollars,
@@ -42,8 +42,6 @@ const EVENT_CONFIG = {
   minAttendees: 12,
   minAge: 28,
   maxAge: 35,
-  location: 'California',
-  dietary: 'Vegetarian',
   registrationDeadlineHours: 168,
 }
 const CANCELLATION_DEADLINE = new Date('2026-03-28T23:59:59-07:00')
@@ -150,7 +148,6 @@ export default function MarchEventPage() {
       reason?: string
       profileComplete: boolean
       ageEligible: boolean
-      dietEligible: boolean
     }
   } | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(false)
@@ -297,8 +294,8 @@ export default function MarchEventPage() {
           <div className="text-center">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 px-4 py-2 rounded-full text-sm mb-6">
-              <Leaf className="w-4 h-4" />
-              Indian Vegetarian Singles in California
+              <Heart className="w-4 h-4" />
+              Indian Singles Ages 28-35
             </div>
 
             {/* Title */}
@@ -313,7 +310,7 @@ export default function MarchEventPage() {
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-white/80 text-sm mb-8">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
-                <span>March 15, 2026</span>
+                <span>April 5, 2026</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -324,8 +321,8 @@ export default function MarchEventPage() {
                 <span>Zoom</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4" />
-                <span>California</span>
+                <Users className="w-4 h-4" />
+                <span>Ages 28-35</span>
               </div>
             </div>
 
@@ -522,7 +519,7 @@ export default function MarchEventPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  City (e.g., "San Jose"), diet
+                  City (e.g., "San Jose")
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -747,7 +744,7 @@ export default function MarchEventPage() {
             {[
               {
                 icon: Users,
-                title: 'Meet Indian vegetarian singles in CA',
+                title: 'Meet Indian singles aged 28-35',
                 description: 'A small, curated group for real conversation — not endless swiping.',
                 color: 'bg-blue-50 text-blue-600',
               },
@@ -796,8 +793,6 @@ export default function MarchEventPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { label: 'Age', value: `${EVENT_CONFIG.minAge}–${EVENT_CONFIG.maxAge} years` },
-                { label: 'Location', value: 'California residents (currently living in CA)' },
-                { label: 'Dietary', value: 'Vegetarian' },
                 { label: 'Audience', value: 'Indian ethnicity (designed for Indian diaspora)' },
                 { label: 'Profile', value: 'Basic profile required for the event' },
               ].map((item, index) => (
@@ -916,7 +911,7 @@ export default function MarchEventPage() {
             />
             <FAQItem
               question="What information is visible to other attendees?"
-              answer="During the event, others see your first name (or initial), age range, city (e.g., 'San Jose'), and diet. Your last name, phone, email, exact address, employer, and social media are never shared. Contact info is only exchanged if both people opt in after the event."
+              answer="During the event, others see your first name (or initial), age range, and city (e.g., 'San Jose'). Your last name, phone, email, exact address, employer, and social media are never shared. Contact info is only exchanged if both people opt in after the event."
             />
             <FAQItem
               question="Is the event recorded?"
@@ -928,7 +923,7 @@ export default function MarchEventPage() {
             />
             <FAQItem
               question="Do I need a full VivaahReady profile?"
-              answer="Only basics are required for this event (name, age, city, diet, a photo). You can complete additional profile details later if you'd like to use the full VivaahReady platform. The profile takes about 3-5 minutes."
+              answer="Only basics are required for this event (name, age, city, a photo). You can complete additional profile details later if you'd like to use the full VivaahReady platform. The profile takes about 3-5 minutes."
             />
           </div>
         </div>

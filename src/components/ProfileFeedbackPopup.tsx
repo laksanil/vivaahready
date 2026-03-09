@@ -4,20 +4,19 @@ import { useState } from 'react'
 import { MessageSquare } from 'lucide-react'
 import StarRating from '@/components/StarRating'
 
-const STORAGE_KEY = 'vivaah_profile_feedback_given'
-
 interface ProfileFeedbackPopupProps {
+  storageKey: string
   onClose: () => void
 }
 
-export default function ProfileFeedbackPopup({ onClose }: ProfileFeedbackPopupProps) {
+export default function ProfileFeedbackPopup({ storageKey, onClose }: ProfileFeedbackPopupProps) {
   const [stars, setStars] = useState(0)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'true')
+    localStorage.setItem(storageKey, 'true')
     onClose()
   }
 
@@ -40,7 +39,7 @@ export default function ProfileFeedbackPopup({ onClose }: ProfileFeedbackPopupPr
     } catch {
       // silent — don't block user
     }
-    localStorage.setItem(STORAGE_KEY, 'true')
+    localStorage.setItem(storageKey, 'true')
     setSubmitted(true)
   }
 

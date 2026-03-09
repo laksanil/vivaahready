@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VivaahReady — Meaningful Connections</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #e8e8e8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* 11x14 at 300dpi = 3300x4200, we use 1100x1400 at 3x scale */
+    .flyer {
+      width: 1100px;
+      height: 1400px;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Row 1: Red banner header with logo ── */
+    .header-banner {
+      background: #E31C25;
+      padding: 40px 60px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 10px;
+    }
+
+    .logo-icon img {
+      height: 100%;
+      width: auto;
+    }
+
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .header-text .brand-name {
+      font-size: 56px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: 0.5px;
+      line-height: 1;
+    }
+
+    .header-text .brand-tagline {
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+    }
+
+    /* ── Row 2: Couple image with headline overlay ── */
+    .image-row {
+      flex: 0 0 560px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-row img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+    }
+
+    .image-row::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 240px;
+      background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+    }
+
+    .image-overlay-text {
+      position: absolute;
+      bottom: 36px;
+      left: 60px;
+      z-index: 2;
+    }
+
+    .image-overlay-text .headline-white {
+      font-family: 'Playfair Display', serif;
+      font-size: 72px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.1;
+    }
+
+    .image-overlay-text .headline-gold {
+      font-family: 'Playfair Display', serif;
+      font-size: 72px;
+      font-weight: 700;
+      font-style: italic;
+      color: #F5A623;
+      line-height: 1.1;
+    }
+
+    /* ── Row 3: White section ── */
+    .white-section {
+      background: #ffffff;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 48px 60px 50px;
+    }
+
+    .subtitle {
+      font-size: 26px;
+      font-weight: 400;
+      color: #444;
+      letter-spacing: 0.2px;
+      line-height: 1.5;
+    }
+
+    /* Feature row */
+    .features {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #FFF5F5;
+      border: 1.5px solid #FFCDD2;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .feature svg {
+      width: 22px;
+      height: 22px;
+      color: #E31C25;
+      flex-shrink: 0;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: #E31C25;
+      color: white;
+      padding: 20px 56px;
+      border-radius: 50px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(227, 28, 37, 0.3);
+    }
+
+    .bottom-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .website {
+      font-size: 20px;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+
+    .qr-box {
+      width: 100px;
+      height: 100px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 6px;
+    }
+
+    .qr-box img {
+      width: 100%;
+      height: 100%;
+    }
+
+    @media print {
+      body { padding: 0; background: none; }
+      .flyer {
+        width: 11in;
+        height: 14in;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="flyer">
+
+    <!-- Row 1: Red Banner Header -->
+    <div class="header-banner">
+      <div class="logo-icon">
+        <img src="/logo-icon.png" alt="VivaahReady" />
+      </div>
+      <div class="header-text">
+        <div class="brand-name">VivaahReady</div>
+        <div class="brand-tagline">Meaningful Connections</div>
+      </div>
+    </div>
+
+    <!-- Row 2: Couple Image with overlay headline -->
+    <div class="image-row">
+      <img src="/images/brand-couple.jpg" alt="Indian couple holding hands" />
+      <div class="image-overlay-text">
+        <div class="headline-white">Stop Searching.</div>
+        <div class="headline-gold">Start Connecting.</div>
+      </div>
+    </div>
+
+    <!-- Row 3: White section -->
+    <div class="white-section">
+      <div class="subtitle">
+        A curated matchmaking platform for Indian Americans serious about marriage.
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Verified Profiles
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Marriage-Minded Singles
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Live Zoom Mixers
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Privacy First
+        </div>
+      </div>
+
+      <div class="bottom-bar">
+        <div class="cta-button">Join Free Today</div>
+        <div class="bottom-right">
+          <div class="website">vivaahready.com</div>
+          <div class="qr-box">
+            <img src="/images/aprilevent-qr.png" alt="Scan to visit" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

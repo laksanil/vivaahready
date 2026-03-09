@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
         },
         isActive: true,
         isSuspended: false,
-        approvalStatus: 'approved',
+        approvalStatus: { in: ['approved', 'pending'] },
       },
       include: {
         user: {

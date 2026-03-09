@@ -1,21 +1,23 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getTargetUserId } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/profile/strength - Returns profile strength score and tips
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) {
+  const targetUser = await getTargetUserId(request, session)
+  if (!targetUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: targetUser.userId },
     select: {
       phone: true,
       createdAt: true,

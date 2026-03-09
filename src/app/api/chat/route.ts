@@ -21,7 +21,7 @@ WHO IS HOSTING:
 - When asked "who is conducting/hosting", always mention it's the founder and emphasize safety
 
 EVENT DETAILS:
-- Event: Singles Zoom Meetup - Vegetarian Edition
+- Event: Singles Zoom Meetup - April Edition
 - Date: April 5, 2026
 - Time: 11:00 AM PST (Pacific Standard Time)
 - Duration: Approximately 1 hour
@@ -37,7 +37,6 @@ WHY $25 IS WORTH IT:
 
 ELIGIBILITY:
 - Age: We're targeting 28-35 year olds, but it's not a strict cutoff. If you're slightly outside this range, you're still welcome to register! However, you'll only be invited to the event if we have matching profiles in your age group.
-- Diet: Vegetarian or Eggetarian
 - Profile: Complete VivaahReady profile
 
 CAPACITY:
@@ -60,7 +59,7 @@ HOW IT WORKS:
 KEY SELLING POINTS TO EMPHASIZE:
 - All participants are VERIFIED - no catfishing!
 - Founder personally hosts - safe and professional
-- Exclusive event for vegetarian and eggetarian singles
+- Exclusive event for Indian singles ages 28-35
 - Only $25 - small investment for finding love
 - Fun, engaging format - not a boring video call
 
@@ -162,7 +161,7 @@ function getFallbackResponse(message: string): string {
   if (msg.includes('not able to register') || msg.includes('cannot register') || msg.includes('can\'t register') ||
       msg.includes('unable to register') || msg.includes('registration not working') || msg.includes('won\'t let me register') ||
       msg.includes('problem register') || msg.includes('issue register') || msg.includes('error register')) {
-    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: around ages 28-35 (flexible), vegetarian or eggetarian. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
+    return 'I\'m sorry you\'re having trouble! Here are the steps to register:\n\n1. Sign in with your Google account\n2. Complete your profile (takes just 2-3 minutes)\n3. Set your partner preferences\n4. Complete payment ($25)\n\nMake sure you meet the eligibility: ages 28-35. If you\'re still having issues, click "Talk to Support" below and we\'ll help you right away!'
   }
 
   // Zoom link specific questions
@@ -201,7 +200,7 @@ function getFallbackResponse(message: string): string {
 
   // Questions about what the event is
   if (msg.includes('what is') || msg.includes('what do') || msg.includes('mixer') || msg.includes('about') || msg.includes('tell me') || msg.includes('explain') || msg.includes('how does it work') || msg.includes('what happens')) {
-    return 'This is an exciting Singles Zoom Meetup - a fun virtual speed dating event for Indian vegetarian and eggetarian singles in California! You\'ll meet 10 verified singles (10 males, 10 females) in a 1-hour moderated Zoom call. It\'s on March 15, 2026 at 10 AM PDT. Only $25 to register - don\'t miss out!'
+    return 'This is an exciting Singles Zoom Meetup - a fun virtual speed dating event for Indian singles ages 28-35! You\'ll meet up to 20 verified singles (10 males, 10 females) in a moderated Zoom call. It\'s on April 5, 2026 at 11:00 AM PST. Only $25 to register - don\'t miss out!'
   }
 
   // Pricing questions (but not "how to pay")
@@ -218,7 +217,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('eligible') || msg.includes('requirement') || msg.includes('who can')) {
-    return 'To join this event: be around 28-35 years old (not strict - slightly outside is fine!), vegetarian or eggetarian, with a complete VivaahReady profile. The age range is a target, not a hard cutoff - you\'ll be invited if we have matching profiles for you. Register now!'
+    return 'To join this event: be around 28-35 years old (not strict - slightly outside is fine!) with a complete VivaahReady profile. The age range is a target, not a hard cutoff - you\'ll be invited if we have matching profiles for you. Register now!'
   }
 
   if (msg.includes('refund') || msg.includes('cancel')) {
@@ -235,7 +234,7 @@ function getFallbackResponse(message: string): string {
   }
 
   if (msg.includes('vegetarian') || msg.includes('veg') || msg.includes('diet')) {
-    return 'Yes! This event is for vegetarians and eggetarians - meet singles who share your dietary values and lifestyle! It\'s a unique opportunity to connect with like-minded people. Register now!'
+    return 'This event is open to all Indian singles ages 28-35, regardless of dietary preference. It\'s a great opportunity to meet like-minded people. Register now!'
   }
 
   // Privacy-related questions - do not disclose registration numbers or participant identities
@@ -269,5 +268,5 @@ function getFallbackResponse(message: string): string {
   }
 
   // Default response
-  return "Great question! I'm here to help with anything about this Singles Zoom Meetup - eligibility, registration, pricing, or the event itself. This is a fantastic opportunity to meet verified vegetarian and eggetarian singles from California. Register now for just $25!"
+  return "Great question! I'm here to help with anything about this Singles Zoom Meetup - eligibility, registration, pricing, or the event itself. This is a fantastic opportunity to meet verified Indian singles ages 28-35. Register now for just $25!"
 }

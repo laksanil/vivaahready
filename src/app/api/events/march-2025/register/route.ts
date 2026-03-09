@@ -8,8 +8,6 @@ const EVENT_SLUG = 'april-2026-vegetarian'
 const EVENT_CONFIG = {
   minAge: 28,
   maxAge: 35,
-  dietaryReq: 'Vegetarian',
-  locationReq: 'California',
   maxMaleSpots: 10,
   maxFemaleSpots: 10,
   price: 25,
@@ -55,7 +53,6 @@ export async function POST(request: Request) {
 
     const missingFields: string[] = []
     if (!profile.dateOfBirth && !profile.age) missingFields.push('date of birth or age')
-    if (!profile.dietaryPreference) missingFields.push('dietary preference')
     if (profile.gender !== 'male' && profile.gender !== 'female') missingFields.push('gender')
 
     if (missingFields.length > 0) {
@@ -76,14 +73,6 @@ export async function POST(request: Request) {
       )
     }
 
-    const diet = profile.dietaryPreference?.toLowerCase()
-    if (diet !== 'vegetarian' && diet !== 'eggetarian') {
-      return NextResponse.json(
-        { error: 'This event is exclusively for vegetarians and eggetarians' },
-        { status: 400 }
-      )
-    }
-
     // Get or create the event
     let event = await prisma.event.findUnique({
       where: { slug: EVENT_SLUG },
@@ -94,7 +83,7 @@ export async function POST(request: Request) {
         data: {
           slug: EVENT_SLUG,
           title: 'Singles Zoom Mixer - April 2026',
-          description: 'Exclusive vegetarian singles event for California residents aged 28-35',
+          description: 'Singles event for ages 28-35',
           eventDate: new Date('2026-04-05T18:00:00-07:00'),
           timezone: 'America/Los_Angeles',
           duration: 60,
@@ -102,8 +91,6 @@ export async function POST(request: Request) {
           maxFemaleSpots: EVENT_CONFIG.maxFemaleSpots,
           minAge: EVENT_CONFIG.minAge,
           maxAge: EVENT_CONFIG.maxAge,
-          dietaryReq: EVENT_CONFIG.dietaryReq,
-          locationReq: EVENT_CONFIG.locationReq,
           price: EVENT_CONFIG.price,
           status: 'upcoming',
           isPublished: true,

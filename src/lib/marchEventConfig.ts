@@ -3,7 +3,7 @@ export const MARCH_EVENT_CONFIG = {
   slug: 'april-2026-vegetarian',
   priceDollars: 25,
   title: 'Singles Zoom Mixer',
-  subtitle: 'Vegetarian Edition',
+  subtitle: 'April Edition',
 }
 
 // Returns the event date

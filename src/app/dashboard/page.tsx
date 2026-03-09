@@ -393,7 +393,7 @@ function DashboardContent() {
   useEffect(() => {
     if (!hasProfile || typeof window === 'undefined') return
 
-    fetch('/api/events/march-2025/status')
+    fetch(buildApiUrl('/api/events/march-2025/status'))
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) {
@@ -407,7 +407,7 @@ function DashboardContent() {
   useEffect(() => {
     if (!hasProfile) return
 
-    fetch('/api/notifications?limit=1')
+    fetch(buildApiUrl('/api/notifications?limit=1'))
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) {
@@ -421,7 +421,7 @@ function DashboardContent() {
   const fetchStats = async () => {
     try {
       // Fetch profile strength for any user with a profile
-      const strengthPromise = fetch('/api/profile/strength')
+      const strengthPromise = fetch(buildApiUrl('/api/profile/strength'))
         .then(res => res.ok ? res.json() : null)
         .catch(() => null)
 

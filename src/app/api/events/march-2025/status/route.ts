@@ -8,8 +8,6 @@ const EVENT_SLUG = 'april-2026-vegetarian'
 const EVENT_CONFIG = {
   minAge: 28,
   maxAge: 35,
-  dietaryReq: 'Vegetarian',
-  locationReq: 'California',
   maxMaleSpots: 10,
   maxFemaleSpots: 10,
 }
@@ -43,7 +41,7 @@ export async function GET() {
         data: {
           slug: EVENT_SLUG,
           title: 'Singles Zoom Mixer - April 2026',
-          description: 'Exclusive vegetarian singles event for California residents aged 28-35',
+          description: 'Singles event for ages 28-35',
           eventDate: new Date('2026-04-05T11:00:00-07:00'),
           timezone: 'America/Los_Angeles',
           duration: 60,
@@ -51,8 +49,6 @@ export async function GET() {
           maxFemaleSpots: EVENT_CONFIG.maxFemaleSpots,
           minAge: EVENT_CONFIG.minAge,
           maxAge: EVENT_CONFIG.maxAge,
-          dietaryReq: EVENT_CONFIG.dietaryReq,
-          locationReq: EVENT_CONFIG.locationReq,
           price: 25,
           status: 'upcoming',
           isPublished: true,
@@ -92,7 +88,6 @@ export async function GET() {
       reason?: string
       profileComplete: boolean
       ageEligible: boolean
-      dietEligible: boolean
     } | undefined
 
     if (session?.user?.id) {
@@ -120,24 +115,19 @@ export async function GET() {
         const profileComplete = userProfile.signupStep >= 9
         const age = userProfile.dateOfBirth ? calculateAge(userProfile.dateOfBirth) : (userProfile.age ? Number(userProfile.age) : null)
         const ageEligible = age !== null && age >= EVENT_CONFIG.minAge && age <= EVENT_CONFIG.maxAge
-        const diet = userProfile.dietaryPreference?.toLowerCase()
-        const dietEligible = diet === 'vegetarian' || diet === 'eggetarian'
 
         let reason: string | undefined
         if (!profileComplete) {
           reason = 'Please complete your profile to register for this event.'
         } else if (!ageEligible) {
           reason = `This event is only for ages ${EVENT_CONFIG.minAge}-${EVENT_CONFIG.maxAge}.`
-        } else if (!dietEligible) {
-          reason = 'This event is exclusively for vegetarians and eggetarians.'
         }
 
         userEligibility = {
-          eligible: profileComplete && ageEligible && dietEligible,
+          eligible: profileComplete && ageEligible,
           reason,
           profileComplete,
           ageEligible,
-          dietEligible,
         }
       } else {
         // No profile yet
@@ -146,7 +136,6 @@ export async function GET() {
           reason: 'Please create your profile to register for this event.',
           profileComplete: false,
           ageEligible: false,
-          dietEligible: false,
         }
       }
     }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singles Zoom Mixer — Vegetarian Edition | April 5, 2026</title>
+  <title>Singles Zoom Mixer — April Edition | April 5, 2026</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -54,12 +54,12 @@
     .content {
       position: relative;
       z-index: 1;
-      padding: 16px 50px 16px;
+      padding: 50px 50px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 34px;
       text-align: center;
       height: 100%;
     }
@@ -85,17 +85,17 @@
 
     /* Title */
     .title {
-      font-size: 50px;
+      font-size: 64px;
       font-weight: 800;
       line-height: 1.05;
       letter-spacing: -1px;
     }
 
     .subtitle {
-      font-size: 20px;
+      font-size: 24px;
       color: #d8b4fe;
       font-weight: 500;
-      margin-top: 4px;
+      margin-top: 8px;
     }
 
     /* Middle: Portraits + Details */
@@ -113,8 +113,8 @@
     }
 
     .portrait {
-      width: 85px;
-      height: 85px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.3);
       overflow: hidden;
@@ -134,8 +134,8 @@
     .detail-item {
       display: flex;
       align-items: center;
-      gap: 7px;
-      font-size: 17px;
+      gap: 9px;
+      font-size: 20px;
       color: rgba(255, 255, 255, 0.85);
     }
     .detail-item svg { width: 18px; height: 18px; color: #c084fc; flex-shrink: 0; }
@@ -143,7 +143,7 @@
     /* Info pills + price inline */
     .info-row {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       justify-content: center;
       align-items: center;
     }
@@ -152,8 +152,8 @@
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 14px;
+      padding: 11px 20px;
+      font-size: 16px;
       color: white;
       font-weight: 500;
     }
@@ -162,8 +162,8 @@
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 8px;
-      padding: 8px 20px;
-      font-size: 18px;
+      padding: 11px 22px;
+      font-size: 20px;
       color: white;
       font-weight: 800;
     }
@@ -172,9 +172,9 @@
     .agenda-section { text-align: center; }
 
     .agenda-title {
-      font-size: 19px;
+      font-size: 23px;
       font-weight: 700;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
 
     .agenda-row {
@@ -188,8 +188,8 @@
       background: rgba(168, 85, 247, 0.15);
       border: 1px solid rgba(168, 85, 247, 0.2);
       border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 13px;
+      padding: 11px 18px;
+      font-size: 15px;
       color: rgba(255, 255, 255, 0.8);
     }
 
@@ -208,8 +208,8 @@
     .trust-item {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 12px;
+      gap: 5px;
+      font-size: 13px;
       color: rgba(255, 255, 255, 0.45);
     }
     .trust-item svg { width: 13px; height: 13px; color: #86efac; }
@@ -221,23 +221,57 @@
       display: inline-block;
       background: white;
       color: #1e1b4b;
-      padding: 14px 44px;
+      padding: 16px 50px;
       border-radius: 12px;
-      font-size: 19px;
+      font-size: 22px;
       font-weight: 700;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
     }
 
     .cta-url {
-      font-size: 15px;
+      font-size: 17px;
       color: #c084fc;
       font-weight: 600;
       margin-top: 8px;
     }
 
+    .cta-tagline {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      font-style: italic;
+      margin-top: 6px;
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .qr-code {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 10px;
+      padding: 6px;
+    }
+
+    .qr-code img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .scan-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+      text-align: center;
+    }
+
     /* Footer */
     .footer-text {
-      font-size: 12px;
+      font-size: 15px;
       color: white;
     }
     @media print {
@@ -263,7 +297,7 @@
       <!-- Title -->
       <div>
         <h1 class="title">Singles Zoom Mixer</h1>
-        <p class="subtitle">Vegetarian Edition &mdash; Inaugural Edition</p>
+        <p class="subtitle">For Marriage-Minded Indian Singles</p>
       </div>
 
       <!-- Portraits + Details -->
@@ -290,11 +324,11 @@
           </div>
           <div class="detail-item">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect width="15" height="14" x="1" y="5" rx="2" ry="2"/></svg>
-            Zoom &bull; 60-80 min
+            Zoom &bull; 90-100 min
           </div>
           <div class="detail-item">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            California
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Ages 28-35
           </div>
         </div>
       </div>
@@ -302,8 +336,8 @@
       <!-- Info pills with price -->
       <div class="info-row">
         <div class="info-pill">20 seats max</div>
-        <div class="info-pill">Ages 30-35</div>
-        <div class="info-pill">Balanced attendance</div>
+        <div class="info-pill">Ages 28-35</div>
+        <div class="info-pill">Verified profiles</div>
         <div class="info-pill">Moderated</div>
         <div class="price-pill">$25</div>
       </div>
@@ -338,8 +372,19 @@
 
       <!-- CTA -->
       <div class="cta-section">
-        <div class="cta-button">Register Now &mdash; $25</div>
-        <div class="cta-url">https://vivaahready.com/aprilevent</div>
+        <div class="cta-row">
+          <div>
+            <div class="cta-button">Register Now &mdash; $25</div>
+            <div class="cta-url">vivaahready.com/aprilevent</div>
+            <div class="cta-tagline">Meet someone worth the conversation.</div>
+          </div>
+          <div>
+            <div class="qr-code">
+              <img src="/images/aprilevent-qr.png" alt="Scan to register" />
+            </div>
+            <div class="scan-label">Scan to register</div>
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->

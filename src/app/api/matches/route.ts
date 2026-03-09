@@ -42,8 +42,8 @@ export async function GET(request: Request) {
 
       // Filter out mutual matches - only show non-mutual, non-accepted received interests
       for (const m of allReceived) {
-        // Skip accepted interests - they should be in mutual matches
-        if (m.status === 'accepted') {
+        // Skip accepted interests (they appear in mutual matches) and rejected interests
+        if (m.status === 'accepted' || m.status === 'rejected') {
           continue
         }
 
