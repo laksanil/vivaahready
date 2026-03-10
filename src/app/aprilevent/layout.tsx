@@ -8,25 +8,26 @@ export const metadata: Metadata = {
     canonical: 'https://vivaahready.com/aprilevent',
   },
   openGraph: {
-    title: 'Singles Zoom Mixer - Indian Singles Ages 28-35 | VivaahReady',
+    title: 'VivaahReady Singles Mixer \u2013 April 5th',
     description:
-      'Structured Zoom mixer for Indian singles ages 28-35. 20 seats, balanced attendance, moderated conversations. $25 registration.',
+      'A curated singles mixer for Indian American singles ages 28\u201335. Join us April 5th!',
     url: 'https://vivaahready.com/aprilevent',
     type: 'website',
     images: [
       {
-        url: 'https://vivaahready.com/logo-banner.png',
-        width: 2460,
-        height: 936,
-        alt: 'VivaahReady Singles Zoom Mixer',
+        url: 'https://vivaahready.com/images/april-event-og.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'VivaahReady Singles Zoom Mixer - April 5, 2026',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Singles Zoom Mixer - Indian Singles Ages 28-35 | VivaahReady',
+    title: 'VivaahReady Singles Mixer \u2013 April 5th',
     description:
-      'Structured Zoom mixer for Indian singles ages 28-35. 20 seats, balanced attendance. $25.',
+      'A curated singles mixer for Indian American singles ages 28\u201335. Join us April 5th!',
+    images: ['https://vivaahready.com/images/april-event-og.jpg'],
   },
 }
 
@@ -68,7 +69,7 @@ export default function AprilEventLayout({
               validFrom: '2026-02-01',
             },
             maximumAttendeeCapacity: 20,
-            image: 'https://vivaahready.com/logo-banner.png',
+            image: 'https://vivaahready.com/images/april-event-og.jpg',
           }),
         }}
       />
