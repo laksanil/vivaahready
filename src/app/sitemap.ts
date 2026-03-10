@@ -9,125 +9,79 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
+      lastModified: new Date('2026-03-09'),
     },
     {
       url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
+      lastModified: new Date('2026-02-01'),
     },
     {
       url: `${baseUrl}/register`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.9,
+      lastModified: new Date('2026-02-01'),
     },
     {
       url: `${baseUrl}/aprilevent`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
+      lastModified: new Date('2026-03-09'),
     },
     {
       url: `${baseUrl}/get-verified`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/get-verified`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      lastModified: new Date('2026-02-01'),
     },
     {
       url: `${baseUrl}/community`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.7,
+      lastModified: new Date('2026-03-01'),
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
+      lastModified: new Date('2026-02-01'),
     },
     {
       url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
+      lastModified: new Date('2026-01-01'),
     },
     {
       url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
+      lastModified: new Date('2026-01-01'),
     },
   ]
 
-  // Blog pages (priority 0.8)
+  // Blog pages
   const blogPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
+      lastModified: new Date('2026-03-05'),
     },
     {
       url: `${baseUrl}/blog/how-indian-matchmaking-works-in-america-2026`,
       lastModified: new Date('2026-03-05'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/what-indian-parents-should-know-about-matchmaking-usa`,
       lastModified: new Date('2026-03-05'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/indian-matchmaking-vs-dating-apps-honest-comparison`,
       lastModified: new Date('2026-03-05'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/shame-of-looking-indian-american-matrimony`,
       lastModified: new Date('2026-03-04'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/caught-between-dating-apps-and-arranged-marriage`,
       lastModified: new Date('2026-02-16'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/indian-families-america-marriage-gap`,
       lastModified: new Date('2026-02-14'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa`,
       lastModified: new Date('2026-02-10'),
-      changeFrequency: 'yearly',
-      priority: 0.8,
     },
   ]
 
-  // SEO money pages (priority 0.85)
+  // SEO money pages
   const moneyPages: MetadataRoute.Sitemap = [
     '/indian-matchmaking-usa',
     '/indian-matrimony-usa',
@@ -136,35 +90,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/nri-matrimony-usa',
   ].map((path) => ({
     url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.85,
+    lastModified: new Date('2026-02-15'),
   }))
 
-  // SEO hub page (priority 0.8)
+  // SEO hub page
   const hubPage: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/indian-matchmaking`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
+      lastModified: new Date('2026-02-15'),
     },
   ]
 
-  // SEO location pages (priority 0.7)
+  // SEO location pages
   const locationPages: MetadataRoute.Sitemap = SEO_LOCATIONS.map((loc) => ({
     url: `${baseUrl}/indian-matchmaking-${loc.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
+    lastModified: new Date('2026-02-15'),
   }))
 
-  // SEO language pages (priority 0.7)
+  // SEO language pages
   const languagePages: MetadataRoute.Sitemap = SEO_LANGUAGES.map((lang) => ({
     url: `${baseUrl}/${lang.slug}-matrimony-usa`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
+    lastModified: new Date('2026-02-15'),
   }))
 
   return [

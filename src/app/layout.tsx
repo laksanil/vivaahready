@@ -73,12 +73,10 @@ export const metadata: Metadata = {
     },
   },
 
-  // Verification (add your codes after registering)
-  verification: {
-    google: 'your-google-verification-code', // Get from Google Search Console
-    // yandex: 'your-yandex-code',
-    // bing: 'your-bing-code',
-  },
+  // Verification — add real codes after registering with each search engine
+  // verification: {
+  //   google: 'YOUR_REAL_CODE',
+  // },
 
   // Canonical & Alternates
   metadataBase: new URL('https://vivaahready.com'),

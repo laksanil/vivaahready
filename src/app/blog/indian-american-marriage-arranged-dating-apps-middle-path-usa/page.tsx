@@ -44,6 +44,8 @@ const jsonLd = {
   description:
     'Why Indian Americans feel stuck between arranged marriage and dating apps, and what a better, commitment-focused process looks like.',
   datePublished: '2026-02-19T00:00:00Z',
+  image: ['https://vivaahready.com/logo-banner.png'],
+  dateModified: '2026-02-19T00:00:00Z',
   author: {
     '@type': 'Person',
     name: 'Lakshmi',
@@ -54,6 +56,10 @@ const jsonLd = {
     '@type': 'Organization',
     name: 'VivaahReady',
     url: 'https://vivaahready.com',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://vivaahready.com/logo-banner.png',
+    },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
@@ -84,19 +90,6 @@ const faqs = [
   },
 ]
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: faq.answer,
-    },
-  })),
-}
-
 export default function BlogPost() {
   return (
     <>
@@ -106,7 +99,15 @@ export default function BlogPost() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vivaahready.com' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vivaahready.com/blog' },
+            { '@type': 'ListItem', position: 3, name: 'Is There a Middle Path? How Indian Americans Are Rethinking Arranged Marriage, Dating Apps, and Finding a Life Partner in the USA', item: 'https://vivaahready.com/blog/indian-american-marriage-arranged-dating-apps-middle-path-usa' },
+          ],
+        }) }}
       />
 
       <article className="min-h-screen bg-white">

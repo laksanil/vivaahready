@@ -298,7 +298,7 @@ export default function AboutPage() {
             href="/register"
             className="inline-block bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
           >
-            Start Your Free Trial
+            Create Your Free Profile
           </Link>
         </div>
       </section>

@@ -23,27 +23,6 @@ export default function CookieConsent() {
     setShowBanner(false)
   }
 
-  useEffect(() => {
-    const previousPaddingBottom = document.body.style.paddingBottom
-
-    if (!showBanner) {
-      document.body.style.paddingBottom = previousPaddingBottom
-      return
-    }
-
-    const applyBottomPadding = () => {
-      const bannerHeight = bannerRef.current?.offsetHeight ?? 0
-      document.body.style.paddingBottom = bannerHeight > 0 ? `${bannerHeight + 8}px` : previousPaddingBottom
-    }
-
-    applyBottomPadding()
-    window.addEventListener('resize', applyBottomPadding)
-
-    return () => {
-      window.removeEventListener('resize', applyBottomPadding)
-      document.body.style.paddingBottom = previousPaddingBottom
-    }
-  }, [showBanner])
 
   if (!showBanner) return null
 

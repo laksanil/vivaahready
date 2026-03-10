@@ -36,10 +36,8 @@ const jsonLd = {
         height: 936,
       },
       sameAs: [
-        // Add your social media URLs here
-        // 'https://www.facebook.com/vivaahready',
-        // 'https://www.instagram.com/vivaahready',
-        // 'https://twitter.com/vivaahready',
+        'https://www.instagram.com/vivaahready',
+        'https://www.linkedin.com/company/vivaahready',
       ],
       contactPoint: {
         '@type': 'ContactPoint',
@@ -72,43 +70,6 @@ const jsonLd = {
         description: 'One-time verification fee to unlock full features',
         availability: 'https://schema.org/InStock',
       },
-    },
-    {
-      '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'What is VivaahReady?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'VivaahReady is a premium Indian matchmaking and matrimony service designed for the US diaspora. We offer verified profiles, privacy-first matching, and meaningful connections for serious relationship seekers.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How does VivaahReady work?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Create your profile for free, set your preferences and deal-breakers, and see mutual matches only. Photos and contact details are shared after verification and mutual interest.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Is VivaahReady free?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Creating a profile and viewing matches is free. A one-time verification fee is required to unlock full features like messaging and contact sharing.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How are profiles verified?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Our team manually reviews every profile to ensure authenticity. We verify identity and ensure genuine intent for marriage.',
-          },
-        },
-      ],
     },
   ],
 }

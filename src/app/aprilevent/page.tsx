@@ -330,7 +330,7 @@ export default function MarchEventPage() {
             <div className="flex justify-center items-center gap-6 mb-8">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/30 shadow-xl bg-gray-200">
                 <img
-                  src="/images/male_portrait.png"
+                  src="/images/male_portrait.jpg"
                   alt="Male participant"
                   className="w-full h-full object-cover object-top"
                 />
@@ -338,7 +338,7 @@ export default function MarchEventPage() {
               <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-pink-300" />
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/30 shadow-xl bg-gray-200">
                 <img
-                  src="/images/female_portrait.png"
+                  src="/images/female_portrait.jpg"
                   alt="Female participant"
                   className="w-full h-full object-cover object-top"
                 />

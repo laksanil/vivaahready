@@ -42,6 +42,8 @@ const jsonLd = {
   description:
     'A clear, honest guide to how Indian matchmaking works in the USA today. From family-led searches to AI-powered platforms, here is what the process actually looks like for Indian Americans in 2026.',
   datePublished: '2026-03-05T00:00:00Z',
+  image: ['https://vivaahready.com/logo-banner.png'],
+  dateModified: '2026-03-05T00:00:00Z',
   author: {
     '@type': 'Person',
     name: 'Lakshmi',
@@ -52,6 +54,10 @@ const jsonLd = {
     '@type': 'Organization',
     name: 'VivaahReady',
     url: 'https://vivaahready.com',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://vivaahready.com/logo-banner.png',
+    },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
@@ -87,19 +93,6 @@ const faqs = [
   },
 ]
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: faq.answer,
-    },
-  })),
-}
-
 export default function BlogPost() {
   return (
     <>
@@ -109,7 +102,15 @@ export default function BlogPost() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vivaahready.com' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vivaahready.com/blog' },
+            { '@type': 'ListItem', position: 3, name: 'How Indian Matchmaking Actually Works in America in 2026', item: 'https://vivaahready.com/blog/how-indian-matchmaking-works-in-america-2026' },
+          ],
+        }) }}
       />
 
       <article className="min-h-screen bg-white">

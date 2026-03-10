@@ -41,6 +41,8 @@ const jsonLd = {
   description:
     'A side-by-side comparison of Indian matrimony platforms and dating apps for Indian Americans. Costs, success rates, family involvement, and what actually works for finding a life partner in the US.',
   datePublished: '2026-03-05T00:00:00Z',
+  image: ['https://vivaahready.com/logo-banner.png'],
+  dateModified: '2026-03-05T00:00:00Z',
   author: {
     '@type': 'Person',
     name: 'Lakshmi',
@@ -51,6 +53,10 @@ const jsonLd = {
     '@type': 'Organization',
     name: 'VivaahReady',
     url: 'https://vivaahready.com',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://vivaahready.com/logo-banner.png',
+    },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
@@ -86,19 +92,6 @@ const faqs = [
   },
 ]
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: faq.answer,
-    },
-  })),
-}
-
 export default function BlogPost() {
   return (
     <>
@@ -108,7 +101,15 @@ export default function BlogPost() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vivaahready.com' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vivaahready.com/blog' },
+            { '@type': 'ListItem', position: 3, name: 'Indian Matchmaking vs Dating Apps: An Honest Comparison (2026)', item: 'https://vivaahready.com/blog/indian-matchmaking-vs-dating-apps-honest-comparison' },
+          ],
+        }) }}
       />
 
       <article className="min-h-screen bg-white">

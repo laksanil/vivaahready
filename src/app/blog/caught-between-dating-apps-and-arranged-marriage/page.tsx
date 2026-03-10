@@ -37,6 +37,8 @@ const jsonLd = {
   description:
     'Two families, two opposite situations \u2014 one daughter avoids the topic, another is actively trying but feels stuck.',
   datePublished: '2026-02-16T00:00:00Z',
+  image: ['https://vivaahready.com/logo-banner.png'],
+  dateModified: '2026-02-16T00:00:00Z',
   author: {
     '@type': 'Person',
     name: 'Lakshmi',
@@ -47,6 +49,10 @@ const jsonLd = {
     '@type': 'Organization',
     name: 'VivaahReady',
     url: 'https://vivaahready.com',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://vivaahready.com/logo-banner.png',
+    },
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
@@ -77,19 +83,6 @@ const faqs = [
   },
 ]
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((faq) => ({
-    '@type': 'Question',
-    name: faq.question,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text: faq.answer,
-    },
-  })),
-}
-
 export default function BlogPost() {
   return (
     <>
@@ -99,7 +92,15 @@ export default function BlogPost() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://vivaahready.com' },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://vivaahready.com/blog' },
+            { '@type': 'ListItem', position: 3, name: 'Caught Between Dating Apps and Arranged Marriage: Why Indian Americans Feel Stuck', item: 'https://vivaahready.com/blog/caught-between-dating-apps-and-arranged-marriage' },
+          ],
+        }) }}
       />
 
       <article className="min-h-screen bg-white">
