@@ -1,21 +1,21 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Singles Zoom Mixer - Indian Singles Ages 28-35',
+  title: 'VivaahReady Singles Mixer \u2013 April 5th',
   description:
-    'Join VivaahReady\'s Singles Zoom Mixer for Indian singles ages 28-35. Moderated, structured conversations. 20 seats max. April 5, 2026.',
+    'A curated virtual mixer for Indian American singles, ages 28\u201335.',
   alternates: {
     canonical: 'https://vivaahready.com/aprilevent',
   },
   openGraph: {
     title: 'VivaahReady Singles Mixer \u2013 April 5th',
     description:
-      'A curated singles mixer for Indian American singles ages 28\u201335. Join us April 5th!',
+      'A curated virtual mixer for Indian American singles, ages 28\u201335.',
     url: 'https://vivaahready.com/aprilevent',
     type: 'website',
     images: [
       {
-        url: 'https://vivaahready.com/images/april-event-og.jpg',
+        url: 'https://vivaahready.com/images/april-event-preview.jpg',
         width: 1200,
         height: 630,
         alt: 'VivaahReady Singles Zoom Mixer - April 5, 2026',
@@ -26,8 +26,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'VivaahReady Singles Mixer \u2013 April 5th',
     description:
-      'A curated singles mixer for Indian American singles ages 28\u201335. Join us April 5th!',
-    images: ['https://vivaahready.com/images/april-event-og.jpg'],
+      'A curated virtual mixer for Indian American singles, ages 28\u201335.',
+    images: ['https://vivaahready.com/images/april-event-preview.jpg'],
   },
 }
 
@@ -69,7 +69,7 @@ export default function AprilEventLayout({
               validFrom: '2026-02-01',
             },
             maximumAttendeeCapacity: 20,
-            image: 'https://vivaahready.com/images/april-event-og.jpg',
+            image: 'https://vivaahready.com/images/april-event-preview.jpg',
           }),
         }}
       />
