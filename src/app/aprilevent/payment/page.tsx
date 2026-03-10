@@ -13,6 +13,8 @@ import {
   Calendar,
   Video,
   ArrowLeft,
+  Tag,
+  ChevronDown,
 } from 'lucide-react'
 
 // PayPal SDK types
@@ -58,6 +60,15 @@ function EventPaymentContent() {
   const [success, setSuccess] = useState(false)
   const buttonContainerRef = useRef<HTMLDivElement>(null)
   const mountedRef = useRef(true)
+
+  // Promo code state
+  const [showPromo, setShowPromo] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
+  const [promoApplying, setPromoApplying] = useState(false)
+  const [promoApplied, setPromoApplied] = useState(false)
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const [promoError, setPromoError] = useState('')
+  const [adjustedPrice, setAdjustedPrice] = useState(25)
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ''
 
@@ -227,6 +238,40 @@ function EventPaymentContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, registrationId, session?.user?.id])
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim() || !registrationId) return
+    setPromoError('')
+    setPromoApplying(true)
+
+    try {
+      const res = await fetch('/api/events/promo/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode, registrationId }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || data.error) {
+        setPromoError(data.error || 'Invalid code')
+        setPromoApplying(false)
+        return
+      }
+
+      setPromoApplied(true)
+      setPromoDiscount(data.discountPercent)
+      setAdjustedPrice(data.discountedPrice)
+
+      if (data.isFree) {
+        setSuccess(true)
+      }
+    } catch {
+      setPromoError('Failed to apply code')
+    } finally {
+      setPromoApplying(false)
+    }
+  }
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -301,9 +346,58 @@ function EventPaymentContent() {
           </h2>
 
           <div className="text-center mb-5">
-            <div className="text-4xl font-bold text-gray-900">$25</div>
-            <p className="text-xs text-gray-500 mt-1">One-time event fee</p>
+            {promoApplied && promoDiscount > 0 ? (
+              <>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-2xl text-gray-400 line-through">$25</span>
+                  <span className="text-4xl font-bold text-green-600">${adjustedPrice}</span>
+                </div>
+                <p className="text-xs text-green-600 mt-1 font-medium">
+                  {promoDiscount}% discount applied ({promoCode.toUpperCase()})
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-4xl font-bold text-gray-900">$25</div>
+                <p className="text-xs text-gray-500 mt-1">One-time event fee</p>
+              </>
+            )}
           </div>
+
+          {/* Promo Code Section */}
+          {!promoApplied && (
+            <div className="mb-5">
+              <button
+                onClick={() => setShowPromo(!showPromo)}
+                className="flex items-center gap-1.5 text-sm text-purple-600 hover:text-purple-700 font-medium mx-auto"
+              >
+                <Tag className="h-3.5 w-3.5" />
+                Have a promo code?
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showPromo ? 'rotate-180' : ''}`} />
+              </button>
+              {showPromo && (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                    placeholder="Enter code"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                  <button
+                    onClick={handleApplyPromo}
+                    disabled={!promoCode.trim() || promoApplying}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {promoApplying ? 'Applying...' : 'Apply'}
+                  </button>
+                </div>
+              )}
+              {promoError && (
+                <p className="mt-2 text-sm text-red-600 text-center">{promoError}</p>
+              )}
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">

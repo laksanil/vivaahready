@@ -532,6 +532,10 @@ model EventRegistration {
   refundId        String?  // Square refund ID
   attendedAt      DateTime? // Marked when they join the Zoom
 
+  // Promo code applied
+  promoCode       String?  // The promo code that was applied
+  discountPercent Int?     // Discount percentage (100 = free)
+
   // Waitlist position (null if not on waitlist)
   waitlistPosition Int?
 
@@ -730,4 +734,21 @@ model PostComment {
   @@index([postId, createdAt])
   @@index([authorId])
   @@index([parentId])
+}
+
+// Event promo codes for free/discounted event entry
+model EventPromoCode {
+  id              String    @id @default(cuid())
+  code            String    @unique // Stored uppercase, e.g. "VIP2026"
+  discountPercent Int       // 0-100 (100 = free entry)
+  maxUses         Int?      // null = unlimited
+  usedCount       Int       @default(0)
+  eventSlug       String?   // null = all events; specific slug = event-only
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([code])
+  @@index([eventSlug])
 }

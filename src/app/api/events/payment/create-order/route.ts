@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Already paid' }, { status: 400 })
     }
 
-    const amount = (registration.event.price || 25).toFixed(2)
+    const basePrice = registration.event.price || 25
+    const discount = registration.discountPercent || 0
+    const amount = (basePrice * (1 - discount / 100)).toFixed(2)
 
     const order = await createPayPalOrder(amount, session.user.email, session.user.id)
 
