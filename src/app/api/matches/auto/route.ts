@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences, findNearMatches } from '@/lib/matching'
+import { isMutualMatch, calculateMatchScore, matchesSeekerPreferences, findNearMatches, findSeekerPerspectiveNearMatches } from '@/lib/matching'
 import { getTargetUserId } from '@/lib/admin'
 import { getLifetimeStats, updateLifetimeMatches } from '@/lib/lifetimeStats'
 
@@ -313,8 +313,9 @@ export async function GET(request: Request) {
       engagementBoostActive: engagementBoostedUserIds.has(m.userId),
     }))
 
-    // Find "near matches" when user has few exact matches (< 3)
-    // These are profiles that fail on 1-2 non-critical preferences
+    // Find near matches from seeker's perspective — always shown, ranked by criteria failure count.
+    // Only shows profiles where the seeker's preferences are the blocker (things seeker can relax).
+    // Filters out profiles where candidate has immutable dealbreakers against seeker.
     let nearMatchResults: {
       profile: typeof candidates[0]
       failedCriteria: { name: string; seekerPref: string | null; candidateValue: string | null; isDealbreaker: boolean; direction: 'seeker' | 'candidate' }[]
@@ -322,13 +323,10 @@ export async function GET(request: Request) {
       failedDirection: 'seeker' | 'candidate' | 'both'
     }[] = []
 
-    const showNearMatches = sortedFreshMatches.length < 3
-    console.log(`[NEAR MATCH DEBUG] showNearMatches=${showNearMatches}, freshMatches=${sortedFreshMatches.length}`)
-
-    if (showNearMatches) {
-      // Get near matches from candidates that aren't already matches
-      const nearMatches = findNearMatches(myProfile as any, candidates as any[], 3)
-      console.log(`[NEAR MATCH DEBUG] findNearMatches returned ${nearMatches.length} profiles`)
+    {
+      // Get near matches from seeker's perspective (up to 4 criteria off)
+      const nearMatches = findSeekerPerspectiveNearMatches(myProfile as any, candidates as any[], 4)
+      console.log(`[NEAR MATCH DEBUG] findSeekerPerspectiveNearMatches returned ${nearMatches.length} profiles`)
 
       // Build set of user IDs already in regular matches to avoid duplicates
       const matchingUserIds = new Set(matchingProfiles.map(m => m.userId))
@@ -343,7 +341,7 @@ export async function GET(request: Request) {
           !acceptedSentUserIds.has(nm.profile.userId) &&
           !acceptedReceivedUserIds.has(nm.profile.userId)
         )
-        .slice(0, 10) // Limit to 10 near matches
+        .slice(0, 20) // Show up to 20 near matches
         .map(nm => {
           // Find the full candidate data
           const fullProfile = candidates.find(c => c.userId === nm.profile.userId)
@@ -355,6 +353,7 @@ export async function GET(request: Request) {
           }
         })
     }
+    const showNearMatches = true // Always show near matches
 
     // Get target user's name if admin view
     let targetUserName = session?.user?.name || 'User'

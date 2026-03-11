@@ -2746,8 +2746,8 @@ export function findNearMatches(
       return true
     }
 
-    // Helper to check if a height deal-breaker is within 2-inch tolerance
-    const isHeightDealBreakerWithinTolerance = (criterion: typeof seekerFailedDealbreakers[0], targetHeight: string | null): boolean => {
+    // Helper to check if a height deal-breaker is within tolerance
+    const isHeightDealBreakerWithinTolerance = (criterion: typeof seekerFailedDealbreakers[0], targetHeight: string | null, candidateGender: string | null): boolean => {
       if (criterion.name !== 'Height') return false
 
       // Parse height to inches (format: "5'6\"" or "5' 6\"")
@@ -2771,6 +2771,10 @@ export function findNearMatches(
       const maxInches = parseHeightToInches(prefParts[1])
       if (!minInches || !maxInches) return false
 
+      // For male candidates: being taller than max is always acceptable for near matches
+      // (culturally, taller males are generally not a dealbreaker)
+      if (candidateGender === 'male' && targetInches > maxInches) return true
+
       // Check if within 2 inches of either boundary
       if (targetInches < minInches) return (minInches - targetInches) <= 2
       if (targetInches > maxInches) return (targetInches - maxInches) <= 2
@@ -2785,11 +2789,12 @@ export function findNearMatches(
     const isRelaxableDealbreaker = (
       c: typeof seekerFailedDealbreakers[0],
       targetAge: string | null,
-      targetHeight: string | null
+      targetHeight: string | null,
+      targetGender: string | null = null
     ): boolean => {
       if (c.name === 'Location' && (seekerOpenToRelocation || candidateOpenToRelocation)) return true
       if (c.name === 'Age' && isAgeDealBreakerWithinTolerance(c, targetAge)) return true
-      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, targetHeight)) return true
+      if (c.name === 'Height' && isHeightDealBreakerWithinTolerance(c, targetHeight, targetGender)) return true
       // Education, Diet, Marital Status are always relaxable for near matches
       // (seeker can adjust their preference if they see a good match otherwise)
       if (c.name === 'Qualification' || c.name === 'Education') return true
@@ -2805,7 +2810,7 @@ export function findNearMatches(
     const seekerHeightStr = seeker.height?.toString() ?? null
 
     const seekerAllRelaxable = seekerFailedDealbreakers.length === 0 ||
-      seekerFailedDealbreakers.every(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
+      seekerFailedDealbreakers.every(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr, candidate.gender))
 
     // Check if candidate's deal-breakers can be relaxed for near matches
     const seekerOpenToRelocate = seeker.openToRelocation?.toLowerCase() !== 'no'
@@ -2828,7 +2833,7 @@ export function findNearMatches(
 
     // Track which deal-breakers were relaxed (for adding to failed criteria)
     // Only include seeker's relaxed deal-breakers (what seeker can change)
-    const seekerRelaxedDealbreakers = seekerFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr))
+    const seekerRelaxedDealbreakers = seekerFailedDealbreakers.filter(c => isRelaxableDealbreaker(c, candidateAgeStr, candidateHeightStr, candidate.gender))
     // Track candidate's relaxed deal-breakers (only mutable attributes)
     const candidateRelaxedDealbreakers = candidateFailedDealbreakers.filter(c => {
       if (c.name === 'Location') return seekerOpenToRelocate
@@ -2868,7 +2873,7 @@ export function findNearMatches(
       return true // Within range (shouldn't happen for failed criteria)
     }
 
-    // Helper to check if height difference is within 1 inch tolerance
+    // Helper to check if height difference is within tolerance
     const isHeightWithinTolerance = (c: typeof seekerFailedNonCritical[0]): boolean => {
       if (c.name !== 'Height') return true
 
@@ -2892,6 +2897,9 @@ export function findNearMatches(
       const minInches = parseHeightToInches(prefParts[0])
       const maxInches = parseHeightToInches(prefParts[1])
       if (!minInches || !maxInches) return false
+
+      // For male candidates: being taller than max is always acceptable for near matches
+      if (candidate.gender === 'male' && candidateInches > maxInches) return true
 
       // Check if within 1 inch of either boundary
       if (candidateInches < minInches) {
@@ -2997,6 +3005,86 @@ export function findNearMatches(
   }
 
   // Sort by fewest failed criteria, then by match percentage (descending)
+  return nearMatches.sort((a, b) => {
+    if (a.failedCriteria.length !== b.failedCriteria.length) {
+      return a.failedCriteria.length - b.failedCriteria.length
+    }
+    return b.matchScore.percentage - a.matchScore.percentage
+  })
+}
+
+/**
+ * Find near matches from the SEEKER's perspective only.
+ * Shows profiles that fail on 1+ of the seeker's preferences (things the seeker can relax).
+ * Filters out profiles where the candidate has immutable dealbreakers against the seeker
+ * (age, height — things the seeker cannot change about themselves).
+ *
+ * Returns profiles ranked: fewest seeker preference failures first, then by match score.
+ */
+export function findSeekerPerspectiveNearMatches(
+  seeker: ProfileForMatching,
+  candidates: ProfileForMatching[],
+  maxFailedCriteria: number = 4
+): NearMatchResult[] {
+  const nearMatches: NearMatchResult[] = []
+
+  for (const candidate of candidates) {
+    if (seeker.gender === candidate.gender) continue
+    if (seeker.userId === candidate.userId) continue
+
+    // Score in both directions
+    const seekerScore = calculateMatchScore(seeker, candidate)
+    const candidateScore = calculateMatchScore(candidate, seeker)
+
+    // If already a full mutual match, skip (they belong in exact matches)
+    const seekerAllPassed = seekerScore.criteria.every(c => c.matched)
+    const candidateAllPassed = candidateScore.criteria.every(c => c.matched)
+    if (seekerAllPassed && candidateAllPassed) continue
+
+    // --- Candidate's immutable dealbreakers check ---
+    // Skip profiles where the candidate has dealbreakers on seeker's immutable attributes
+    // (age, height — seeker can't change these about themselves)
+    const candidateImmutableBlocks = candidateScore.criteria.filter(c =>
+      !c.matched && c.isDealbreaker && (c.name === 'Age' || c.name === 'Height')
+    )
+    if (candidateImmutableBlocks.length > 0) continue
+
+    // Also skip if candidate has same gotra requirement and gotras match (always blocks)
+    const candidateGotraBlock = candidateScore.criteria.find(c =>
+      !c.matched && c.name === 'Gotra'
+    )
+    if (candidateGotraBlock) continue
+
+    // --- Seeker's failed criteria (what the seeker can control) ---
+    const seekerFailedCriteria = seekerScore.criteria.filter(c => !c.matched)
+
+    // Skip if seeker has no failures (would be a match, handled above)
+    // or too many failures
+    if (seekerFailedCriteria.length === 0 || seekerFailedCriteria.length > maxFailedCriteria) continue
+
+    // For male candidates: height above seeker's max is culturally acceptable,
+    // so reduce the "severity" — still show it as a difference but don't count it as heavily
+    const seekerFailedForDisplay = seekerFailedCriteria.map(c => ({
+      name: c.name,
+      seekerPref: c.seekerPref,
+      candidateValue: c.candidateValue,
+      isDealbreaker: c.isDealbreaker,
+      direction: 'seeker' as const
+    }))
+
+    nearMatches.push({
+      profile: candidate,
+      failedCriteria: seekerFailedForDisplay,
+      matchScore: {
+        percentage: seekerScore.percentage,
+        totalScore: seekerScore.totalScore,
+        maxScore: seekerScore.maxScore,
+      },
+      failedDirection: 'seeker',
+    })
+  }
+
+  // Sort: fewest failed criteria first, then highest match score
   return nearMatches.sort((a, b) => {
     if (a.failedCriteria.length !== b.failedCriteria.length) {
       return a.failedCriteria.length - b.failedCriteria.length
