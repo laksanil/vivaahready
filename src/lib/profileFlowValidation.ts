@@ -141,11 +141,11 @@ export function validateLocationEducationStep(data: UnknownRecord): { isValid: b
   // Validate additional education entries: if level is set, degree + college are required
   const educationEntries = Array.isArray(data.educationEntries) ? data.educationEntries : []
   for (let i = 1; i < educationEntries.length; i++) {
-    const entry = educationEntries[i] as { educationLevel?: string; fieldOfStudy?: string; fieldOfStudyOther?: string; university?: string }
+    const entry = educationEntries[i] as { educationLevel?: string; fieldOfStudy?: string; fieldOfStudyOther?: string; university?: string; universityOther?: string }
     const entryLevel = normalizeString(entry?.educationLevel)
     if (entryLevel) {
       const entryDegree = normalizeString(entry?.fieldOfStudy)
-      const entryUni = normalizeString(entry?.university)
+      const entryUni = getEffectiveUniversity(entry?.university, entry?.universityOther)
       if (!entryDegree) errors.push(`Education ${i + 1}: Degree received is required.`)
       if (entryDegree === 'other' && !normalizeString(entry?.fieldOfStudyOther)) {
         errors.push(`Education ${i + 1}: Please specify your degree.`)

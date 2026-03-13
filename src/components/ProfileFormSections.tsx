@@ -1089,6 +1089,7 @@ export function EducationSection({ formData, handleChange, setFormData }: Sectio
       fieldOfStudy: primary?.fieldOfStudy || '',
       fieldOfStudyOther: primary?.fieldOfStudyOther || '',
       university: primary?.university || '',
+      universityOther: primary?.universityOther || '',
       educationEntries: entries,
     }))
   }, [entries, setFormData])
