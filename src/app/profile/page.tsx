@@ -314,12 +314,6 @@ function ViewProfilePageContent() {
     setPhotoError('')
 
     try {
-      // Validate photo for face detection
-      const validation = await validateProfilePhoto(file)
-      if (!validation.isValid) {
-        throw new Error(validation.message)
-      }
-
       const formData = new FormData()
       formData.append('file', file)
       formData.append('profileId', profile.id)

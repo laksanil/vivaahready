@@ -17,7 +17,8 @@ interface UseFaceDetectionReturn {
 }
 
 export function useFaceDetection(): UseFaceDetectionReturn {
-  const bypassFaceValidation = process.env.NEXT_PUBLIC_E2E_TEST === 'true'
+  // Face detection disabled — always allow photo uploads
+  const bypassFaceValidation = true
   const [isLoading, setIsLoading] = useState(false)
   const [isModelLoaded, setIsModelLoaded] = useState(bypassFaceValidation)
   const [result, setResult] = useState<FaceDetectionResult | null>(null)
