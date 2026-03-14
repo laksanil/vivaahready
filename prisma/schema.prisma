@@ -148,8 +148,8 @@ model Profile {
   interests         String?  // Comma-separated interests
   pets              String?  // have_love, no_but_love, no_but_open, prefer_not, allergic
   allergiesOrMedical String? // Allergies or medical conditions
-  openToDate        String?  // yes, no
-  openToPrenup      String?  // yes, no
+  openToDate        String?  // Yes, No, Maybe
+  openToPrenup      String?  // Yes, No, Maybe
 
   // About
   aboutMe           String?

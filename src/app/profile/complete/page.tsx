@@ -53,6 +53,7 @@ const normalizeYesNoChoice = (value: unknown): string => {
   const normalized = String(value ?? '').trim().toLowerCase()
   if (normalized === 'yes' || normalized.startsWith('y')) return 'Yes'
   if (normalized === 'no' || normalized.startsWith('n')) return 'No'
+  if (normalized === 'maybe' || normalized.startsWith('m')) return 'Maybe'
   return ''
 }
 

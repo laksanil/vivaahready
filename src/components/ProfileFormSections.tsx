@@ -1506,6 +1506,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
     const lower = val.toLowerCase().trim()
     if (lower.startsWith('y')) return 'Yes'
     if (lower.startsWith('n')) return 'No'
+    if (lower.startsWith('m')) return 'Maybe'
     return val
   }
 
@@ -1517,8 +1518,8 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
   const openToPrenupValue = normalizeYesNoChoice(formData.openToPrenup as string)
 
   const isKnownPetsValue = PET_VALUES.includes(petsValue as typeof PET_VALUES[number])
-  const isKnownOpenToDateValue = openToDateValue === 'Yes' || openToDateValue === 'No'
-  const isKnownOpenToPrenupValue = openToPrenupValue === 'Yes' || openToPrenupValue === 'No'
+  const isKnownOpenToDateValue = openToDateValue === 'Yes' || openToDateValue === 'No' || openToDateValue === 'Maybe'
+  const isKnownOpenToPrenupValue = openToPrenupValue === 'Yes' || openToPrenupValue === 'No' || openToPrenupValue === 'Maybe'
 
   useEffect(() => {
     const updates: Record<string, string> = {}
@@ -1750,6 +1751,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
             )}
             <option value="Yes">Yes</option>
             <option value="No">No</option>
+            <option value="Maybe">Maybe</option>
           </select>
         </div>
         <div>
@@ -1761,6 +1763,7 @@ export function LifestyleSection({ formData, handleChange, setFormData }: Sectio
             )}
             <option value="Yes">Yes</option>
             <option value="No">No</option>
+            <option value="Maybe">Maybe</option>
           </select>
         </div>
       </div>
