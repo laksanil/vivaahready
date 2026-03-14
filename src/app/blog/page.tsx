@@ -19,6 +19,45 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'safetyguideindianmatchmaking',
+    title: 'How to Stay Safe on Indian Matchmaking Platforms',
+    description:
+      'Matrimonial cyber fraud surged 206% in 2025. A practical safety guide covering fake profiles, verification tricks, red flags, and how to protect yourself on Indian matchmaking platforms.',
+    excerpt:
+      'A woman I know got a message from a man claiming to be a cardiologist in London. His profile was polished. His photos looked professional. He wanted to talk about marriage within the first week. Something felt off, but she couldn\u2019t say exactly what.',
+    date: '2026-03-12',
+    dateFormatted: 'March 12, 2026',
+    readTime: '12 min read',
+    category: 'Safety',
+    author: 'Lakshmi',
+  },
+  {
+    slug: 'datingappburnoutindianamericans',
+    title: 'Why Indian Americans Are Burned Out on Dating Apps',
+    description:
+      '78% of dating app users report emotional exhaustion. For Indian Americans, cultural gaps in matching algorithms make it worse. The data on why the swipe model is failing.',
+    excerpt:
+      'I\u2019ve lost count of how many times I\u2019ve heard this. A smart, accomplished Indian American professional sitting across from me at a coffee shop or on a video call, saying some version of the same thing: I\u2019m so tired of these apps.',
+    date: '2026-03-12',
+    dateFormatted: 'March 12, 2026',
+    readTime: '12 min read',
+    category: 'Perspectives',
+    author: 'Lakshmi',
+  },
+  {
+    slug: 'indianmatchmakingcostusa',
+    title: 'What Does Indian Matchmaking Cost in the USA?',
+    description:
+      'Indian matchmaking costs range from $15/mo on apps to $300,000+ for luxury services. A full pricing breakdown of BharatMatrimony, Shaadi, Dil Mil, and private matchmakers.',
+    excerpt:
+      'Last month, a friend called me from Dallas. She\u2019d just gotten off the phone with a matchmaking service and was in mild shock. They wanted $5,000 for three months. Five thousand dollars. For introductions.',
+    date: '2026-03-12',
+    dateFormatted: 'March 12, 2026',
+    readTime: '10 min read',
+    category: 'Guide',
+    author: 'Lakshmi',
+  },
+  {
     slug: 'how-indian-matchmaking-works-in-america-2026',
     title: 'How Indian Matchmaking Actually Works in America in 2026',
     description:
