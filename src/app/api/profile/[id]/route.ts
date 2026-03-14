@@ -199,6 +199,8 @@ export async function PUT(
         prefMaritalStatus: true,
         prefReligion: true,
         prefReligions: true,
+        openToDate: true,
+        openToPrenup: true,
         referralSource: true,
         prefQualification: true,
         prefAgeIsDealbreaker: true,
