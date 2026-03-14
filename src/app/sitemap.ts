@@ -49,7 +49,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const blogPages: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}/blog`,
-      lastModified: new Date('2026-03-05'),
+      lastModified: new Date('2026-03-12'),
+    },
+    {
+      url: `${baseUrl}/blog/indianmatchmakingcostusa`,
+      lastModified: new Date('2026-03-12'),
+    },
+    {
+      url: `${baseUrl}/blog/datingappburnoutindianamericans`,
+      lastModified: new Date('2026-03-12'),
+    },
+    {
+      url: `${baseUrl}/blog/safetyguideindianmatchmaking`,
+      lastModified: new Date('2026-03-12'),
     },
     {
       url: `${baseUrl}/blog/how-indian-matchmaking-works-in-america-2026`,
